@@ -39,7 +39,6 @@ public final class BlockUrlPatternsMatch {
         // Create a new string builder to hold our valid domains
         StringBuilder validDomainsStrBuilder = new StringBuilder();
 
-
         // If the input file is in filter file format
         if(filterPatterMatch.find())
         {
