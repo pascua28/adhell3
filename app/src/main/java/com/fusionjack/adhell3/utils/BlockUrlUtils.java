@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class BlockUrlUtils {
 
@@ -46,20 +44,18 @@ public class BlockUrlUtils {
         String inputLine;
         // Add all lines to the StringBuilder
         while ((inputLine = bufferedReader.readLine()) != null) {
-            //hostFile.append(getDomain(inputLine.trim().toLowerCase()));
             hostFile.append(getDomain(inputLine.trim().toLowerCase()));
             hostFile.append("\n");
         }
         bufferedReader.close();
 
-        // Convert hostfile to string
+        // Convert host file to string
         String hostFileStr = hostFile.toString();
 
-        // If we did get any data for the host file
+        // If we received any host file data
         if(!hostFileStr.isEmpty()) {
             // Fetch valid domains
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
-
             // Add each domain to blockUrls
             for (String validatedDomain : validated_hosts) {
                 BlockUrl blockUrl = new BlockUrl(validatedDomain, blockUrlProvider.id);

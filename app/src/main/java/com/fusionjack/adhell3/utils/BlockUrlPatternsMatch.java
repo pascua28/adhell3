@@ -1,16 +1,11 @@
 package com.fusionjack.adhell3.utils;
-
-/**
- * Created by Matt on 19/01/2018.
- */
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class BlockUrlPatternsMatch {
 
     private static final String WILDCARD_PATTERN = "(?im)^(([*])([A-Z0-9-_.]+))$|^(([A-Z0-9-_.]+)([*]))$|^(([*])([A-Z0-9-_.]+)([*])$)";
-    private static final Pattern wilcard_r = Pattern.compile(WILDCARD_PATTERN);
+    private static final Pattern wildcard_r = Pattern.compile(WILDCARD_PATTERN);
 
     private static final String DOMAIN_PATTERN = "(?im)(?=^.{4,253}$)(^((?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63}$)";
     private static final Pattern domain_r = Pattern.compile(DOMAIN_PATTERN);
@@ -23,7 +18,7 @@ public final class BlockUrlPatternsMatch {
     }
 
     private static boolean wildcardValid (String domain) {
-        return wilcard_r.matcher(domain).matches();
+        return wildcard_r.matcher(domain).matches();
     }
 
     private static boolean domainValid (String domain){
@@ -34,7 +29,7 @@ public final class BlockUrlPatternsMatch {
 
         final Matcher filterPatterMatch = filter_r.matcher(hostFileStr);
         final Matcher domainPatterMatch = domain_r.matcher(hostFileStr);
-        final Matcher wildcardPatternMatch = wilcard_r.matcher(hostFileStr);
+        final Matcher wildcardPatternMatch = wildcard_r.matcher(hostFileStr);
 
         // Create a new string builder to hold our valid domains
         StringBuilder validDomainsStrBuilder = new StringBuilder();
@@ -42,6 +37,8 @@ public final class BlockUrlPatternsMatch {
         // If the input file is in filter file format
         if(filterPatterMatch.find())
         {
+            // Reset the find()
+            filterPatterMatch.reset();
             // While there are matches, add each to the StringBuilder
             while(filterPatterMatch.find())
             {
@@ -56,6 +53,8 @@ public final class BlockUrlPatternsMatch {
             // If we find valid hosts
             if(domainPatterMatch.find())
             {
+                // Reset the find()
+                domainPatterMatch.reset();
                 // While there are matches, add each to the StringBuilder
                 while(domainPatterMatch.find())
                 {
@@ -67,8 +66,11 @@ public final class BlockUrlPatternsMatch {
 
             // If we find valid wildcards
             if(wildcardPatternMatch.find()) {
+                // Reset the find()
+                wildcardPatternMatch.reset();
                 // While there are matches, add each to the StringBuilder
-                while (wildcardPatternMatch.find()) {
+                while (wildcardPatternMatch.find())
+                {
                     String Wildcard = wildcardPatternMatch.group();
                     validDomainsStrBuilder.append(Wildcard);
                     validDomainsStrBuilder.append("\n");
@@ -79,7 +81,6 @@ public final class BlockUrlPatternsMatch {
         String validDomainsStr = validDomainsStrBuilder.toString();
 
         return validDomainsStr;
-        
     }
 
     public static boolean isUrlValid(String url) {
