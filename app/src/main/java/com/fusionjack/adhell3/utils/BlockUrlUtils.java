@@ -57,7 +57,6 @@ public class BlockUrlUtils {
 
         // If we did get any data for the host file
         if(!hostFileStr.isEmpty()) {
-
             // Fetch valid domains
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
 

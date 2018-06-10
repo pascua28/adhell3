@@ -45,7 +45,7 @@ public final class BlockUrlPatternsMatch {
             // While there are matches, add each to the StringBuilder
             while(filterPatterMatch.find())
             {
-                String filterListDomain = filterPatterMatch.group(1);
+                String filterListDomain = filterPatterMatch.group();
                 validDomainsStrBuilder.append(filterListDomain);
                 validDomainsStrBuilder.append("\n");
             }
@@ -59,18 +59,17 @@ public final class BlockUrlPatternsMatch {
                 // While there are matches, add each to the StringBuilder
                 while(domainPatterMatch.find())
                 {
-                    String Domain = domainPatterMatch.group(1);
+                    String Domain = domainPatterMatch.group();
                     validDomainsStrBuilder.append(Domain);
                     validDomainsStrBuilder.append("\n");
                 }
-
             }
 
             // If we find valid wildcards
             if(wildcardPatternMatch.find()) {
                 // While there are matches, add each to the StringBuilder
                 while (wildcardPatternMatch.find()) {
-                    String Wildcard = wildcardPatternMatch.group(1);
+                    String Wildcard = wildcardPatternMatch.group();
                     validDomainsStrBuilder.append(Wildcard);
                     validDomainsStrBuilder.append("\n");
                 }
@@ -80,7 +79,7 @@ public final class BlockUrlPatternsMatch {
         String validDomainsStr = validDomainsStrBuilder.toString();
 
         return validDomainsStr;
-
+        
     }
 
     public static boolean isUrlValid(String url) {
