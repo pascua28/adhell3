@@ -40,50 +40,31 @@ public class BlockUrlUtils {
         }
 
         List<BlockUrl> blockUrls = new ArrayList<>();
+
         // Create a new StringBuilder object to hold our host file
         StringBuilder hostFile = new StringBuilder();
         String inputLine;
         // Add all lines to the StringBuilder
         while ((inputLine = bufferedReader.readLine()) != null) {
+            //hostFile.append(getDomain(inputLine.trim().toLowerCase()));
             hostFile.append(getDomain(inputLine.trim().toLowerCase()));
             hostFile.append("\n");
         }
         bufferedReader.close();
 
-        // Define pattern for filter files: ||something.com^ or ||something.com^$third-party
-        final String FILTER_FILE_REG = "(?im)((?<=^\\|\\|)([A-Z0-9-_.]+)(?=\\^([$]third-party)?$))";
-        final Pattern FILTER_PATTERN = Pattern.compile(FILTER_FILE_REG);
-        final Matcher FILTER_PATTERN_MATCH = FILTER_PATTERN.matcher(hostFile);
+        // Convert hostfile to string
+        String hostFileStr = hostFile.toString();
 
-        // If the host file matches the filter file regex: true | false
-        if(FILTER_PATTERN_MATCH.find())
-        {
-            // While there are matches; we only want to match between || and ^
-            while(FILTER_PATTERN_MATCH.find())
-            {
-                // Store the host in a string
-                String filterHost = FILTER_PATTERN_MATCH.group(1);
-                // if the host is valid, create a new BlockUrl and add it
-                if (BlockUrlPatternsMatch.isUrlValid(filterHost)) {
-                    BlockUrl blockUrl = new BlockUrl(filterHost, blockUrlProvider.id);
-                    blockUrls.add(blockUrl);
-                }
-            }
-        }
-        // Otherwise process as a normal host file
-        else
-        {
-            // Split hosts
-            String[] hosts = hostFile.toString().split("\n");
+        // If we did get any data for the host file
+        if(!hostFileStr.isEmpty()) {
 
-            // For each host
-            for(String host: hosts)
-            {
-                // if the host is valid, create a new BlockUrl and add it
-                if (BlockUrlPatternsMatch.isUrlValid(host)) {
-                    BlockUrl blockUrl = new BlockUrl(host, blockUrlProvider.id);
-                    blockUrls.add(blockUrl);
-                }
+            // Fetch valid domains
+            String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
+
+            // Add each domain to blockUrls
+            for (String validatedDomain : validated_hosts) {
+                BlockUrl blockUrl = new BlockUrl(validatedDomain, blockUrlProvider.id);
+                blockUrls.add(blockUrl);
             }
         }
 
