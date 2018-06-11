@@ -81,7 +81,6 @@ public class AppInfoAdapter extends BaseAdapter {
         AppInfo appInfo = applicationInfoList.get(position);
         holder.nameH.setText(appInfo.appName);
         holder.packageH.setText(appInfo.packageName);
-
         boolean checked = false;
         switch (appFlag.getFlag()) {
             case DISABLER_FLAG:
@@ -100,7 +99,6 @@ public class AppInfoAdapter extends BaseAdapter {
                 break;
             case COMPONENT_FLAG:
                 holder.switchH.setVisibility(View.GONE);
-
             case DNS_FLAG:
                 boolean isDnsNotEmpty = AdhellFactory.getInstance().isDnsNotEmpty();
                 if (isDnsNotEmpty) {
