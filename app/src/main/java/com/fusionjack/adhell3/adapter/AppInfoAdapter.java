@@ -81,6 +81,7 @@ public class AppInfoAdapter extends BaseAdapter {
         AppInfo appInfo = applicationInfoList.get(position);
         holder.nameH.setText(appInfo.appName);
         holder.packageH.setText(appInfo.packageName);
+
         boolean checked = false;
         switch (appFlag.getFlag()) {
             case DISABLER_FLAG:
@@ -93,10 +94,13 @@ public class AppInfoAdapter extends BaseAdapter {
                 checked = appInfo.wifiRestricted;
                 break;
             case WHITELISTED_FLAG:
-                checked = appInfo.adhellWhitelisted;
+                // We want the whitelist switch to be disabled by default
+                // Invert the whitelist bool as the whole list is inverted again at the end.
+                checked = !appInfo.adhellWhitelisted;
                 break;
             case COMPONENT_FLAG:
                 holder.switchH.setVisibility(View.GONE);
+
             case DNS_FLAG:
                 boolean isDnsNotEmpty = AdhellFactory.getInstance().isDnsNotEmpty();
                 if (isDnsNotEmpty) {
