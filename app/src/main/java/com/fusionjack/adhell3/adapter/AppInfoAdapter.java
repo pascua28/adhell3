@@ -84,18 +84,16 @@ public class AppInfoAdapter extends BaseAdapter {
         boolean checked = false;
         switch (appFlag.getFlag()) {
             case DISABLER_FLAG:
-                checked = appInfo.disabled;
+                checked = !appInfo.disabled;
                 break;
             case MOBILE_RESTRICTED_FLAG:
-                checked = appInfo.mobileRestricted;
+                checked = !appInfo.mobileRestricted;
                 break;
             case WIFI_RESTRICTED_FLAG:
-                checked = appInfo.wifiRestricted;
+                checked = !appInfo.wifiRestricted;
                 break;
             case WHITELISTED_FLAG:
-                // We want the whitelist switch to be disabled by default
-                // Invert the whitelist bool as the whole list is inverted again at the end.
-                checked = !appInfo.adhellWhitelisted;
+                checked = appInfo.adhellWhitelisted;
                 break;
             case COMPONENT_FLAG:
                 holder.switchH.setVisibility(View.GONE);
@@ -109,7 +107,7 @@ public class AppInfoAdapter extends BaseAdapter {
                 checked = !appInfo.hasCustomDns;
                 break;
         }
-        holder.switchH.setChecked(!checked);
+        holder.switchH.setChecked(checked);
 
         if (appInfo.system) {
             convertView.findViewById(R.id.systemOrNot).setVisibility(View.VISIBLE);
