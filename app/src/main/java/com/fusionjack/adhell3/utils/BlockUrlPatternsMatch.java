@@ -27,22 +27,22 @@ public final class BlockUrlPatternsMatch {
 
     private static String validHostFileDomains(String hostFileStr) {
 
-        final Matcher filterPatterMatch = filter_r.matcher(hostFileStr);
-        final Matcher domainPatterMatch = domain_r.matcher(hostFileStr);
+        final Matcher filterPatternMatch = filter_r.matcher(hostFileStr);
+        final Matcher domainPatternMatch = domain_r.matcher(hostFileStr);
         final Matcher wildcardPatternMatch = wildcard_r.matcher(hostFileStr);
 
         // Create a new string builder to hold our valid domains
         StringBuilder validDomainsStrBuilder = new StringBuilder();
 
         // If the input file is in filter file format
-        if(filterPatterMatch.find())
+        if(filterPatternMatch.find())
         {
             // Reset the find()
-            filterPatterMatch.reset();
+            filterPatternMatch.reset();
             // While there are matches, add each to the StringBuilder
-            while(filterPatterMatch.find())
+            while(filterPatternMatch.find())
             {
-                String filterListDomain = filterPatterMatch.group();
+                String filterListDomain = filterPatternMatch.group();
                 validDomainsStrBuilder.append(filterListDomain);
                 validDomainsStrBuilder.append("\n");
             }
@@ -51,14 +51,14 @@ public final class BlockUrlPatternsMatch {
         else
         {
             // If we find valid hosts
-            if(domainPatterMatch.find())
+            if(domainPatternMatch.find())
             {
                 // Reset the find()
-                domainPatterMatch.reset();
+                domainPatternMatch.reset();
                 // While there are matches, add each to the StringBuilder
-                while(domainPatterMatch.find())
+                while(domainPatternMatch.find())
                 {
-                    String Domain = domainPatterMatch.group();
+                    String Domain = domainPatternMatch.group();
                     validDomainsStrBuilder.append(Domain);
                     validDomainsStrBuilder.append("\n");
                 }
