@@ -53,8 +53,8 @@ Set custom DNS for selected apps. Only user apps are supported.
 
 ## Prerequisite for building apk
 ### Source code
-- Clone the project with `git clone git@gitlab.com:fusionjack/adhell3.git adhell3` OR
-- Download the source code as a zip file: https://gitlab.com/fusionjack/adhell3/repository/master/archive.zip
+- Clone the project with `git clone git@gitlab.com:fusionjack/adhell3.git adhell3`<br/>
+Or download the source code as a zip file: https://gitlab.com/fusionjack/adhell3/repository/master/archive.zip
 - Set `applicationId` with a valid package name in `app\build.gradle`, e.g.: com.dhf.erz58384
 
 ### Android Studio
@@ -68,14 +68,14 @@ Set custom DNS for selected apps. Only user apps are supported.
 - Take the `libs` content and put it to `app\libs` folder in the project 
 
 ## How to build apk
-- Update the source code with `git stash && git pull --rebase && git stash pop` or re-download the source code as a zip file
-- Run these following commands in a console: <br/>
-`cd adhell3`<br/>
-`gradlew clean assembleDebug`
+- Run the following command in a console to change the current directory to adhell3 folder: `cd adhell3`
+- Update the source code retaining your `applicationId` with `git stash && git pull --rebase && git stash pop`<br/>
+  (the above "stashes" your changes, downloads the latest sources from gitlab, and then reinstates the modified package name `applicationId`)
+- Build the apk with the following command `gradlew clean assembleDebug`
 - The generated apk is located in `app\build\outputs\apk\debug`
 
 ## Prerequisite for using Adhell3
-You need an Enterprise License Key (ELM) in order to use Adhell3. <br/>
+You need an Enterprise License Key (ELM) in order to use Adhell3.<br/>
 You need to enroll as a developer in order to get this license. The license can be obtained here: https://seap.samsung.com/license-keys/create/knox_standard_android <br/>
 As for developer, the license needs to be renewed every 3 months. Don't forget to revoke the old license key before creating a new one.
 - Enroll as a developer with this link: https://seap.samsung.com/enrollment
