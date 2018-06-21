@@ -23,7 +23,7 @@ android {
             throw new FileNotFoundException("Could not read build.properties!")
         }
 
-        applicationId "com."
+        applicationId "com.quanpm.vsr"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
