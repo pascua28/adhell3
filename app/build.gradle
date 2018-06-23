@@ -23,7 +23,7 @@ android {
             throw new FileNotFoundException("Could not read build.properties!")
         }
 
-        applicationId "com."
+        applicationId "com.hri.msu20483"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
