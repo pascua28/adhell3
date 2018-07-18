@@ -36,6 +36,7 @@ public class BlockUrlUtils {
         }
 
         List<BlockUrl> blockUrls = new ArrayList<>();
+        List<String> blockUrlArr = new ArrayList<>();
 
         // Create a new StringBuilder object to hold our host file
         StringBuilder hostFile = new StringBuilder();
@@ -55,13 +56,28 @@ public class BlockUrlUtils {
         if (!hostFileStr.isEmpty()) {
             // Fetch valid domains
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
+            // Set valid filter domains
+            String validDelimiters = "^(\\Q||\\E)";
             // Add each domain to blockUrls
             for (String validatedDomain : validated_hosts) {
-                BlockUrl blockUrl = new BlockUrl(validatedDomain, blockUrlProvider.id);
+                // Check for a filter domain
+                String[] filterDomain = validatedDomain.split(validDelimiters);
+                // If we are dealing with a filter domain
+                // Remove the delimiter and add it as is
+                if(filterDomain.length > 1){
+                    blockUrlArr.add(validatedDomain.replaceFirst(validDelimiters,""));
+                }
+                else {
+                    // Conditionally prefix with wildcard
+                    blockUrlArr.add((validatedDomain.contains("*") ? "" : "*") + validatedDomain);
+                }
+            }
+            // Add each domain to blockurls
+            for(String domainToAdd: blockUrlArr){
+                BlockUrl blockUrl = new BlockUrl(domainToAdd, blockUrlProvider.id);
                 blockUrls.add(blockUrl);
             }
         }
-
         return blockUrls;
     }
 
@@ -74,8 +90,8 @@ public class BlockUrlUtils {
         switch (delimiter) {
             // Problematic wildcard
             case "||":
-                processedFilters.add(domain);
-                processedFilters.add("*." + domain);
+                processedFilters.add(delimiter + domain);
+                processedFilters.add(delimiter + "*." + domain);
         }
         return processedFilters;
     }
