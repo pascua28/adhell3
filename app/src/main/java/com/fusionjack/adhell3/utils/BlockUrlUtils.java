@@ -19,6 +19,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public class BlockUrlUtils {
 
@@ -54,7 +55,6 @@ public class BlockUrlUtils {
         if (!hostFileStr.isEmpty()) {
             // Fetch valid domains
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
-
             // Add each domain to blockUrls
             for (String validatedDomain : validated_hosts) {
                 BlockUrl blockUrl = new BlockUrl(validatedDomain, blockUrlProvider.id);
@@ -64,6 +64,25 @@ public class BlockUrlUtils {
 
         return blockUrls;
     }
+
+    private static List<String> processAdhellFilters(String filterSyntax, String delimiter){
+        // Create an array to hold domains
+        List<String> processedFilters = new ArrayList<>();
+        // Get the domain from our filter synax
+        String domain = filterSyntax.split("\\Q" + delimiter + "\\E")[1];
+        // Switch check the instruction
+        switch (delimiter) {
+            // Problematic wildcard
+            case "||":
+                processedFilters.add(domain);
+                processedFilters.add("*." + domain);
+        }
+        return processedFilters;
+    }
+    public static List<String> getProcessedAdhellFilters(String filterSyntax, String filterDelimiter){
+        return processAdhellFilters(filterSyntax, filterDelimiter);
+    }
+
 
     private static String getDomain(String inputLine) {
         return inputLine
