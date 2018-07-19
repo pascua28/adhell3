@@ -253,13 +253,17 @@ public final class AdhellFactory {
 
         // Fetch Adhell filters
         List<BlockUrl> adhellFilters = appDatabase.blockUrlDao().getAdhellFilters();
-
-        try{
-            // If there are filters, process them.
-            if(!adhellFilters.isEmpty())
-            {
+        // If there are filters, try to process them
+        if(!adhellFilters.isEmpty())
+        {
+            try {
                 BlockUrlUtils.startProcessingdAdhellFilters(adhellFilters, appDatabase);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
+        
+        try{
             // For each blockurlprovider
             for(BlockUrlProvider provider : providers){
                 // Set unique count
@@ -272,6 +276,5 @@ public final class AdhellFactory {
         } catch (Exception e){
             e.printStackTrace();
         }
-
     }
 }

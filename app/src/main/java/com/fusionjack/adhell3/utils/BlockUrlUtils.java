@@ -80,7 +80,7 @@ public class BlockUrlUtils {
         // For each filter
         for(BlockUrl filter : filterSyntaxs){
             // Match filter syntax (so we can extract necessary info)
-            final Matcher filterMatcher = BlockUrlPatternsMatch.matchFilterSyntax(filter.url);
+            final Matcher filterMatcher = BlockUrlPatternsMatch.getmatchFilterSyntax(filter.url);
             // If there were matches (is a valid filter domain)
             if(filterMatcher.matches()){
                 final String delimiter = filterMatcher.group(1);
@@ -97,11 +97,16 @@ public class BlockUrlUtils {
                 }
             }
         }
-        // Add necessary domains
-        appDatabase.blockUrlDao().insertAll(blockUrls);
-        // Remove necessary domains
-        for(String removal : filterRemovals){
-            appDatabase.blockUrlDao().deleteBlockUrl(removal);
+        // Conditionally add blockurls
+        if(!blockUrls.isEmpty()){
+            appDatabase.blockUrlDao().insertAll(blockUrls);
+        }
+
+        // Conditionally remove blockurls
+        if(!filterRemovals.isEmpty()) {
+            for (String removal : filterRemovals) {
+                appDatabase.blockUrlDao().deleteBlockUrl(removal);
+            }
         }
     }
 

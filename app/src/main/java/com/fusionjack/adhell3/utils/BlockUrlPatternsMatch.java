@@ -35,7 +35,7 @@ public final class BlockUrlPatternsMatch {
         return domain_r.matcher(domain).matches();
     }
 
-    public static Matcher matchFilterSyntax(String filter){
+    private static Matcher matchFilterSyntax(String filter){
         return ah_filter_r.matcher(filter);
     }
 
@@ -80,6 +80,10 @@ public final class BlockUrlPatternsMatch {
             }
         }
         return validDomainsStrBuilder.toString();
+    }
+
+    public static Matcher getmatchFilterSyntax(String filter){
+        return matchFilterSyntax(filter);
     }
 
     public static boolean isUrlValid(String url) {
