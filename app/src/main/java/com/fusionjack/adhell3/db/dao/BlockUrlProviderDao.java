@@ -30,6 +30,9 @@ public interface BlockUrlProviderDao {
     @Query("SELECT COUNT(DISTINCT BlockUrl.url) FROM BlockUrlProviders INNER JOIN BlockUrl ON BlockUrl.urlProviderId = BlockUrlProviders._id WHERE selected = 1 ORDER BY BlockUrl.url")
     int getUniqueBlockedUrlsCount();
 
+    @Query("SELECT COUNT(DISTINCT BlockUrl.url) FROM BlockUrlProviders INNER JOIN BlockUrl ON BlockUrl.urlProviderId = BlockUrlProviders._id WHERE BlockUrl.urlProviderId = :id  ORDER BY BlockUrl.url")
+    int getProviderUniqueUrlsCount(long id);
+
     @Query("SELECT * FROM BlockUrlProviders WHERE url = :url")
     BlockUrlProvider getByUrl(String url);
 

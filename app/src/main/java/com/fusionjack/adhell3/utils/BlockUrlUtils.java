@@ -56,49 +56,58 @@ public class BlockUrlUtils {
         if (!hostFileStr.isEmpty()) {
             // Fetch valid domains
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
-            // Set valid filter domains
-            String validDelimiters = "^(\\Q||\\E)";
             // Add each domain to blockUrls
             for (String validatedDomain : validated_hosts) {
-                // Check for a filter domain
-                String[] filterDomain = validatedDomain.split(validDelimiters);
-                // If we are dealing with a filter domain
-                // Remove the delimiter and add it as is
-                if(filterDomain.length > 1){
-                    blockUrlArr.add(validatedDomain.replaceFirst(validDelimiters,""));
+                // Conditional wildcard prefix
+                if(validatedDomain.contains("@dhell"))
+                {
+                    blockUrls.add(new BlockUrl(validatedDomain, blockUrlProvider.id));
                 }
-                else {
-                    // Conditionally prefix with wildcard
-                    blockUrlArr.add((validatedDomain.contains("*") ? "" : "*") + validatedDomain);
+                else
+                {
+                    blockUrls.add(new BlockUrl((validatedDomain.contains("*") ? "" : "*") + validatedDomain, blockUrlProvider.id));
                 }
-            }
-            // Add each domain to blockurls
-            for(String domainToAdd: blockUrlArr){
-                BlockUrl blockUrl = new BlockUrl(domainToAdd, blockUrlProvider.id);
-                blockUrls.add(blockUrl);
             }
         }
         return blockUrls;
     }
 
-    private static List<String> processAdhellFilters(String filterSyntax, String delimiter){
-        // Create an array to hold domains
-        List<String> processedFilters = new ArrayList<>();
-        // Get the domain from our filter synax
-        String domain = filterSyntax.split("\\Q" + delimiter + "\\E")[1];
-        // Switch check the instruction
-        switch (delimiter) {
-            // Problematic wildcard
-            case "||":
-                processedFilters.add(delimiter + domain);
-                processedFilters.add(delimiter + "*." + domain);
+
+    private static void processAdhellFilters(List<BlockUrl> filterSyntaxs, AppDatabase appDatabase){
+        // Create empty change arrays
+        List<BlockUrl> blockUrls = new ArrayList<>();
+        List<String> filterRemovals = new ArrayList<>();
+        // For each filter
+        for(BlockUrl filter : filterSyntaxs){
+            // Match filter syntax (so we can extract necessary info)
+            final Matcher filterMatcher = BlockUrlPatternsMatch.matchFilterSyntax(filter.url);
+            // If there were matches (is a valid filter domain)
+            if(filterMatcher.matches()){
+                final String delimiter = filterMatcher.group(1);
+                final String domain = filterMatcher.group(2);
+                // Switch for filter option
+                switch (delimiter) {
+                    case "||":
+                        // Removals
+                        filterRemovals.add(filter.url); // @dhell||something.com^
+                        filterRemovals.add("*" + domain); // *something.com
+                        // Additions
+                        blockUrls.add(new BlockUrl(domain, filter.urlProviderId)); // something.com
+                        blockUrls.add(new BlockUrl(("*." + domain), filter.urlProviderId)); // *.something.com
+                }
+            }
         }
-        return processedFilters;
-    }
-    public static List<String> getProcessedAdhellFilters(String filterSyntax, String filterDelimiter){
-        return processAdhellFilters(filterSyntax, filterDelimiter);
+        // Add necessary domains
+        appDatabase.blockUrlDao().insertAll(blockUrls);
+        // Remove necessary domains
+        for(String removal : filterRemovals){
+            appDatabase.blockUrlDao().deleteBlockUrl(removal);
+        }
     }
 
+    public static void startProcessingdAdhellFilters(List<BlockUrl> filterSyntaxs, AppDatabase appDatabase){
+        processAdhellFilters(filterSyntaxs, appDatabase);
+    }
 
     private static String getDomain(String inputLine) {
         return inputLine

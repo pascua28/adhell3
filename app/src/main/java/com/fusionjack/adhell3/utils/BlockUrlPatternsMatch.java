@@ -17,7 +17,7 @@ public final class BlockUrlPatternsMatch {
     private static final Pattern filter_r = Pattern.compile(FILTER_PATTERN);
 
     // Define patter for Adhell specific filters
-    private static final String AH_FILTER_PATTERN = "(?im)(?=.{4,253}\\^)^(?:@dhell(\\|\\|))((?:(?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63})(?=\\^([$]third-party)?$)";
+    private static final String AH_FILTER_PATTERN = "(?im)(?=.{4,253}\\^)^(?:@dhell(\\|\\|))((?:(?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63})(\\^([$]third-party)?$)";
     private static final Pattern ah_filter_r = Pattern.compile(AH_FILTER_PATTERN);
 
     // Knox URL - Must contain a letter in prefix / domain
@@ -35,6 +35,10 @@ public final class BlockUrlPatternsMatch {
         return domain_r.matcher(domain).matches();
     }
 
+    public static Matcher matchFilterSyntax(String filter){
+        return ah_filter_r.matcher(filter);
+    }
+
     private static String validHostFileDomains(String hostFileStr) {
 
         final Matcher filterPatternMatch = filter_r.matcher(hostFileStr);
@@ -46,9 +50,7 @@ public final class BlockUrlPatternsMatch {
         StringBuilder validDomainsStrBuilder = new StringBuilder();
 
         // If the input file is in filter file format
-        if (filterPatternMatch.find()) {
-            // Reset the find()
-            filterPatternMatch.reset();
+        if (filterPatternMatch.matches()) {
             // While there are matches, add each to the StringBuilder
             while (filterPatternMatch.find()) {
                 String filterListDomain = filterPatternMatch.group();
@@ -58,31 +60,19 @@ public final class BlockUrlPatternsMatch {
         }
         // Otherwise, process as a standard host file
         else {
-            // While there are matches, add each to the StringBuilder
+            // Standard domains
             while (domainPatternMatch.find()) {
                 String domain = domainPatternMatch.group();
                 validDomainsStrBuilder.append(domain);
                 validDomainsStrBuilder.append("\n");
             }
-
-
+            // Adhell filters
             while(ah_filterPatternMatch.find()){
-                // Capture the whole syntax
-                String filterSyntax = ah_filterPatternMatch.group();
-                // Capture the delimiter (filter option)
-                String filterDelimiter = ah_filterPatternMatch.group(1);
-                // Send for processing
-                List<String>processedFilters = BlockUrlUtils.getProcessedAdhellFilters(filterSyntax, filterDelimiter);
-                // Add each domain to the list
-                if(!processedFilters.isEmpty()) {
-                    for (String domain : processedFilters) {
-                        validDomainsStrBuilder.append(domain);
-                        validDomainsStrBuilder.append("\n");
-                    }
-                }
+                String domain = ah_filterPatternMatch.group();
+                validDomainsStrBuilder.append(domain);
+                validDomainsStrBuilder.append("\n");
             }
-
-            // While there are matches, add each to the StringBuilder
+            // Wildcards
             while (wildcardPatternMatch.find()) {
                 String wildcard = wildcardPatternMatch.group();
                 validDomainsStrBuilder.append(wildcard);
@@ -112,8 +102,6 @@ public final class BlockUrlPatternsMatch {
             return url;
         }
 
-        // Otherwise...
-
         // Grab the prefix
         String prefix = url.split("\\Q.\\E")[0];
         // Regex: must contain a letter (excl wildcards)
@@ -122,7 +110,5 @@ public final class BlockUrlPatternsMatch {
         // If we don't have any letters in the prefix
         // Add a wildcard prefix as a safety net
         return (prefix_valid.find() ? "" : "*") + url;
-
     }
-
 }
