@@ -80,12 +80,15 @@ public class BlockUrlUtils {
                 // Switch for filter option
                 switch (delimiter) {
                     case "||":
-                        // Removals
+                        // Check that our domain wouldn't have to be modified for knox suitability
+                        if(domain.equals(BlockUrlPatternsMatch.getValidKnoxUrl(domain))){
+                            filterRemovals.add("*" + domain); // *something.com
+                            // Additions
+                            blockUrls.add(new BlockUrl(domain, filter.urlProviderId)); // something.com
+                            blockUrls.add(new BlockUrl(("*." + domain), filter.urlProviderId)); // *.something.com
+                        }
+                        // Add the filter itself to the removal criteria
                         filterRemovals.add(filter.url); // @dhell||something.com^
-                        filterRemovals.add("*" + domain); // *something.com
-                        // Additions
-                        blockUrls.add(new BlockUrl(domain, filter.urlProviderId)); // something.com
-                        blockUrls.add(new BlockUrl(("*." + domain), filter.urlProviderId)); // *.something.com
                 }
             }
         }
