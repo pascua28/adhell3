@@ -118,7 +118,7 @@ public final class BlockUrlPatternsMatch {
 
             // If we don't have any letters in the prefix
             // Add a wildcard prefix as a safety net
-            return (prefix_valid.find() ? "" : "*") + url;
+            return (prefix_valid.matches() ? "" : "*") + url;
         }
     }
 }
