@@ -52,7 +52,7 @@ public final class BlockUrlPatternsMatch {
         if (filterPatternMatch.matches()) {
             // While there are matches, add each to the StringBuilder
             while (filterPatternMatch.find()) {
-                String filterListDomain = filterPatternMatch.group();
+                String filterListDomain = conditionallyPrefix(filterPatternMatch.group());
                 validDomainsStrBuilder.append(filterListDomain);
                 validDomainsStrBuilder.append("\n");
             }
@@ -61,7 +61,7 @@ public final class BlockUrlPatternsMatch {
         else {
             // Standard domains
             while (domainPatternMatch.find()) {
-                String domain = domainPatternMatch.group();
+                String domain = conditionallyPrefix(domainPatternMatch.group());
                 validDomainsStrBuilder.append(domain);
                 validDomainsStrBuilder.append("\n");
             }
@@ -96,22 +96,29 @@ public final class BlockUrlPatternsMatch {
         return BlockUrlPatternsMatch.validHostFileDomains(hostFileStr);
     }
 
+    private static String conditionallyPrefix(String url){
+        return (url.contains("*") ? "" : "*") + url;
+    }
+
     public static String getValidKnoxUrl(String url) {
         // Knox seems invalidate a domain if the prefix does not contain any letters.
         // We will programmatically prefix domains such as 123.test.com, but not t123.test.com
 
-        // If we have a wildcard, skip and pattern compiling / matching
-        if (url.contains("*")) {
+        // If we have a wildcard or filter rule, return the URL as is
+        if (url.contains("*") || url.charAt(0) == '@') {
             return url;
         }
+        // Otherwise, we are processing a standard domain
+        // and need to check the prefix
+        else {
+            // Grab the prefix
+            String prefix = url.split("\\Q.\\E")[0];
+            // Regex: must contain a letter (excl wildcards)
+            final Matcher prefix_valid = knox_valid_r.matcher(prefix);
 
-        // Grab the prefix
-        String prefix = url.split("\\Q.\\E")[0];
-        // Regex: must contain a letter (excl wildcards)
-        final Matcher prefix_valid = knox_valid_r.matcher(prefix);
-
-        // If we don't have any letters in the prefix
-        // Add a wildcard prefix as a safety net
-        return (prefix_valid.find() ? "" : "*") + url;
+            // If we don't have any letters in the prefix
+            // Add a wildcard prefix as a safety net
+            return (prefix_valid.find() ? "" : "*") + url;
+        }
     }
 }

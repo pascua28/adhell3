@@ -58,15 +58,7 @@ public class BlockUrlUtils {
             String[] validated_hosts = BlockUrlPatternsMatch.getValidHostFileDomains(hostFileStr).split("\n");
             // Add each domain to blockUrls
             for (String validatedDomain : validated_hosts) {
-                // Conditional wildcard prefix
-                if(validatedDomain.contains("@dhell"))
-                {
-                    blockUrls.add(new BlockUrl(validatedDomain, blockUrlProvider.id));
-                }
-                else
-                {
-                    blockUrls.add(new BlockUrl((validatedDomain.contains("*") ? "" : "*") + validatedDomain, blockUrlProvider.id));
-                }
+                blockUrls.add(new BlockUrl(validatedDomain, blockUrlProvider.id));
             }
         }
         return blockUrls;
