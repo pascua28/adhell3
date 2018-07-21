@@ -12,12 +12,8 @@ public final class BlockUrlPatternsMatch {
     private static final Pattern domain_r = Pattern.compile(DOMAIN_PATTERN);
 
     // Define pattern for filter files: ||something.com^ or ||something.com^$third-party
-    private static final String FILTER_PATTERN = "(?im)(?=.{4,253}\\^)((?<=^[|]{2})(((?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63})(?=\\^([$]third-party)?$))";
+    private static final String FILTER_PATTERN = "(?im)(?=.{4,253}\\^)^(?:(\\|\\|))((?:(?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63})(\\^([$]third-party)?$)";
     private static final Pattern filter_r = Pattern.compile(FILTER_PATTERN);
-
-    // Define patter for Adhell specific filters
-    private static final String AH_FILTER_PATTERN = "(?im)(?=.{4,253}\\^)^(?:@dhell(\\|\\|))((?:(?!-)[a-z0-9-]{1,63}(?<!-)\\.)+[a-z]{2,63})(\\^([$]third-party)?$)";
-    private static final Pattern ah_filter_r = Pattern.compile(AH_FILTER_PATTERN);
 
     // Knox URL - Must contain a letter in prefix / domain
     private static final String KNOX_VALID_PATTERN = "(?i)(^(?=.*[a-z]).*$)";
@@ -35,7 +31,7 @@ public final class BlockUrlPatternsMatch {
     }
 
     private static Matcher matchFilterSyntax(String filter){
-        return ah_filter_r.matcher(filter);
+        return filter_r.matcher(filter);
     }
 
     private static String validHostFileDomains(String hostFileStr) {
@@ -43,41 +39,31 @@ public final class BlockUrlPatternsMatch {
         final Matcher filterPatternMatch = filter_r.matcher(hostFileStr);
         final Matcher domainPatternMatch = domain_r.matcher(hostFileStr);
         final Matcher wildcardPatternMatch = wildcard_r.matcher(hostFileStr);
-        final Matcher ah_filterPatternMatch = ah_filter_r.matcher(hostFileStr);
 
         // Create a new string builder to hold our valid domains
         StringBuilder validDomainsStrBuilder = new StringBuilder();
 
-        // If the input file is in filter file format
-        if (filterPatternMatch.matches()) {
-            // While there are matches, add each to the StringBuilder
-            while (filterPatternMatch.find()) {
-                String filterListDomain = conditionallyPrefix(filterPatternMatch.group());
-                validDomainsStrBuilder.append(filterListDomain);
-                validDomainsStrBuilder.append("\n");
-            }
+        // Filter patterns
+        while (filterPatternMatch.find()) {
+            String filterListDomain = filterPatternMatch.group();
+            validDomainsStrBuilder.append(filterListDomain);
+            validDomainsStrBuilder.append("\n");
         }
-        // Otherwise, process as a standard host file
-        else {
-            // Standard domains
-            while (domainPatternMatch.find()) {
-                String domain = conditionallyPrefix(domainPatternMatch.group());
-                validDomainsStrBuilder.append(domain);
-                validDomainsStrBuilder.append("\n");
-            }
-            // Adhell filters
-            while(ah_filterPatternMatch.find()){
-                String domain = ah_filterPatternMatch.group();
-                validDomainsStrBuilder.append(domain);
-                validDomainsStrBuilder.append("\n");
-            }
-            // Wildcards
-            while (wildcardPatternMatch.find()) {
-                String wildcard = wildcardPatternMatch.group();
-                validDomainsStrBuilder.append(wildcard);
-                validDomainsStrBuilder.append("\n");
-            }
+
+        // Standard domains
+        while (domainPatternMatch.find()) {
+            String domain = conditionallyPrefix(domainPatternMatch.group());
+            validDomainsStrBuilder.append(domain);
+            validDomainsStrBuilder.append("\n");
         }
+
+        // Wildcards
+        while (wildcardPatternMatch.find()) {
+            String wildcard = wildcardPatternMatch.group();
+            validDomainsStrBuilder.append(wildcard);
+            validDomainsStrBuilder.append("\n");
+        }
+
         return validDomainsStrBuilder.toString();
     }
 
@@ -105,7 +91,7 @@ public final class BlockUrlPatternsMatch {
         // We will programmatically prefix domains such as 123.test.com, but not t123.test.com
 
         // If we have a wildcard or filter rule, return the URL as is
-        if (url.contains("*") || url.charAt(0) == '@') {
+        if (url.contains("*") || url.substring(0,2).equals("||")) {
             return url;
         }
         // Otherwise, we are processing a standard domain

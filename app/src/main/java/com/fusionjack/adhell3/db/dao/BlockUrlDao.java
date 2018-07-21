@@ -18,7 +18,7 @@ public interface BlockUrlDao {
     @Query("SELECT url FROM BlockUrl WHERE urlProviderId = :urlProviderId")
     List<String> getUrlsByProviderId(long urlProviderId);
 
-    @Query("SELECT * FROM BlockUrl WHERE url LIKE '@dhell%' GROUP BY url")
+    @Query("SELECT * FROM BlockUrl WHERE url LIKE '||%' GROUP BY url")
     List<BlockUrl> getAdhellFilters();
 
     @Query("DELETE FROM BlockUrl")
