@@ -119,7 +119,7 @@ public class BlockUrlUtils {
                 // Remove whitespace
                 .replaceAll("\\s+","")
                 // Remove WWW
-                .replaceAll("^www(?:[0-9]{1,3})?(?:\\.)", "");
+                .replaceAll("^(?:\\|\\|)?www(?:[0-9]{1,3})?\\.", "");
     }
 
     public static List<String> getUserBlockedUrls(AppDatabase appDatabase, boolean enableLog, Handler handler) {
