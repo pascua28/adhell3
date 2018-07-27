@@ -74,7 +74,7 @@ public class BlockUrlUtils {
         String hostFileStr = hostFile.toString();
 
         // Clean up the host string
-        hostFileStr = filterExtract.matcher(hostFile).replaceAll("$1");
+        hostFileStr = filterExtract.matcher(hostFileStr).replaceAll("$1");
         hostFileStr = linePattern.matcher(hostFileStr).replaceAll("");
         hostFileStr = deadZonePattern.matcher(hostFileStr).replaceAll("");
         hostFileStr = commentPattern.matcher(hostFileStr).replaceAll("");
