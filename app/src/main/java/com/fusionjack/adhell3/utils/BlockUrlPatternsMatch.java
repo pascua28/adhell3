@@ -17,7 +17,7 @@ public final class BlockUrlPatternsMatch {
     private static final String WILDCARD_PATTERN = "(?im)^(?=\\*|.+\\*$)(?:\\*[.-]?)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?:[.-]?\\*)?$";
     private static final Pattern wildcard_r = Pattern.compile(WILDCARD_PATTERN);
 
-    private static final String DOMAIN_PATTERN = "(?im)^(?=.{4,253}$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$";
+    private static final String DOMAIN_PATTERN = "(?im)^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}$";
     private static final Pattern domain_r = Pattern.compile(DOMAIN_PATTERN);
 
     // Knox URL - Must contain a letter in prefix / domain
