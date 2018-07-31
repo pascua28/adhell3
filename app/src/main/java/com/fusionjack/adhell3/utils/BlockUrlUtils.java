@@ -29,11 +29,8 @@ public class BlockUrlUtils {
 
     private static final String TAG = BlockUrlUtils.class.getCanonicalName();
 
-   // Patter for extracting filter domains
-    private static final Pattern filterExtract = Pattern.compile("(?im)^\\|{2}(.+)\\^(?:\\$(?:[a-z]+,)?third-party)?$");
-
     // Pattern to detect lines that do not start with a word or wildcard
-    private static final Pattern linePattern = Pattern.compile("(?im)^(?![a-z0-9*]).*$");
+    private static final Pattern linePattern = Pattern.compile("(?im)^(?![a-z0-9*]|\\|{2}).+$");
 
     // Pattern to detect 'deadzone' - We only want the domain
     private static final Pattern deadZonePattern = Pattern.compile("(?im)^(?:0|127)\\.0\\.0\\.[0-1]\\s+");
@@ -45,7 +42,7 @@ public class BlockUrlUtils {
     private static final Pattern emptyLinePattern = Pattern.compile("(?im)^\\s*");
 
     // Pattern to detect WWW
-    private static final Pattern wwwPattern = Pattern.compile("(?im)^www(?:[0-9]{1,3})?(?:\\.)");
+    private static final Pattern wwwPattern = Pattern.compile("(?im)^www(?:[0-9]{1,3})?(?:\\.)(.+)$");
 
     @NonNull
     public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException, URISyntaxException {
@@ -67,12 +64,11 @@ public class BlockUrlUtils {
         // If we received any host file data
         if (!hostFileStr.isEmpty()) {
             // Clean up the host string
-            hostFileStr = filterExtract.matcher(hostFileStr).replaceAll("$1");
             hostFileStr = linePattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = deadZonePattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = commentPattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = emptyLinePattern.matcher(hostFileStr).replaceAll("");
-            hostFileStr = wwwPattern.matcher(hostFileStr).replaceAll("");
+            hostFileStr = wwwPattern.matcher(hostFileStr).replaceAll("$1\n*.$1");
             hostFileStr = hostFileStr.toLowerCase();
 
             // Fetch valid domains
