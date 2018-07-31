@@ -68,7 +68,7 @@ public class BlockUrlUtils {
             hostFileStr = deadZonePattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = commentPattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = emptyLinePattern.matcher(hostFileStr).replaceAll("");
-            hostFileStr = wwwPattern.matcher(hostFileStr).replaceAll("$1\n*.$1");
+            hostFileStr = wwwPattern.matcher(hostFileStr).replaceAll("||$1^");
             hostFileStr = hostFileStr.toLowerCase();
 
             // Fetch valid domains
