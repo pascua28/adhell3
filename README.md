@@ -108,13 +108,12 @@ Since you can compile it by yourself, you can just assign the same package name 
 * This is just for convenience purpose so that you don't need to make your keys somewhere available when you are on the phone, hence this only works on a new installation
 
 ### Domain prefix
-* Prefix all domains, e.g. with `* ` or `*.` or nothing
-* If you don't define the prefix, all domains will be prefixed with `*` like current behavior
-* If the prefix `*.`, beware that the domain count will be doubled
+* Prefix all domains (with the exception of Filter Lists) with * or nothing.
+* Valid `domain.prefix` options: `domain.prefix=true`, `domain.prefix=false`
+* If you choose not to define a prefixing option, domains will be prefixed with `*` by default.
 * Put `domain.prefix` in `app.properties`
-* `domain.prefix=*` -> prefix all domains with `*`
-* `domain.prefix=*.` -> prefix all domains with `*.` while keeping the original domain as it is
-* `domain.prefix=` -> don't prefix anything, keep all domains as they are
+* `domain.prefix=true` -> prefix all domains with `*`
+* `domain.prefix=false` -> don't prefix anything, keep domains as they are
 * nothing -> prefix all domains with `*` as default
 
 ### Hidden features
