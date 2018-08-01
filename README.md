@@ -110,11 +110,11 @@ Since you can compile it by yourself, you can just assign the same package name 
 ### Domain prefix
 * Prefix all domains (with the exception of Filter Lists) with * or nothing.
 * Valid `domain.prefix` options: `domain.prefix=true`, `domain.prefix=false`
-* If you choose not to define a prefixing option, domains will be prefixed with `*` by default.
+* If you choose not to define a prefixing option, domains will not be prefixed.
 * Put `domain.prefix` in `app.properties`
 * `domain.prefix=true` -> prefix all domains with `*`
 * `domain.prefix=false` -> don't prefix anything, keep domains as they are
-* nothing -> prefix all domains with `*` as default
+* nothing -> no prefix
 
 ### Hidden features
 * Beware that enabling some hidden features may cause the device to malfunction if they are not used with precaution, especially when disabling system apps. Enable them at your own risk. 

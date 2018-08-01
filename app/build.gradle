@@ -26,7 +26,7 @@ android {
         def appPropsFile = file('app.properties')
         def packageName = ""
         def domainLimit = "15000"
-        def domainPrefix = "true"
+        def domainPrefix = "false"
         def sklKey = ""
         def backwardsKey = ""
         def disableApps = "false"
