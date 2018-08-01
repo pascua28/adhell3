@@ -41,9 +41,6 @@ public class BlockUrlUtils {
     // Pattern to detect empty lines
     private static final Pattern emptyLinePattern = Pattern.compile("(?im)^\\s*");
 
-    // Pattern to detect WWW
-    private static final Pattern wwwPattern = Pattern.compile("(?im)^www(?:[0-9]{1,3})?(?:\\.)(.+)$");
-
     @NonNull
     public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException, URISyntaxException {
         Date start = new Date();
@@ -68,7 +65,6 @@ public class BlockUrlUtils {
             hostFileStr = deadZonePattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = commentPattern.matcher(hostFileStr).replaceAll("");
             hostFileStr = emptyLinePattern.matcher(hostFileStr).replaceAll("");
-            hostFileStr = wwwPattern.matcher(hostFileStr).replaceAll("||$1^");
             hostFileStr = hostFileStr.toLowerCase();
 
             // Fetch valid domains
