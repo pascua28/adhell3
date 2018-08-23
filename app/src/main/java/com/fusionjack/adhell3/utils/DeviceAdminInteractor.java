@@ -29,6 +29,7 @@ import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODE
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_9;
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_0;
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_1;
+import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_2;
 
 public final class DeviceAdminInteractor {
     private static final int RESULT_ENABLE = 42;
@@ -189,6 +190,7 @@ public final class DeviceAdminInteractor {
             case KNOX_2_9:
             case KNOX_3_0:
             case KNOX_3_1:
+            case KNOX_3_2:
                 return true;
             default:
                 return false;
