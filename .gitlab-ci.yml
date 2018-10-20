@@ -1,0 +1,28 @@
+image: javiersantos/android-ci:28.0.3
+before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - chmod +x ./gradlew
+    - echo "package.name=com.knox.blocker" >> ./app/app.properties
+    - echo "domain.limit=50000" >> ./app/app.properties
+    - echo "skl.key=87SRX-CHU3J-A8OHH" >> ./app/app.properties
+    #- echo "backwards.key=" ./app/app.properties
+    - echo "domain.prefix=true" >> ./app/app.properties
+    - echo "enable.disableApps=true" >> ./app/app.properties
+    - echo "enable.appComponent=true" >> ./app/app.properties
+
+
+cache:
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - .gradle/
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - ./gradlew  clean installDebug
+  artifacts:
+    paths:
+      - app/build/outputs/apk
