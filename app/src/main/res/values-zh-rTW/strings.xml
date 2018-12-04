@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Adhell 3</string>
+
     <string name="domain_rules_enabled">網域規則已開啟。</string>
     <string name="domain_rules_disabled">網域規則已關閉。</string>
     <string name="domain_rules_info">
