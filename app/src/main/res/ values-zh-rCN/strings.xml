@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Adhell 3</string>
+
     <string name="domain_rules_enabled">域名规则已开启。</string>
     <string name="domain_rules_disabled">域名规则已关闭。</string>
     <string name="domain_rules_info">
