@@ -29,7 +29,7 @@
         android:layout_alignParentEnd="true"
         fab:fab_addButtonColorNormal="@color/colorFab"
         fab:fab_addButtonColorPressed="@color/colorSelector"
-        fab:fab_addButtonPlusIconColor="@color/colorPrimaryLight"
+        fab:fab_addButtonPlusIconColor="@color/colorText"
         fab:fab_labelStyle="@style/menu_labels_style"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="5dp"

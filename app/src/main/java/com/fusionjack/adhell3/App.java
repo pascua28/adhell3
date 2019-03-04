@@ -2,6 +2,7 @@ package com.fusionjack.adhell3;
 
 
 import android.app.Application;
+import android.support.v7.app.AppCompatDelegate;
 
 import com.fusionjack.adhell3.dagger.component.AppComponent;
 import com.fusionjack.adhell3.dagger.component.DaggerAppComponent;
@@ -20,6 +21,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
         appComponent = initDagger(instance);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
     }
 
     protected AppComponent initDagger(App application) {

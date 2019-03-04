@@ -1,9 +1,11 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionBarSize">70dp</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
         <item name="android:textColor">@color/colorText</item>
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">true</item>
@@ -19,7 +21,7 @@
         <item name="tabPaddingStart">5dp</item>
         <item name="tabPaddingEnd">5dp</item>
         <item name="tabTextAppearance">@style/ManagementTabTextAppearance</item>
-        <item name="tabSelectedTextColor">@color/colorPrimaryDark</item>
+        <item name="tabSelectedTextColor">@color/colorText</item>
     </style>
 
     <style name="ManagementTabTextAppearance" parent="TextAppearance.Design.Tab">
@@ -40,7 +42,7 @@
     </style>
 
     <style name="menu_labels_style">
-        <item name="android:background">@drawable/fab_label_background</item>
+        <!--<item name="android:background">@drawable/fab_label_background</item>-->
         <item name="android:textColor">@color/colorText</item>
     </style>
 

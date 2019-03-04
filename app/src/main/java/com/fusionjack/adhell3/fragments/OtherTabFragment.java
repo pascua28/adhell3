@@ -1,8 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -12,6 +14,8 @@ import android.view.ViewGroup;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
+
+import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.APP_COMPONENT_PAGE;
 
 public class OtherTabFragment extends Fragment {
 
@@ -38,6 +42,31 @@ public class OtherTabFragment extends Fragment {
         ViewPager viewPager = view.findViewById(R.id.others_viewpager);
         viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), getContext()));
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setOnTabSelectedListener(
+                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        super.onTabSelected(tab);
+                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+
+                    @Override
+                    public void onTabUnselected(TabLayout.Tab tab) {
+                        super.onTabUnselected(tab);
+                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorText);
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+
+                    @Override
+                    public void onTabReselected(TabLayout.Tab tab) {
+                        super.onTabReselected(tab);
+                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+                }
+        );
 
         int imageIndex = BuildConfig.APP_COMPONENT ? 0 : 1;
         int tabCount = viewPager.getAdapter().getCount();
@@ -45,7 +74,14 @@ public class OtherTabFragment extends Fragment {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             if (tab != null) {
                 tab.setIcon(imageResId[i]);
+                int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
+                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
             }
+        }
+
+        TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
+        if (tab != null) {
+            tab.select();
         }
 
         return view;

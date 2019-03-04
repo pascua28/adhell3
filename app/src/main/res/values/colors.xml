@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3e2723</color>
-    <color name="colorPrimaryDark">#1b0000</color>
-    <color name="colorPrimaryLight">#6a4f4b</color>
-    <color name="colorAccent">#6d4c41</color>
-    <color name="colorText">@color/colorAccent</color>
-    <color name="colorBorder">#efdcd5</color>
-    <color name="colorSelector">#d7ccc8</color>
-    <color name="colorFab">@color/colorBorder</color>
-    <color name="colorButton">@color/colorBorder</color>
-    <color name="colorBottomNavSelected">@android:color/white</color>
-    <color name="colorBottomNavUnselected">#BCAAA4</color>
+    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimaryDark">#222222</color>
+    <color name="colorPrimaryLight">#aaaaaa</color>
+    <color name="colorAccent">#448AFF</color>
+    <color name="colorText">#ffffff</color>
+    <color name="colorBorder">#333</color>
+    <color name="colorSelector">@color/colorPrimaryDark</color>
+    <color name="colorFab">@color/colorAccent</color>
+    <color name="colorButton">@color/colorAccent</color>
+    <color name="colorBottomNavSelected">@color/colorAccent</color>
+    <color name="colorBottomNavUnselected">@android:color/white</color>
 </resources>
