@@ -35,7 +35,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         fab:fab_addButtonColorNormal="@color/colorFab"
-        fab:fab_addButtonColorPressed="@color/colorSelector"
+        fab:fab_addButtonColorPressed="@color/colorFab"
         fab:fab_addButtonPlusIconColor="@color/colorText"
         fab:fab_labelStyle="@style/menu_labels_style"
         fab:fab_labelsPosition="left"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorFab"
             fab:fab_title="@string/dialog_set_dns_title"
-            fab:fab_colorPressed="@color/colorSelector"/>
+            fab:fab_colorPressed="@color/colorFab"/>
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 

@@ -58,6 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorFab"
+            fab:fab_colorPressed="@color/colorFab"
             fab:fab_title="@string/dialog_add_provider_title"/>
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
