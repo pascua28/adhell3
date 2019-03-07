@@ -16,6 +16,7 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
 
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.APP_COMPONENT_PAGE;
+import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAGE;
 
 public class OtherTabFragment extends Fragment {
 
@@ -24,9 +25,14 @@ public class OtherTabFragment extends Fragment {
             R.drawable.ic_dns_black_24dp,
             R.drawable.ic_settings_black_24dp
     };
+    private String viewpagerPosition;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Bundle bundle = getArguments();
+        if (bundle != null){
+            viewpagerPosition = getArguments().getString("viewpager_position");
+        }
         getActivity().setTitle("Others");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         if (parentActivity.getSupportActionBar() != null) {
@@ -79,9 +85,17 @@ public class OtherTabFragment extends Fragment {
             }
         }
 
-        TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
-        if (tab != null) {
-            tab.select();
+        if(viewpagerPosition == "Settings"){
+            TabLayout.Tab tab = tabLayout.getTabAt(SETTINGS_PAGE);
+            if (tab != null) {
+                tab.select();
+            }
+        }
+        else {
+            TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
+            if (tab != null) {
+                tab.select();
+            }
         }
 
         return view;
