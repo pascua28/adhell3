@@ -61,6 +61,28 @@
                 <action android:name="edm.intent.action.license.status" />
             </intent-filter>
         </receiver>
+		
+        <service
+            android:name="com.fusionjack.adhell3.utils.CameraTileService"
+            android:icon="@drawable/ic_cam_off"
+            android:label="@string/qs_camera_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.fusionjack.adhell3.utils.MicrophoneTileService"
+            android:icon="@drawable/ic_mic_off"
+            android:label="@string/qs_microphone_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

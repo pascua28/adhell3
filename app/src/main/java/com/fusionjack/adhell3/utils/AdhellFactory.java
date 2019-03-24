@@ -21,6 +21,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.samsung.android.knox.AppIdentity;
+import com.samsung.android.knox.restriction.RestrictionPolicy;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
@@ -63,6 +64,10 @@ public final class AdhellFactory {
     @Inject
     KnoxEnterpriseLicenseManager knoxEnterpriseLicenseManager;
 
+    @Nullable
+    @Inject
+    RestrictionPolicy restrictionPolicy;
+
     private AdhellFactory() {
         App.get().getAppComponent().inject(this);
     }
@@ -92,8 +97,42 @@ public final class AdhellFactory {
         return packageManager;
     }
 
-    public SharedPreferences getSharedPreferences() {
+    SharedPreferences getSharedPreferences() {
         return sharedPreferences;
+    }
+
+    Boolean getCameraState() {
+        try {
+            return restrictionPolicy.isCameraEnabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    void setCameraState(boolean newState) {
+        try {
+            restrictionPolicy.setCameraState(newState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    Boolean getMicrophoneState() {
+        try {
+            return restrictionPolicy.isMicrophoneEnabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    void setMicrophoneState(boolean newState) {
+        try {
+            restrictionPolicy.setMicrophoneState(newState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void createNotSupportedDialog(Context context) {

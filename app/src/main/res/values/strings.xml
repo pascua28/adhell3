@@ -229,4 +229,10 @@
         \n
         \nAdhell3 is licensed under a <a href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License.</a>
     </string>
+    <string name="qs_camera_label">Cameras switch</string>
+    <string name="qs_camera_on">Cameras enabled</string>
+    <string name="qs_camera_off">Cameras disabled</string>
+    <string name="qs_microphone_label">Microphones switch</string>
+    <string name="qs_microphone_on">Microphones enabled</string>
+    <string name="qs_microphone_off">Microphones disabled</string>
 </resources>
