@@ -235,4 +235,10 @@
     <string name="qs_microphone_label">Microphones switch</string>
     <string name="qs_microphone_on">Microphones enabled</string>
     <string name="qs_microphone_off">Microphones disabled</string>
+    <string name="stop_app_dialog_title">Stop running app ?</string>
+    <string name="stop_app_dialog_text">Are you sure you want to stop \'%1$s\' ?</string>
+    <string name="stopped_app">Application \'%1$s\' stopped</string>
+    <string name="iv_stop_button_desc">Stop</string>
+    <string name="app_list_refreshed">Applications list refreshed</string>
+    <string name="iv_refresh_button_desc">Refresh</string>
 </resources>

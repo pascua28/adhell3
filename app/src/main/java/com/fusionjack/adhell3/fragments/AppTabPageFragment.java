@@ -1,7 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -9,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +30,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
+
 
 public class AppTabPageFragment extends AppFragment {
     private static final String ARG_PAGE = "page";
@@ -108,6 +113,20 @@ public class AppTabPageFragment extends AppFragment {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                     AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
                     new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
+                });
+            }
+
+            if (page == PACKAGE_DISABLER_PAGE) {
+                View finalView = view;
+                ImageView refreshButton = view.findViewById(R.id.refreshButton);
+                int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+                refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                refreshButton.setOnClickListener(v -> {
+                    loadAppList(type);
+                    Snackbar snackBar = Snackbar.make(finalView, context.getResources().getText(R.string.app_list_refreshed), Snackbar.LENGTH_SHORT);
+                    TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                    tv.setTextColor(Color.WHITE);
+                    snackBar.show();
                 });
             }
 

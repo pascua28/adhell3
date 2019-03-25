@@ -1,23 +1,30 @@
 package com.fusionjack.adhell3.adapter;
 
+import android.graphics.Color;
+import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -30,11 +37,13 @@ public class AppInfoAdapter extends BaseAdapter {
     private AppRepository.Type appType;
     private Map<String, Drawable> appIcons;
     private Map<String, String> versionNames;
+    private ApplicationPolicy appPolicy;
 
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, boolean reload, Context context) {
         this.applicationInfoList = appInfoList;
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
+        this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -76,6 +85,8 @@ public class AppInfoAdapter extends BaseAdapter {
             holder.infoH = convertView.findViewById(R.id.systemOrNot);
             holder.switchH = convertView.findViewById(R.id.switchDisable);
             holder.imageH = convertView.findViewById(R.id.appIcon);
+            holder.stopH = convertView.findViewById(R.id.stopButton);
+            holder.stopIvH = convertView.findViewById(R.id.stopButtonImageView);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -83,13 +94,47 @@ public class AppInfoAdapter extends BaseAdapter {
 
         AppInfo appInfo = applicationInfoList.get(position);
         holder.nameH.setText(appInfo.appName);
+        holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
         holder.packageH.setText(appInfo.packageName);
+        holder.stopH.setVisibility(View.GONE);
         boolean checked = false;
         switch (appType) {
             case DISABLER:
                 checked = !appInfo.disabled;
                 boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                 holder.switchH.setEnabled(enabled);
+                if (appPolicy.isApplicationRunning(appInfo.packageName) && !appInfo.disabled) {
+                    View finalConvertView = convertView;
+                    holder.nameH.setTextColor(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
+                    holder.stopH.setVisibility(View.VISIBLE);
+                    holder.stopH.setOnClickListener(v -> {
+                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
+                        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
+                        titlTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
+                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                        questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), appInfo.appName));
+
+                        new AlertDialog.Builder(context)
+                                .setView(dialogView)
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                    try {
+                                        appPolicy.stopApp(appInfo.packageName);
+                                        Snackbar snackBar = Snackbar.make(finalConvertView, String.format(context.getResources().getString(R.string.stopped_app), appInfo.appName), Snackbar.LENGTH_SHORT);
+                                        TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                                        tv.setTextColor(Color.WHITE);
+                                        snackBar.show();
+                                        holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
+                                        holder.stopH.setVisibility(View.GONE);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, null).show();
+                        holder.switchH.setClickable(true);
+                        holder.switchH.setFocusable(true);
+                        holder.switchH.setFocusableInTouchMode(false);
+                    });
+                }
                 break;
             case MOBILE_RESTRICTED:
                 checked = !appInfo.mobileRestricted;
@@ -119,7 +164,7 @@ public class AppInfoAdapter extends BaseAdapter {
 
         Drawable icon = appIcons.get(appInfo.packageName);
         if (icon == null) {
-            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon);
+            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon, context.getTheme());
         }
         holder.imageH.setImageDrawable(icon);
 
@@ -132,5 +177,7 @@ public class AppInfoAdapter extends BaseAdapter {
         TextView infoH;
         Switch switchH;
         ImageView imageH;
+        RelativeLayout stopH;
+        ImageView stopIvH;
     }
 }
