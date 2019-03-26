@@ -138,4 +138,21 @@ public interface AppInfoDao {
 
     @Query("SELECT * FROM AppInfo WHERE adhellWhitelisted = 1 OR disabled = 1 OR mobileRestricted = 1 OR wifiRestricted = 1 OR hasCustomDns = 1")
     List<AppInfo> getModifiedApps();
+
+
+    // All user apps
+    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY disabled DESC, appName ASC")
+    List<AppInfo> getAllUserApps();
+
+    // All system apps
+    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY disabled DESC, appName ASC")
+    List<AppInfo> getAllUserApps(String str);
+
+    // All user apps
+    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY disabled DESC, appName ASC")
+    List<AppInfo> getAllSystemApps();
+
+    // All system apps
+    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY disabled DESC, appName ASC")
+    List<AppInfo> getAllSystemApps(String str);
 }

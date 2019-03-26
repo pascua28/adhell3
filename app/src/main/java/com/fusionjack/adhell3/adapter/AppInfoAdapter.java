@@ -1,19 +1,18 @@
 package com.fusionjack.adhell3.adapter;
 
-import android.graphics.Color;
-import android.support.v7.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -38,6 +37,9 @@ public class AppInfoAdapter extends BaseAdapter {
     private Map<String, Drawable> appIcons;
     private Map<String, String> versionNames;
     private ApplicationPolicy appPolicy;
+
+    public static String RUNNING_TAG = "@@@RUNNING@@@" ;
+
 
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, boolean reload, Context context) {
         this.applicationInfoList = appInfoList;
@@ -75,6 +77,8 @@ public class AppInfoAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        boolean isAppRunning = false;
+        String appName;
         Context context = contextReference.get();
         ViewHolder holder;
         if (convertView == null) {
@@ -93,7 +97,12 @@ public class AppInfoAdapter extends BaseAdapter {
         }
 
         AppInfo appInfo = applicationInfoList.get(position);
-        holder.nameH.setText(appInfo.appName);
+        appName = appInfo.appName;
+        if (appInfo.appName.contains(RUNNING_TAG)) {
+            isAppRunning = true;
+            appName = appInfo.appName.replace(RUNNING_TAG, "");
+        }
+        holder.nameH.setText(appName);
         holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
         holder.packageH.setText(appInfo.packageName);
         holder.stopH.setVisibility(View.GONE);
@@ -103,37 +112,40 @@ public class AppInfoAdapter extends BaseAdapter {
                 checked = !appInfo.disabled;
                 boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                 holder.switchH.setEnabled(enabled);
-                if (appPolicy.isApplicationRunning(appInfo.packageName) && !appInfo.disabled) {
+                if (isAppRunning) {
                     View finalConvertView = convertView;
                     holder.nameH.setTextColor(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
-                    holder.stopH.setVisibility(View.VISIBLE);
-                    holder.stopH.setOnClickListener(v -> {
-                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-                        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                        titlTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
-                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                        questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), appInfo.appName));
+                    if (!appInfo.disabled) {
+                        holder.stopH.setVisibility(View.VISIBLE);
+                        String finalAppName = appName;
+                        holder.stopH.setOnClickListener(v -> {
+                            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
+                            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
+                            titlTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
+                            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                            questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), finalAppName));
 
-                        new AlertDialog.Builder(context)
-                                .setView(dialogView)
-                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                    try {
-                                        appPolicy.stopApp(appInfo.packageName);
-                                        Snackbar snackBar = Snackbar.make(finalConvertView, String.format(context.getResources().getString(R.string.stopped_app), appInfo.appName), Snackbar.LENGTH_SHORT);
-                                        TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                                        tv.setTextColor(Color.WHITE);
-                                        snackBar.show();
-                                        holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
-                                        holder.stopH.setVisibility(View.GONE);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.no, null).show();
-                        holder.switchH.setClickable(true);
-                        holder.switchH.setFocusable(true);
-                        holder.switchH.setFocusableInTouchMode(false);
-                    });
+                            new AlertDialog.Builder(context)
+                                    .setView(dialogView)
+                                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                        try {
+                                            appPolicy.stopApp(appInfo.packageName);
+                                            Snackbar snackBar = Snackbar.make(finalConvertView, String.format(context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT);
+                                            TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                                            tv.setTextColor(Color.WHITE);
+                                            snackBar.show();
+                                            holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
+                                            holder.stopH.setVisibility(View.GONE);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    })
+                                    .setNegativeButton(android.R.string.no, null).show();
+                            holder.switchH.setClickable(true);
+                            holder.switchH.setFocusable(true);
+                            holder.switchH.setFocusableInTouchMode(false);
+                        });
+                    }
                 }
                 break;
             case MOBILE_RESTRICTED:

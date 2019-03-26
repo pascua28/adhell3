@@ -32,8 +32,10 @@ public class AppFragment extends Fragment {
 
     private List<AppInfo> appList;
     protected AppInfoAdapter adapter;
+    protected FilterAppInfo filterAppInfo;
 
     protected void initAppModel(AppRepository.Type type) {
+        this.filterAppInfo = new FilterAppInfo();
         this.context = getContext();
         this.type = type;
         this.searchText = "";
@@ -66,7 +68,7 @@ public class AppFragment extends Fragment {
     }
 
     protected void loadAppList(AppRepository.Type type) {
-        viewModel.loadAppList(type, observer);
+        viewModel.loadAppList(type, observer, filterAppInfo);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class AppFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                viewModel.loadAppList(text, type, observer);
+                viewModel.loadAppList(text, type, observer, filterAppInfo);
                 return false;
             }
         });
@@ -105,4 +107,5 @@ public class AppFragment extends Fragment {
             searchView.setIconified(true);
         }
     }
+
 }

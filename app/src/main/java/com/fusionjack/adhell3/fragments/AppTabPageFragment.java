@@ -5,8 +5,10 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -118,8 +120,9 @@ public class AppTabPageFragment extends AppFragment {
 
             if (page == PACKAGE_DISABLER_PAGE) {
                 View finalView = view;
-                ImageView refreshButton = view.findViewById(R.id.refreshButton);
                 int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+
+                ImageView refreshButton = view.findViewById(R.id.refreshButton);
                 refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                 refreshButton.setOnClickListener(v -> {
                     loadAppList(type);
@@ -127,6 +130,38 @@ public class AppTabPageFragment extends AppFragment {
                     TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
                     snackBar.show();
+                });
+
+                ImageView filterButton = view.findViewById(R.id.filterButton);
+                filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                filterButton.setOnClickListener(v -> {
+                    PopupMenu popup = new PopupMenu(context, filterButton);
+                    popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+                    popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
+                    popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
+                    popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
+                    popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
+                    MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
+                    popup.setOnMenuItemClickListener(item -> {
+                        item.setChecked(!item.isChecked());
+                        switch (item.getItemId()) {
+                            case R.id.filterSystemApps:
+                                filterAppInfo.setSystemAppsFilter(item.isChecked());
+                                break;
+                            case R.id.filterUserApps:
+                                filterAppInfo.setUserAppsFilter(item.isChecked());
+                                break;
+                            case R.id.filterRunningApps:
+                                filterAppInfo.setRunningAppsFilter(item.isChecked());
+                                break;
+                            case R.id.filterStoppedApps:
+                                filterAppInfo.setStoppedAppsFilter(item.isChecked());
+                                break;
+                        }
+                        loadAppList(type);
+                        return false;
+                    });
+                    popup.show();
                 });
             }
 
@@ -212,3 +247,4 @@ public class AppTabPageFragment extends AppFragment {
             .setNegativeButton(android.R.string.no, null).show();
     }
 }
+

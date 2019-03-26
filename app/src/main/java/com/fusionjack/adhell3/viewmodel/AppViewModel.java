@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.fragments.FilterAppInfo;
 
 import java.util.List;
 
@@ -19,15 +20,15 @@ public class AppViewModel extends ViewModel {
         this.repository = new AppRepository();
     }
 
-    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer) {
-        repository.loadAppList("", type)
+    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
+        repository.loadAppList("", type, filterAppInfo)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
 
-    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer) {
-        repository.loadAppList(text, type)
+    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
+        repository.loadAppList(text, type, filterAppInfo)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);

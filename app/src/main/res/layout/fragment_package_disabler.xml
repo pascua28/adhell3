@@ -14,7 +14,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginRight="70dp"
         android:text="@string/package_disabler_info"
         android:background="@drawable/border"/>
 
@@ -30,6 +30,21 @@
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="false" />
+
+
+        <ImageView
+            android:id="@+id/filterButton"
+            android:contentDescription="@string/iv_refresh_button_desc"
+            android:src="@drawable/ic_filter_white"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="40dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="false" />
+
 
     </RelativeLayout>
 

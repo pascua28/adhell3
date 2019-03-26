@@ -241,4 +241,8 @@
     <string name="iv_stop_button_desc">Stop</string>
     <string name="app_list_refreshed">Applications list refreshed</string>
     <string name="iv_refresh_button_desc">Refresh</string>
+    <string name="menu_item_show_system_apps">Show System Apps</string>
+    <string name="menu_item_show_user_apps">Show User Apps</string>
+    <string name="menu_item_show_running_apps">Show running Apps</string>
+    <string name="menu_item_show_stopped_apps">Show stopped Apps</string>
 </resources>
