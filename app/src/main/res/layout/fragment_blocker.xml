@@ -189,7 +189,7 @@
             android:id="@+id/infoTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="7dp"
             android:text="@string/last_day_blocked"
             android:background="@drawable/border"/>
 

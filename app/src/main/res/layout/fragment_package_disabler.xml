@@ -1,10 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/headerLayout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
@@ -13,24 +11,13 @@
         android:id="@+id/infoTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginRight="70dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
+        android:layout_marginEnd="35dp"
         android:text="@string/package_disabler_info"
         android:background="@drawable/border"/>
-
-        <ImageView
-            android:id="@+id/refreshButton"
-            android:contentDescription="@string/iv_refresh_button_desc"
-            android:src="@drawable/ic_refresh_white"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:focusableInTouchMode="false" />
-
 
         <ImageView
             android:id="@+id/filterButton"
@@ -40,7 +27,7 @@
             android:layout_height="25dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="40dp"
+            android:layout_marginEnd="25dp"
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="false" />
@@ -53,7 +40,6 @@
         android:id="@+id/disablerSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_below="@id/headerLayout">
 
         <ListView
@@ -62,5 +48,15 @@
             android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBarAppDisabler"
+        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_width="150dp"
+        android:layout_height="150dp" />
 
 </RelativeLayout>

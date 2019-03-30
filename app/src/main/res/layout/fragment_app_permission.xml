@@ -8,7 +8,10 @@
         android:id="@+id/infoTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
         android:text="@string/app_permission_info"
         android:background="@drawable/border"/>
 
@@ -16,7 +19,6 @@
         android:id="@+id/permissionInfoListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_below="@id/infoTextView"/>
 
 </RelativeLayout>

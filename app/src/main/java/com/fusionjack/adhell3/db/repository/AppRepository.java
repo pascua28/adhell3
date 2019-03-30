@@ -1,5 +1,10 @@
 package com.fusionjack.adhell3.db.repository;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+import android.widget.ProgressBar;
+
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -25,11 +30,14 @@ public class AppRepository {
         DNS
     }
 
-    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo) {
+    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar progressBar) {
         return Single.create(emitter -> {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String filterText = '%' + text + '%';
             List<AppInfo> list = new ArrayList<>();
+            if (progressBar != null) {
+                showProgressBar(progressBar);
+            }
             switch (type) {
                 case DISABLER:
                     ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
@@ -109,7 +117,20 @@ public class AppRepository {
                     list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
                     break;
             }
+            if (progressBar != null) {
+                hideProgressBar(progressBar);
+            }
             emitter.onSuccess(list);
         });
+    }
+
+    private void hideProgressBar(ProgressBar progressBar) {
+        new Handler(Looper.getMainLooper()).post(() ->
+                progressBar.setVisibility(View.GONE));
+    }
+
+    private void showProgressBar(ProgressBar progressBar) {
+        new Handler(Looper.getMainLooper()).post(() ->
+                progressBar.setVisibility(View.VISIBLE));
     }
 }

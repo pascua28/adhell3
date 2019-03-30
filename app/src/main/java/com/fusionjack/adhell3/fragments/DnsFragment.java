@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +39,9 @@ public class DnsFragment extends AppFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        type = AppRepository.Type.DNS;
 
-        initAppModel(AppRepository.Type.DNS);
+        initAppModel(type);
     }
 
     @Override
@@ -53,6 +55,8 @@ public class DnsFragment extends AppFragment {
 
     private void toggleAllApps() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
+        ProgressBar loadingBar = parentView.findViewById(R.id.progressBarDns);
         TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
         titlTextView.setText(R.string.dialog_toggle_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -86,7 +90,7 @@ public class DnsFragment extends AppFragment {
 
                     AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
 
-                    loadAppList(type);
+                    loadAppList(type, loadingBar);
                 })
             )
             .setNegativeButton(android.R.string.no, null).show();
@@ -97,6 +101,7 @@ public class DnsFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_dns, container, false);
+        ProgressBar loadingBar = view.findViewById(R.id.progressBarDns);
 
         AppFlag appFlag = AppFlag.createDnsFlag();
         ListView listView = view.findViewById(R.id.dns_apps_list);
@@ -110,7 +115,7 @@ public class DnsFragment extends AppFragment {
 
         SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.dnsSwipeContainer);
         dnsSwipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type);
+                loadAppList(type, loadingBar);
                 dnsSwipeContainer.setRefreshing(false);
                 resetSearchView();
         });
@@ -161,6 +166,7 @@ public class DnsFragment extends AppFragment {
                     .setNegativeButton(android.R.string.no, null).show();
         });
 
+        loadAppList(type, loadingBar);
         return view;
     }
 }

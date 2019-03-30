@@ -11,7 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fusionjack.adhell3.BuildConfig;
@@ -21,24 +23,32 @@ import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppPreferences;
 
 public class AppComponentFragment extends AppFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        type = AppRepository.Type.COMPONENT;
 
-        initAppModel(AppRepository.Type.COMPONENT);
+        initAppModel(type);
 
-        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT) {
+        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !AppPreferences.getInstance().getWarningDialogAppComponentDontShow()) {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+            CheckBox dontShowAgain =  dialogView.findViewById(R.id.questionDontShow);
+            dontShowAgain.setVisibility(View.VISIBLE);
             TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
             titlTextView.setText(R.string.dialog_system_app_components_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_system_app_components_info);
             new AlertDialog.Builder(context)
                     .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, null).show();
+                    .setPositiveButton(android.R.string.yes, ((dialog, which) -> {
+                        if (dontShowAgain.isChecked()) {
+                            AppPreferences.getInstance().setWarningDialogAppComponentDontShow(true);
+                        }
+                    })).show();
         }
     }
 
@@ -73,6 +83,8 @@ public class AppComponentFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_app_component, container, false);
+        ProgressBar loadingBar = view.findViewById(R.id.progressBarAppComponent);
+
 
         AppFlag appFlag = AppFlag.createComponentFlag();
         ListView listView = view.findViewById(appFlag.getLoadLayout());
@@ -96,11 +108,12 @@ public class AppComponentFragment extends AppFragment {
 
         SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
         swipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type);
+            loadAppList(type, loadingBar);
             swipeContainer.setRefreshing(false);
             resetSearchView();
         });
 
+        loadAppList(type, loadingBar);
         return view;
     }
 }

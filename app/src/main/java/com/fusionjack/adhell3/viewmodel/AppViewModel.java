@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3.viewmodel;
 
 import android.arch.lifecycle.ViewModel;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
@@ -20,15 +22,15 @@ public class AppViewModel extends ViewModel {
         this.repository = new AppRepository();
     }
 
-    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
-        repository.loadAppList("", type, filterAppInfo)
+    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo, ProgressBar progressBar) {
+        repository.loadAppList("", type, filterAppInfo, progressBar)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
 
-    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
-        repository.loadAppList(text, type, filterAppInfo)
+    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo, ProgressBar progressBar) {
+        repository.loadAppList(text, type, filterAppInfo, progressBar)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);

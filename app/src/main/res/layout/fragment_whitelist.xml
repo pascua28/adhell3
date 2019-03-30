@@ -9,7 +9,10 @@
         android:id="@+id/noteTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
         android:text="@string/whitelist_info"
         android:background="@drawable/border" />
 
@@ -17,7 +20,6 @@
         android:id="@+id/whiteListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
         android:layout_below="@+id/noteTextView"/>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
@@ -25,14 +27,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         fab:fab_addButtonColorNormal="@color/colorFab"
         fab:fab_addButtonColorPressed="@color/colorFab"
         fab:fab_addButtonPlusIconColor="@android:color/white"
         fab:fab_labelStyle="@style/menu_labels_style"
         android:layout_marginBottom="5dp"
-        android:layout_marginRight="5dp"
         android:layout_marginEnd="5dp">
 
         <com.getbase.floatingactionbutton.FloatingActionButton

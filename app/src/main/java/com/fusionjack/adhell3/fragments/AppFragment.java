@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.fusionjack.adhell3.R;
@@ -63,12 +64,10 @@ public class AppFragment extends Fragment {
         };
 
         AppCache.getInstance(context, null);
-
-        loadAppList(type);
     }
 
-    protected void loadAppList(AppRepository.Type type) {
-        viewModel.loadAppList(type, observer, filterAppInfo);
+    protected void loadAppList(AppRepository.Type type, ProgressBar progressBar) {
+        viewModel.loadAppList(type, observer, filterAppInfo, progressBar);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class AppFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                viewModel.loadAppList(text, type, observer, filterAppInfo);
+                viewModel.loadAppList(text, type, observer, filterAppInfo, null);
                 return false;
             }
         });

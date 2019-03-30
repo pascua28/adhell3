@@ -1,10 +1,8 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,29 +85,35 @@ public class AppTabPageFragment extends AppFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = null;
+        ProgressBar loadingBar = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
                 view = inflater.inflate(R.layout.fragment_package_disabler, container, false);
+                loadingBar = view.findViewById(R.id.progressBarAppDisabler);
                 appFlag = AppFlag.createDisablerFlag();
                 break;
 
             case MOBILE_RESTRICTER_PAGE:
                 view = inflater.inflate(R.layout.fragment_mobile_restricter, container, false);
+                loadingBar = view.findViewById(R.id.progressBarAppMobile);
                 appFlag = AppFlag.createMobileRestrictedFlag();
                 break;
 
             case WIFI_RESTRICTER_PAGE:
                 view = inflater.inflate(R.layout.fragment_wifi_restricter, container, false);
+                loadingBar = view.findViewById(R.id.progressBarAppWifi);
                 appFlag = AppFlag.createWifiRestrictedFlag();
                 break;
 
             case WHITELIST_PAGE:
                 view = inflater.inflate(R.layout.fragment_whitelisted_app, container, false);
+                loadingBar = view.findViewById(R.id.progressBarAppWhitelist);
                 appFlag = AppFlag.createWhitelistedFlag();
                 break;
         }
 
         if (view != null) {
+            ProgressBar finalLoadingBar = loadingBar;
             ListView listView = view.findViewById(appFlag.getLoadLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
@@ -121,16 +126,6 @@ public class AppTabPageFragment extends AppFragment {
             if (page == PACKAGE_DISABLER_PAGE) {
                 View finalView = view;
                 int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
-
-                ImageView refreshButton = view.findViewById(R.id.refreshButton);
-                refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                refreshButton.setOnClickListener(v -> {
-                    loadAppList(type);
-                    Snackbar snackBar = Snackbar.make(finalView, context.getResources().getText(R.string.app_list_refreshed), Snackbar.LENGTH_SHORT);
-                    TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                    tv.setTextColor(Color.WHITE);
-                    snackBar.show();
-                });
 
                 ImageView filterButton = view.findViewById(R.id.filterButton);
                 filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
@@ -158,7 +153,8 @@ public class AppTabPageFragment extends AppFragment {
                                 filterAppInfo.setStoppedAppsFilter(item.isChecked());
                                 break;
                         }
-                        loadAppList(type);
+                        resetSearchView();
+                        loadAppList(type, finalLoadingBar);
                         return false;
                     });
                     popup.show();
@@ -167,14 +163,13 @@ public class AppTabPageFragment extends AppFragment {
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
-                    loadAppList(type);
+                    loadAppList(type, finalLoadingBar);
                     swipeContainer.setRefreshing(false);
                     resetSearchView();
             });
 
-            loadAppList(type);
+            loadAppList(type, loadingBar);
         }
-
         return view;
     }
 
@@ -189,6 +184,8 @@ public class AppTabPageFragment extends AppFragment {
 
     private void enableAllPackages() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
+        final ProgressBar[] loadingBar = {null};
         TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
         titlTextView.setText(R.string.enable_apps_dialog_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -202,6 +199,7 @@ public class AppTabPageFragment extends AppFragment {
                     AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
                     switch (page) {
                         case PACKAGE_DISABLER_PAGE:
+                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppDisabler);
                             ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
                             List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();
                             for (AppInfo app : disabledAppList) {
@@ -215,6 +213,7 @@ public class AppTabPageFragment extends AppFragment {
                             break;
 
                         case MOBILE_RESTRICTER_PAGE:
+                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppMobile);
                             List<AppInfo> mobileAppList = appDatabase.applicationInfoDao().getMobileRestrictedApps();
                             for (AppInfo app : mobileAppList) {
                                 app.mobileRestricted = false;
@@ -224,6 +223,7 @@ public class AppTabPageFragment extends AppFragment {
                             break;
 
                         case WIFI_RESTRICTER_PAGE:
+                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppWifi);
                             List<AppInfo> wifiAppList = appDatabase.applicationInfoDao().getWifiRestrictedApps();
                             for (AppInfo app : wifiAppList) {
                                 app.wifiRestricted = false;
@@ -233,6 +233,7 @@ public class AppTabPageFragment extends AppFragment {
                             break;
 
                         case WHITELIST_PAGE:
+                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppWhitelist);
                             List<AppInfo> whitelistedAppList = appDatabase.applicationInfoDao().getWhitelistedApps();
                             for (AppInfo app : whitelistedAppList) {
                                 app.adhellWhitelisted = false;
@@ -241,7 +242,7 @@ public class AppTabPageFragment extends AppFragment {
                             appDatabase.firewallWhitelistedPackageDao().deleteAll();
                             break;
                     }
-                    loadAppList(type);
+                    loadAppList(type, loadingBar[0]);
                 });
             })
             .setNegativeButton(android.R.string.no, null).show();

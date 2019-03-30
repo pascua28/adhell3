@@ -8,7 +8,10 @@
         android:id="@+id/providerInfoTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
         android:text="@string/provider_info"
         android:background="@drawable/border" />
 
@@ -18,7 +21,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:layout_below="@+id/providerInfoTextView"
-        android:padding="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
         android:text="@string/total_unique_domains"
         android:background="@drawable/border"/>
 
@@ -27,7 +33,6 @@
         android:id="@+id/providerSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_below="@+id/infoTextView">
 
         <ListView
@@ -42,7 +47,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         fab:fab_addButtonColorNormal="@color/colorFab"
         fab:fab_addButtonColorPressed="@color/colorFab"
@@ -50,7 +54,6 @@
         fab:fab_labelsPosition="right"
         fab:fab_labelStyle="@style/menu_labels_style"
         android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
         android:layout_marginStart="5dp">
 
         <com.getbase.floatingactionbutton.FloatingActionButton

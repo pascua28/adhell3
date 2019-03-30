@@ -6,7 +6,10 @@
         android:id="@+id/infoTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
         android:text="@string/whitelisted_app_info"
         android:background="@drawable/border" />
 
@@ -15,7 +18,6 @@
         android:id="@+id/whitelistedSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_below="@id/infoTextView">
 
     <ListView
@@ -24,5 +26,15 @@
         android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBarAppWhitelist"
+        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_width="150dp"
+        android:layout_height="150dp" />
 
 </RelativeLayout>

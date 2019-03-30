@@ -13,6 +13,7 @@ public final class AppPreferences {
     private static final String DNS1 = "dns1";
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
+    private static final String WARNING_DIALOG_APP_COMPONENT = "warningDialogAppComponent";
 
     private AppPreferences() {
         sharedPreferences = AdhellFactory.getInstance().getSharedPreferences();
@@ -111,5 +112,15 @@ public final class AppPreferences {
 
     public String getPasswordHash() {
         return sharedPreferences.getString(PASSWORD, "");
+    }
+
+    public void setWarningDialogAppComponentDontShow(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(WARNING_DIALOG_APP_COMPONENT, enabled);
+        editor.apply();
+    }
+
+    public boolean getWarningDialogAppComponentDontShow() {
+        return sharedPreferences.getBoolean(WARNING_DIALOG_APP_COMPONENT, false);
     }
 }

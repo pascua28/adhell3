@@ -10,7 +10,10 @@
         android:id="@+id/noteTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
         android:text="@string/blacklist_info"
         android:background="@drawable/border" />
 
@@ -18,7 +21,6 @@
         android:id="@+id/blackListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
         android:layout_below="@+id/noteTextView" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
