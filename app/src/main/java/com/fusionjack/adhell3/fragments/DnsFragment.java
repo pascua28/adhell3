@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -57,47 +58,47 @@ public class DnsFragment extends AppFragment {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
         View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
         ProgressBar loadingBar = parentView.findViewById(R.id.progressBarDns);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_toggle_title);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_toggle_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_toggle_info);
         new AlertDialog.Builder(context)
-            .setView(dialogView)
-            .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                AsyncTask.execute(() -> {
-                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
+                        AsyncTask.execute(() -> {
+                            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
 
-                    boolean isAllEnabled = AppPreferences.getInstance().isDnsAllAppsEnabled();
-                    if (isAllEnabled) {
-                        List<AppInfo> dnsApps = appDatabase.applicationInfoDao().getDnsApps();
-                        for (AppInfo app : dnsApps) {
-                            app.hasCustomDns = false;
-                            appDatabase.applicationInfoDao().update(app);
-                        }
-                        appDatabase.dnsPackageDao().deleteAll();
-                    } else {
-                        appDatabase.dnsPackageDao().deleteAll();
-                        List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
-                        for (AppInfo app : userApps) {
-                            app.hasCustomDns = true;
-                            appDatabase.applicationInfoDao().update(app);
-                            DnsPackage dnsPackage = new DnsPackage();
-                            dnsPackage.packageName = app.packageName;
-                            dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                            appDatabase.dnsPackageDao().insert(dnsPackage);
-                        }
-                    }
+                            boolean isAllEnabled = AppPreferences.getInstance().isDnsAllAppsEnabled();
+                            if (isAllEnabled) {
+                                List<AppInfo> dnsApps = appDatabase.applicationInfoDao().getDnsApps();
+                                for (AppInfo app : dnsApps) {
+                                    app.hasCustomDns = false;
+                                    appDatabase.applicationInfoDao().update(app);
+                                }
+                                appDatabase.dnsPackageDao().deleteAll();
+                            } else {
+                                appDatabase.dnsPackageDao().deleteAll();
+                                List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
+                                for (AppInfo app : userApps) {
+                                    app.hasCustomDns = true;
+                                    appDatabase.applicationInfoDao().update(app);
+                                    DnsPackage dnsPackage = new DnsPackage();
+                                    dnsPackage.packageName = app.packageName;
+                                    dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                                    appDatabase.dnsPackageDao().insert(dnsPackage);
+                                }
+                            }
 
-                    AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
+                            AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
 
-                    loadAppList(type, loadingBar);
-                })
-            )
-            .setNegativeButton(android.R.string.no, null).show();
+                            loadAppList(type, loadingBar);
+                        })
+                )
+                .setNegativeButton(android.R.string.no, null).show();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_dns, container, false);
@@ -115,9 +116,9 @@ public class DnsFragment extends AppFragment {
 
         SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.dnsSwipeContainer);
         dnsSwipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type, loadingBar);
-                dnsSwipeContainer.setRefreshing(false);
-                resetSearchView();
+            loadAppList(type, loadingBar);
+            dnsSwipeContainer.setRefreshing(false);
+            resetSearchView();
         });
 
         FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);

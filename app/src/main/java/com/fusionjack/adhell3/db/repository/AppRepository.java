@@ -5,7 +5,6 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -20,15 +19,6 @@ import java.util.List;
 import io.reactivex.Single;
 
 public class AppRepository {
-
-    public enum Type {
-        DISABLER,
-        MOBILE_RESTRICTED,
-        WIFI_RESTRICTED,
-        WHITELISTED,
-        COMPONENT,
-        DNS
-    }
 
     public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar progressBar) {
         return Single.create(emitter -> {
@@ -68,14 +58,15 @@ public class AppRepository {
                     for (AppInfo item : list) {
                         boolean isRunning = false;
                         try {
-                            isRunning =  appPolicy.isApplicationRunning(item.packageName);
+                            isRunning = appPolicy.isApplicationRunning(item.packageName);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         if (filterAppInfo.getRunningAppsFilter() && isRunning) {
                             item.appName = item.appName + AppInfoAdapter.RUNNING_TAG;
                             tempList.add(item);
-                        } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning) tempList.add(item);
+                        } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
+                            tempList.add(item);
                     }
                     list.clear();
                     list.addAll(tempList);
@@ -132,5 +123,14 @@ public class AppRepository {
     private void showProgressBar(ProgressBar progressBar) {
         new Handler(Looper.getMainLooper()).post(() ->
                 progressBar.setVisibility(View.VISIBLE));
+    }
+
+    public enum Type {
+        DISABLER,
+        MOBILE_RESTRICTED,
+        WIFI_RESTRICTED,
+        WHITELISTED,
+        COMPONENT,
+        DNS
     }
 }

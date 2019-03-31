@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,12 +11,12 @@ import com.fusionjack.adhell3.fragments.ComponentTabPageFragment;
 
 public class ComponentPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 3;
-    private String tabTitles[];
-    private String packageName;
+    private final String[] tabTitles;
+    private final String packageName;
 
     public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
         super(fm);
-        tabTitles = new String[] {
+        tabTitles = new String[]{
                 context.getString(R.string.permission_fragment_title),
                 context.getString(R.string.service_fragment_title),
                 context.getString(R.string.receiver_fragment_title)};
@@ -29,7 +30,7 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
     }
 

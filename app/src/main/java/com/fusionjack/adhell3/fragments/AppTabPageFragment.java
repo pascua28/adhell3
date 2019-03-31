@@ -34,14 +34,13 @@ import java.util.List;
 
 
 public class AppTabPageFragment extends AppFragment {
+    public static final int PACKAGE_DISABLER_PAGE = 0;
+    private static final int MOBILE_RESTRICTER_PAGE = 1;
+    private static final int WIFI_RESTRICTER_PAGE = 2;
+    private static final int WHITELIST_PAGE = 3;
     private static final String ARG_PAGE = "page";
     private int page;
     private AppFlag appFlag;
-
-    public static final int PACKAGE_DISABLER_PAGE = 0;
-    public static final int MOBILE_RESTRICTER_PAGE = 1;
-    public static final int WIFI_RESTRICTER_PAGE = 2;
-    public static final int WHITELIST_PAGE = 3;
 
     public static AppTabPageFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -124,7 +123,6 @@ public class AppTabPageFragment extends AppFragment {
             }
 
             if (page == PACKAGE_DISABLER_PAGE) {
-                View finalView = view;
                 int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
 
                 ImageView filterButton = view.findViewById(R.id.filterButton);
@@ -163,9 +161,9 @@ public class AppTabPageFragment extends AppFragment {
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
-                    loadAppList(type, finalLoadingBar);
-                    swipeContainer.setRefreshing(false);
-                    resetSearchView();
+                loadAppList(type, finalLoadingBar);
+                swipeContainer.setRefreshing(false);
+                resetSearchView();
             });
 
             loadAppList(type, loadingBar);
@@ -186,66 +184,66 @@ public class AppTabPageFragment extends AppFragment {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
         View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
         final ProgressBar[] loadingBar = {null};
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.enable_apps_dialog_title);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.enable_apps_dialog_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.enable_apps_dialog_text);
 
         new AlertDialog.Builder(context)
-            .setView(dialogView)
-            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
-                AsyncTask.execute(() -> {
-                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                    switch (page) {
-                        case PACKAGE_DISABLER_PAGE:
-                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppDisabler);
-                            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-                            List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();
-                            for (AppInfo app : disabledAppList) {
-                                app.disabled = false;
-                                if (appPolicy != null) {
-                                    appPolicy.setEnableApplication(app.packageName);
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                    Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
+                    AsyncTask.execute(() -> {
+                        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                        switch (page) {
+                            case PACKAGE_DISABLER_PAGE:
+                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppDisabler);
+                                ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                                List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();
+                                for (AppInfo app : disabledAppList) {
+                                    app.disabled = false;
+                                    if (appPolicy != null) {
+                                        appPolicy.setEnableApplication(app.packageName);
+                                    }
+                                    appDatabase.applicationInfoDao().update(app);
                                 }
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.disabledPackageDao().deleteAll();
-                            break;
+                                appDatabase.disabledPackageDao().deleteAll();
+                                break;
 
-                        case MOBILE_RESTRICTER_PAGE:
-                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppMobile);
-                            List<AppInfo> mobileAppList = appDatabase.applicationInfoDao().getMobileRestrictedApps();
-                            for (AppInfo app : mobileAppList) {
-                                app.mobileRestricted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.MOBILE_RESTRICTED_TYPE);
-                            break;
+                            case MOBILE_RESTRICTER_PAGE:
+                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppMobile);
+                                List<AppInfo> mobileAppList = appDatabase.applicationInfoDao().getMobileRestrictedApps();
+                                for (AppInfo app : mobileAppList) {
+                                    app.mobileRestricted = false;
+                                    appDatabase.applicationInfoDao().update(app);
+                                }
+                                appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.MOBILE_RESTRICTED_TYPE);
+                                break;
 
-                        case WIFI_RESTRICTER_PAGE:
-                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppWifi);
-                            List<AppInfo> wifiAppList = appDatabase.applicationInfoDao().getWifiRestrictedApps();
-                            for (AppInfo app : wifiAppList) {
-                                app.wifiRestricted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.WIFI_RESTRICTED_TYPE);
-                            break;
+                            case WIFI_RESTRICTER_PAGE:
+                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppWifi);
+                                List<AppInfo> wifiAppList = appDatabase.applicationInfoDao().getWifiRestrictedApps();
+                                for (AppInfo app : wifiAppList) {
+                                    app.wifiRestricted = false;
+                                    appDatabase.applicationInfoDao().update(app);
+                                }
+                                appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.WIFI_RESTRICTED_TYPE);
+                                break;
 
-                        case WHITELIST_PAGE:
-                            loadingBar[0] = parentView.findViewById(R.id.progressBarAppWhitelist);
-                            List<AppInfo> whitelistedAppList = appDatabase.applicationInfoDao().getWhitelistedApps();
-                            for (AppInfo app : whitelistedAppList) {
-                                app.adhellWhitelisted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.firewallWhitelistedPackageDao().deleteAll();
-                            break;
-                    }
-                    loadAppList(type, loadingBar[0]);
-                });
-            })
-            .setNegativeButton(android.R.string.no, null).show();
+                            case WHITELIST_PAGE:
+                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppWhitelist);
+                                List<AppInfo> whitelistedAppList = appDatabase.applicationInfoDao().getWhitelistedApps();
+                                for (AppInfo app : whitelistedAppList) {
+                                    app.adhellWhitelisted = false;
+                                    appDatabase.applicationInfoDao().update(app);
+                                }
+                                appDatabase.firewallWhitelistedPackageDao().deleteAll();
+                                break;
+                        }
+                        loadAppList(type, loadingBar[0]);
+                    });
+                })
+                .setNegativeButton(android.R.string.no, null).show();
     }
 }
 

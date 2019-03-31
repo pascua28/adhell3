@@ -33,9 +33,6 @@ public interface BlockUrlProviderDao {
     @Query("SELECT * FROM BlockUrlProviders WHERE url = :url")
     BlockUrlProvider getByUrl(String url);
 
-    @Query("SELECT * FROM BlockUrlProviders WHERE _id = :id")
-    BlockUrlProvider getById(long id);
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long[] insertAll(BlockUrlProvider... urlProviders);
 

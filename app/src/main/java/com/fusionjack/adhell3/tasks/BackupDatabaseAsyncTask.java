@@ -8,8 +8,8 @@ import android.support.v7.app.AlertDialog;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 
 public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
-    private ProgressDialog dialog;
-    private AlertDialog.Builder builder;
+    private final ProgressDialog dialog;
+    private final AlertDialog.Builder builder;
 
     public BackupDatabaseAsyncTask(Activity activity) {
         dialog = new ProgressDialog(activity);

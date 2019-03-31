@@ -3,9 +3,6 @@ package com.fusionjack.adhell3.utils;
 import android.content.SharedPreferences;
 
 public final class AppPreferences {
-    private static AppPreferences instance;
-    private SharedPreferences sharedPreferences;
-
     private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
@@ -14,6 +11,8 @@ public final class AppPreferences {
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
     private static final String WARNING_DIALOG_APP_COMPONENT = "warningDialogAppComponent";
+    private static AppPreferences instance;
+    private final SharedPreferences sharedPreferences;
 
     private AppPreferences() {
         sharedPreferences = AdhellFactory.getInstance().getSharedPreferences();
@@ -82,14 +81,14 @@ public final class AppPreferences {
         editor.apply();
     }
 
+    public int getBlockedDomainsCount() {
+        return sharedPreferences.getInt(BLOCKED_DOMAINS_COUNT, 0);
+    }
+
     public void setBlockedDomainsCount(int count) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(BLOCKED_DOMAINS_COUNT, count);
         editor.apply();
-    }
-
-    public int getBlockedDomainsCount() {
-        return sharedPreferences.getInt(BLOCKED_DOMAINS_COUNT, 0);
     }
 
     public void resetBlockedDomainsCount() {
@@ -114,13 +113,13 @@ public final class AppPreferences {
         return sharedPreferences.getString(PASSWORD, "");
     }
 
+    public boolean getWarningDialogAppComponentDontShow() {
+        return sharedPreferences.getBoolean(WARNING_DIALOG_APP_COMPONENT, false);
+    }
+
     public void setWarningDialogAppComponentDontShow(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(WARNING_DIALOG_APP_COMPONENT, enabled);
         editor.apply();
-    }
-
-    public boolean getWarningDialogAppComponentDontShow() {
-        return sharedPreferences.getBoolean(WARNING_DIALOG_APP_COMPONENT, false);
     }
 }

@@ -41,19 +41,19 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
-    private Context context;
-
+    public static final String UPDATE_PROVIDERS_PREFERENCE = "update_provider_preference";
+    private static final String SET_PASSWORD_PREFERENCE = "set_password_preference";
+    public static final String SET_NIGHT_MODE_PREFERENCE = "set_night_mode_preference";
+    private static final String CREATE_LOGCAT_PREFERENCE = "create_logcat_preference";
+    private static final String CHANGE_KEY_PREFERENCE = "change_key_preference";
+    private static final String ABOUT_PREFERENCE = "about_preference";
     private static final String DELETE_PREFERENCE = "delete_preference";
     private static final String BACKUP_PREFERENCE = "backup_preference";
     private static final String RESTORE_PREFERENCE = "restore_preference";
-    public static final String UPDATE_PROVIDERS_PREFERENCE = "update_provider_preference";
-    public static final String SET_PASSWORD_PREFERENCE = "set_password_preference";
-    public static final String SET_NIGHT_MODE_PREFERENCE = "set_night_mode_preference";
-    public static final String CREATE_LOGCAT_PREFERENCE = "create_logcat_preference";
-    public static final String CHANGE_KEY_PREFERENCE = "change_key_preference";
-    public static final String ABOUT_PREFERENCE = "about_preference";
+    private Context context;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -66,8 +66,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         switch (preference.getKey()) {
             case DELETE_PREFERENCE: {
                 View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                titlTextView.setText(R.string.delete_app_dialog_title);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.delete_app_dialog_title);
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.delete_app_dialog_text);
 
@@ -90,8 +90,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case BACKUP_PREFERENCE: {
                 View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                titlTextView.setText(R.string.backup_database_dialog_title);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.backup_database_dialog_title);
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.backup_database_dialog_text);
 
@@ -105,8 +105,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case RESTORE_PREFERENCE: {
                 View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                titlTextView.setText(R.string.restore_database_dialog_title);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.restore_database_dialog_title);
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.restore_database_dialog_text);
 
@@ -166,14 +166,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
                     startActivity(intent);
-                    getActivity().finish();
-                }
-                else {
+                    Objects.requireNonNull(getActivity()).finish();
+                } else {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                     Intent intent = new Intent(getActivity(), MainActivity.class);
                     intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
                     startActivity(intent);
-                    getActivity().finish();
+                    Objects.requireNonNull(getActivity()).finish();
                 }
                 break;
             }
@@ -188,7 +187,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CHANGE_KEY_PREFERENCE: {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentManager fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
                 Fragment activationDialog = fragmentManager.findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
                 if (activationDialog == null) {
                     ActivationDialogFragment fragment = new ActivationDialogFragment();
@@ -199,8 +198,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
             case ABOUT_PREFERENCE: {
                 View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                titlTextView.setText(R.string.about_title);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.about_title);
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.about_content);
                 questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
@@ -214,9 +213,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private static class RestoreDatabaseAsyncTask extends AsyncTask<Void, String, String> {
-        private ProgressDialog dialog;
-        private AlertDialog.Builder builder;
-        private WeakReference<Context> contextWeakReference;
+        private final ProgressDialog dialog;
+        private final AlertDialog.Builder builder;
+        private final WeakReference<Context> contextWeakReference;
 
         RestoreDatabaseAsyncTask(Activity activity, Context context) {
             this.builder = new AlertDialog.Builder(activity);

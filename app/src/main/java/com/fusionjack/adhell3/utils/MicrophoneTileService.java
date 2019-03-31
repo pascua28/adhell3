@@ -10,16 +10,6 @@ import com.fusionjack.adhell3.R;
 public class MicrophoneTileService extends TileService {
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onTileAdded() {
-        super.onTileAdded();
-    }
-
-    @Override
     public void onTileRemoved() {
         super.onTileRemoved();
 
@@ -32,11 +22,6 @@ public class MicrophoneTileService extends TileService {
         super.onStartListening();
 
         updateTitle(AdhellFactory.getInstance().getMicrophoneState());
-    }
-
-    @Override
-    public void onStopListening() {
-        super.onStopListening();
     }
 
     @Override

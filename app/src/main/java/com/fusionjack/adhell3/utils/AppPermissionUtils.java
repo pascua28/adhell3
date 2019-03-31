@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.pm.PackageManager;
-import android.os.Build;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,9 +77,7 @@ public final class AppPermissionUtils {
 
     public static int fixProtectionLevel(int level) {
         if (level == android.content.pm.PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                level = android.content.pm.PermissionInfo.PROTECTION_SIGNATURE | android.content.pm.PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
-            }
+            level = android.content.pm.PermissionInfo.PROTECTION_SIGNATURE | android.content.pm.PermissionInfo.PROTECTION_FLAG_PRIVILEGED;
         }
         return level;
     }

@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -18,7 +19,7 @@ import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_LI
 
 public class DomainTabFragment extends Fragment {
 
-    private int[] imageResId = {
+    private final int[] imageResId = {
             R.drawable.ic_event_busy_black_24dp,
             R.drawable.ic_event_available_black_24dp,
             R.drawable.ic_event_note_black_24dp,
@@ -26,7 +27,7 @@ public class DomainTabFragment extends Fragment {
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle("Domains Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         if (parentActivity.getSupportActionBar() != null) {
@@ -84,8 +85,6 @@ public class DomainTabFragment extends Fragment {
 
         return view;
     }
-
-
 
 
 }

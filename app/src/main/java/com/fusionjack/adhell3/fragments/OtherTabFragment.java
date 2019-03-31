@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -15,12 +16,14 @@ import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
 
+import java.util.Objects;
+
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.APP_COMPONENT_PAGE;
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAGE;
 
 public class OtherTabFragment extends Fragment {
 
-    private int[] imageResId = {
+    private final int[] imageResId = {
             R.drawable.ic_security_black_24dp,
             R.drawable.ic_dns_black_24dp,
             R.drawable.ic_settings_black_24dp
@@ -28,12 +31,12 @@ public class OtherTabFragment extends Fragment {
     private String viewpagerPosition;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle bundle = getArguments();
-        if (bundle != null){
+        if (bundle != null) {
             viewpagerPosition = getArguments().getString("viewpager_position");
         }
-        getActivity().setTitle("Others");
+        Objects.requireNonNull(getActivity()).setTitle("Others");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         if (parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -46,7 +49,7 @@ public class OtherTabFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.others_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.others_viewpager);
-        viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), getContext()));
+        viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
@@ -54,50 +57,55 @@ public class OtherTabFragment extends Fragment {
                     @Override
                     public void onTabSelected(TabLayout.Tab tab) {
                         super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
 
                     @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
                         super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorText);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorText);
+                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
 
                     @Override
                     public void onTabReselected(TabLayout.Tab tab) {
                         super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
                 }
         );
 
         int imageIndex = BuildConfig.APP_COMPONENT ? 0 : 1;
-        int tabCount = viewPager.getAdapter().getCount();
+        int tabCount = Objects.requireNonNull(viewPager.getAdapter()).getCount();
         for (int i = 0; i < tabCount; i++, imageIndex++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             if (tab != null) {
                 tab.setIcon(imageResId[i]);
                 int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
-                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
             }
         }
 
-        if(viewpagerPosition == "Settings"){
-            TabLayout.Tab tab = tabLayout.getTabAt(SETTINGS_PAGE);
-            if (tab != null) {
-                tab.select();
-            }
-        }
-        else {
+        if (viewpagerPosition == null) {
             TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
             if (tab != null) {
                 tab.select();
             }
+        } else {
+            if (viewpagerPosition.equals("Settings")) {
+                TabLayout.Tab tab = tabLayout.getTabAt(SETTINGS_PAGE);
+                if (tab != null) {
+                    tab.select();
+                }
+            } else {
+                TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
+                if (tab != null) {
+                    tab.select();
+                }
+            }
         }
-
         return view;
     }
 }

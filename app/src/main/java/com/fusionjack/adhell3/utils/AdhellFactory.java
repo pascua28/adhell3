@@ -21,12 +21,12 @@ import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.samsung.android.knox.AppIdentity;
-import com.samsung.android.knox.restriction.RestrictionPolicy;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
+import com.samsung.android.knox.restriction.RestrictionPolicy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -291,7 +291,7 @@ public final class AdhellFactory {
         if (cm != null) {
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-            LogUtils.info( "Is internet connection exists: " + isConnected);
+            LogUtils.info("Is internet connection exists: " + isConnected);
             return isConnected;
         }
         return false;

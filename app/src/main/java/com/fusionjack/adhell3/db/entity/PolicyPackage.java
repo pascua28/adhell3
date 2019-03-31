@@ -53,19 +53,4 @@ public class PolicyPackage {
     @ColumnInfo(name = "numberOfChangedPermissions")
     public int numberOfChangedPermissions;
 
-    @Ignore
-    public List<DisabledPackage> disabledPackages;
-
-    @Ignore
-    public List<BlockUrlProvider> blockUrlProviders;
-
-    @Ignore
-    public List<UserBlockUrl> userBlockedDomains;
-
-    @Ignore
-    public List<WhiteUrl> userWhitelistedDomains;
-
-    @Ignore
-    public List<AppPermission> appPermissions;
-
 }

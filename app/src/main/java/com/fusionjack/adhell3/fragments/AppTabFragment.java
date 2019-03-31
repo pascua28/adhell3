@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -9,17 +11,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.graphics.PorterDuff;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppPagerAdapter;
 
+import java.util.Objects;
+
 import static com.fusionjack.adhell3.fragments.AppTabPageFragment.PACKAGE_DISABLER_PAGE;
 
 public class AppTabFragment extends Fragment {
 
-    private int[] imageResId = {
+    private final int[] imageResId = {
             R.drawable.ic_visibility_off_black_24dp,
             R.drawable.ic_signal_cellular_off_black_24dp,
             R.drawable.ic_signal_wifi_off_black_24dp,
@@ -27,8 +30,8 @@ public class AppTabFragment extends Fragment {
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Apps Management");
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Objects.requireNonNull(getActivity()).setTitle("Apps Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         if (parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -41,7 +44,7 @@ public class AppTabFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), getContext()));
+        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
         viewPager.setOffscreenPageLimit(4);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setOnTabSelectedListener(
@@ -50,8 +53,8 @@ public class AppTabFragment extends Fragment {
                     @Override
                     public void onTabSelected(TabLayout.Tab tab) {
                         super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
 
                     @Override

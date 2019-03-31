@@ -16,15 +16,9 @@ public interface AppInfoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<AppInfo> apps);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(AppInfo info);
-
     // Delete
     @Query("DELETE FROM AppInfo")
     void deleteAll();
-
-    @Query("DELETE FROM AppInfo WHERE packageName = :packageName")
-    void deleteByPackageName(String packageName);
 
     // Update
     @Update
@@ -35,29 +29,8 @@ public interface AppInfoDao {
     @Query("SELECT COUNT(*) FROM AppInfo")
     int getAppSize();
 
-
-    // Get based on appName/packageName
-    @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
-    List<AppInfo> getAppsAlphabetically();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY appName ASC")
-    List<AppInfo> getAppsAlphabetically(String str);
-
     @Query("SELECT * FROM AppInfo WHERE packageName = :packageName")
     AppInfo getAppByPackageName(String packageName);
-
-
-    // Get based on installTime
-    @Query("SELECT * FROM AppInfo ORDER BY installTime DESC")
-    List<AppInfo> getAppsInTimeOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY installTime DESC")
-    List<AppInfo> getAppsInTimeOrder(String str);
-
-
-    // Get max id
-    @Query("SELECT MAX(id) FROM AppInfo")
-    long getMaxId();
 
 
     // Disabled apps
@@ -119,12 +92,6 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY appName ASC")
     List<AppInfo> getEnabledAppsAlphabetically(String str);
 
-    @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY installTime DESC")
-    List<AppInfo> getEnabledAppsInTimeOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY installTime DESC")
-    List<AppInfo> getEnabledAppsInTimeOrder(String str);
-
 
     // DNS apps
     @Query("SELECT * FROM AppInfo WHERE hasCustomDns = 1 ORDER BY appName ASC")
@@ -144,15 +111,14 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllUserApps();
 
-    // All system apps
     @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllUserApps(String str);
 
-    // All user apps
+
+    // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllSystemApps();
 
-    // All system apps
     @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllSystemApps(String str);
 }

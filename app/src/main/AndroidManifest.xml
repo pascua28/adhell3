@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.fusionjack.adhell3"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.fusionjack.adhell3">
 
-    <uses-permission android:name="android.permission.sec.MDM_FIREWALL"/>
-    <uses-permission android:name="android.permission.sec.MDM_APP_MGMT"/>
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_FIREWALL"/>
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_APP_MGMT"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.sec.MDM_FIREWALL" />
+    <uses-permission android:name="android.permission.sec.MDM_APP_MGMT" />
+    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_FIREWALL" />
+    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_APP_MGMT" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <permission
         android:name="com.example.supportlibclient.SUPPORT_PERMISSION"
@@ -25,18 +26,20 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="false"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:resizeableActivity="false">
+        android:fullBackupContent="@xml/backup_descriptor"
+        tools:ignore="GoogleAppIndexingWarning">
 
         <activity
             android:name="com.fusionjack.adhell3.MainActivity"
-            android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -47,9 +50,9 @@
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
-                android:resource="@xml/enterprise_device_admin"/>
+                android:resource="@xml/enterprise_device_admin" />
             <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
 
@@ -61,7 +64,7 @@
                 <action android:name="edm.intent.action.license.status" />
             </intent-filter>
         </receiver>
-		
+
         <service
             android:name="com.fusionjack.adhell3.utils.CameraTileService"
             android:icon="@drawable/ic_cam_off"
@@ -69,7 +72,7 @@
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
 
             <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
 
@@ -80,7 +83,7 @@
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
 
             <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
     </application>

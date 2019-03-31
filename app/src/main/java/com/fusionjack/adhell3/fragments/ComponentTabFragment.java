@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -15,7 +16,7 @@ import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
 public class ComponentTabFragment extends Fragment {
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String packageName = "";
         String appName = "";
         Bundle bundle = getArguments();

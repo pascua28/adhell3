@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/noteTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="10dp"
-        android:paddingRight="5dp"
+        android:background="@drawable/border"
+        android:paddingStart="10dp"
         android:paddingTop="7dp"
+        android:paddingEnd="5dp"
         android:paddingBottom="5dp"
-        android:text="@string/blacklist_info"
-        android:background="@drawable/border" />
+        android:text="@string/blacklist_info" />
 
     <ListView
         android:id="@+id/blackListView"
@@ -27,32 +26,30 @@
         android:id="@+id/blacklist_actions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
         fab:fab_addButtonColorNormal="@color/colorFab"
         fab:fab_addButtonColorPressed="@color/colorFab"
         fab:fab_addButtonPlusIconColor="@android:color/white"
-        fab:fab_labelStyle="@style/menu_labels_style"
-        android:layout_marginBottom="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginEnd="5dp">
+        fab:fab_labelStyle="@style/menu_labels_style">
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_add_domain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorFab"
-            fab:fab_title="@string/dialog_blacklist_domain_title"
-            fab:fab_colorPressed="@color/colorFab"/>
+            fab:fab_colorPressed="@color/colorFab"
+            fab:fab_title="@string/dialog_blacklist_domain_title" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_add_firewall_rule"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorFab"
-            fab:fab_title="@string/dialog_blacklist_rule_title"
-            fab:fab_colorPressed="@color/colorFab"/>
+            fab:fab_colorPressed="@color/colorFab"
+            fab:fab_title="@string/dialog_blacklist_rule_title" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 

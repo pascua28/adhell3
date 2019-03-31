@@ -20,8 +20,8 @@ import java.util.List;
 
 public final class FirewallUtils {
     private static FirewallUtils instance;
-    private Firewall firewall;
-    private AppDatabase appDatabase;
+    private final Firewall firewall;
+    private final AppDatabase appDatabase;
 
     private FirewallUtils() {
         firewall = AdhellFactory.getInstance().getFirewall();

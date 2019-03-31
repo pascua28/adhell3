@@ -33,7 +33,7 @@ public class WhitelistFragment extends UserListFragment {
 
         List<String> items = new ArrayList<>();
         adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
-        viewModel = ViewModelProviders.of(this, new UserListViewModel.WhiteListFactory()).get(UserListViewModel.class);;
+        viewModel = ViewModelProviders.of(this, new UserListViewModel.WhiteListFactory()).get(UserListViewModel.class);
         viewModel.getItems().observe(this, whiteItems -> {
             items.clear();
             items.addAll(whiteItems);
@@ -49,8 +49,8 @@ public class WhitelistFragment extends UserListFragment {
         whiteListView.setAdapter(adapter);
         whiteListView.setOnItemClickListener((parent, view1, position, id) -> {
             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_domain_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.delete_domain_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_dialog_text);
 

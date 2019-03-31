@@ -24,17 +24,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public final class DatabaseFactory {
-    private static final String BACKUP_FILENAME = "adhell_backup.txt";
-    private static DatabaseFactory instance;
-    private AppDatabase appDatabase;
-
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
+    private static final String BACKUP_FILENAME = "adhell_backup.txt";
+    private static DatabaseFactory instance;
+    private final AppDatabase appDatabase;
 
     private DatabaseFactory() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
@@ -49,7 +49,7 @@ public final class DatabaseFactory {
 
     public void backupDatabase() throws Exception {
         File file = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
+        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
             writer.beginObject();
             writeWhitelistedPackages(writer, appDatabase);
@@ -78,7 +78,7 @@ public final class DatabaseFactory {
             appIntegrity.checkDefaultPolicyExists();
             appIntegrity.fillPackageDb();
 
-            try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), "UTF-8"))) {
+            try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), StandardCharsets.UTF_8))) {
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String name = reader.nextName();
@@ -173,7 +173,7 @@ public final class DatabaseFactory {
         writer.name("BlockUrlProvider");
         writer.beginArray();
         List<BlockUrlProvider> blockUrlProviders = appDatabase.blockUrlProviderDao().getAll2();
-        for (BlockUrlProvider provider: blockUrlProviders) {
+        for (BlockUrlProvider provider : blockUrlProviders) {
             writer.beginObject();
             writer.name("url").value(provider.url);
             writer.name("deletable").value(provider.deletable);

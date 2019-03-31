@@ -24,18 +24,17 @@ import io.reactivex.disposables.Disposable;
 
 public class AppFragment extends Fragment {
 
-    protected Context context;
-    protected AppRepository.Type type;
+    Context context;
+    AppRepository.Type type;
+    AppInfoAdapter adapter;
+    FilterAppInfo filterAppInfo;
     private AppViewModel viewModel;
     private String searchText;
     private SearchView searchView;
     private SingleObserver<List<AppInfo>> observer;
-
     private List<AppInfo> appList;
-    protected AppInfoAdapter adapter;
-    protected FilterAppInfo filterAppInfo;
 
-    protected void initAppModel(AppRepository.Type type) {
+    void initAppModel(AppRepository.Type type) {
         this.filterAppInfo = new FilterAppInfo();
         this.context = getContext();
         this.type = type;
@@ -66,7 +65,7 @@ public class AppFragment extends Fragment {
         AppCache.getInstance(context, null);
     }
 
-    protected void loadAppList(AppRepository.Type type, ProgressBar progressBar) {
+    void loadAppList(AppRepository.Type type, ProgressBar progressBar) {
         viewModel.loadAppList(type, observer, filterAppInfo, progressBar);
     }
 
@@ -99,7 +98,7 @@ public class AppFragment extends Fragment {
         });
     }
 
-    protected void resetSearchView() {
+    void resetSearchView() {
         if (searchView != null) {
             searchText = "";
             searchView.setQuery(searchText, false);

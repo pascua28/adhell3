@@ -4,6 +4,7 @@ import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.migration.Migration;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import java.util.Date;
 
@@ -14,7 +15,7 @@ public class Migration_16_17 extends Migration {
     }
 
     @Override
-    public void migrate(SupportSQLiteDatabase database) {
+    public void migrate(@NonNull SupportSQLiteDatabase database) {
 
         database.execSQL("CREATE TABLE PolicyPackage " +
                 "(id TEXT PRIMARY KEY, " +

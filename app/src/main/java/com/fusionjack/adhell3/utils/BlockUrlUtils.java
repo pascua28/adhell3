@@ -7,11 +7,10 @@ import android.webkit.URLUtil;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -19,6 +18,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,15 +43,31 @@ public class BlockUrlUtils {
         Date start = new Date();
 
         // Read the host source and convert it to string
-        String hostFileStr = "";
+        String hostFileStr;
         if (URLUtil.isFileUrl(blockUrlProvider.url)) {
             File file = new File(new URI(blockUrlProvider.url));
-            hostFileStr = Files.asCharSource(file, Charsets.UTF_8).read();
+            StringBuilder contentBuilder = new StringBuilder();
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(file));
+                String str;
+                while ((str = in.readLine()) != null) {
+                    contentBuilder.append(str);
+                }
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            hostFileStr = contentBuilder.toString();
         } else {
             URL urlProviderUrl = new URL(blockUrlProvider.url);
             URLConnection connection = urlProviderUrl.openConnection();
-            try (final Reader reader = new InputStreamReader(connection.getInputStream(), Charsets.UTF_8)) {
-                hostFileStr = CharStreams.toString(reader);
+            try (final Reader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
+                BufferedReader r = new BufferedReader(reader);
+                StringBuilder hostFileStringBuilder = new StringBuilder();
+                for (String line; (line = r.readLine()) != null; ) {
+                    hostFileStringBuilder.append(line).append('\n');
+                }
+                hostFileStr = hostFileStringBuilder.toString();
             }
         }
 
@@ -68,7 +84,7 @@ public class BlockUrlUtils {
             List<BlockUrl> blockUrls = BlockUrlPatternsMatch.validHostFileDomains(hostFileStr, blockUrlProvider.id);
 
             Date end = new Date();
-            LogUtils.info( "Domain processing duration: " + (end.getTime() - start.getTime()) + " ms");
+            LogUtils.info("Domain processing duration: " + (end.getTime() - start.getTime()) + " ms");
 
             return blockUrls;
         }
@@ -112,7 +128,7 @@ public class BlockUrlUtils {
         List<BlockUrlProvider> blockUrlProviders = appDatabase.blockUrlProviderDao().getBlockUrlProviderBySelectedFlag(1);
         for (BlockUrlProvider blockUrlProvider : blockUrlProviders) {
             List<BlockUrl> blockUrls = appDatabase.blockUrlDao().getByUrl(blockUrlProvider.id, filterText);
-            for (BlockUrl blockUrl: blockUrls) {
+            for (BlockUrl blockUrl : blockUrls) {
                 result.add(blockUrl.url);
             }
         }

@@ -22,7 +22,7 @@ public class App extends Application {
         appComponent = initDagger(instance);
     }
 
-    protected AppComponent initDagger(App application) {
+    private AppComponent initDagger(App application) {
         return DaggerAppComponent.builder()
                 .appModule(new AppModule(application))
                 .build();

@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,15 +44,14 @@ import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_
 
 public class ComponentTabPageFragment extends Fragment {
 
+    private static final int PERMISSIONS_PAGE = 0;
+    private static final int SERVICES_PAGE = 1;
+    private static final int RECEIVERS_PAGE = 2;
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGENAME = "packageName";
     private int page;
     private String packageName;
     private Context context;
-
-    public static final int PERMISSIONS_PAGE = 0;
-    public static final int SERVICES_PAGE = 1;
-    public static final int RECEIVERS_PAGE = 2;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -90,7 +90,7 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
         View view = null;
@@ -137,9 +137,9 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     private static class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
-        private int page;
-        private String packageName;
-        private WeakReference<Context> contextWeakReference;
+        private final int page;
+        private final String packageName;
+        private final WeakReference<Context> contextWeakReference;
 
         EnableComponentAsyncTask(int page, String packageName, Context context) {
             this.page = page;
@@ -215,11 +215,11 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     private static class SetComponentAsyncTask extends AsyncTask<Void, Void, Void> {
-        private int page;
-        private String packageName;
-        private IComponentInfo componentInfo;
-        private WeakReference<Context> contextWeakReference;
-        private ApplicationPolicy appPolicy;
+        private final int page;
+        private final String packageName;
+        private final IComponentInfo componentInfo;
+        private final WeakReference<Context> contextWeakReference;
+        private final ApplicationPolicy appPolicy;
 
         SetComponentAsyncTask(int page, String packageName, IComponentInfo componentInfo, Context context) {
             this.page = page;
@@ -363,9 +363,9 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     private static class CreateComponentAsyncTask extends AsyncTask<Void, Void, List<IComponentInfo>> {
-        private int page;
-        private String packageName;
-        private WeakReference<Context> contextReference;
+        private final int page;
+        private final String packageName;
+        private final WeakReference<Context> contextReference;
 
         CreateComponentAsyncTask(int page, String packageName, Context context) {
             this.page = page;

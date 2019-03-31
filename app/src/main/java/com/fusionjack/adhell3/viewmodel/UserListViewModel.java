@@ -17,7 +17,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class UserListViewModel extends ViewModel {
     private LiveData<List<String>> items;
-    private UserListRepository repository;
+    private final UserListRepository repository;
 
     public UserListViewModel(UserListRepository repository) {
         this.repository = repository;

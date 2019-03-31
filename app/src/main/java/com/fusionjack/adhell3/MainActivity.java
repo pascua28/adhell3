@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3;
 
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -10,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +29,8 @@ import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+
+import java.util.Objects;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
@@ -61,27 +63,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences  mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        getDelegate();
         if (mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-            getDelegate().setDefaultNightMode(getDelegate().MODE_NIGHT_YES);
-        }
-        else {
-            getDelegate().setDefaultNightMode(getDelegate().MODE_NIGHT_NO);
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
         super.onCreate(savedInstanceState);
         themeChange = getIntent().getStringExtra("settingsFragment");
 
         // Remove elevation shadow of ActionBar
-        getSupportActionBar().setElevation(0);
+        Objects.requireNonNull(getSupportActionBar()).setElevation(0);
 
         // Change status bar icon tint based on theme
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            View decor = getWindow().getDecorView();
-            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-            } else {
-                decor.setSystemUiVisibility(0);
-            }
+        View decor = getWindow().getDecorView();
+        if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+            decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        } else {
+            decor.setSystemUiVisibility(0);
         }
 
         // Set the crash handler to log crash's stack trace into a file
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onTabSelected(int tabId) {
-        LogUtils.info( "Tab '" + tabId + "' is selected");
+        LogUtils.info("Tab '" + tabId + "' is selected");
         fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         Fragment replacing;
         switch (tabId) {
@@ -163,8 +163,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.othersTab:
                 selectedTabId = R.id.othersTab;
                 replacing = new OtherTabFragment();
-                if(themeChange != null){
-                    if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)){
+                if (themeChange != null) {
+                    if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
                         Bundle bundle = new Bundle();
                         bundle.putString("viewpager_position", "Settings");
                         replacing.setArguments(bundle);
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         String passwordHash = AppPreferences.getInstance().getPasswordHash();
         if (!passwordHash.isEmpty()) {
             if (!passwordDialog.isShowing()) {
-                LogUtils.info( "Showing password dialog");
+                LogUtils.info("Showing password dialog");
                 passwordDialog.show();
             }
             return true;
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isKnoxValid() {
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
-            LogUtils.info( "Admin is not active, showing activation dialog");
+            LogUtils.info("Admin is not active, showing activation dialog");
             if (!isActivationDialogVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
@@ -203,8 +203,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (!DeviceAdminInteractor.getInstance().isKnoxEnabled(this)) {
-            LogUtils.info( "Knox is disabled, showing activation dialog");
-            LogUtils.info( "Check if internet connection exists");
+            LogUtils.info("Knox is disabled, showing activation dialog");
+            LogUtils.info("Check if internet connection exists");
             boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(this);
             if (!hasInternetAccess) {
                 AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
@@ -218,16 +218,14 @@ public class MainActivity extends AppCompatActivity {
         // Select the Home tab manually if nothing is selected
         if (selectedTabId == -1) {
             if (themeChange != null) {
-                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)){
+                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
                     bottomBar.setSelectedItemId(R.id.othersTab);
                     onTabSelected(R.id.othersTab);
 
-                }
-                else {
+                } else {
                     onTabSelected(R.id.homeTab);
                 }
-            }
-            else {
+            } else {
                 onTabSelected(R.id.homeTab);
             }
         }

@@ -6,8 +6,6 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
-import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
-
 
 @Entity(
         tableName = "BlockUrl",
@@ -25,10 +23,10 @@ public class BlockUrl {
     public long id;
 
     @ColumnInfo(name = "url")
-    public String url;
+    public final String url;
 
     @ColumnInfo(name = "urlProviderId")
-    public long urlProviderId;
+    public final long urlProviderId;
 
     public BlockUrl(String url, long urlProviderId) {
         this.url = url;

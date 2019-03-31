@@ -1,22 +1,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/infoTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="10dp"
-        android:paddingRight="5dp"
+        android:background="@drawable/border"
+        android:paddingStart="10dp"
         android:paddingTop="7dp"
+        android:paddingEnd="5dp"
         android:paddingBottom="5dp"
-        android:text="@string/dns_info"
-        android:background="@drawable/border" />
+        android:text="@string/dns_info" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/dnsSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,37 +30,35 @@
 
     <ProgressBar
         android:id="@+id/progressBarDns"
-        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
-        android:visibility="visible"
-        android:indeterminate="true"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_width="150dp"
-        android:layout_height="150dp" />
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:visibility="visible" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/dns_actions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
         fab:fab_addButtonColorNormal="@color/colorFab"
         fab:fab_addButtonColorPressed="@color/colorFab"
         fab:fab_addButtonPlusIconColor="@android:color/white"
         fab:fab_labelStyle="@style/menu_labels_style"
-        fab:fab_labelsPosition="left"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp">
+        fab:fab_labelsPosition="left">
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_set_dns"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/colorFab"
-            fab:fab_title="@string/dialog_set_dns_title"
-            fab:fab_colorPressed="@color/colorFab"/>
+            fab:fab_colorPressed="@color/colorFab"
+            fab:fab_title="@string/dialog_set_dns_title" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 

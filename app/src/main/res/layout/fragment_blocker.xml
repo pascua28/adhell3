@@ -3,181 +3,222 @@
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:background="@drawable/border"
+    android:orientation="vertical"
     android:showDividers="middle">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/domainRulesLayout"
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:background="@drawable/border">
+        android:text="@string/home_status_title"
+        android:textAlignment="center" />
 
-        <TextView
-            android:id="@+id/domainStatusTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/domain_rules_enabled"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/domainInfoTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/domainStatusTextView"
-            android:layout_toStartOf="@id/domainRulesSwitch"
-            android:text="@string/domain_rules_info"
-            android:textSize="12sp"/>
-
-        <Switch
-            android:id="@+id/domainRulesSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"/>
-
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="right"
-        android:background="@color/colorBorder"/>
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/firewallRulesLayout"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:background="@drawable/border">
+        android:background="@drawable/border"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="2dp"
+        android:weightSum="2">
 
-        <TextView
-            android:id="@+id/firewallStatusTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/firewall_rules_enabled"
-            android:textStyle="bold" />
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/domainRulesLayout"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_home"
+            android:padding="5dp">
 
-        <TextView
-            android:id="@+id/firewallInfoTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/firewallStatusTextView"
-            android:layout_toStartOf="@id/firewallRulesSwitch"
-            android:text="@string/firewall_rules_info"
-            android:textSize="12sp"/>
+            <TextView
+                android:id="@+id/domainStatusTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="2dp"
+                android:text="@string/domain_rules_enabled"
+                android:textStyle="bold" />
 
-        <Switch
-            android:id="@+id/firewallRulesSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"/>
+            <TextView
+                android:id="@+id/domainInfoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/domainStatusTextView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="4dp"
+                android:layout_toStartOf="@id/domainRulesSwitch"
+                android:text="@string/domain_rules_info"
+                android:textSize="12sp" />
 
-    </RelativeLayout>
+            <Switch
+                android:id="@+id/domainRulesSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="right"
-        android:background="@color/colorBorder"/>
+        </RelativeLayout>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/appDisablerLayout"
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/firewallRulesLayout"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_home"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/firewallStatusTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="2dp"
+                android:text="@string/firewall_rules_enabled"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/firewallInfoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/firewallStatusTextView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="4dp"
+                android:layout_toStartOf="@id/firewallRulesSwitch"
+                android:text="@string/firewall_rules_info"
+                android:textSize="12sp" />
+
+            <Switch
+                android:id="@+id/firewallRulesSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:background="@drawable/border">
+        android:background="@drawable/border"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="5dp"
+        android:weightSum="2">
 
-        <TextView
-            android:id="@+id/disablerStatusTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/app_disabler_enabled"
-            android:textStyle="bold" />
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/appDisablerLayout"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_home"
+            android:padding="5dp">
 
-        <TextView
-            android:id="@+id/disablerInfoTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/disablerStatusTextView"
-            android:layout_toStartOf="@id/appDisablerSwitch"
-            android:text="@string/app_disabler_info"
-            android:textSize="12sp"/>
+            <TextView
+                android:id="@+id/disablerStatusTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="2dp"
+                android:text="@string/app_disabler_enabled"
+                android:textStyle="bold" />
 
-        <Switch
-            android:id="@+id/appDisablerSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"/>
+            <TextView
+                android:id="@+id/disablerInfoTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/disablerStatusTextView"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="4dp"
+                android:layout_toStartOf="@id/appDisablerSwitch"
+                android:text="@string/app_disabler_info"
+                android:textSize="12sp" />
 
-    </RelativeLayout>
+            <Switch
+                android:id="@+id/appDisablerSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="right"
-        android:background="@color/colorBorder"/>
+        </RelativeLayout>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/appComponentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:background="@drawable/border">
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/appComponentLayout"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_home"
+            android:padding="5dp">
 
-        <TextView
-            android:id="@+id/appComponentStatusTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/app_component_enabled"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/appComponentStatusTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="2dp"
+                android:text="@string/app_component_enabled"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/appComponentInfoTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/appComponentStatusTextView"
-            android:layout_toStartOf="@id/appComponentSwitch"
-            android:text="@string/app_component_toggle_info"
-            android:textSize="12sp"/>
+            <TextView
+                android:id="@+id/appComponentInfoTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/appComponentStatusTextView"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="4dp"
+                android:layout_toStartOf="@id/appComponentSwitch"
+                android:text="@string/app_component_toggle_info"
+                android:textSize="12sp" />
 
-        <Switch
-            android:id="@+id/appComponentSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:clickable="false"
-            android:focusable="false"
-            android:focusableInTouchMode="false"/>
+            <Switch
+                android:id="@+id/appComponentSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:clickable="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
 
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="right"
-        android:background="@color/colorBorder"/>
+        </RelativeLayout>
+    </LinearLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/blockedDomainLayout"
@@ -189,44 +230,48 @@
             android:id="@+id/infoTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:padding="7dp"
+            android:background="@drawable/border"
+            android:padding="10dp"
             android:text="@string/last_day_blocked"
-            android:background="@drawable/border"/>
+            android:textAlignment="center" />
 
-        <android.support.v4.widget.SwipeRefreshLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
+        <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/swipeContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/infoTextView">
 
-            <ListView
+            <ExpandableListView
                 android:id="@+id/blockedDomainsListView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
+                android:layout_height="match_parent"
+                android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />
         </android.support.v4.widget.SwipeRefreshLayout>
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/domain_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            fab:layout_anchor="@id/swipeContainer"
+            fab:layout_anchorGravity="bottom|right|end"
             fab:fab_addButtonColorNormal="@color/colorFab"
             fab:fab_addButtonColorPressed="@color/colorFab"
             fab:fab_addButtonPlusIconColor="@android:color/white"
-            fab:fab_labelStyle="@style/menu_labels_style"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="5dp">
+            fab:fab_labelStyle="@style/menu_labels_style">
 
             <com.getbase.floatingactionbutton.FloatingActionButton
                 android:id="@+id/action_export_domains"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                fab:layout_anchor="@id/blockedDomainsListView"
+                fab:layout_anchorGravity="bottom|right|end"
                 fab:fab_colorNormal="@color/colorFab"
-                fab:fab_title="@string/export_domains_title"
-                fab:fab_colorPressed="@color/colorFab"/>
+                fab:fab_colorPressed="@color/colorFab"
+                fab:fab_title="@string/export_domains_title" />
 
         </com.getbase.floatingactionbutton.FloatingActionsMenu>
     </RelativeLayout>

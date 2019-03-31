@@ -5,9 +5,9 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 
 public class AppFlag {
 
-    private AppRepository.Type type;
-    private int loadLayout;
-    private int refreshLayout;
+    private final AppRepository.Type type;
+    private final int loadLayout;
+    private final int refreshLayout;
 
     private AppFlag(AppRepository.Type type, int loadLayout, int refreshLayout) {
         this.type = type;

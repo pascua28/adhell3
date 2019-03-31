@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,8 +22,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,9 +49,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class HomeTabFragment extends Fragment {
@@ -73,13 +80,13 @@ public class HomeTabFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fragmentManager = getActivity().getSupportFragmentManager();
+        fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
         parentActivity = (AppCompatActivity) getActivity();
         contentBlocker = ContentBlocker56.getInstance();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ActionBar actionBar = parentActivity.getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
@@ -88,7 +95,7 @@ public class HomeTabFragment extends Fragment {
             View view = inflater.inflate(R.layout.activity_actionbar, container, false);
             TextView subtitleTextView = view.findViewById(R.id.subtitleTextView);
             if (subtitleTextView != null) {
-                String versionInfo = getContext().getResources().getString(R.string.version);
+                String versionInfo = Objects.requireNonNull(getContext()).getResources().getString(R.string.version);
                 subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
             }
             actionBar.setCustomView(view);
@@ -118,19 +125,19 @@ public class HomeTabFragment extends Fragment {
         }
 
         domainSwitch.setOnClickListener(v -> {
-            LogUtils.info( "Domain switch button has been clicked");
+            LogUtils.info("Domain switch button has been clicked");
             new SetFirewallAsyncTask(true, this, fragmentManager, getContext()).execute();
         });
         firewallSwitch.setOnClickListener(v -> {
-            LogUtils.info( "Firewall switch button has been clicked");
+            LogUtils.info("Firewall switch button has been clicked");
             new SetFirewallAsyncTask(false, this, fragmentManager, getContext()).execute();
         });
         disablerSwitch.setOnClickListener(v -> {
-            LogUtils.info( "App disabler switch button has been clicked");
+            LogUtils.info("App disabler switch button has been clicked");
             new AppDisablerAsyncTask(this, getActivity()).execute();
         });
         appComponentSwitch.setOnClickListener(v -> {
-            LogUtils.info( "App component switch button has been clicked");
+            LogUtils.info("App component switch button has been clicked");
             new AppComponentAsyncTask(this, getActivity()).execute();
         });
 
@@ -141,6 +148,7 @@ public class HomeTabFragment extends Fragment {
             domainFloatMenu.collapse();
             new ExportDomainsAsyncTask(getContext()).execute();
         });
+
 
         AsyncTask.execute(() -> {
             AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
@@ -212,7 +220,7 @@ public class HomeTabFragment extends Fragment {
     }
 
     private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Context> contextWeakReference;
+        private final WeakReference<Context> contextWeakReference;
         private int mobileSize;
         private int wifiSize;
         private int customSize;
@@ -327,8 +335,8 @@ public class HomeTabFragment extends Fragment {
     }
 
     private static class AppDisablerAsyncTask extends AsyncTask<Void, Void, Void> {
-        private HomeTabFragment parentFragment;
-        private ProgressDialog dialog;
+        private final HomeTabFragment parentFragment;
+        private final ProgressDialog dialog;
 
         AppDisablerAsyncTask(HomeTabFragment parentFragment, Activity activity) {
             this.parentFragment = parentFragment;
@@ -359,8 +367,8 @@ public class HomeTabFragment extends Fragment {
     }
 
     private static class AppComponentAsyncTask extends AsyncTask<Void, Void, Void> {
-        private HomeTabFragment parentFragment;
-        private ProgressDialog dialog;
+        private final HomeTabFragment parentFragment;
+        private final ProgressDialog dialog;
 
         AppComponentAsyncTask(HomeTabFragment parentFragment, Activity activity) {
             this.parentFragment = parentFragment;
@@ -391,15 +399,15 @@ public class HomeTabFragment extends Fragment {
     }
 
     private static class SetFirewallAsyncTask extends AsyncTask<Void, Void, Void> {
-        private FragmentManager fragmentManager;
+        private final FragmentManager fragmentManager;
         private FirewallDialogFragment fragment;
-        private HomeTabFragment parentFragment;
-        private ContentBlocker contentBlocker;
-        private Handler handler;
-        private boolean isDomain;
-        private boolean isDomainRuleEmpty;
-        private boolean isFirewallRuleEmpty;
-        private WeakReference<Context> contextReference;
+        private final HomeTabFragment parentFragment;
+        private final ContentBlocker contentBlocker;
+        private final Handler handler;
+        private final boolean isDomain;
+        private final boolean isDomainRuleEmpty;
+        private final boolean isFirewallRuleEmpty;
+        private final WeakReference<Context> contextReference;
 
         SetFirewallAsyncTask(boolean isDomain, HomeTabFragment parentFragment, FragmentManager fragmentManager, Context context) {
             this.isDomain = isDomain;
@@ -462,58 +470,85 @@ public class HomeTabFragment extends Fragment {
         }
     }
 
-    private static class RefreshAsyncTask extends AsyncTask<Void, Void, List<ReportBlockedUrl>> {
-        private WeakReference<Context> contextReference;
+    private static class RefreshAsyncTask extends AsyncTask<Void, Void, HashMap<String, List<ReportBlockedUrl>>> {
+        private final WeakReference<Context> contextReference;
 
         RefreshAsyncTask(Context context) {
             this.contextReference = new WeakReference<>(context);
         }
 
         @Override
-        protected List<ReportBlockedUrl> doInBackground(Void... voids) {
-            return FirewallUtils.getInstance().getReportBlockedUrl();
+        protected HashMap<String, List<ReportBlockedUrl>> doInBackground(Void... voids) {
+            HashMap<String, List<ReportBlockedUrl>> returnHashMap = new HashMap<>();
+            List<ReportBlockedUrl> listReportBlockedUrl = FirewallUtils.getInstance().getReportBlockedUrl();
+            for (ReportBlockedUrl reportBlockedUrl : listReportBlockedUrl) {
+                List<ReportBlockedUrl> newList = returnHashMap.get(reportBlockedUrl.packageName);
+                if (newList == null) {
+                    newList = new ArrayList<>();
+                    newList.add(reportBlockedUrl);
+                    returnHashMap.put(reportBlockedUrl.packageName, newList);
+                } else {
+                    newList.add(reportBlockedUrl);
+                }
+            }
+
+            // Sort HashMap by 'blockDate'
+            LinkedList<HashMap.Entry<String, List<ReportBlockedUrl>>> linkedList = new LinkedList<>(returnHashMap.entrySet());
+            LinkedHashMap<String, List<ReportBlockedUrl>> sortedHashMap = new LinkedHashMap<>();
+            Collections.sort(linkedList, (list1, list2) ->
+                    ((Comparable<Long>) list2.getValue().get(0).blockDate).compareTo(list1.getValue().get(0).blockDate));
+            for (Map.Entry<String, List<ReportBlockedUrl>> entry : linkedList) {
+                sortedHashMap.put(entry.getKey(), entry.getValue());
+            }
+            return sortedHashMap;
         }
 
         @Override
-        protected void onPostExecute(List<ReportBlockedUrl> reportBlockedUrls) {
+        protected void onPostExecute(HashMap<String, List<ReportBlockedUrl>> reportBlockedUrls) {
             Context context = contextReference.get();
             if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
+                ExpandableListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
                 if (listView != null) {
                     Handler handler = new Handler(Looper.getMainLooper()) {
                         @Override
                         public void handleMessage(Message msg) {
-                            ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getAdapter();
+                            ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getExpandableListAdapter();
                             adapter.notifyDataSetChanged();
                         }
                     };
 
                     ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, handler);
                     listView.setAdapter(adapter);
-                    listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+                    listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
                         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, listView, false);
                         TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
                         titlTextView.setText(R.string.dialog_whitelist_domain_title);
                         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                         questionTextView.setText(R.string.dialog_add_to_whitelist_question);
                         new AlertDialog.Builder(context)
-                            .setView(dialogView)
-                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                AsyncTask.execute(() -> {
-                                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                                    final String blockedUrl = reportBlockedUrls.get(position).url;
-                                    WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
-                                    appDatabase.whiteUrlDao().insert(whiteUrl);
-                                })
-                            )
-                            .setNegativeButton(android.R.string.no, null).show();
+                                .setView(dialogView)
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
+                                        AsyncTask.execute(() -> {
+                                            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                                            List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
+                                            final String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
+                                            WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
+                                            appDatabase.whiteUrlDao().insert(whiteUrl);
+                                        })
+                                )
+                                .setNegativeButton(android.R.string.no, null).show();
+                        return false;
                     });
                 }
 
                 TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
                 if (infoTextView != null) {
+                    int totalCount = 0;
+                    for (HashMap.Entry<String, List<ReportBlockedUrl>> entry : reportBlockedUrls.entrySet()) {
+                        totalCount += entry.getValue().size();
+                    }
                     infoTextView.setText(String.format("%s%s",
-                            context.getString(R.string.last_day_blocked), String.valueOf(reportBlockedUrls.size())));
+                            context.getString(R.string.last_day_blocked), String.valueOf(totalCount)));
                 }
 
                 SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);
@@ -526,7 +561,7 @@ public class HomeTabFragment extends Fragment {
 
     private static class ExportDomainsAsyncTask extends AsyncTask<Void, Void, Void> {
 
-        private WeakReference<Context> contextReference;
+        private final WeakReference<Context> contextReference;
 
         ExportDomainsAsyncTask(Context context) {
             this.contextReference = new WeakReference<>(context);

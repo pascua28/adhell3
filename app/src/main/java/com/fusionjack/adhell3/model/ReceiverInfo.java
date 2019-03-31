@@ -1,9 +1,9 @@
 package com.fusionjack.adhell3.model;
 
 public class ReceiverInfo implements IComponentInfo {
-    private String packageName;
-    private String name;
-    private String permission;
+    private final String packageName;
+    private final String name;
+    private final String permission;
 
     ReceiverInfo(String packageName, String name, String permission) {
         this.packageName = packageName;

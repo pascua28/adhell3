@@ -9,7 +9,6 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.google.common.collect.Lists;
 import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
@@ -28,10 +27,10 @@ import java.util.StringTokenizer;
 public class ContentBlocker56 implements ContentBlocker {
     private static ContentBlocker56 mInstance = null;
 
-    private Firewall firewall;
-    private AppDatabase appDatabase;
+    private final Firewall firewall;
+    private final AppDatabase appDatabase;
     private Handler handler;
-    private FirewallUtils firewallUtils;
+    private final FirewallUtils firewallUtils;
 
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
@@ -402,7 +401,11 @@ public class ContentBlocker56 implements ContentBlocker {
 
     private void processDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList) throws Exception {
         int start = 0;
-        List<List<String>> chunks = Lists.partition(denyList, 5000);
+        int partitionSize = 5000;
+        List<List<String>> chunks = new ArrayList<>();
+        for (int i=0; i<denyList.size(); i += partitionSize) {
+            chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
+        }
         for (List<String> chunk : chunks) {
             LogUtils.info("\nProcessing " + start + " to " + (start + chunk.size()) + " domains...", handler);
             start += chunk.size();

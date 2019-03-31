@@ -23,10 +23,10 @@ public class EnterpriseModule {
     @AdhellApplicationScope
     KnoxEnterpriseLicenseManager providesKnoxEnterpriseLicenseManager(Context appContext) {
         try {
-            LogUtils.info( "Trying to get EnterpriseLicenseManager");
+            LogUtils.info("Trying to get EnterpriseLicenseManager");
             return KnoxEnterpriseLicenseManager.getInstance(appContext);
         } catch (Throwable e) {
-            LogUtils.error( "Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
+            LogUtils.error("Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
         }
         return null;
     }
@@ -36,10 +36,10 @@ public class EnterpriseModule {
     @AdhellApplicationScope
     EnterpriseLicenseManager providesEnterpriseLicenseManager(Context appContext) {
         try {
-            LogUtils.info( "Trying to get EnterpriseLicenseManager");
+            LogUtils.info("Trying to get EnterpriseLicenseManager");
             return EnterpriseLicenseManager.getInstance(appContext);
         } catch (Throwable e) {
-            LogUtils.error( "Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
+            LogUtils.error("Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
         }
         return null;
     }
@@ -49,10 +49,10 @@ public class EnterpriseModule {
     @AdhellApplicationScope
     EnterpriseDeviceManager providesEnterpriseDeviceManager(Context appContext) {
         try {
-            LogUtils.info( "Trying to get EnterpriseDeviceManager");
+            LogUtils.info("Trying to get EnterpriseDeviceManager");
             return EnterpriseDeviceManager.getInstance(appContext);
         } catch (Throwable e) {
-            LogUtils.error( "Failed to get EnterpriseDeviceManager", e);
+            LogUtils.error("Failed to get EnterpriseDeviceManager", e);
             return null;
         }
     }
@@ -82,14 +82,14 @@ public class EnterpriseModule {
     @AdhellApplicationScope
     Firewall providesFirewall(@Nullable EnterpriseDeviceManager enterpriseDeviceManager) {
         if (enterpriseDeviceManager == null) {
-            LogUtils.info( "enterpriseDeviceManager is null. Can't get firewall");
+            LogUtils.info("enterpriseDeviceManager is null. Can't get firewall");
             return null;
         }
         try {
-            LogUtils.info( "Trying to get Firewall");
+            LogUtils.info("Trying to get Firewall");
             return enterpriseDeviceManager.getFirewall();
         } catch (Throwable throwable) {
-            LogUtils.error( "Failed to get firewall", throwable);
+            LogUtils.error("Failed to get firewall", throwable);
         }
         return null;
     }

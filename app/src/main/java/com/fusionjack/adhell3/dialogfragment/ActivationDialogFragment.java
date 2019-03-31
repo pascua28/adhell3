@@ -43,17 +43,16 @@ import io.reactivex.schedulers.Schedulers;
 
 
 public class ActivationDialogFragment extends DialogFragment {
-    private DeviceAdminInteractor deviceAdminInteractor;
-    private Completable knoxKeyObservable;
-    private CompletableObserver knoxKeyObserver;
-    private BroadcastReceiver receiver;
+    public static final String DIALOG_TAG = "activation_dialog";
+    private final DeviceAdminInteractor deviceAdminInteractor;
+    private final Completable knoxKeyObservable;
+    private final CompletableObserver knoxKeyObserver;
+    private final BroadcastReceiver receiver;
     private Button turnOnAdminButton;
     private Button activateKnoxButton;
     private SharedPreferences sharedPreferences;
     private EditText knoxKeyEditText;
     private EditText backwardKeyEditText;
-
-    public static final String DIALOG_TAG = "activation_dialog";
 
     public ActivationDialogFragment() {
         deviceAdminInteractor = DeviceAdminInteractor.getInstance();
@@ -81,18 +80,18 @@ public class ActivationDialogFragment extends DialogFragment {
                     int errorCode = intent.getIntExtra(EnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
                     if (errorCode == EnterpriseLicenseManager.ERROR_NONE) {
                         handleResult(intent);
-                    } else  {
+                    } else {
                         handleError(intent, context, errorCode);
                     }
                 }
             }
         };
 
-        knoxKeyObservable = Completable.create(emmiter -> {
+        knoxKeyObservable = Completable.create(emitter -> {
             try {
-                emmiter.onComplete();
+                emitter.onComplete();
             } catch (Throwable e) {
-                emmiter.onError(e);
+                emitter.onError(e);
             }
         });
 
@@ -134,7 +133,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
         Dialog dialog = getDialog();
         if (dialog != null) {
-            int width = (int)(getResources().getDisplayMetrics().widthPixels * 0.9);
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
             dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
     }
@@ -181,16 +180,16 @@ public class ActivationDialogFragment extends DialogFragment {
             }
 
             knoxKeyObservable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(knoxKeyObserver);
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(knoxKeyObserver);
         });
 
         Button backupButton = view.findViewById(R.id.backupButton);
         backupButton.setOnClickListener(v -> {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.backup_database_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.backup_database_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.backup_database_dialog_text);
 
@@ -205,8 +204,8 @@ public class ActivationDialogFragment extends DialogFragment {
         Button deleteButton = view.findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(v -> {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_app_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.delete_app_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_app_dialog_text);
 
@@ -264,7 +263,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
         // Allow the user to try again
         setLicenseState(false);
-        LogUtils.info( "License activation failed");
+        LogUtils.info("License activation failed");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,11 +11,11 @@ import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
 
 public class DomainPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 4;
-    private String tabTitles[];
+    private final String[] tabTitles;
 
     public DomainPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
-        tabTitles = new String[] {
+        tabTitles = new String[]{
                 context.getString(R.string.blacklist_url_fragment_title),
                 context.getString(R.string.whitelist_url_fragment_title),
                 context.getString(R.string.provider_url_fragment_title),
@@ -28,7 +29,7 @@ public class DomainPagerAdapter extends FragmentPagerAdapter {
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
     }
 

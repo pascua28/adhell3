@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.db.migration;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.migration.Migration;
+import android.support.annotation.NonNull;
 
 public class Migration_24_25 extends Migration {
 
@@ -10,7 +11,7 @@ public class Migration_24_25 extends Migration {
     }
 
     @Override
-    public void migrate(SupportSQLiteDatabase database) {
+    public void migrate(@NonNull SupportSQLiteDatabase database) {
         database.execSQL("ALTER TABLE AppInfo ADD COLUMN hasCustomDns INTEGER NOT NULL DEFAULT 0");
         database.execSQL("CREATE TABLE DnsPackage " +
                 "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +

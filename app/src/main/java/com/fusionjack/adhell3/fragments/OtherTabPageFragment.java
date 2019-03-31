@@ -4,11 +4,10 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 public class OtherTabPageFragment extends Fragment {
-    private static final String ARG_PAGE = "page";
-
     public static final int APP_COMPONENT_PAGE = 0;
-    public static final int DNS_PAGE = 1;
+    private static final int DNS_PAGE = 1;
     public static final int SETTINGS_PAGE = 2;
+    private static final String ARG_PAGE = "page";
 
     public static Fragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -23,7 +22,7 @@ public class OtherTabPageFragment extends Fragment {
                 fragment = new DnsFragment();
                 break;
             case SETTINGS_PAGE:
-                default:
+            default:
                 fragment = new SettingsFragment();
                 break;
         }

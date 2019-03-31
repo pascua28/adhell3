@@ -6,7 +6,7 @@ public class PermissionInfo implements IComponentInfo {
     public final String name;
     public final String label;
     private final int level;
-    private String packageName;
+    private final String packageName;
 
     PermissionInfo(String name, String label, int level, String packageName) {
         this.name = name;

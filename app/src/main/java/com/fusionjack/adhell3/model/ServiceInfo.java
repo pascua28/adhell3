@@ -2,8 +2,8 @@ package com.fusionjack.adhell3.model;
 
 public class ServiceInfo implements IComponentInfo {
 
-    private String packageName;
-    private String name;
+    private final String packageName;
+    private final String name;
 
     ServiceInfo(String packageName, String name) {
         this.packageName = packageName;

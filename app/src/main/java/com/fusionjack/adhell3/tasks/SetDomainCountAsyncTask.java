@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
 
 public class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
 
-    private WeakReference<Context> contextWeakReference;
+    private final WeakReference<Context> contextWeakReference;
 
     public SetDomainCountAsyncTask(Context context) {
         this.contextWeakReference = new WeakReference<>(context);

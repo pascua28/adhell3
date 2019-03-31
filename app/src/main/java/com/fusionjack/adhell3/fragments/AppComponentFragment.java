@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,6 +26,8 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
+import java.util.Objects;
+
 public class AppComponentFragment extends AppFragment {
 
     @Override
@@ -36,10 +39,10 @@ public class AppComponentFragment extends AppFragment {
 
         if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !AppPreferences.getInstance().getWarningDialogAppComponentDontShow()) {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            CheckBox dontShowAgain =  dialogView.findViewById(R.id.questionDontShow);
+            CheckBox dontShowAgain = dialogView.findViewById(R.id.questionDontShow);
             dontShowAgain.setVisibility(View.VISIBLE);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.dialog_system_app_components_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.dialog_system_app_components_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_system_app_components_info);
             new AlertDialog.Builder(context)
@@ -63,8 +66,8 @@ public class AppComponentFragment extends AppFragment {
 
     private void enableAllAppComponents() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_enable_components_title);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_enable_components_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_enable_components_info);
         new AlertDialog.Builder(context)
@@ -79,7 +82,7 @@ public class AppComponentFragment extends AppFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_app_component, container, false);
@@ -92,7 +95,7 @@ public class AppComponentFragment extends AppFragment {
         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentManager fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
             Bundle bundle = new Bundle();
             AppInfo appInfo = adapter.getItem(position);
             bundle.putString("packageName", appInfo.packageName);

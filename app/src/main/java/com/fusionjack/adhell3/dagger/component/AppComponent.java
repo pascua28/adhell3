@@ -13,5 +13,6 @@ import dagger.Component;
 @Component(modules = {AppModule.class, AdminModule.class, EnterpriseModule.class})
 public interface AppComponent {
     void inject(DeviceAdminInteractor deviceAdminInteractor);
+
     void inject(AdhellFactory adhellFactory);
 }

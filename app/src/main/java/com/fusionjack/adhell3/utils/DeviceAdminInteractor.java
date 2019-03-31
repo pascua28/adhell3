@@ -17,8 +17,6 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 
-import java.io.File;
-
 import javax.inject.Inject;
 
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_6;
@@ -34,17 +32,13 @@ import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODE
 
 public final class DeviceAdminInteractor {
     private static final int RESULT_ENABLE = 42;
-
-    private static DeviceAdminInteractor instance;
-
-    private final String KNOX_KEY = "knox_key";
-    private final String BACKWARD_KEY = "backward_key";
-
     private static final String KNOX_FIREWALL_PERMISSION = "com.samsung.android.knox.permission.KNOX_FIREWALL";
     private static final String KNOX_APP_MGMT_PERMISSION = "com.samsung.android.knox.permission.KNOX_APP_MGMT";
     private static final String MDM_FIREWALL_PERMISSION = "android.permission.sec.MDM_FIREWALL";
     private static final String MDM_APP_MGMT_PERMISSION = "android.permission.sec.MDM_APP_MGMT";
-
+    private static DeviceAdminInteractor instance;
+    private final String KNOX_KEY = "knox_key";
+    private final String BACKWARD_KEY = "backward_key";
     @Nullable
     @Inject
     KnoxEnterpriseLicenseManager knoxEnterpriseLicenseManager;
@@ -79,18 +73,13 @@ public final class DeviceAdminInteractor {
         return instance;
     }
 
-    public enum KNOX_KEY_TYPE {
-        KLM_KEY,
-        ELM_KEY
-    }
-
     /**
      * Check if admin enabled
      *
      * @return void
      */
     public boolean isAdminActive() {
-        return devicePolicyManager.isAdminActive(componentName);
+        return devicePolicyManager != null && devicePolicyManager.isAdminActive(componentName);
     }
 
     /**
@@ -158,17 +147,8 @@ public final class DeviceAdminInteractor {
         return sharedPreferences.getString(KNOX_KEY, BuildConfig.SKL_KEY);
     }
 
-    public String getBackwardKey(SharedPreferences sharedPreferences) {
+    private String getBackwardKey(SharedPreferences sharedPreferences) {
         return sharedPreferences.getString(BACKWARD_KEY, BuildConfig.BACKWARDS_KEY);
-    }
-
-    private String getKey(String prefName, String configKey, SharedPreferences sharedPreferences) {
-        String storedKey = sharedPreferences.getString(prefName, configKey);
-        if (!configKey.isEmpty() && !configKey.equalsIgnoreCase(storedKey)) {
-            // The key might be newer than the stored one
-            return configKey;
-        }
-        return storedKey;
     }
 
     public void setKnoxKey(SharedPreferences sharedPreferences, String key) {
@@ -183,44 +163,23 @@ public final class DeviceAdminInteractor {
         editor.apply();
     }
 
-    public boolean installApk(String pathToApk) {
-        if (applicationPolicy == null) {
-            LogUtils.info( "applicationPolicy variable is null");
-            return false;
-        }
-        try {
-            File file = new File(pathToApk);
-            if (!file.exists()) {
-                LogUtils.info( "apk fail does not exist: " + pathToApk);
-                return false;
-            }
-
-            boolean result = applicationPolicy.installApplication(pathToApk, false);
-            LogUtils.info( "Is Application installed: " + result);
-            return result;
-        } catch (Throwable e) {
-            LogUtils.error( "Failed to install application", e);
-            return false;
-        }
-    }
-
     public boolean isSupported() {
         return isSamsung() && isKnoxSupported() && isKnoxVersionSupported();
     }
 
     private boolean isSamsung() {
-        LogUtils.info( "Device manufacturer: " + Build.MANUFACTURER);
+        LogUtils.info("Device manufacturer: " + Build.MANUFACTURER);
         return Build.MANUFACTURER.equals("samsung");
     }
 
     private boolean isKnoxVersionSupported() {
         if (enterpriseDeviceManager == null) {
-            LogUtils.info( "Knox is not supported: enterpriseDeviceManager is null");
+            LogUtils.info("Knox is not supported: enterpriseDeviceManager is null");
             return false;
         }
 
         int apiLevel = EnterpriseDeviceManager.getAPILevel();
-        LogUtils.info( "Knox API level: " + apiLevel);
+        LogUtils.info("Knox API level: " + apiLevel);
         switch (apiLevel) {
             case KNOX_2_6:
             case KNOX_2_7:
@@ -240,10 +199,10 @@ public final class DeviceAdminInteractor {
 
     private boolean isKnoxSupported() {
         if (knoxEnterpriseLicenseManager == null || enterpriseLicenseManager == null) {
-            LogUtils.info( "Knox is not supported: knoxEnterpriseLicenseManager or enterpriseLicenseManager is null");
+            LogUtils.info("Knox is not supported: knoxEnterpriseLicenseManager or enterpriseLicenseManager is null");
             return false;
         }
-        LogUtils.info( "Knox is supported");
+        LogUtils.info("Knox is supported");
         return true;
     }
 
@@ -264,5 +223,10 @@ public final class DeviceAdminInteractor {
 
     private boolean isKnox26() {
         return EnterpriseDeviceManager.getAPILevel() == KNOX_2_6;
+    }
+
+    public enum KNOX_KEY_TYPE {
+        KLM_KEY,
+        ELM_KEY
     }
 }

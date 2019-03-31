@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.db.migration;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.migration.Migration;
+import android.support.annotation.NonNull;
 
 public class Migration_20_21 extends Migration {
 
@@ -10,7 +11,7 @@ public class Migration_20_21 extends Migration {
     }
 
     @Override
-    public void migrate(SupportSQLiteDatabase database) {
+    public void migrate(@NonNull SupportSQLiteDatabase database) {
         database.execSQL("ALTER TABLE BlockUrlProviders ADD COLUMN policyPackageId TEXT DEFAULT 'default-policy' REFERENCES PolicyPackage(id)");
         database.execSQL("ALTER TABLE UserBlockUrl ADD COLUMN policyPackageId TEXT DEFAULT 'default-policy' REFERENCES PolicyPackage(id)");
         database.execSQL("ALTER TABLE WhiteUrl ADD COLUMN policyPackageId TEXT DEFAULT 'default-policy' REFERENCES PolicyPackage(id)");

@@ -16,14 +16,13 @@
 
                 <size
                     android:width="76dip"
-                    android:height="76dip"/>
+                    android:height="76dip" />
                 <gradient
                     android:angle="0"
                     android:endColor="@color/colorAccent"
                     android:startColor="@android:color/transparent"
                     android:type="sweep"
-                    android:useLevel="false"
-                    />
+                    android:useLevel="false" />
             </shape>
         </rotate>
     </item>

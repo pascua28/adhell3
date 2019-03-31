@@ -27,10 +27,11 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
 
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
     public BlockUrlProviderAdapter(Context context, List<BlockUrlProvider> blockUrlProviders) {
         super(context, 0, blockUrlProviders);
@@ -73,8 +74,8 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         }
         deleteUrlImageView.setOnClickListener(imageView -> {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_provider_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.delete_provider_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_provider_dialog_text);
 
@@ -92,8 +93,8 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
     }
 
     private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private BlockUrlProviderAdapter adapter;
+        private final BlockUrlProvider provider;
+        private final BlockUrlProviderAdapter adapter;
 
         DeleteProviderAsyncTask(BlockUrlProvider provider, BlockUrlProviderAdapter adapter) {
             this.provider = provider;
@@ -115,10 +116,10 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
     }
 
     private static class GetAllBlockedUrlsAsyncTask extends AsyncTask<Void, Void, Integer> {
-        private BlockUrlProvider provider;
-        private boolean isChecked;
-        private BlockUrlProviderAdapter adapter;
-        private WeakReference<Context> contextReference;
+        private final BlockUrlProvider provider;
+        private final boolean isChecked;
+        private final BlockUrlProviderAdapter adapter;
+        private final WeakReference<Context> contextReference;
 
         GetAllBlockedUrlsAsyncTask(BlockUrlProvider provider, boolean isChecked, BlockUrlProviderAdapter adapter, Context context) {
             this.provider = provider;
@@ -147,8 +148,8 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                 adapter.notifyDataSetChanged();
 
                 if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
-                    String message = String.format("The total number of unique domains %d exceeds the maximum limit of %d",
-                                    totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
+                    String message = String.format(Locale.getDefault(), "The total number of unique domains %d exceeds the maximum limit of %d",
+                            totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show();
                 } else {
                     // Update the total unique domain count

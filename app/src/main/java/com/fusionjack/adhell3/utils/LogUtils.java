@@ -28,7 +28,7 @@ public final class LogUtils {
         String filename = String.format("adhell_logcat_%s.txt", System.currentTimeMillis());
         File logFile = new File(Environment.getExternalStorageDirectory(), filename);
         try {
-            Runtime.getRuntime().exec( "logcat -f " + logFile + " | grep com.fusionjack.adhell3");
+            Runtime.getRuntime().exec("logcat -f " + logFile + " | grep com.fusionjack.adhell3");
         } catch (IOException e) {
             error(e.getMessage(), e);
             return "";

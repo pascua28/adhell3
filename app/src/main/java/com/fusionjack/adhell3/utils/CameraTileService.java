@@ -10,16 +10,6 @@ import com.fusionjack.adhell3.R;
 public class CameraTileService extends TileService {
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onTileAdded() {
-        super.onTileAdded();
-    }
-
-    @Override
     public void onTileRemoved() {
         super.onTileRemoved();
 
@@ -32,11 +22,6 @@ public class CameraTileService extends TileService {
         super.onStartListening();
 
         updateTitle(AdhellFactory.getInstance().getCameraState());
-    }
-
-    @Override
-    public void onStopListening() {
-        super.onStopListening();
     }
 
     @Override

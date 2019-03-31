@@ -16,7 +16,7 @@ public class AppModule {
 
     private static final String APP_GENERAL_PREFERENCES = "app_general_preferences";
 
-    private Application mApplication;
+    private final Application mApplication;
 
     public AppModule(Application application) {
         mApplication = application;

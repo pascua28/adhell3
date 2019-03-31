@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants">
@@ -10,19 +11,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/deleteUrlProviderImageView"
-        android:layout_toStartOf="@+id/deleteUrlProviderImageView"
         android:layout_margin="5dp"
-        android:text="https://adaway.org/hosts.txt" />
+        android:layout_toStartOf="@+id/deleteUrlProviderImageView"
+        android:layout_toLeftOf="@+id/deleteUrlProviderImageView"
+        android:text="https://adaway.org/hosts.txt"
+        tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/blockUrlCountTextView"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/blockUrlProviderTextView"
-        android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
         android:lines="1"
         android:singleLine="true"
         android:text="2597" />
@@ -31,36 +33,39 @@
         android:id="@+id/urlProviderCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="24dp"
-        android:layout_margin="5dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_margin="5dp"
         android:scaleX="1.50"
-        android:scaleY="1.50"/>
+        android:scaleY="1.50"
+        tools:ignore="RtlHardcoded" />
 
     <ImageView
         android:id="@+id/deleteUrlProviderImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:layout_toLeftOf="@+id/urlProviderCheckBox"
-        android:layout_toStartOf="@+id/urlProviderCheckBox"
         android:layout_centerVertical="true"
+        android:layout_margin="5dp"
+        android:layout_toStartOf="@+id/urlProviderCheckBox"
+        android:layout_toLeftOf="@+id/urlProviderCheckBox"
         android:contentDescription="@string/delete_url"
-        android:tint="@color/colorRed"
         android:scaleX="1.50"
         android:scaleY="1.50"
-        android:src="@drawable/ic_delete_black_24dp" />
+        android:src="@drawable/ic_delete_black_24dp"
+        android:tint="@color/colorRed"
+        tools:ignore="RtlHardcoded" />
 
     <TextView
         android:id="@+id/lastUpdatedTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:layout_marginStart="15dp"
         android:layout_below="@+id/blockUrlProviderTextView"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
         android:layout_toEndOf="@+id/blockUrlCountTextView"
         android:layout_toRightOf="@+id/blockUrlCountTextView"
-        android:text="2017-06-30 16:00:00" />
+        android:text="2017-06-30 16:00:00"
+        tools:ignore="RtlHardcoded" />
 
 </RelativeLayout>

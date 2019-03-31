@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -51,7 +52,7 @@ public class ProviderListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_provider, container, false);
 
         // Set URL limit
@@ -123,8 +124,8 @@ public class ProviderListFragment extends Fragment {
     }
 
     private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private String provider;
-        private WeakReference<Context> contextWeakReference;
+        private final String provider;
+        private final WeakReference<Context> contextWeakReference;
         private BlockUrlProvider blockUrlProvider;
 
         AddProviderAsyncTask(String provider, Context context) {
@@ -168,8 +169,8 @@ public class ProviderListFragment extends Fragment {
     }
 
     private static class LoadProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private WeakReference<Context> contextWeakReference;
+        private final BlockUrlProvider provider;
+        private final WeakReference<Context> contextWeakReference;
 
         LoadProviderAsyncTask(BlockUrlProvider provider, Context context) {
             this.provider = provider;
@@ -208,7 +209,7 @@ public class ProviderListFragment extends Fragment {
     }
 
     private static class UpdateProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Context> contextWeakReference;
+        private final WeakReference<Context> contextWeakReference;
 
         UpdateProviderAsyncTask(Context context) {
             this.contextWeakReference = new WeakReference<>(context);
@@ -242,7 +243,7 @@ public class ProviderListFragment extends Fragment {
     }
 
     private static class SetProviderAsyncTask extends AsyncTask<Void, Void, List<BlockUrlProvider>> {
-        private WeakReference<Context> contextWeakReference;
+        private final WeakReference<Context> contextWeakReference;
 
         SetProviderAsyncTask(Context context) {
             this.contextWeakReference = new WeakReference<>(context);

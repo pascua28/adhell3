@@ -19,9 +19,9 @@ public class WhiteUrl {
     public long id;
 
     @ColumnInfo(name = "url")
-    public String url;
+    public final String url;
 
-    public Date insertedAt;
+    public final Date insertedAt;
 
     public WhiteUrl(String url, Date insertedAt) {
         this.url = url;

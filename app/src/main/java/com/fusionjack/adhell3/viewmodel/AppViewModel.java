@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.viewmodel;
 
 import android.arch.lifecycle.ViewModel;
-import android.view.View;
 import android.widget.ProgressBar;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -16,7 +15,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class AppViewModel extends ViewModel {
 
-    private AppRepository repository;
+    private final AppRepository repository;
 
     public AppViewModel() {
         this.repository = new AppRepository();

@@ -21,9 +21,9 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import java.lang.ref.WeakReference;
 
 public class SetAppAsyncTask extends AsyncTask<Void, Void, Void> {
-    private AppFlag appFlag;
-    private AppInfo appInfo;
-    private WeakReference<Context> contextWeakReference;
+    private final AppFlag appFlag;
+    private final AppInfo appInfo;
+    private final WeakReference<Context> contextWeakReference;
 
     public SetAppAsyncTask(AppInfo appInfo, AppFlag appFlag, Context context) {
         this.appInfo = appInfo;

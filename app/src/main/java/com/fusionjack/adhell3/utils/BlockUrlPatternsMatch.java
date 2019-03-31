@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.utils;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,11 +30,11 @@ public final class BlockUrlPatternsMatch {
     private BlockUrlPatternsMatch() {
     }
 
-    private static boolean wildcardValid (String domain) {
+    private static boolean wildcardValid(String domain) {
         return wildcard_r.matcher(domain).matches();
     }
 
-    private static boolean domainValid (String domain){
+    private static boolean domainValid(String domain) {
         return domain_r.matcher(domain).matches();
     }
 
@@ -86,7 +87,7 @@ public final class BlockUrlPatternsMatch {
         return BlockUrlPatternsMatch.domainValid(url);
     }
 
-    public static String getValidKnoxUrl(String url) {
+    private static String getValidKnoxUrl(String url) {
         // Knox seems invalidate a domain if the prefix does not contain any letters.
         // We will programmatically prefix domains such as 123.test.com, but not t123.test.com
 

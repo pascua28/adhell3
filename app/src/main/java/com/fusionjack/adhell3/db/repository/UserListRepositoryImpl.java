@@ -7,7 +7,7 @@ import io.reactivex.Single;
 
 public abstract class UserListRepositoryImpl implements UserListRepository {
 
-    protected AppDatabase appDatabase;
+    final AppDatabase appDatabase;
 
     UserListRepositoryImpl() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();

@@ -59,6 +59,7 @@ import com.fusionjack.adhell3.db.migration.Migration_24_25;
 }, version = 25, exportSchema = false)
 
 public abstract class AppDatabase extends RoomDatabase {
+    private static final String DATABASE_FILE = "adhell-database";
     private static final Migration MIGRATION_14_15 = new Migration_14_15(14, 15);
     private static final Migration MIGRATION_15_16 = new Migration_15_16(15, 16);
     private static final Migration MIGRATION_16_17 = new Migration_16_17(16, 17);
@@ -71,8 +72,6 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final Migration MIGRATION_23_24 = new Migration_23_24(23, 24);
     private static final Migration MIGRATION_24_25 = new Migration_24_25(24, 25);
     private static AppDatabase INSTANCE;
-
-    public static final String DATABASE_FILE = "adhell-database";
 
     public static AppDatabase getAppDatabase(Context context) {
         if (INSTANCE == null) {
@@ -93,10 +92,6 @@ public abstract class AppDatabase extends RoomDatabase {
                             .build();
         }
         return INSTANCE;
-    }
-
-    public static void destroyInstance() {
-        INSTANCE = null;
     }
 
     public abstract BlockUrlDao blockUrlDao();

@@ -50,8 +50,8 @@ public class BlacklistFragment extends UserListFragment {
         blacklistView.setAdapter(adapter);
         blacklistView.setOnItemClickListener((parent, view1, position, id) -> {
             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_domain_firewall_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.delete_domain_firewall_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
 

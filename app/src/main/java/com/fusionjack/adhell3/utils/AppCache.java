@@ -17,7 +17,6 @@ import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
-import com.google.common.collect.Lists;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -34,19 +33,15 @@ import static com.fusionjack.adhell3.db.DatabaseFactory.WIFI_RESTRICTED_TYPE;
 
 public class AppCache {
     private static AppCache instance;
-    private Map<String, Drawable> appsIcons;
-    private Map<String, String> appsNames;
-    private Map<String, String> versionNames;
+    private final Map<String, Drawable> appsIcons;
+    private final Map<String, String> appsNames;
+    private final Map<String, String> versionNames;
 
     private AppCache(Context context, Handler handler) {
         this.appsIcons = new HashMap<>();
         this.appsNames = new HashMap<>();
         this.versionNames = new HashMap<>();
         loadApps(context, handler);
-    }
-
-    private void loadApps(Context context, Handler handler) {
-        new AppCacheAsyncTask(context, handler, appsIcons, appsNames, versionNames).execute();
     }
 
     public static synchronized AppCache getInstance(Context context, Handler handler) {
@@ -60,6 +55,10 @@ public class AppCache {
         instance = null;
         instance = new AppCache(context, handler);
         return instance;
+    }
+
+    private void loadApps(Context context, Handler handler) {
+        new AppCacheAsyncTask(context, handler, appsIcons, appsNames, versionNames).execute();
     }
 
     public Map<String, Drawable> getIcons() {
@@ -76,11 +75,11 @@ public class AppCache {
 
     private static class AppCacheAsyncTask extends AsyncTask<Void, Void, Throwable> {
         private ProgressDialog dialog;
-        private Map<String, Drawable> appsIcons;
-        private Map<String, String> appsNames;
-        private Map<String, String> versionNames;
-        private Handler handler;
-        private WeakReference<Context> contextWeakReference;
+        private final Map<String, Drawable> appsIcons;
+        private final Map<String, String> appsNames;
+        private final Map<String, String> versionNames;
+        private final Handler handler;
+        private final WeakReference<Context> contextWeakReference;
 
         AppCacheAsyncTask(Context context, Handler handler, Map<String, Drawable> appsIcons,
                           Map<String, String> appsNames, Map<String, String> versionNames) {
@@ -121,7 +120,10 @@ public class AppCache {
                 appDatabase.applicationInfoDao().deleteAll();
 
                 int distributedAppCount = (int) Math.ceil(appCount / (double) cpuCount);
-                List<List<ApplicationInfo>> chunks = Lists.partition(apps, distributedAppCount);
+                List<List<ApplicationInfo>> chunks = new ArrayList<>();
+                for (int i=0; i<apps.size(); i += distributedAppCount) {
+                    chunks.add(apps.subList(i, Math.min(i + distributedAppCount, apps.size())));
+                }
                 for (List<ApplicationInfo> chunk : chunks) {
                     long id = distributedAppCount * tasks.size();
                     AppExecutor appExecutor = new AppExecutor(chunk, id);
@@ -222,7 +224,7 @@ public class AppCache {
     }
 
     private static class AppExecutor implements Callable<AppInfoResult> {
-        private List<ApplicationInfo> apps;
+        private final List<ApplicationInfo> apps;
         private long appId;
 
         AppExecutor(List<ApplicationInfo> apps, long appId) {
@@ -278,9 +280,9 @@ public class AppCache {
     }
 
     private static class AppInfoResult {
-        private Map<String, Drawable> appsIcons;
-        private Map<String, String> appsNames;
-        private Map<String, String> versionNames;
+        private final Map<String, Drawable> appsIcons;
+        private final Map<String, String> appsNames;
+        private final Map<String, String> versionNames;
 
         AppInfoResult() {
             this.appsIcons = new HashMap<>();
@@ -288,27 +290,27 @@ public class AppCache {
             this.versionNames = new HashMap<>();
         }
 
-        public void putAppIcon(String packageName, Drawable icon) {
+        void putAppIcon(String packageName, Drawable icon) {
             appsIcons.put(packageName, icon);
         }
 
-        public void putAppName(String packageName, String appName) {
+        void putAppName(String packageName, String appName) {
             appsNames.put(packageName, appName);
         }
 
-        public void putVersionName(String packageName, String versionName) {
+        void putVersionName(String packageName, String versionName) {
             versionNames.put(packageName, versionName);
         }
 
-        public Map<String, Drawable> getAppsIcons() {
+        Map<String, Drawable> getAppsIcons() {
             return appsIcons;
         }
 
-        public Map<String, String> getAppsNames() {
+        Map<String, String> getAppsNames() {
             return appsNames;
         }
 
-        public Map<String, String> getVersionNames() {
+        Map<String, String> getVersionNames() {
             return versionNames;
         }
     }

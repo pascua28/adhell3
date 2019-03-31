@@ -4,7 +4,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     private static CrashHandler instance;
 
-    private Thread.UncaughtExceptionHandler defaultHandler;
+    private final Thread.UncaughtExceptionHandler defaultHandler;
 
     private CrashHandler() {
         this.defaultHandler = Thread.getDefaultUncaughtExceptionHandler();

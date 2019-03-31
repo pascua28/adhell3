@@ -5,6 +5,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
+import android.support.annotation.NonNull;
 
 import com.fusionjack.adhell3.db.DateConverter;
 
@@ -29,6 +30,7 @@ public class ReportBlockedUrl {
         this.blockDate = timestamp;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "ReportBlockedUrl{" +

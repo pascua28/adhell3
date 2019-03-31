@@ -15,33 +15,11 @@ import javax.crypto.spec.PBEKeySpec;
 
 public class PasswordStorage {
 
-    static public class InvalidHashException extends Exception {
-        InvalidHashException(String message) {
-            super(message);
-        }
-
-        InvalidHashException(String message, Throwable source) {
-            super(message, source);
-        }
-    }
-
-    static public class CannotPerformOperationException extends Exception {
-        CannotPerformOperationException(String message) {
-            super(message);
-        }
-
-        CannotPerformOperationException(String message, Throwable source) {
-            super(message, source);
-        }
-    }
-
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
-
     // These constants may be changed without breaking existing hashes.
     private static final int SALT_BYTE_SIZE = 24;
     private static final int HASH_BYTE_SIZE = 18;
     private static final int PBKDF2_ITERATIONS = 5000;
-
     // These constants define the encoding and may not be changed.
     private static final int HASH_SECTIONS = 5;
     private static final int HASH_ALGORITHM_INDEX = 0;
@@ -66,12 +44,12 @@ public class PasswordStorage {
 
         // format: algorithm:iterations:hashSize:salt:hash
         return "sha1:" +
-            PBKDF2_ITERATIONS +
-            ":" + hashSize +
-            ":" +
-            toBase64(salt) +
-            ":" +
-            toBase64(hash);
+                PBKDF2_ITERATIONS +
+                ":" + hashSize +
+                ":" +
+                toBase64(salt) +
+                ":" +
+                toBase64(hash);
     }
 
     public static boolean verifyPassword(String password, String correctHash) throws CannotPerformOperationException, InvalidHashException {
@@ -160,6 +138,26 @@ public class PasswordStorage {
 
     private static String toBase64(byte[] array) {
         return Base64.encodeToString(array, Base64.DEFAULT);
+    }
+
+    static public class InvalidHashException extends Exception {
+        InvalidHashException(String message) {
+            super(message);
+        }
+
+        InvalidHashException(String message, Throwable source) {
+            super(message, source);
+        }
+    }
+
+    static public class CannotPerformOperationException extends Exception {
+        CannotPerformOperationException(String message) {
+            super(message);
+        }
+
+        CannotPerformOperationException(String message, Throwable source) {
+            super(message, source);
+        }
     }
 
 }

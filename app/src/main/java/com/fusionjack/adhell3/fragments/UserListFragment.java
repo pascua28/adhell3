@@ -9,9 +9,9 @@ import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
 
 public abstract class UserListFragment extends Fragment {
-    protected Context context;
-    protected SingleObserver<String> addObserver;
-    protected SingleObserver<String> deleteObserver;
+    Context context;
+    SingleObserver<String> addObserver;
+    SingleObserver<String> deleteObserver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

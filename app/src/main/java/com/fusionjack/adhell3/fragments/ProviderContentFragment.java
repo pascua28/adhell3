@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.SearchView;
@@ -42,7 +43,7 @@ public class ProviderContentFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_show_blocked_urls, container, false);
         new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
@@ -84,9 +85,9 @@ public class ProviderContentFragment extends Fragment {
     }
 
     private static class LoadBlockedUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
-        private WeakReference<Context> contextReference;
-        private AppDatabase appDatabase;
-        private Long providerId;
+        private final WeakReference<Context> contextReference;
+        private final AppDatabase appDatabase;
+        private final Long providerId;
 
         LoadBlockedUrlAsyncTask(Context context, Long providerId) {
             this.contextReference = new WeakReference<>(context);
@@ -105,7 +106,7 @@ public class ProviderContentFragment extends Fragment {
         protected void onPostExecute(List<String> blockedUrls) {
             Context context = contextReference.get();
             if (context != null) {
-                ListView listView = ((Activity)context).findViewById(R.id.blocked_url_list);
+                ListView listView = ((Activity) context).findViewById(R.id.blocked_url_list);
                 if (listView != null) {
                     ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, blockedUrls);
                     listView.setAdapter(itemsAdapter);
@@ -116,7 +117,7 @@ public class ProviderContentFragment extends Fragment {
                     swipeContainer.setRefreshing(false);
                 }
 
-                TextView totalBlockedUrls = ((Activity)context).findViewById(R.id.total_blocked_urls);
+                TextView totalBlockedUrls = ((Activity) context).findViewById(R.id.total_blocked_urls);
                 if (totalBlockedUrls != null) {
                     totalBlockedUrls.setText(String.format("%s%s",
                             context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
@@ -126,10 +127,10 @@ public class ProviderContentFragment extends Fragment {
     }
 
     private static class FilterUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
-        private WeakReference<Context> contextReference;
-        private AppDatabase appDatabase;
-        private String text;
-        private Long providerId;
+        private final WeakReference<Context> contextReference;
+        private final AppDatabase appDatabase;
+        private final String text;
+        private final Long providerId;
 
         FilterUrlAsyncTask(String text, Long providerId, Context context) {
             this.text = text;
@@ -153,7 +154,7 @@ public class ProviderContentFragment extends Fragment {
         protected void onPostExecute(List<String> list) {
             Context context = contextReference.get();
             if (context != null) {
-                ListView listView = ((Activity)context).findViewById(R.id.blocked_url_list);
+                ListView listView = ((Activity) context).findViewById(R.id.blocked_url_list);
                 if (listView != null) {
                     ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
                     listView.setAdapter(itemsAdapter);

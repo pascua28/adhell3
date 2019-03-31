@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/colorPrimaryDark">
+    android:background="@color/colorPrimaryDark"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/titleTextView"
@@ -11,8 +11,8 @@
         android:layout_height="wrap_content"
         android:padding="20dp"
         android:text="@string/enable_adhell_title"
-        android:textStyle="bold"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/adminInfoTextView"
@@ -39,8 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/turnOnAdminButton"
-        android:layout_marginTop="10dp"
         android:layout_marginLeft="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="10dp"
         android:text="@string/license_key_info" />
@@ -77,30 +77,30 @@
         android:text="@string/activate_license" />
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/activateKnoxButton">
+        android:layout_below="@id/activateKnoxButton"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/backupButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:layout_weight="1.0"
             android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="20dp"
+            android:layout_weight="1.0"
             android:text="@string/backup" />
 
         <Button
             android:id="@+id/deleteButton"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:layout_weight="1.0"
             android:layout_marginStart="10dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginTop="10dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginBottom="20dp"
+            android:layout_weight="1.0"
             android:text="@string/uninstall" />
 
     </LinearLayout>

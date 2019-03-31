@@ -31,14 +31,13 @@ import java.util.Map;
 
 public class AppInfoAdapter extends BaseAdapter {
 
-    private List<AppInfo> applicationInfoList;
-    private WeakReference<Context> contextReference;
-    private AppRepository.Type appType;
-    private Map<String, Drawable> appIcons;
+    public static final String RUNNING_TAG = "@@@RUNNING@@@";
+    private final List<AppInfo> applicationInfoList;
+    private final WeakReference<Context> contextReference;
+    private final AppRepository.Type appType;
+    private final Map<String, Drawable> appIcons;
     private Map<String, String> versionNames;
-    private ApplicationPolicy appPolicy;
-
-    public static String RUNNING_TAG = "@@@RUNNING@@@" ;
+    private final ApplicationPolicy appPolicy;
 
 
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, boolean reload, Context context) {
@@ -120,8 +119,8 @@ public class AppInfoAdapter extends BaseAdapter {
                         String finalAppName = appName;
                         holder.stopH.setOnClickListener(v -> {
                             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-                            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                            titlTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
+                            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                            titleTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
                             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                             questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), finalAppName));
 
