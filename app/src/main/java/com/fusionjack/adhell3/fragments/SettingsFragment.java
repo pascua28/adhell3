@@ -6,9 +6,11 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
 import android.support.v14.preference.SwitchPreference;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -120,6 +123,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case SET_PASSWORD_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();
+                int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, Objects.requireNonNull(this.getActivity()).getTheme());
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
                     View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_password, (ViewGroup) getView(), false);
                     AlertDialog passwordDialog = new AlertDialog.Builder(context)
@@ -128,20 +132,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             .setNegativeButton(android.R.string.no, null)
                             .create();
 
+                    ImageView icon = dialogView.findViewById(R.id.passwordIcon);
+                    icon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                     passwordDialog.setOnShowListener(dialogInterface -> {
                         Button positiveButton = passwordDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                         positiveButton.setOnClickListener(view -> {
-                            EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
+                            TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
+                            TextInputEditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
+                            TextInputEditText passwordConfirmEditText = dialogView.findViewById(R.id.passwordConfirmEditText);
                             String password = passwordEditText.getText().toString();
+                            String passwordConfirm = passwordConfirmEditText.getText().toString();
                             if (!password.isEmpty()) {
-                                try {
-                                    AppPreferences.getInstance().setPassword(password);
-                                    passwordDialog.dismiss();
-                                } catch (PasswordStorage.CannotPerformOperationException e) {
-                                    e.printStackTrace();
+                                if (password.equals(passwordConfirm)) {
+                                    try {
+                                        AppPreferences.getInstance().setPassword(password);
+                                        passwordDialog.dismiss();
+                                    } catch (PasswordStorage.CannotPerformOperationException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    infoTextView.setText(R.string.dialog_mismatch_password);
                                 }
                             } else {
-                                TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
                                 infoTextView.setText(R.string.dialog_empty_password);
                             }
                         });

@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3;
 
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -15,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,7 @@ import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.BiometricUtils;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -38,11 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
-    private AlertDialog passwordDialog;
+    public AlertDialog passwordDialog;
     private BottomNavigationView bottomBar;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
     private String themeChange;
+    private boolean biometricSupport;
 
     @Override
     public void onBackPressed() {
@@ -64,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        biometricSupport = BiometricUtils.checkBiometricSupport(this);
         getDelegate();
         if (mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -193,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean isKnoxValid() {
+    public boolean isKnoxValid() {
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
             if (!isActivationDialogVisible()) {
@@ -229,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
                 onTabSelected(R.id.homeTab);
             }
         }
-
         return true;
     }
 
@@ -240,13 +246,23 @@ public class MainActivity extends AppCompatActivity {
 
     private AlertDialog createPasswordDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_enter_password, findViewById(android.R.id.content), false);
+        int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.getTheme());
         AlertDialog passwordDialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, null)
                 .setCancelable(false)
                 .create();
 
+        ImageView icon = dialogView.findViewById(R.id.passwordIcon);
+        icon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        ImageButton fingerprintButton = dialogView.findViewById(R.id.fingerprintButton);
         passwordDialog.setOnShowListener(dialogInterface -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && biometricSupport) {
+                fingerprintButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                fingerprintButton.setVisibility(View.VISIBLE);
+                fingerprintButton.setOnClickListener(v -> BiometricUtils.authenticateUser(this));
+                BiometricUtils.authenticateUser(this);
+            }
             Button button = passwordDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> {
                 EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
@@ -267,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-
         return passwordDialog;
     }
+
 }

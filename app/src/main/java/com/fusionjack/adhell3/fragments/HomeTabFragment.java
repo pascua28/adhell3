@@ -194,6 +194,7 @@ public class HomeTabFragment extends Fragment {
             swipeContainer.setOnRefreshListener(() ->
                     new RefreshAsyncTask(getContext()).execute()
             );
+
             new RefreshAsyncTask(getContext()).execute();
         } else {
             infoTextView.setVisibility(View.INVISIBLE);

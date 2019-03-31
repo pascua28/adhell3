@@ -207,10 +207,15 @@
     <string name="dialog_set_password_summary">Protect this app with a password</string>
     <string name="dialog_enter_password_title">Enter password</string>
     <string name="dialog_enter_password_summary">Enter the password to use this app</string>
+    <string name="dialog_enter_password_confirm">Confirm password</string>
     <string name="dialog_wrong_password">The password is wrong!</string>
     <string name="dialog_empty_password">The password cannot be empty!</string>
-    <string name="set_password_title">Protect Adhell3 with a password</string>
-    <string name="set_password_summary">If you forget the password, you need to uninstall Adhell3.</string>
+    <string name="dialog_mismatch_password">Entered passwords mismatch!</string>
+    <string name="set_password_title">Protect Adhell3 with a password and fingerprint</string>
+    <string name="set_password_summary">
+        If you forget the password, you need to uninstall Adhell3.
+        \n(Fingerprint is only compatible with Android 9+)
+    </string>
     <string name="set_night_mode">Night Mode</string>
     <string name="set_night_mode_summary">Enable dark theme for Adhell3</string>
     <string name="create_logcat_title">Create logcat</string>
@@ -252,4 +257,15 @@
     <string name="menu_item_show_stopped_apps">Show stopped Apps</string>
     <string name="home_status_title">Application status</string>
     <string name="dialog_question_dont_show_again">Don\'t show again</string>
+    <string name="biometric_check_lockscreen_security">Lock screen security not enabled in Settings</string>
+    <string name="biometric_check_permission">Fingerprint authentication permission not enabled</string>
+    <string name="biometric_check_hardware">Fingerprint scanner not detected</string>
+    <string name="biometric_check_enrolled_fingerprint">No enrolled fingerprint</string>
+    <string name="biometric_auth_error">Authentication error:</string>
+    <string name="biometric_auth_succeeded">Authentication Succeeded !</string>
+    <string name="biometric_auth_cancel">Authentication cancelled</string>
+    <string name="biometric_dialog_title">Fingerprint Authentication</string>
+    <string name="biometric_dialog_subtitle">Authentication is required to continue</string>
+    <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>
+    <string name="biometric_dialog_cancel_button_text">Cancel</string>
 </resources>

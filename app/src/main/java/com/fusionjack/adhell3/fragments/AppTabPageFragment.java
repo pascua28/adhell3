@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.view.MenuCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -53,7 +54,9 @@ public class AppTabPageFragment extends AppFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.page = getArguments().getInt(ARG_PAGE);
+        if (getArguments() != null) {
+            this.page = getArguments().getInt(ARG_PAGE);
+        }
 
         AppRepository.Type type;
         switch (page) {
@@ -81,7 +84,7 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = null;
         ProgressBar loadingBar = null;
