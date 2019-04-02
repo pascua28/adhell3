@@ -24,9 +24,12 @@ import android.widget.Toast;
 
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
+import com.fusionjack.adhell3.fragments.AppTabPageFragment;
 import com.fusionjack.adhell3.fragments.DomainTabFragment;
+import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
+import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BiometricUtils;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomBar;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
-    private String themeChange;
+    public String themeChange;
     private boolean biometricSupport;
 
     @Override
@@ -69,6 +72,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Close Activity if it's not the root of the task
+        if (!isTaskRoot()) {
+            finish();
+            return;
+        }
+
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         biometricSupport = BiometricUtils.checkBiometricSupport(this);
         getDelegate();
@@ -284,6 +293,31 @@ public class MainActivity extends AppCompatActivity {
             });
         });
         return passwordDialog;
+    }
+
+    private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
+    private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
+    private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
+
+    public void setSelectedAppTab(int selectedTabId) {
+        this.SELECTED_APP_TAB = selectedTabId;
+    }
+    public int getSelectedAppTab() {
+        return this.SELECTED_APP_TAB;
+    }
+
+    public void setSelectedDomainTab(int selectedTabId) {
+        this.SELECTED_DOMAIN_TAB = selectedTabId;
+    }
+    public int getSelectedDomainTab() {
+        return this.SELECTED_DOMAIN_TAB;
+    }
+
+    public void setSelectedOtherTab(int selectedTabId) {
+        this.SELECTED_OTHER_TAB = selectedTabId;
+    }
+    public int getSelectedOtherTab() {
+        return this.SELECTED_OTHER_TAB;
     }
 
 }

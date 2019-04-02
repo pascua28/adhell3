@@ -7,7 +7,7 @@ public class DomainTabPageFragment extends Fragment {
     private static final int BLACKLIST_PAGE = 0;
     private static final int WHITELIST_PAGE = 1;
     public static final int PROVIDER_LIST_PAGE = 2;
-    public static final int PROVIDER_CONTENT_PAGE = 3;
+    protected static final int PROVIDER_CONTENT_PAGE = 3;
     private static final String ARG_PAGE = "page";
 
     public static Fragment newInstance(int page) {

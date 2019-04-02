@@ -216,6 +216,9 @@
         If you forget the password, you need to uninstall Adhell3.
         \n(Fingerprint is only compatible with Android 9+)
     </string>
+    <string name="restore_warning_title">Reset Don\'t show again settings</string>
+    <string name="restore_warning_summary">Restore Warning dialog that was marked Don\'t show again</string>
+    <string name="restore_warning_success">Warning dialog restored</string>
     <string name="set_night_mode">Night Mode</string>
     <string name="set_night_mode_summary">Enable dark theme for Adhell3</string>
     <string name="create_logcat_title">Create logcat</string>

@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.DomainPagerAdapter;
 
@@ -30,6 +31,7 @@ public class DomainTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle("Domains Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
+        MainActivity mainActivity = (MainActivity) parentActivity;
         if (parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -51,6 +53,7 @@ public class DomainTabFragment extends Fragment {
                         super.onTabSelected(tab);
                         int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
                         tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        mainActivity.setSelectedDomainTab(tab.getPosition());
                     }
 
                     @Override
@@ -65,6 +68,7 @@ public class DomainTabFragment extends Fragment {
                         super.onTabReselected(tab);
                         int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
                         tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        mainActivity.setSelectedDomainTab(tab.getPosition());
                     }
                 }
         );
@@ -78,7 +82,7 @@ public class DomainTabFragment extends Fragment {
         }
 
         // Select provider list tab as default
-        TabLayout.Tab tab = tabLayout.getTabAt(PROVIDER_LIST_PAGE);
+        TabLayout.Tab tab = tabLayout.getTabAt(mainActivity.getSelectedDomainTab());
         if (tab != null) {
             tab.select();
         }

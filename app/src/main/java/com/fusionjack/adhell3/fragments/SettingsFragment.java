@@ -55,6 +55,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private static final String DELETE_PREFERENCE = "delete_preference";
     private static final String BACKUP_PREFERENCE = "backup_preference";
     private static final String RESTORE_PREFERENCE = "restore_preference";
+    private static final String RESTORE_WARNING_PREFERENCE = "restore_warning_dialog";
     private Context context;
 
     @Override
@@ -169,6 +170,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     AppPreferences.getInstance().resetPassword();
                 }
                 break;
+            }
+            case RESTORE_WARNING_PREFERENCE: {
+                AppPreferences.getInstance().setWarningDialogAppComponentDontShow(false);
+                Toast.makeText(context, getString(R.string.restore_warning_success), Toast.LENGTH_LONG).show();
             }
             case SET_NIGHT_MODE_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();

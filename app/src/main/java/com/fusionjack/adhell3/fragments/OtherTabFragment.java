@@ -13,12 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
 
 import java.util.Objects;
 
-import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.APP_COMPONENT_PAGE;
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAGE;
 
 public class OtherTabFragment extends Fragment {
@@ -38,6 +38,7 @@ public class OtherTabFragment extends Fragment {
         }
         Objects.requireNonNull(getActivity()).setTitle("Others");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
+        MainActivity mainActivity = (MainActivity) parentActivity;
         if (parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -59,6 +60,7 @@ public class OtherTabFragment extends Fragment {
                         super.onTabSelected(tab);
                         int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        mainActivity.setSelectedOtherTab(tab.getPosition());
                     }
 
                     @Override
@@ -73,6 +75,7 @@ public class OtherTabFragment extends Fragment {
                         super.onTabReselected(tab);
                         int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        mainActivity.setSelectedOtherTab(tab.getPosition());
                     }
                 }
         );
@@ -88,7 +91,16 @@ public class OtherTabFragment extends Fragment {
             }
         }
 
-        if (viewpagerPosition == null) {
+        if (viewpagerPosition != null) if (viewpagerPosition.equals("Settings")) {
+            mainActivity.setSelectedOtherTab(SETTINGS_PAGE);
+            mainActivity.themeChange = null;
+        }
+        TabLayout.Tab tab = tabLayout.getTabAt(mainActivity.getSelectedOtherTab());
+        if (tab != null) {
+            tab.select();
+        }
+
+/*        if (viewpagerPosition == null) {
             TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
             if (tab != null) {
                 tab.select();
@@ -105,7 +117,7 @@ public class OtherTabFragment extends Fragment {
                     tab.select();
                 }
             }
-        }
+        }*/
         return view;
     }
 }
