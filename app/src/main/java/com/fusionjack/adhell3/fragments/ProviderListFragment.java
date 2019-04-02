@@ -18,6 +18,7 @@ import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
@@ -80,13 +82,16 @@ public class ProviderListFragment extends Fragment {
 
         providerListView.setOnItemClickListener((parent, view1, position, id) -> {
             BlockUrlProvider provider = (BlockUrlProvider) parent.getItemAtPosition(position);
-            List<Fragment> fragments = getFragmentManager().getFragments();
+            List<Fragment> fragments = Objects.requireNonNull(getFragmentManager()).getFragments();
             for (Fragment fragment : fragments) {
                 if (fragment instanceof ProviderContentFragment) {
                     ((ProviderContentFragment) fragment).setProviderId(provider.id);
                 }
             }
-            TabLayout tabLayout = getParentFragment().getActivity().findViewById(R.id.domains_sliding_tabs);
+            TabLayout tabLayout = null;
+            if (getParentFragment() != null) {
+                tabLayout = Objects.requireNonNull(getParentFragment().getActivity()).findViewById(R.id.domains_sliding_tabs);
+            }
             if (tabLayout != null) {
                 TabLayout.Tab tab = tabLayout.getTabAt(PROVIDER_CONTENT_PAGE);
                 if (tab != null) {
@@ -120,6 +125,9 @@ public class ProviderListFragment extends Fragment {
                     .setNegativeButton(android.R.string.no, null).show();
         });
 
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
+        loadingBar.setVisibility(View.GONE);
+
         return view;
     }
 
@@ -131,6 +139,15 @@ public class ProviderListFragment extends Fragment {
         AddProviderAsyncTask(String provider, Context context) {
             this.provider = provider;
             this.contextWeakReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Context context = contextWeakReference.get();
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -163,6 +180,11 @@ public class ProviderListFragment extends Fragment {
 
                         new LoadProviderAsyncTask(blockUrlProvider, context).execute();
                     }
+                }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
                 }
             }
         }
@@ -204,6 +226,11 @@ public class ProviderListFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     }
                 }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -213,6 +240,15 @@ public class ProviderListFragment extends Fragment {
 
         UpdateProviderAsyncTask(Context context) {
             this.contextWeakReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Context context = contextWeakReference.get();
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -235,6 +271,11 @@ public class ProviderListFragment extends Fragment {
                 SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.providerSwipeContainer);
                 if (swipeContainer != null) {
                     swipeContainer.setRefreshing(false);
+                }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
                 }
 
                 new SetDomainCountAsyncTask(context).execute();

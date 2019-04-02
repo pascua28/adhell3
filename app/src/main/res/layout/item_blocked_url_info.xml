@@ -5,15 +5,15 @@
 
     <ImageView
         android:id="@+id/blockedDomainIconImageView"
-        android:layout_width="35dp"
-        android:layout_height="30dp"
+        android:layout_width="30dp"
+        android:layout_height="20dp"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:layout_marginStart="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="7dp"
         android:contentDescription="@string/app_name"
-        android:paddingStart="5dp"
+        android:paddingStart="10dp"
         android:scaleType="centerCrop"
         android:src="@mipmap/ic_launcher" />
 
@@ -22,10 +22,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/blockedDomainAppNameTextView"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="25dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
+        android:layout_centerVertical="true"
         android:layout_toStartOf="@id/blockedDomainTimeTextView"
         android:layout_toEndOf="@id/blockedDomainIconImageView"
         android:text="graph.facebook.com"
@@ -38,7 +37,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="20dp"
         android:text="12:05:12" />
 
 </RelativeLayout>

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fusionjack.adhell3.R;
@@ -53,6 +54,9 @@ public class ProviderContentFragment extends Fragment {
             providerId = null;
             new LoadBlockedUrlAsyncTask(getContext(), null).execute();
         });
+
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
+        loadingBar.setVisibility(View.GONE);
 
         return view;
     }
@@ -96,6 +100,15 @@ public class ProviderContentFragment extends Fragment {
         }
 
         @Override
+        protected void onPreExecute() {
+            Context context = contextReference.get();
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
         protected List<String> doInBackground(Void... o) {
             return providerId == null ?
                     BlockUrlUtils.getAllBlockedUrls(appDatabase) :
@@ -121,6 +134,11 @@ public class ProviderContentFragment extends Fragment {
                 if (totalBlockedUrls != null) {
                     totalBlockedUrls.setText(String.format("%s%s",
                             context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
+                }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
                 }
             }
         }

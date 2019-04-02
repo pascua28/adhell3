@@ -3,6 +3,8 @@ package com.fusionjack.adhell3.tasks;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fusionjack.adhell3.R;
@@ -34,6 +36,11 @@ public class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
             if (infoTextView != null) {
                 String strFormat = context.getResources().getString(R.string.total_unique_domains);
                 infoTextView.setText(String.format(strFormat, count));
+            }
+
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.GONE);
             }
         }
     }

@@ -1,7 +1,8 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:animateLayoutChanges="true">
 
     <TextView
         android:id="@+id/total_blocked_urls"
@@ -16,6 +17,7 @@
 
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/providerListSwipeContainer"
+        android:layout_below="@id/total_blocked_urls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -26,4 +28,14 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:visibility="visible" />
+
+</RelativeLayout>

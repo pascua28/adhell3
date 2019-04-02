@@ -3,7 +3,8 @@
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:animateLayoutChanges="true">
 
     <TextView
         android:id="@+id/noteTextView"
@@ -21,6 +22,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/noteTextView" />
+
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:visibility="visible" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/blacklist_actions"

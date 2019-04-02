@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class HomeTabFragment extends Fragment {
+
+    private static String STORAGE_FOLDER = "/Adhell3/Exports/";
 
     private FragmentManager fragmentManager;
     private AppCompatActivity parentActivity;
@@ -479,6 +482,15 @@ public class HomeTabFragment extends Fragment {
         }
 
         @Override
+        protected void onPreExecute() {
+            Context context = contextReference.get();
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
         protected HashMap<String, List<ReportBlockedUrl>> doInBackground(Void... voids) {
             HashMap<String, List<ReportBlockedUrl>> returnHashMap = new HashMap<>();
             List<ReportBlockedUrl> listReportBlockedUrl = FirewallUtils.getInstance().getReportBlockedUrl();
@@ -556,6 +568,11 @@ public class HomeTabFragment extends Fragment {
                 if (swipeContainer != null) {
                     swipeContainer.setRefreshing(false);
                 }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -577,7 +594,9 @@ public class HomeTabFragment extends Fragment {
                     set.add(domain.url);
                 }
 
-                File file = new File(Environment.getExternalStorageDirectory(), "adhell_exported_domains.txt");
+                File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+                if (!folder.exists()) folder.mkdirs();
+                File file = new File(folder, "adhell_exported_domains.txt");
                 FileWriter writer = new FileWriter(file);
                 for (String domain : set) {
                     writer.write(domain);

@@ -57,7 +57,6 @@ public class AppTabPageFragment extends AppFragment {
         if (getArguments() != null) {
             this.page = getArguments().getInt(ARG_PAGE);
         }
-
         AppRepository.Type type;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
@@ -87,35 +86,30 @@ public class AppTabPageFragment extends AppFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = null;
-        ProgressBar loadingBar = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
                 view = inflater.inflate(R.layout.fragment_package_disabler, container, false);
-                loadingBar = view.findViewById(R.id.progressBarAppDisabler);
                 appFlag = AppFlag.createDisablerFlag();
                 break;
 
             case MOBILE_RESTRICTER_PAGE:
                 view = inflater.inflate(R.layout.fragment_mobile_restricter, container, false);
-                loadingBar = view.findViewById(R.id.progressBarAppMobile);
                 appFlag = AppFlag.createMobileRestrictedFlag();
                 break;
 
             case WIFI_RESTRICTER_PAGE:
                 view = inflater.inflate(R.layout.fragment_wifi_restricter, container, false);
-                loadingBar = view.findViewById(R.id.progressBarAppWifi);
                 appFlag = AppFlag.createWifiRestrictedFlag();
                 break;
 
             case WHITELIST_PAGE:
                 view = inflater.inflate(R.layout.fragment_whitelisted_app, container, false);
-                loadingBar = view.findViewById(R.id.progressBarAppWhitelist);
                 appFlag = AppFlag.createWhitelistedFlag();
                 break;
         }
 
         if (view != null) {
-            ProgressBar finalLoadingBar = loadingBar;
+            ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
             ListView listView = view.findViewById(appFlag.getLoadLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
@@ -154,8 +148,14 @@ public class AppTabPageFragment extends AppFragment {
                                 filterAppInfo.setStoppedAppsFilter(item.isChecked());
                                 break;
                         }
+                        if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter() && filterAppInfo.getRunningAppsFilter() && filterAppInfo.getStoppedAppsFilter()) {
+                            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                        } else {
+                            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+                            filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                        }
                         resetSearchView();
-                        loadAppList(type, finalLoadingBar);
+                        loadAppList(type, loadingBar);
                         return false;
                     });
                     popup.show();
@@ -164,7 +164,7 @@ public class AppTabPageFragment extends AppFragment {
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type, finalLoadingBar);
+                loadAppList(type, loadingBar);
                 swipeContainer.setRefreshing(false);
                 resetSearchView();
             });
@@ -198,9 +198,9 @@ public class AppTabPageFragment extends AppFragment {
                     Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
                     AsyncTask.execute(() -> {
                         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                        loadingBar[0] = parentView.findViewById(R.id.loadingBar);
                         switch (page) {
                             case PACKAGE_DISABLER_PAGE:
-                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppDisabler);
                                 ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
                                 List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();
                                 for (AppInfo app : disabledAppList) {
@@ -214,7 +214,6 @@ public class AppTabPageFragment extends AppFragment {
                                 break;
 
                             case MOBILE_RESTRICTER_PAGE:
-                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppMobile);
                                 List<AppInfo> mobileAppList = appDatabase.applicationInfoDao().getMobileRestrictedApps();
                                 for (AppInfo app : mobileAppList) {
                                     app.mobileRestricted = false;
@@ -224,7 +223,6 @@ public class AppTabPageFragment extends AppFragment {
                                 break;
 
                             case WIFI_RESTRICTER_PAGE:
-                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppWifi);
                                 List<AppInfo> wifiAppList = appDatabase.applicationInfoDao().getWifiRestrictedApps();
                                 for (AppInfo app : wifiAppList) {
                                     app.wifiRestricted = false;
@@ -234,7 +232,6 @@ public class AppTabPageFragment extends AppFragment {
                                 break;
 
                             case WHITELIST_PAGE:
-                                loadingBar[0] = parentView.findViewById(R.id.progressBarAppWhitelist);
                                 List<AppInfo> whitelistedAppList = appDatabase.applicationInfoDao().getWhitelistedApps();
                                 for (AppInfo app : whitelistedAppList) {
                                     app.adhellWhitelisted = false;

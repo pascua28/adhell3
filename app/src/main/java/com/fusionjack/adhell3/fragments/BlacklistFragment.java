@@ -2,6 +2,8 @@ package com.fusionjack.adhell3.fragments;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -103,6 +105,8 @@ public class BlacklistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });
+        new Handler(Looper.getMainLooper()).post(() ->
+                view.findViewById(R.id.loadingBar).setVisibility(View.GONE));
 
         return view;
     }

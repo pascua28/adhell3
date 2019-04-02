@@ -57,7 +57,7 @@ public class DnsFragment extends AppFragment {
     private void toggleAllApps() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
         View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
-        ProgressBar loadingBar = parentView.findViewById(R.id.progressBarDns);
+        ProgressBar loadingBar = parentView.findViewById(R.id.loadingBar);
         TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
         titleTextView.setText(R.string.dialog_toggle_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -102,7 +102,7 @@ public class DnsFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_dns, container, false);
-        ProgressBar loadingBar = view.findViewById(R.id.progressBarDns);
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
 
         AppFlag appFlag = AppFlag.createDnsFlag();
         ListView listView = view.findViewById(R.id.dns_apps_list);

@@ -13,6 +13,7 @@ import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +21,12 @@ import io.reactivex.Single;
 
 public class AppRepository {
 
-    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar progressBar) {
+    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar progressBarReference) {
         return Single.create(emitter -> {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String filterText = '%' + text + '%';
             List<AppInfo> list = new ArrayList<>();
+            ProgressBar progressBar = new WeakReference<>(progressBarReference).get();
             if (progressBar != null) {
                 showProgressBar(progressBar);
             }
@@ -58,7 +60,9 @@ public class AppRepository {
                     for (AppInfo item : list) {
                         boolean isRunning = false;
                         try {
-                            isRunning = appPolicy.isApplicationRunning(item.packageName);
+                            if (appPolicy != null) {
+                                isRunning = appPolicy.isApplicationRunning(item.packageName);
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/border"
+    android:animateLayoutChanges="true"
     android:orientation="vertical"
     android:showDividers="middle">
 
@@ -224,6 +225,7 @@
         android:id="@+id/blockedDomainLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:background="@drawable/border">
 
         <TextView
@@ -247,6 +249,16 @@
                 android:layout_height="match_parent"
                 android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />
         </android.support.v4.widget.SwipeRefreshLayout>
+
+        <ProgressBar
+            android:id="@+id/loadingBar"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+            android:visibility="visible" />
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/domain_actions"

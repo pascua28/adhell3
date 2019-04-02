@@ -22,7 +22,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 public final class DatabaseFactory {
+    private static String STORAGE_FOLDER = "/Adhell3/BackupDB/";
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
     private static final String BACKUP_FILENAME = "adhell_backup.txt";
@@ -48,7 +51,9 @@ public final class DatabaseFactory {
     }
 
     public void backupDatabase() throws Exception {
-        File file = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
+        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+        if (!folder.exists()) folder.mkdirs();
+        File file = new File(folder, BACKUP_FILENAME);
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
             writer.beginObject();
@@ -68,9 +73,26 @@ public final class DatabaseFactory {
     }
 
     public void restoreDatabase() throws Exception {
-        File backupFile = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
+        File backupFile = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER, BACKUP_FILENAME);
+        File oldFile = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
         if (!backupFile.exists()) {
-            throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
+            if (oldFile.exists()) {
+                File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+                if (!folder.exists()) folder.mkdirs();
+                try (InputStream in = new FileInputStream(oldFile)) {
+                    try (OutputStream out = new FileOutputStream(backupFile)) {
+                        // Transfer bytes from in to out
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                    }
+                }
+                backupFile = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER, BACKUP_FILENAME);
+            } else {
+                throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
+            }
         }
 
         try {
