@@ -86,8 +86,7 @@ public class AppComponentFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_app_component, container, false);
-        ProgressBar loadingBar = view.findViewById(R.id.progressBarAppComponent);
-
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
 
         AppFlag appFlag = AppFlag.createComponentFlag();
         ListView listView = view.findViewById(appFlag.getLoadLayout());
@@ -111,12 +110,12 @@ public class AppComponentFragment extends AppFragment {
 
         SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
         swipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, loadingBar);
+            loadAppList(type, loadingBar, listView);
             swipeContainer.setRefreshing(false);
             resetSearchView();
         });
 
-        loadAppList(type, loadingBar);
+        loadAppList(type, loadingBar, listView);
         return view;
     }
 }

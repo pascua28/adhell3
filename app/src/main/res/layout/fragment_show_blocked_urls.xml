@@ -23,13 +23,14 @@
 
         <ListView
             android:id="@+id/blocked_url_list"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <ProgressBar
-        android:id="@+id/loadingBar"
+        android:id="@+id/loadingBarContent"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_centerHorizontal="true"

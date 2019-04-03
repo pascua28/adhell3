@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
 
 public class AppComponent {
 
-    public static List<IComponentInfo> getPermissions(String packageName) {
+    public static List<IComponentInfo> getPermissions(String packageName, String searchText) {
         List<String> permissionNameList = new ArrayList<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
@@ -37,22 +37,24 @@ public class AppComponent {
 
         List<IComponentInfo> permissionList = new ArrayList<>();
         for (String permissionName : permissionNameList) {
-            try {
-                android.content.pm.PermissionInfo info = packageManager.getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
-                if (AppPermissionUtils.isDangerousLevel(info.protectionLevel)) {
-                    CharSequence description = info.loadDescription(packageManager);
-                    permissionList.add(new PermissionInfo(permissionName,
-                            description == null ? "No description" : description.toString(),
-                            info.protectionLevel, packageName));
+            if (searchText.length() <= 0 || permissionName.toLowerCase().contains(searchText.toLowerCase())) {
+                try {
+                    android.content.pm.PermissionInfo info = packageManager.getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
+                    if (AppPermissionUtils.isDangerousLevel(info.protectionLevel)) {
+                        CharSequence description = info.loadDescription(packageManager);
+                        permissionList.add(new PermissionInfo(permissionName,
+                                description == null ? "No description" : description.toString(),
+                                info.protectionLevel, packageName));
+                    }
+                } catch (PackageManager.NameNotFoundException ignored) {
                 }
-            } catch (PackageManager.NameNotFoundException ignored) {
             }
         }
 
         return permissionList;
     }
 
-    public static List<IComponentInfo> getServices(String packageName) {
+    public static List<IComponentInfo> getServices(String packageName, String searchText) {
         Set<String> serviceNameSet = new HashSet<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
@@ -80,13 +82,15 @@ public class AppComponent {
         Collections.sort(serviceNameList);
         List<IComponentInfo> serviceInfoList = new ArrayList<>();
         for (String serviceName : serviceNameList) {
-            serviceInfoList.add(new ServiceInfo(packageName, serviceName));
+            if (searchText.length() <= 0 || serviceName.toLowerCase().contains(searchText.toLowerCase())) {
+                serviceInfoList.add(new ServiceInfo(packageName, serviceName));
+            }
         }
 
         return serviceInfoList;
     }
 
-    public static List<IComponentInfo> getReceivers(String packageName) {
+    public static List<IComponentInfo> getReceivers(String packageName, String searchText) {
         Set<ReceiverPair> receiverNameSet = new HashSet<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
@@ -117,7 +121,9 @@ public class AppComponent {
         Collections.sort(receiverNameList, (r1, r2) -> r1.name.compareToIgnoreCase(r2.name));
         List<IComponentInfo> receiverInfoList = new ArrayList<>();
         for (ReceiverPair pair : receiverNameList) {
-            receiverInfoList.add(new ReceiverInfo(packageName, pair.getName(), pair.getPermission()));
+            if (searchText.length() <= 0 || pair.getName().toLowerCase().contains(searchText.toLowerCase())) {
+                receiverInfoList.add(new ReceiverInfo(packageName, pair.getName(), pair.getPermission()));
+            }
         }
 
         return receiverInfoList;

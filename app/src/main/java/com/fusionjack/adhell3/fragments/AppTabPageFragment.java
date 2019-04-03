@@ -43,6 +43,9 @@ public class AppTabPageFragment extends AppFragment {
     private int page;
     private AppFlag appFlag;
 
+    private ProgressBar loadingBar;
+    private ListView listView;
+
     public static AppTabPageFragment newInstance(int page) {
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
@@ -109,8 +112,8 @@ public class AppTabPageFragment extends AppFragment {
         }
 
         if (view != null) {
-            ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
-            ListView listView = view.findViewById(appFlag.getLoadLayout());
+            loadingBar = view.findViewById(R.id.loadingBar);
+            listView = view.findViewById(appFlag.getLoadLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
@@ -155,7 +158,7 @@ public class AppTabPageFragment extends AppFragment {
                             filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
                         }
                         resetSearchView();
-                        loadAppList(type, loadingBar);
+                        loadAppList(type, loadingBar, listView);
                         return false;
                     });
                     popup.show();
@@ -164,12 +167,12 @@ public class AppTabPageFragment extends AppFragment {
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type, loadingBar);
+                loadAppList(type, loadingBar, listView);
                 swipeContainer.setRefreshing(false);
                 resetSearchView();
             });
 
-            loadAppList(type, loadingBar);
+            loadAppList(type, loadingBar, listView);
         }
         return view;
     }
@@ -185,8 +188,6 @@ public class AppTabPageFragment extends AppFragment {
 
     private void enableAllPackages() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        View parentView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_dns, (ViewGroup) getView(), false);
-        final ProgressBar[] loadingBar = {null};
         TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
         titleTextView.setText(R.string.enable_apps_dialog_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -198,7 +199,6 @@ public class AppTabPageFragment extends AppFragment {
                     Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
                     AsyncTask.execute(() -> {
                         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                        loadingBar[0] = parentView.findViewById(R.id.loadingBar);
                         switch (page) {
                             case PACKAGE_DISABLER_PAGE:
                                 ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
@@ -240,7 +240,7 @@ public class AppTabPageFragment extends AppFragment {
                                 appDatabase.firewallWhitelistedPackageDao().deleteAll();
                                 break;
                         }
-                        loadAppList(type, loadingBar[0]);
+                        loadAppList(type, loadingBar, listView);
                     });
                 })
                 .setNegativeButton(android.R.string.no, null).show();

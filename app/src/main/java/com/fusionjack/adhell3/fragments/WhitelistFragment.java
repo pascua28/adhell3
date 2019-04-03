@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -93,8 +94,17 @@ public class WhitelistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });
-        new Handler(Looper.getMainLooper()).post(() ->
-                view.findViewById(R.id.loadingBar).setVisibility(View.GONE));
+
+        view.findViewById(R.id.loadingBar).setVisibility(View.GONE);
+        if (whiteListView.getVisibility() == View.GONE) {
+            AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+            animation.setDuration(500);
+            animation.setStartOffset(50);
+            animation.setFillAfter(true);
+
+            whiteListView.setVisibility(View.VISIBLE);
+            whiteListView.startAnimation(animation);
+        }
 
         return view;
     }

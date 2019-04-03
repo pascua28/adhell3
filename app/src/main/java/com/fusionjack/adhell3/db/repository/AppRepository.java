@@ -1,11 +1,18 @@
 package com.fusionjack.adhell3.db.repository;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -21,15 +28,18 @@ import io.reactivex.Single;
 
 public class AppRepository {
 
-    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar progressBarReference) {
+    ProgressBar loadingBar;
+    ListView listView;
+
+
+    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar loadingBar, ListView listView) {
         return Single.create(emitter -> {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String filterText = '%' + text + '%';
             List<AppInfo> list = new ArrayList<>();
-            ProgressBar progressBar = new WeakReference<>(progressBarReference).get();
-            if (progressBar != null) {
-                showProgressBar(progressBar);
-            }
+            if (loadingBar != null) this.loadingBar = new WeakReference<>(loadingBar).get();
+            if (listView != null) this.listView = new WeakReference<>(listView).get();
+            //showProgressBar();
             switch (type) {
                 case DISABLER:
                     ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
@@ -112,21 +122,33 @@ public class AppRepository {
                     list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
                     break;
             }
-            if (progressBar != null) {
-                hideProgressBar(progressBar);
-            }
+            hideProgressBar();
             emitter.onSuccess(list);
         });
     }
 
-    private void hideProgressBar(ProgressBar progressBar) {
-        new Handler(Looper.getMainLooper()).post(() ->
-                progressBar.setVisibility(View.GONE));
+    private void hideProgressBar() {
+        if (loadingBar != null && listView != null) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                loadingBar.setVisibility(View.GONE);
+                if (listView.getVisibility() == View.GONE) {
+                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                    animation.setDuration(500);
+                    animation.setStartOffset(50);
+                    animation.setFillAfter(true);
+
+                    listView.setVisibility(View.VISIBLE);
+                    listView.startAnimation(animation);
+                }
+            });
+        }
     }
 
-    private void showProgressBar(ProgressBar progressBar) {
-        new Handler(Looper.getMainLooper()).post(() ->
-                progressBar.setVisibility(View.VISIBLE));
+    private void showProgressBar() {
+        if (loadingBar != null) {
+            new Handler(Looper.getMainLooper()).post(() ->
+                loadingBar.setVisibility(View.VISIBLE));
+        }
     }
 
     public enum Type {

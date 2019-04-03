@@ -5,7 +5,7 @@
     <string name="domain_rules_info">
         Blacklist: %1$d domains
         \nWhitelist: %2$d domains
-        \n\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;\&#160;%3$d apps
+        \n%3$d apps
     </string>
     <string name="firewall_rules_enabled">Firewall rules are enabled.</string>
     <string name="firewall_rules_disabled">Firewall rules are disabled.</string>
@@ -22,8 +22,8 @@
     <string name="app_component_enabled">App component is enabled.</string>
     <string name="app_component_disabled">App component is disabled.</string>
     <string name="app_component_toggle_info">
-        %1$d permissions, %2$d services
-        \nand %3$d receivers are disabled.
+        %1$d permissions, %2$d services,
+        \n%3$d receivers disabled.
     </string>
     <string name="adhell_not_supported">Adhell is not yet supported on your device.</string>
     <string name="enable_adhell_title">Enable Adhell</string>

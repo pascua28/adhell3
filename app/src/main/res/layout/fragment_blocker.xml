@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:padding="8dp"
         android:text="@string/home_status_title"
         android:textAlignment="center" />
 
@@ -22,16 +22,16 @@
         android:background="@drawable/border"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:paddingStart="10dp"
+        android:paddingStart="6dp"
         android:paddingTop="5dp"
-        android:paddingEnd="10dp"
+        android:paddingEnd="6dp"
         android:paddingBottom="2dp"
         android:weightSum="2">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/domainRulesLayout"
             android:layout_width="0dp"
-            android:layout_height="70dp"
+            android:layout_height="85dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
@@ -54,8 +54,8 @@
                 android:layout_below="@+id/domainStatusTextView"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginTop="2dp"
                 android:layout_marginStart="4dp"
+                android:gravity="center_vertical"
                 android:layout_toStartOf="@id/domainRulesSwitch"
                 android:text="@string/domain_rules_info"
                 android:textSize="12sp" />
@@ -76,7 +76,7 @@
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/firewallRulesLayout"
             android:layout_width="0dp"
-            android:layout_height="70dp"
+            android:layout_height="85dp"
             android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
@@ -99,8 +99,8 @@
                 android:layout_below="@+id/firewallStatusTextView"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginTop="2dp"
                 android:layout_marginStart="4dp"
+                android:gravity="center_vertical"
                 android:layout_toStartOf="@id/firewallRulesSwitch"
                 android:text="@string/firewall_rules_info"
                 android:textSize="12sp" />
@@ -126,16 +126,16 @@
         android:background="@drawable/border"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:paddingStart="10dp"
+        android:paddingStart="6dp"
         android:paddingTop="2dp"
-        android:paddingEnd="10dp"
+        android:paddingEnd="6dp"
         android:paddingBottom="5dp"
         android:weightSum="2">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/appDisablerLayout"
             android:layout_width="0dp"
-            android:layout_height="70dp"
+            android:layout_height="85dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
@@ -157,10 +157,10 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/disablerStatusTextView"
                 android:layout_alignParentBottom="true"
-                android:layout_marginTop="2dp"
                 android:layout_marginStart="4dp"
                 android:layout_toStartOf="@id/appDisablerSwitch"
                 android:text="@string/app_disabler_info"
+                android:gravity="center_vertical"
                 android:textSize="12sp" />
 
             <Switch
@@ -179,7 +179,7 @@
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/appComponentLayout"
             android:layout_width="0dp"
-            android:layout_height="70dp"
+            android:layout_height="85dp"
             android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
@@ -201,8 +201,8 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/appComponentStatusTextView"
                 android:layout_alignParentBottom="true"
-                android:layout_marginTop="2dp"
                 android:layout_marginStart="4dp"
+                android:gravity="center_vertical"
                 android:layout_toStartOf="@id/appComponentSwitch"
                 android:text="@string/app_component_toggle_info"
                 android:textSize="12sp" />
@@ -233,7 +233,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/border"
-            android:padding="10dp"
+            android:padding="8dp"
             android:text="@string/last_day_blocked"
             android:textAlignment="center" />
 
@@ -245,6 +245,7 @@
 
             <ExpandableListView
                 android:id="@+id/blockedDomainsListView"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />

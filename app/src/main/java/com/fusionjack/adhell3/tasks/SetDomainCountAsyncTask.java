@@ -38,7 +38,7 @@ public class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
                 infoTextView.setText(String.format(strFormat, count));
             }
 
-            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
             if (loadingBar != null) {
                 loadingBar.setVisibility(View.GONE);
             }

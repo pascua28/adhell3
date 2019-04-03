@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,11 +15,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
+import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
@@ -38,6 +42,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_NONE;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
@@ -52,6 +57,8 @@ public class ComponentTabPageFragment extends Fragment {
     private int page;
     private String packageName;
     private Context context;
+    private String searchText;
+    private SearchView searchView;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -65,15 +72,38 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.page = getArguments().getInt(ARG_PAGE);
+        this.page = Objects.requireNonNull(getArguments()).getInt(ARG_PAGE);
         this.packageName = getArguments().getString(ARG_PACKAGENAME);
         this.context = getContext();
+        if (this.searchText == null) this.searchText = "";
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.enable_all_menu, menu);
+        inflater.inflate(R.menu.app_menu, menu);
+
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        if (!searchText.isEmpty()) {
+            searchView.setQuery(searchText, false);
+            searchView.setIconified(false);
+            searchView.requestFocus();
+        }
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String text) {
+                searchText = text;
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                return false;
+            }
+        });
     }
 
     @Override
@@ -105,7 +135,7 @@ public class ComponentTabPageFragment extends Fragment {
                         new SetComponentAsyncTask(PERMISSIONS_PAGE, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(PERMISSIONS_PAGE, packageName, context).execute();
+                new CreateComponentAsyncTask(PERMISSIONS_PAGE, packageName, context, searchText).execute();
                 break;
 
             case SERVICES_PAGE:
@@ -117,7 +147,7 @@ public class ComponentTabPageFragment extends Fragment {
                         new SetComponentAsyncTask(SERVICES_PAGE, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(SERVICES_PAGE, packageName, context).execute();
+                new CreateComponentAsyncTask(SERVICES_PAGE, packageName, context, searchText).execute();
                 break;
 
             case RECEIVERS_PAGE:
@@ -129,14 +159,14 @@ public class ComponentTabPageFragment extends Fragment {
                         new SetComponentAsyncTask(RECEIVERS_PAGE, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(RECEIVERS_PAGE, packageName, context).execute();
+                new CreateComponentAsyncTask(RECEIVERS_PAGE, packageName, context, searchText).execute();
                 break;
         }
 
         return view;
     }
 
-    private static class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
         private final int page;
         private final String packageName;
         private final WeakReference<Context> contextWeakReference;
@@ -163,7 +193,7 @@ public class ComponentTabPageFragment extends Fragment {
                     break;
                 case SERVICES_PAGE:
                     if (appPolicy != null) {
-                        List<IComponentInfo> componentInfos = AppComponent.getServices(packageName);
+                        List<IComponentInfo> componentInfos = AppComponent.getServices(packageName, searchText);
                         for (IComponentInfo componentInfo : componentInfos) {
                             ServiceInfo serviceInfo = (ServiceInfo) componentInfo;
                             ComponentName serviceCompName = new ComponentName(packageName, serviceInfo.getName());
@@ -174,7 +204,7 @@ public class ComponentTabPageFragment extends Fragment {
                     break;
                 case RECEIVERS_PAGE:
                     if (appPolicy != null) {
-                        List<IComponentInfo> componentInfos = AppComponent.getReceivers(packageName);
+                        List<IComponentInfo> componentInfos = AppComponent.getReceivers(packageName, searchText);
                         for (IComponentInfo componentInfo : componentInfos) {
                             ReceiverInfo receiverInfo = (ReceiverInfo) componentInfo;
                             ComponentName serviceCompName = new ComponentName(packageName, receiverInfo.getName());
@@ -366,22 +396,24 @@ public class ComponentTabPageFragment extends Fragment {
         private final int page;
         private final String packageName;
         private final WeakReference<Context> contextReference;
+        private final String searchText;
 
-        CreateComponentAsyncTask(int page, String packageName, Context context) {
+        CreateComponentAsyncTask(int page, String packageName, Context context, String searchText) {
             this.page = page;
             this.packageName = packageName;
             this.contextReference = new WeakReference<>(context);
+            this.searchText = searchText;
         }
 
         @Override
         protected List<IComponentInfo> doInBackground(Void... voids) {
             switch (page) {
                 case PERMISSIONS_PAGE:
-                    return AppComponent.getPermissions(packageName);
+                    return AppComponent.getPermissions(packageName, searchText);
                 case SERVICES_PAGE:
-                    return AppComponent.getServices(packageName);
+                    return AppComponent.getServices(packageName, searchText);
                 case RECEIVERS_PAGE:
-                    return AppComponent.getReceivers(packageName);
+                    return AppComponent.getReceivers(packageName, searchText);
             }
             return null;
         }
@@ -410,6 +442,15 @@ public class ComponentTabPageFragment extends Fragment {
                 ListView listView = ((Activity) context).findViewById(listViewId);
                 if (listView != null && adapter != null) {
                     listView.setAdapter(adapter);
+                    if (listView.getVisibility() == View.GONE) {
+                        AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                        animation.setDuration(500);
+                        animation.setStartOffset(50);
+                        animation.setFillAfter(true);
+
+                        listView.setVisibility(View.VISIBLE);
+                        listView.startAnimation(animation);
+                    }
                 }
             }
         }

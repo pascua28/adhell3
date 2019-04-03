@@ -22,6 +22,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ExpandableListView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -79,6 +80,7 @@ public class HomeTabFragment extends Fragment {
     private TextView infoTextView;
     private SwipeRefreshLayout swipeContainer;
     private ContentBlocker contentBlocker;
+    private ProgressBar loadingBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,6 +118,7 @@ public class HomeTabFragment extends Fragment {
         appComponentStatusTextView = view.findViewById(R.id.appComponentStatusTextView);
         swipeContainer = view.findViewById(R.id.swipeContainer);
         infoTextView = view.findViewById(R.id.infoTextView);
+        loadingBar = view.findViewById(R.id.loadingBar);
 
         infoTextView.setVisibility(View.INVISIBLE);
         swipeContainer.setVisibility(View.INVISIBLE);
@@ -194,10 +197,16 @@ public class HomeTabFragment extends Fragment {
         if (!isDomainRuleEmpty) {
             infoTextView.setVisibility(View.VISIBLE);
             swipeContainer.setVisibility(View.VISIBLE);
-            swipeContainer.setOnRefreshListener(() ->
-                    new RefreshAsyncTask(getContext()).execute()
-            );
+            swipeContainer.setOnRefreshListener(() -> {
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.VISIBLE);
+                }
+                new RefreshAsyncTask(getContext()).execute();
+            });
 
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
             new RefreshAsyncTask(getContext()).execute();
         } else {
             infoTextView.setVisibility(View.INVISIBLE);
@@ -482,15 +491,6 @@ public class HomeTabFragment extends Fragment {
         }
 
         @Override
-        protected void onPreExecute() {
-            Context context = contextReference.get();
-            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
         protected HashMap<String, List<ReportBlockedUrl>> doInBackground(Void... voids) {
             HashMap<String, List<ReportBlockedUrl>> returnHashMap = new HashMap<>();
             List<ReportBlockedUrl> listReportBlockedUrl = FirewallUtils.getInstance().getReportBlockedUrl();
@@ -572,6 +572,15 @@ public class HomeTabFragment extends Fragment {
                 ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
                 if (loadingBar != null) {
                     loadingBar.setVisibility(View.GONE);
+                }
+                if (listView != null && listView.getVisibility() == View.GONE) {
+                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                    animation.setDuration(500);
+                    animation.setStartOffset(50);
+                    animation.setFillAfter(true);
+
+                    listView.setVisibility(View.VISIBLE);
+                    listView.startAnimation(animation);
                 }
             }
         }

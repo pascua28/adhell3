@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -47,16 +48,20 @@ public class ProviderContentFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_show_blocked_urls, container, false);
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBarContent);
+        if (loadingBar != null) {
+            loadingBar.setVisibility(View.VISIBLE);
+        }
         new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
 
         SwipeRefreshLayout swipeContainer = view.findViewById(R.id.providerListSwipeContainer);
         swipeContainer.setOnRefreshListener(() -> {
             providerId = null;
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
             new LoadBlockedUrlAsyncTask(getContext(), null).execute();
         });
-
-        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
-        loadingBar.setVisibility(View.GONE);
 
         return view;
     }
@@ -100,15 +105,6 @@ public class ProviderContentFragment extends Fragment {
         }
 
         @Override
-        protected void onPreExecute() {
-            Context context = contextReference.get();
-            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
         protected List<String> doInBackground(Void... o) {
             return providerId == null ?
                     BlockUrlUtils.getAllBlockedUrls(appDatabase) :
@@ -132,13 +128,21 @@ public class ProviderContentFragment extends Fragment {
 
                 TextView totalBlockedUrls = ((Activity) context).findViewById(R.id.total_blocked_urls);
                 if (totalBlockedUrls != null) {
-                    totalBlockedUrls.setText(String.format("%s%s",
-                            context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
+                    totalBlockedUrls.setText(String.format("%s%s", context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
                 }
 
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarContent);
                 if (loadingBar != null) {
                     loadingBar.setVisibility(View.GONE);
+                }
+                if (listView != null && listView.getVisibility() == View.GONE) {
+                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                    animation.setDuration(500);
+                    animation.setStartOffset(50);
+                    animation.setFillAfter(true);
+
+                    listView.setVisibility(View.VISIBLE);
+                    listView.startAnimation(animation);
                 }
             }
         }

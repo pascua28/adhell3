@@ -13,6 +13,7 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 3;
     private final String[] tabTitles;
     private final String packageName;
+    private final Context context;
 
     public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
         super(fm);
@@ -22,6 +23,7 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
                 context.getString(R.string.receiver_fragment_title)};
 
         this.packageName = packageName;
+        this.context = context;
     }
 
     @Override

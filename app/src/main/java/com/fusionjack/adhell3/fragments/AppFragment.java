@@ -1,11 +1,14 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -65,8 +68,11 @@ public class AppFragment extends Fragment {
         AppCache.getInstance(context, null);
     }
 
-    void loadAppList(AppRepository.Type type, ProgressBar progressBar) {
-        viewModel.loadAppList(type, observer, filterAppInfo, progressBar);
+    void loadAppList(AppRepository.Type type, ProgressBar loadingBar, ListView listView) {
+        if (loadingBar != null) {
+            loadingBar.setVisibility(View.VISIBLE);
+        }
+        viewModel.loadAppList(type, observer, filterAppInfo, loadingBar, listView);
     }
 
     @Override
@@ -92,7 +98,7 @@ public class AppFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                viewModel.loadAppList(text, type, observer, filterAppInfo, null);
+                viewModel.loadAppList(text, type, observer, filterAppInfo, null, null);
                 return false;
             }
         });

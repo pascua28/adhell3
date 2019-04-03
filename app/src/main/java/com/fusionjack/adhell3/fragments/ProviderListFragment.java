@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ListAdapter;
@@ -56,6 +57,7 @@ public class ProviderListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_provider, container, false);
+        ProgressBar loadingBar = view.findViewById(R.id.loadingBarProvider);
 
         // Set URL limit
         TextView hintTextView = view.findViewById(R.id.providerInfoTextView);
@@ -71,6 +73,7 @@ public class ProviderListFragment extends Fragment {
 
         // Provider list
         ListView providerListView = view.findViewById(R.id.providerListView);
+        if (providerListView.getVisibility() == View.VISIBLE) loadingBar.setVisibility(View.VISIBLE);
         BlockUrlProvidersViewModel providersViewModel = ViewModelProviders.of(activity).get(BlockUrlProvidersViewModel.class);
         providersViewModel.getBlockUrlProviders().observe(this, blockUrlProviders -> {
             ListAdapter adapter = providerListView.getAdapter();
@@ -101,9 +104,12 @@ public class ProviderListFragment extends Fragment {
         });
 
         SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.providerSwipeContainer);
-        dnsSwipeContainer.setOnRefreshListener(() ->
-                new UpdateProviderAsyncTask(context).execute()
-        );
+        dnsSwipeContainer.setOnRefreshListener(() -> {
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
+            new UpdateProviderAsyncTask(context).execute();
+        });
 
         FloatingActionsMenu providerFloatMenu = view.findViewById(R.id.provider_actions);
         FloatingActionButton actionAddProvider = view.findViewById(R.id.action_add_provider);
@@ -125,8 +131,17 @@ public class ProviderListFragment extends Fragment {
                     .setNegativeButton(android.R.string.no, null).show();
         });
 
-        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
-        loadingBar.setVisibility(View.GONE);
+        if (providerListView.getVisibility() == View.GONE) {
+            AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+            animation.setDuration(500);
+            animation.setStartOffset(50);
+            animation.setFillAfter(true);
+
+            providerListView.setVisibility(View.VISIBLE);
+            providerListView.startAnimation(animation);
+        } else {
+            loadingBar.setVisibility(View.GONE);
+        }
 
         return view;
     }
@@ -139,15 +154,6 @@ public class ProviderListFragment extends Fragment {
         AddProviderAsyncTask(String provider, Context context) {
             this.provider = provider;
             this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Context context = contextWeakReference.get();
-            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
         }
 
         @Override
@@ -182,7 +188,7 @@ public class ProviderListFragment extends Fragment {
                     }
                 }
 
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
                 if (loadingBar != null) {
                     loadingBar.setVisibility(View.GONE);
                 }
@@ -224,10 +230,15 @@ public class ProviderListFragment extends Fragment {
                     if (listView.getAdapter() instanceof BlockUrlProviderAdapter) {
                         BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) listView.getAdapter();
                         adapter.notifyDataSetChanged();
+                        AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                        animation.setDuration(500);
+                        animation.setStartOffset(50);
+                        animation.setFillAfter(true);
+                        listView.setVisibility(View.VISIBLE);
+                        listView.startAnimation(animation);
                     }
                 }
-
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
                 if (loadingBar != null) {
                     loadingBar.setVisibility(View.GONE);
                 }
@@ -240,15 +251,6 @@ public class ProviderListFragment extends Fragment {
 
         UpdateProviderAsyncTask(Context context) {
             this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Context context = contextWeakReference.get();
-            ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
         }
 
         @Override
@@ -266,16 +268,16 @@ public class ProviderListFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             Context context = contextWeakReference.get();
             if (context != null) {
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
+                }
+
                 new SetProviderAsyncTask(context).execute();
 
                 SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.providerSwipeContainer);
                 if (swipeContainer != null) {
                     swipeContainer.setRefreshing(false);
-                }
-
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-                if (loadingBar != null) {
-                    loadingBar.setVisibility(View.GONE);
                 }
 
                 new SetDomainCountAsyncTask(context).execute();
@@ -315,6 +317,20 @@ public class ProviderListFragment extends Fragment {
                             }
                         }
                         adapter.notifyDataSetChanged();
+
+                        ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
+                        if (loadingBar != null) {
+                            loadingBar.setVisibility(View.GONE);
+                        }
+                        if (listView.getVisibility() == View.GONE) {
+                            AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                            animation.setDuration(500);
+                            animation.setStartOffset(50);
+                            animation.setFillAfter(true);
+
+                            listView.setVisibility(View.VISIBLE);
+                            listView.startAnimation(animation);
+                        }
                     }
                 }
             }
