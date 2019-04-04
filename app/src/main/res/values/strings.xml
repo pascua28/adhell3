@@ -1,26 +1,26 @@
 <resources>
     <string name="app_name" translatable="false">Adhell3</string>
-    <string name="domain_rules_enabled">Domain rules are enabled.</string>
-    <string name="domain_rules_disabled">Domain rules are disabled.</string>
+    <string name="domain_rules_enabled">Domain rules are enabled</string>
+    <string name="domain_rules_disabled">Domain rules are disabled</string>
     <string name="domain_rules_info">
         Blacklist: %1$d domains
         \nWhitelist: %2$d domains
         \n%3$d apps
     </string>
-    <string name="firewall_rules_enabled">Firewall rules are enabled.</string>
-    <string name="firewall_rules_disabled">Firewall rules are disabled.</string>
+    <string name="firewall_rules_enabled">Firewall rules are enabled</string>
+    <string name="firewall_rules_disabled">Firewall rules are disabled</string>
     <string name="firewall_rules_info">
         Mobile data: %1$d apps
         \nWi-Fi data: %2$d apps
         \nCustom: %3$d apps
     </string>
-    <string name="app_disabler_enabled">App disabler is enabled.</string>
-    <string name="app_disabler_disabled">App disabler is disabled.</string>
+    <string name="app_disabler_enabled">App disabler is enabled</string>
+    <string name="app_disabler_disabled">App disabler is disabled</string>
     <string name="app_disabler_info">
         %1$d apps are disabled.
     </string>
-    <string name="app_component_enabled">App component is enabled.</string>
-    <string name="app_component_disabled">App component is disabled.</string>
+    <string name="app_component_enabled">App component is enabled</string>
+    <string name="app_component_disabled">App component is disabled</string>
     <string name="app_component_toggle_info">
         %1$d permissions, %2$d services,
         \n%3$d receivers disabled.

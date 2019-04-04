@@ -22,29 +22,28 @@
         android:background="@drawable/border"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:paddingStart="6dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="6dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:paddingBottom="2dp"
         android:weightSum="2">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/domainRulesLayout"
             android:layout_width="0dp"
-            android:layout_height="85dp"
+            android:layout_height="90dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
-            android:padding="5dp">
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/domainStatusTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="2dp"
-                android:layout_marginStart="2dp"
+                android:gravity="center_horizontal"
                 android:text="@string/domain_rules_enabled"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -54,11 +53,11 @@
                 android:layout_below="@+id/domainStatusTextView"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
                 android:layout_toStartOf="@id/domainRulesSwitch"
                 android:text="@string/domain_rules_info"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Switch
                 android:id="@+id/domainRulesSwitch"
@@ -76,20 +75,20 @@
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/firewallRulesLayout"
             android:layout_width="0dp"
-            android:layout_height="85dp"
+            android:layout_height="90dp"
             android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
-            android:padding="5dp">
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/firewallStatusTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="2dp"
-                android:layout_marginStart="2dp"
+                android:gravity="center_horizontal"
                 android:text="@string/firewall_rules_enabled"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -99,11 +98,11 @@
                 android:layout_below="@+id/firewallStatusTextView"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
                 android:layout_toStartOf="@id/firewallRulesSwitch"
                 android:text="@string/firewall_rules_info"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Switch
                 android:id="@+id/firewallRulesSwitch"
@@ -126,29 +125,28 @@
         android:background="@drawable/border"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:paddingStart="6dp"
+        android:paddingStart="4dp"
         android:paddingTop="2dp"
-        android:paddingEnd="6dp"
-        android:paddingBottom="5dp"
+        android:paddingEnd="4dp"
         android:weightSum="2">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/appDisablerLayout"
             android:layout_width="0dp"
-            android:layout_height="85dp"
+            android:layout_height="90dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
-            android:padding="5dp">
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/disablerStatusTextView"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="2dp"
-                android:layout_marginStart="2dp"
+                android:gravity="center_horizontal"
                 android:text="@string/app_disabler_enabled"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -157,11 +155,11 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/disablerStatusTextView"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:layout_toStartOf="@id/appDisablerSwitch"
                 android:text="@string/app_disabler_info"
                 android:gravity="center_vertical"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Switch
                 android:id="@+id/appDisablerSwitch"
@@ -179,20 +177,20 @@
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/appComponentLayout"
             android:layout_width="0dp"
-            android:layout_height="85dp"
+            android:layout_height="90dp"
             android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:background="@drawable/border_home"
-            android:padding="5dp">
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/appComponentStatusTextView"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="2dp"
-                android:layout_marginStart="2dp"
+                android:gravity="center_horizontal"
                 android:text="@string/app_component_enabled"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -201,11 +199,11 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/appComponentStatusTextView"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
                 android:layout_toStartOf="@id/appComponentSwitch"
                 android:text="@string/app_component_toggle_info"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Switch
                 android:id="@+id/appComponentSwitch"
