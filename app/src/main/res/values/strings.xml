@@ -85,10 +85,10 @@
         \n\tpackageName|domain
     </string>
     <string name="dialog_add_provider_title">Add Provider</string>
-    <string name="dialog_add_provider_info">
-        Remote: https://adaway.org/hosts.txt
-        \nInternal: file:///mnt/sdcard/hosts.txt
-    </string>
+    <string name="dialog_add_provider_remote">Web: Enter an URL</string>
+    <string name="dialog_add_provider_local">File: Select a file</string>
+    <string name="dialog_add_provider_hint">https://adaway.org/hosts.txt</string>
+    <string name="dialog_add_provider_button">Select file</string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">
         This will enable all apps\' permissions, services and receivers.

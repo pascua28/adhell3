@@ -122,6 +122,7 @@ public class HomeTabFragment extends Fragment {
 
         infoTextView.setVisibility(View.INVISIBLE);
         swipeContainer.setVisibility(View.INVISIBLE);
+        loadingBar.setVisibility(View.INVISIBLE);
 
         if (!BuildConfig.DISABLE_APPS) {
             view.findViewById(R.id.appDisablerLayout).setVisibility(View.GONE);

@@ -3,6 +3,8 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,13 +18,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.webkit.URLUtil;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -41,17 +47,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static android.app.Activity.RESULT_OK;
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
 public class ProviderListFragment extends Fragment {
+    private int SELECT_FILE_REQUEST_CODE = 42;
     private Context context;
     private FragmentActivity activity;
+    private EditText providerEditText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.context = getContext();
         this.activity = getActivity();
+        App.setAppContext(context);
     }
 
     @Override
@@ -117,18 +127,48 @@ public class ProviderListFragment extends Fragment {
         actionAddProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);
+            providerEditText = dialogView.findViewById(R.id.providerEditText);
             new AlertDialog.Builder(context)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText providerEditText = dialogView.findViewById(R.id.providerEditText);
                         String provider = providerEditText.getText().toString();
-                        if (URLUtil.isValidUrl(provider)) {
+                        if (isValidUri(provider)) {
                             new AddProviderAsyncTask(provider, context).execute();
                         } else {
                             Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();
+
+            Button filePicker = dialogView.findViewById(R.id.filePicker);
+            filePicker.setOnClickListener(v1 -> {
+                MainActivity.setSelectFileActivityLaunched(true);
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                intent.setType("*/*");
+
+                startActivityForResult(intent, SELECT_FILE_REQUEST_CODE);
+            });
+
+            RadioGroup providerTypeRadioGroup = dialogView.findViewById(R.id.providerTypeRadioGroup);
+            providerTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                switch (checkedId) {
+                    case R.id.providerTypeRemote:
+                        filePicker.setVisibility(View.GONE);
+                        providerEditText.setEnabled(true);
+                        providerEditText.setHint(R.string.dialog_add_provider_hint);
+                        providerEditText.setText("");
+                        break;
+                    case R.id.providerTypeLocal:
+                        filePicker.setVisibility(View.VISIBLE);
+                        providerEditText.setEnabled(false);
+                        providerEditText.setHint("");
+                        providerEditText.setText("");
+                        break;
+                }
+            });
         });
 
         if (providerListView.getVisibility() == View.GONE) {
@@ -144,6 +184,21 @@ public class ProviderListFragment extends Fragment {
         }
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        if (requestCode == SELECT_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+            Uri uri;
+            if (resultData != null) {
+                uri = resultData.getData();
+                providerEditText.setText(uri != null ? uri.toString() : null);
+            }
+        }
+    }
+
+    private boolean isValidUri(String uri) {
+        return URLUtil.isHttpUrl(uri) || URLUtil.isHttpsUrl(uri) || uri.contains("content://");
     }
 
     private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -176,6 +231,7 @@ public class ProviderListFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             Context context = contextWeakReference.get();
+
             if (context != null) {
                 ListView listView = ((Activity) context).findViewById(R.id.providerListView);
                 if (listView != null) {

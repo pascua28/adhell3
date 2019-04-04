@@ -44,6 +44,10 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 
 public class MainActivity extends AppCompatActivity {
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
+    private static boolean selectFileActivityLaunched = false;
+    private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
+    private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
+    private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
     private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
     public AlertDialog passwordDialog;
@@ -140,14 +144,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // Show password dialog if password has been set and wait until the user enter the password
-        if (isPasswordShowing()) {
-            return;
-        }
+        if (!selectFileActivityLaunched) {
+            // Show password dialog if password has been set and wait until the user enter the password
+            if (isPasswordShowing()) {
+                return;
+            }
 
-        // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
-        if (!isKnoxValid()) {
-            return;
+            // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
+            if (!isKnoxValid()) {
+                return;
+            }
+        } else {
+            selectFileActivityLaunched = false;
         }
 
         LogUtils.info("Everything is okay");
@@ -295,10 +303,6 @@ public class MainActivity extends AppCompatActivity {
         return passwordDialog;
     }
 
-    private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
-    private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
-    private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
-
     public void setSelectedAppTab(int selectedTabId) {
         this.SELECTED_APP_TAB = selectedTabId;
     }
@@ -320,4 +324,5 @@ public class MainActivity extends AppCompatActivity {
         return this.SELECTED_OTHER_TAB;
     }
 
+    public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 }
