@@ -198,7 +198,7 @@ public class ProviderListFragment extends Fragment {
     }
 
     private boolean isValidUri(String uri) {
-        return URLUtil.isHttpUrl(uri) || URLUtil.isHttpsUrl(uri) || uri.contains("content://");
+        return URLUtil.isHttpUrl(uri) || URLUtil.isHttpsUrl(uri) || URLUtil.isContentUrl(uri) || URLUtil.isFileUrl(uri);
     }
 
     private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {

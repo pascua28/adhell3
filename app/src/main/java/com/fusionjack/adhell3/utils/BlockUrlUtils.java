@@ -13,10 +13,14 @@ import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -40,12 +44,12 @@ public class BlockUrlUtils {
     private static final Pattern emptyLinePattern = Pattern.compile("(?im)^\\s*");
 
     @NonNull
-    public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException {
+    public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException, URISyntaxException {
         Context context = App.getAppContext();
         Date start = new Date();
 
         // Read the host source and convert it to string
-        String hostFileStr;
+        String hostFileStr = "";
         if (URLUtil.isHttpUrl(blockUrlProvider.url) || URLUtil.isHttpsUrl(blockUrlProvider.url)) {
             URL urlProviderUrl = new URL(blockUrlProvider.url);
             URLConnection connection = urlProviderUrl.openConnection();
@@ -57,7 +61,7 @@ public class BlockUrlUtils {
                 }
                 hostFileStr = hostFileStringBuilder.toString();
             }
-        } else {
+        } else if (URLUtil.isContentUrl(blockUrlProvider.url)) {
             Uri contentUri = Uri.parse(blockUrlProvider.url);
             context.getContentResolver().takePersistableUriPermission(contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             InputStream inputStream = context.getContentResolver().openInputStream(contentUri);
@@ -65,6 +69,21 @@ public class BlockUrlUtils {
             StringBuilder contentBuilder = new StringBuilder();
             try {
                 BufferedReader in = new BufferedReader(inputStreamReader);
+                String str;
+                while ((str = in.readLine()) != null) {
+                    contentBuilder.append(str).append('\n');
+                }
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            hostFileStr = contentBuilder.toString();
+        } else if (URLUtil.isFileUrl(blockUrlProvider.url)) {
+            File file = new File(new URI(blockUrlProvider.url));
+            FileInputStream fileInputStream = new FileInputStream(file);
+            StringBuilder contentBuilder = new StringBuilder();
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(fileInputStream));
                 String str;
                 while ((str = in.readLine()) != null) {
                     contentBuilder.append(str).append('\n');
