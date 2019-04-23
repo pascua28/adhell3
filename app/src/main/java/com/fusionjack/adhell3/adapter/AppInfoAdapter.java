@@ -140,9 +140,6 @@ public class AppInfoAdapter extends BaseAdapter {
                                         }
                                     })
                                     .setNegativeButton(android.R.string.no, null).show();
-                            holder.switchH.setClickable(true);
-                            holder.switchH.setFocusable(true);
-                            holder.switchH.setFocusableInTouchMode(false);
                         });
                     }
                 }
