@@ -49,6 +49,21 @@ public final class FirewallUtils {
         }
     }
 
+
+    public void removeDomainFilterRules(List<DomainFilterRule> domainRules, Handler handler) throws Exception {
+        if (firewall == null) {
+            throw new Exception("Knox Firewall is not initialized");
+        }
+
+        try {
+            FirewallResponse[] response = firewall.removeDomainFilterRules(domainRules);
+            handleResponse(response, handler);
+        } catch (SecurityException ex) {
+            // Missing required MDM permission
+            LogUtils.error("Failed to remove domain filter rule to Knox Firewall", ex, handler);
+        }
+    }
+
     public void addFirewallRules(FirewallRule[] firewallRules, Handler handler) throws Exception {
         if (firewall == null) {
             throw new Exception("Knox Firewall is not initialized");
@@ -60,6 +75,20 @@ public final class FirewallUtils {
         } catch (SecurityException ex) {
             // Missing required MDM permission
             LogUtils.error("Failed to add firewall rules to Knox Firewall", ex, handler);
+        }
+    }
+
+    public void removeFirewallRules(FirewallRule[] firewallRules, Handler handler) throws Exception {
+        if (firewall == null) {
+            throw new Exception("Knox Firewall is not initialized");
+        }
+
+        try {
+            FirewallResponse[] response = firewall.removeRules(firewallRules);
+            handleResponse(response, handler);
+        } catch (SecurityException ex) {
+            // Missing required MDM permission
+            LogUtils.error("Failed to remove firewall rules to Knox Firewall", ex, handler);
         }
     }
 
@@ -98,6 +127,91 @@ public final class FirewallUtils {
         }
 
         return stat;
+    }
+
+    public boolean isCurrentDomainLimitAboveDefault() {
+        int defaultDomainLimit = 15000;
+        int domainLimit = (getDomainStatFromKnox().blackListSize + getDomainStatFromKnox().whiteListSize);
+        return domainLimit > defaultDomainLimit;
+    }
+
+    public List<String> getActiveDenyDomainsFromKnox() {
+        List<String> returnDomainRules = new ArrayList<>();
+        if (firewall == null) {
+            return returnDomainRules;
+        }
+
+        List<String> packageNameList = new ArrayList<>();
+        packageNameList.add("*");
+        List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
+        for (DomainFilterRule denyDomain : domainRules) {
+            if (denyDomain.getApplication().getPackageName().equals("*")) {
+                for (String denyUrl : denyDomain.getDenyDomains()) {
+                    if (!returnDomainRules.contains(denyUrl)) returnDomainRules.add(denyUrl);
+                }
+            }
+        }
+        return returnDomainRules;
+    }
+
+    public List<DomainFilterRule> getWhitelistedAppsFromKnox() {
+        List<AppInfo> appList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+        List<DomainFilterRule> whitelistApps = new ArrayList<>();
+        if (firewall == null) {
+            return whitelistApps;
+        }
+        for (AppInfo app : appList) {
+            List<String> packageNameList = new ArrayList<>();
+            packageNameList.add(app.packageName);
+            List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
+            for (DomainFilterRule domainRule : domainRules) {
+                if (domainRule.getAllowDomains().contains("*")) {
+                    whitelistApps.add(domainRule);
+                }
+            }
+        }
+        return whitelistApps;
+    }
+
+    public List<DomainFilterRule> getWhitelistUrlAppsFromKnox() {
+        List<AppInfo> appList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+        List<DomainFilterRule> whitelistUrl = new ArrayList<>();
+        if (firewall == null) {
+            return whitelistUrl;
+        }
+        for (AppInfo app : appList) {
+            List<String> packageNameList = new ArrayList<>();
+            packageNameList.add(app.packageName);
+            List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
+            for (DomainFilterRule domainRule : domainRules) {
+                if (!domainRule.getAllowDomains().contains("*")) {
+                    whitelistUrl.add(domainRule);
+                }
+            }
+        }
+        return whitelistUrl;
+    }
+
+    public List<String> getWhitelistUrlAllAppsFromKnox() {
+        List<AppInfo> appList = new ArrayList<>();
+        AppInfo allAppInfo = new AppInfo();
+        allAppInfo.packageName = "*";
+        appList.add(allAppInfo);
+        List<String> whitelistApps = new ArrayList<>();
+        if (firewall == null) {
+            return whitelistApps;
+        }
+        for (AppInfo app : appList) {
+            List<String> packageNameList = new ArrayList<>();
+            packageNameList.add(app.packageName);
+            List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
+            for (DomainFilterRule domainRule : domainRules) {
+                if (!domainRule.getAllowDomains().contains("*")) {
+                    whitelistApps.addAll(domainRule.getAllowDomains());
+                }
+            }
+        }
+        return whitelistApps;
     }
 
     public int getWhitelistAppCountFromKnox() {

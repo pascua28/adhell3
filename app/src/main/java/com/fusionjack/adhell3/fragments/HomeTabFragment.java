@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -81,6 +83,7 @@ public class HomeTabFragment extends Fragment {
     private SwipeRefreshLayout swipeContainer;
     private ContentBlocker contentBlocker;
     private ProgressBar loadingBar;
+    private ImageView refreshButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,6 +106,10 @@ public class HomeTabFragment extends Fragment {
                 String versionInfo = Objects.requireNonNull(getContext()).getResources().getString(R.string.version);
                 subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
             }
+            this.refreshButton = view.findViewById(R.id.refreshButton);
+            int themeColor = getResources().getColor(R.color.colorBottomNavUnselected, Objects.requireNonNull(getContext()).getTheme());
+            refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+            refreshButton.setOnClickListener(v -> new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute());
             actionBar.setCustomView(view);
             actionBar.setDisplayShowCustomEnabled(true);
         }
@@ -133,11 +140,11 @@ public class HomeTabFragment extends Fragment {
 
         domainSwitch.setOnClickListener(v -> {
             LogUtils.info("Domain switch button has been clicked");
-            new SetFirewallAsyncTask(true, this, fragmentManager, getContext()).execute();
+            new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), false).execute();
         });
         firewallSwitch.setOnClickListener(v -> {
             LogUtils.info("Firewall switch button has been clicked");
-            new SetFirewallAsyncTask(false, this, fragmentManager, getContext()).execute();
+            new SetFirewallAsyncTask(false, this, fragmentManager, getContext(), false).execute();
         });
         disablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
@@ -174,7 +181,7 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void updateUserInterface() {
-        new SetInfoAsyncTask(getContext()).execute();
+        new SetInfoAsyncTask(getContext(), refreshButton).execute();
 
         boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
         boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
@@ -231,6 +238,12 @@ public class HomeTabFragment extends Fragment {
             appComponentStatusTextView.setText(R.string.app_component_disabled);
             appComponentSwitch.setChecked(false);
         }
+
+        if (((domainSwitch.isChecked() || firewallSwitch.isChecked())))  {
+            refreshButton.setVisibility(View.VISIBLE);
+        } else {
+            refreshButton.setVisibility(View.GONE);
+        }
     }
 
     private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -245,9 +258,12 @@ public class HomeTabFragment extends Fragment {
         private int permissionSize;
         private int serviceSize;
         private int receiverSize;
+        private boolean isCurrentDomainLimitAboveDefault;
+        private WeakReference<ImageView> refreshButton;
 
-        SetInfoAsyncTask(Context context) {
+        SetInfoAsyncTask(Context context, ImageView refreshButton) {
             this.contextWeakReference = new WeakReference<>(context);
+            this.refreshButton = new WeakReference<>(refreshButton);
         }
 
         @Override
@@ -309,6 +325,8 @@ public class HomeTabFragment extends Fragment {
             mobileSize = stat.mobileDataSize / 2;
             wifiSize = stat.wifiDataSize / 2;
 
+            isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
+
             return null;
         }
 
@@ -343,6 +361,14 @@ public class HomeTabFragment extends Fragment {
                         info = String.format(appComponentInfo, 0, 0, 0);
                     }
                     appComponentInfoTextView.setText(info);
+                }
+
+                Switch domainRulesSwitch = ((Activity) context).findViewById(R.id.domainRulesSwitch);
+                Switch firewallRulesSwitch = ((Activity) context).findViewById(R.id.firewallRulesSwitch);
+                if (!isCurrentDomainLimitAboveDefault && ((domainRulesSwitch.isChecked() || firewallRulesSwitch.isChecked())))  {
+                    refreshButton.get().setVisibility(View.VISIBLE);
+                } else {
+                    refreshButton.get().setVisibility(View.GONE);
                 }
             }
         }
@@ -422,8 +448,10 @@ public class HomeTabFragment extends Fragment {
         private final boolean isDomainRuleEmpty;
         private final boolean isFirewallRuleEmpty;
         private final WeakReference<Context> contextReference;
+        private final boolean doRefresh;
+        private boolean isCurrentDomainLimitAboveDefault;
 
-        SetFirewallAsyncTask(boolean isDomain, HomeTabFragment parentFragment, FragmentManager fragmentManager, Context context) {
+        SetFirewallAsyncTask(boolean isDomain, HomeTabFragment parentFragment, FragmentManager fragmentManager, Context context, boolean doRefresh) {
             this.isDomain = isDomain;
             this.parentFragment = parentFragment;
             this.fragmentManager = fragmentManager;
@@ -431,6 +459,7 @@ public class HomeTabFragment extends Fragment {
             this.isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
             this.isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
             this.contextReference = new WeakReference<>(context);
+            this.doRefresh = doRefresh;
 
             this.handler = new Handler(Looper.getMainLooper()) {
                 @Override
@@ -442,12 +471,16 @@ public class HomeTabFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            if (isDomain) {
-                fragment = FirewallDialogFragment.newInstance(
-                        isDomainRuleEmpty ? "Enabling Domain Rules" : "Disabling Domain Rules");
+            if (doRefresh) {
+                fragment = FirewallDialogFragment.newInstance("Updating all Rules");
             } else {
-                fragment = FirewallDialogFragment.newInstance(
-                        isFirewallRuleEmpty ? "Enabling Firewall Rules" : "Disabling Firewall Rules");
+                if (isDomain) {
+                    fragment = FirewallDialogFragment.newInstance(
+                            (isDomainRuleEmpty) ? "Enabling Domain Rules" : "Disabling Domain Rules");
+                } else {
+                    fragment = FirewallDialogFragment.newInstance(
+                            isFirewallRuleEmpty ? "Enabling Firewall Rules" : "Disabling Firewall Rules");
+                }
             }
             fragment.setCancelable(false);
             fragment.show(fragmentManager, "dialog_firewall");
@@ -456,22 +489,29 @@ public class HomeTabFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... args) {
             contentBlocker.setHandler(handler);
-            if (isDomain) {
-                if (isDomainRuleEmpty) {
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(contextReference.get());
-                    boolean updateProviders = preferences.getBoolean(SettingsFragment.UPDATE_PROVIDERS_PREFERENCE, false);
-                    if (!AdhellFactory.getInstance().hasInternetAccess(contextReference.get())) {
-                        updateProviders = false;
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(contextReference.get());
+            boolean updateProviders = preferences.getBoolean(SettingsFragment.UPDATE_PROVIDERS_PREFERENCE, false);
+            if (!AdhellFactory.getInstance().hasInternetAccess(contextReference.get())) {
+                updateProviders = false;
+            }
+
+            isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
+
+            if (doRefresh && !isCurrentDomainLimitAboveDefault)
+                contentBlocker.updateAllRules(updateProviders, parentFragment);
+            else {
+                if (isDomain) {
+                    if (isDomainRuleEmpty) {
+                        contentBlocker.enableDomainRules(updateProviders);
+                    } else {
+                        contentBlocker.disableDomainRules();
                     }
-                    contentBlocker.enableDomainRules(updateProviders);
                 } else {
-                    contentBlocker.disableDomainRules();
-                }
-            } else {
-                if (isFirewallRuleEmpty) {
-                    contentBlocker.enableFirewallRules();
-                } else {
-                    contentBlocker.disableFirewallRules();
+                    if (isFirewallRuleEmpty) {
+                        contentBlocker.enableFirewallRules();
+                    } else {
+                        contentBlocker.disableFirewallRules();
+                    }
                 }
             }
             return null;
@@ -626,5 +666,13 @@ public class HomeTabFragment extends Fragment {
                 Toast.makeText(context, "Blocked domains have been exported!", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public boolean getDomainSwitchState() {
+        return domainSwitch.isChecked();
+    }
+
+    public boolean getFirewallSwitchState() {
+        return firewallSwitch.isChecked();
     }
 }
