@@ -52,7 +52,6 @@ public class ActivationDialogFragment extends DialogFragment {
     private Button activateKnoxButton;
     private SharedPreferences sharedPreferences;
     private EditText knoxKeyEditText;
-    private EditText backwardKeyEditText;
 
     public ActivationDialogFragment() {
         deviceAdminInteractor = DeviceAdminInteractor.getInstance();
@@ -138,7 +137,6 @@ public class ActivationDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         deviceAdminInteractor.setKnoxKey(sharedPreferences, BuildConfig.SKL_KEY);
-        deviceAdminInteractor.setBackwardKey(sharedPreferences, BuildConfig.BACKWARDS_KEY);
         return super.onCreateDialog(savedInstanceState);
     }
 
@@ -151,12 +149,9 @@ public class ActivationDialogFragment extends DialogFragment {
         turnOnAdminButton = view.findViewById(R.id.turnOnAdminButton);
         activateKnoxButton = view.findViewById(R.id.activateKnoxButton);
         knoxKeyEditText = view.findViewById(R.id.knoxKeyEditText);
-        backwardKeyEditText = view.findViewById(R.id.backwardKeyEditText);
 
         String knoxKey = deviceAdminInteractor.getKnoxKey(sharedPreferences);
         knoxKeyEditText.setText(knoxKey);
-
-        backwardKeyEditText.setVisibility(View.GONE);
 
         turnOnAdminButton.setOnClickListener(v ->
                 deviceAdminInteractor.forceEnableAdmin(this.getActivity())
@@ -164,7 +159,6 @@ public class ActivationDialogFragment extends DialogFragment {
 
         activateKnoxButton.setOnClickListener(v -> {
             deviceAdminInteractor.setKnoxKey(sharedPreferences, knoxKeyEditText.getText().toString());
-            deviceAdminInteractor.setBackwardKey(sharedPreferences, backwardKeyEditText.getText().toString());
 
             disableActiveButton();
             boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
@@ -318,13 +312,11 @@ public class ActivationDialogFragment extends DialogFragment {
         activateKnoxButton.setEnabled(true);
         activateKnoxButton.setClickable(true);
         knoxKeyEditText.setEnabled(!isActivated);
-        backwardKeyEditText.setEnabled(!isActivated);
     }
 
     private void disableActiveButton() {
         activateKnoxButton.setEnabled(false);
         activateKnoxButton.setClickable(false);
         knoxKeyEditText.setEnabled(false);
-        backwardKeyEditText.setEnabled(false);
     }
 }
