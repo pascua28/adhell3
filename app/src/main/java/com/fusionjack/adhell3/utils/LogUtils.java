@@ -12,13 +12,7 @@ import com.samsung.android.knox.EnterpriseDeviceManager;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by fusionjack on 15/03/2018.
- */
-
 public final class LogUtils {
-
-    private static String STORAGE_FOLDER = "/Adhell3/Logs/";
 
     private LogUtils() {
     }
@@ -27,12 +21,10 @@ public final class LogUtils {
         info("Build version: " + BuildConfig.VERSION_NAME);
         info("Knox API: " + Integer.toString(EnterpriseDeviceManager.getAPILevel()));
         info("Android API: " + Integer.toString(Build.VERSION.SDK_INT));
-        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) folder.mkdirs();
         String filename = String.format("adhell_logcat_%s.txt", System.currentTimeMillis());
-        File logFile = new File(folder, filename);
+        File logFile = new File(Environment.getExternalStorageDirectory(), filename);
         try {
-            Runtime.getRuntime().exec("logcat -f " + logFile + " | grep com.fusionjack.adhell3");
+            Runtime.getRuntime().exec( "logcat -f " + logFile + " | grep com.fusionjack.adhell3");
         } catch (IOException e) {
             error(e.getMessage(), e);
             return "";
@@ -50,6 +42,10 @@ public final class LogUtils {
             message.sendToTarget();
         }
         Log.i(getCallerInfo(), text);
+    }
+
+    public static void error(String text) {
+        Log.e(getCallerInfo(), text);
     }
 
     public static void error(String text, Throwable e) {
