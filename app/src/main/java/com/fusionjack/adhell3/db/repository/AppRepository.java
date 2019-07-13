@@ -47,22 +47,25 @@ public class AppRepository {
                     if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
                             tempList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+                        } else {
+                            tempList = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
                         }
-                        tempList = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
                         list.addAll(tempList);
                         tempList.clear();
                     } else if (filterAppInfo.getSystemAppsFilter()) {
                         if (text.length() == 0) {
                             tempList = appDatabase.applicationInfoDao().getAllSystemApps();
+                        } else {
+                            tempList = appDatabase.applicationInfoDao().getAllSystemApps(filterText);
                         }
-                        tempList = appDatabase.applicationInfoDao().getAllSystemApps(filterText);
                         list.addAll(tempList);
                         tempList.clear();
                     } else if (filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
                             tempList = appDatabase.applicationInfoDao().getAllUserApps();
+                        } else {
+                            tempList = appDatabase.applicationInfoDao().getAllUserApps(filterText);
                         }
-                        tempList = appDatabase.applicationInfoDao().getAllUserApps(filterText);
                         list.addAll(tempList);
                         tempList.clear();
                     }
@@ -89,20 +92,23 @@ public class AppRepository {
                 case MOBILE_RESTRICTED:
                     if (text.length() == 0) {
                         list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder();
+                    } else {
+                        list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder(filterText);
                     }
-                    list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder(filterText);
                     break;
                 case WIFI_RESTRICTED:
                     if (text.length() == 0) {
                         list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder();
+                    } else {
+                        list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder(filterText);
                     }
-                    list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder(filterText);
                     break;
                 case WHITELISTED:
                     if (text.length() == 0) {
                         list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder();
+                    } else {
+                        list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder(filterText);
                     }
-                    list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder(filterText);
                     break;
                 case COMPONENT:
                     boolean showSystemApps = BuildConfig.SHOW_SYSTEM_APP_COMPONENT;
@@ -110,16 +116,18 @@ public class AppRepository {
                         list = showSystemApps ?
                                 appDatabase.applicationInfoDao().getEnabledAppsAlphabetically() :
                                 appDatabase.applicationInfoDao().getUserApps();
+                    } else {
+                        list = showSystemApps ?
+                                appDatabase.applicationInfoDao().getEnabledAppsAlphabetically(filterText) :
+                                appDatabase.applicationInfoDao().getUserApps(filterText);
                     }
-                    list = showSystemApps ?
-                            appDatabase.applicationInfoDao().getEnabledAppsAlphabetically(filterText) :
-                            appDatabase.applicationInfoDao().getUserApps(filterText);
                     break;
                 case DNS:
                     if (text.length() == 0) {
                         list = appDatabase.applicationInfoDao().getAppsInDnsOrder();
+                    } else {
+                        list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
                     }
-                    list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
                     break;
             }
             hideProgressBar();
