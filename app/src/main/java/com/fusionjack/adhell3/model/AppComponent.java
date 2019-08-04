@@ -54,6 +54,33 @@ public class AppComponent {
         return permissionList;
     }
 
+    public static Set<String> getServiceNames(String packageName) {
+        Set<String> serviceNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled services won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedServices = appDatabase.appPermissionDao().getServices(packageName);
+        for (AppPermission storedService : storedServices) {
+            serviceNameSet.add(storedService.permissionName);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SERVICES);
+            if (packageInfo != null) {
+                android.content.pm.ServiceInfo[] services = packageInfo.services;
+                if (services != null) {
+                    for (android.content.pm.ServiceInfo serviceInfo : services) {
+                        serviceNameSet.add(serviceInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return serviceNameSet;
+    }
+
     public static List<IComponentInfo> getServices(String packageName, String searchText) {
         Set<String> serviceNameSet = new HashSet<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
@@ -88,6 +115,35 @@ public class AppComponent {
         }
 
         return serviceInfoList;
+    }
+
+    public static Set<String> getReceiverNames(String packageName) {
+        Set<String> receiverNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled services won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getReceivers(packageName);
+        for (AppPermission storedReceiver : storedReceivers) {
+            StringTokenizer tokenizer = new StringTokenizer(storedReceiver.permissionName, "|");
+            String name = tokenizer.nextToken();
+            receiverNameSet.add(name);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_RECEIVERS);
+            if (packageInfo != null) {
+                ActivityInfo[] receivers = packageInfo.receivers;
+                if (receivers != null) {
+                    for (ActivityInfo activityInfo : receivers) {
+                        receiverNameSet.add(activityInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return receiverNameSet;
     }
 
     public static List<IComponentInfo> getReceivers(String packageName, String searchText) {
@@ -130,19 +186,19 @@ public class AppComponent {
     }
 
     private static class ReceiverPair {
-        private final String name;
-        private final String permission;
+        private String name;
+        private String permission;
 
         ReceiverPair(String name, String permission) {
             this.name = name;
             this.permission = permission;
         }
 
-        String getName() {
+        public String getName() {
             return name;
         }
 
-        String getPermission() {
+        public String getPermission() {
             return permission;
         }
     }

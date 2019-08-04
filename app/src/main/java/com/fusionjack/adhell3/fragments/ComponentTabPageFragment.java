@@ -18,11 +18,9 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
-import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
@@ -58,7 +56,6 @@ public class ComponentTabPageFragment extends Fragment {
     private String packageName;
     private Context context;
     private String searchText;
-    private SearchView searchView;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -81,9 +78,10 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.app_menu, menu);
 
-        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        inflater.inflate(R.menu.appcomponent_menu, menu);
+
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
             searchView.setQuery(searchText, false);
@@ -108,9 +106,8 @@ public class ComponentTabPageFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_enable_all:
-                enableComponent();
+        if (item.getItemId() == R.id.action_enable_all) {
+            enableComponent();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -302,7 +299,7 @@ public class ComponentTabPageFragment extends Fragment {
                     ServiceInfo serviceInfo = (ServiceInfo) componentInfo;
                     String serviceName = serviceInfo.getName();
                     ComponentName serviceCompName = new ComponentName(packageName, serviceName);
-                    boolean state = !getComponentState(packageName, serviceName);
+                    boolean state = !AdhellFactory.getInstance().getComponentState(packageName, serviceName);
                     try {
                         boolean success = appPolicy.setApplicationComponentState(serviceCompName, state);
                         if (success) {
@@ -330,7 +327,7 @@ public class ComponentTabPageFragment extends Fragment {
                     String receiverName = receiverInfo.getName();
                     String receiverPermission = receiverInfo.getPermission();
                     ComponentName receiverCompName = new ComponentName(packageName, receiverName);
-                    boolean receiverState = !getComponentState(packageName, receiverName);
+                    boolean receiverState = !AdhellFactory.getInstance().getComponentState(packageName, receiverName);
                     try {
                         String receiverPair = receiverName + "|" + receiverPermission;
                         boolean success = appPolicy.setApplicationComponentState(receiverCompName, receiverState);
@@ -379,16 +376,6 @@ public class ComponentTabPageFragment extends Fragment {
                     }
                 }
             }
-        }
-
-        private boolean getComponentState(String packageName, String serviceName) {
-            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-            if (appPolicy == null) {
-                return false;
-            }
-
-            ComponentName componentName = new ComponentName(packageName, serviceName);
-            return appPolicy.getApplicationComponentState(componentName);
         }
     }
 

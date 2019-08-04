@@ -265,4 +265,13 @@
     <string name="biometric_dialog_subtitle">Authentication is required to continue</string>
     <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>
     <string name="biometric_dialog_cancel_button_text">Cancel</string>
+    <string name="dialog_appcomponent_batch_title">Batch Operation</string>
+    <string name="dialog_appcomponent_batch_summary">The services and receivers defined in adhell3_services.txt and adhell3_receivers.txt will be used.
+        \nDo you want to enable or disable those services and receivers?</string>
+    <string name="dialog_appcomponent_enable_summary">Enabling services and receivers, please wait …</string>
+    <string name="dialog_appcomponent_disable_summary">Disabling services and receivers, please wait …</string>
+    <string name="button_enable">Enable</string>
+    <string name="button_disable">Disable</string>
+    <string name="menu_enable_all">Enable all</string>
+    <string name="menu_batch">Batch operation</string>
 </resources>

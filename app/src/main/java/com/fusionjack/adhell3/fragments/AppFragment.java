@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -81,6 +80,10 @@ public class AppFragment extends Fragment {
 
         inflater.inflate(R.menu.app_menu, menu);
 
+        initSearchView(menu);
+    }
+
+    protected void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
@@ -104,12 +107,11 @@ public class AppFragment extends Fragment {
         });
     }
 
-    void resetSearchView() {
+    protected void resetSearchView() {
         if (searchView != null) {
             searchText = "";
             searchView.setQuery(searchText, false);
             searchView.setIconified(true);
         }
     }
-
 }

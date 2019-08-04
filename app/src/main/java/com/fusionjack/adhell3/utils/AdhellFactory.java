@@ -34,6 +34,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
+import com.samsung.android.knox.restriction.RestrictionPolicy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,6 +72,11 @@ public final class AdhellFactory {
     @Inject
     KnoxEnterpriseLicenseManager knoxEnterpriseLicenseManager;
 
+    @Nullable
+    @Inject
+    RestrictionPolicy restrictionPolicy;
+
+
     private AdhellFactory() {
         App.get().getAppComponent().inject(this);
     }
@@ -102,6 +108,40 @@ public final class AdhellFactory {
 
     SharedPreferences getSharedPreferences() {
         return sharedPreferences;
+    }
+
+    Boolean getCameraState() {
+        try {
+            return restrictionPolicy.isCameraEnabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    void setCameraState(boolean newState) {
+        try {
+            restrictionPolicy.setCameraState(newState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    Boolean getMicrophoneState() {
+        try {
+            return restrictionPolicy.isMicrophoneEnabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    void setMicrophoneState(boolean newState) {
+        try {
+            restrictionPolicy.setMicrophoneState(newState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void createNotSupportedDialog(Context context) {
@@ -280,4 +320,15 @@ public final class AdhellFactory {
         intent.setData(Uri.parse(packageName));
         fragment.startActivity(intent);
     }
+
+    public boolean getComponentState(String packageName, String name) {
+        if (appPolicy == null) {
+            return false;
+        }
+
+        ComponentName componentName = new ComponentName(packageName, name);
+        return appPolicy.getApplicationComponentState(componentName);
+    }
+
+
 }
