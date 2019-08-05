@@ -46,7 +46,6 @@ import javax.inject.Inject;
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_UNKNOWN;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DEFAULT;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
-import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_GRANT;
 
 public final class AdhellFactory {
     private static AdhellFactory instance;
@@ -202,10 +201,7 @@ public final class AdhellFactory {
         }
 
         if (state) {
-            int errorCode = appPolicy.applyRuntimePermissions(new AppIdentity(packageName, null), permissions, PERMISSION_POLICY_STATE_GRANT);
-            if (errorCode == ApplicationPolicy.ERROR_NONE) {
-                return appPolicy.applyRuntimePermissions(new AppIdentity(packageName, null), permissions, PERMISSION_POLICY_STATE_DEFAULT);
-            }
+            return appPolicy.applyRuntimePermissions(new AppIdentity(packageName, null), permissions, PERMISSION_POLICY_STATE_DEFAULT);
         }
         return appPolicy.applyRuntimePermissions(new AppIdentity(packageName, null), permissions, PERMISSION_POLICY_STATE_DENY);
     }
