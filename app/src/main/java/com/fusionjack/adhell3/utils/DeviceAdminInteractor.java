@@ -20,15 +20,6 @@ import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import javax.inject.Inject;
 
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_6;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_7;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_7_1;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_8;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_9;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_0;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_1;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_2;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_2_1;
-import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_3_3;
 
 public final class DeviceAdminInteractor {
     private static final int RESULT_ENABLE = 42;
@@ -162,22 +153,8 @@ public final class DeviceAdminInteractor {
         }
 
         int apiLevel = EnterpriseDeviceManager.getAPILevel();
-        LogUtils.info("Knox API level: " + apiLevel);
-        switch (apiLevel) {
-            case KNOX_2_6:
-            case KNOX_2_7:
-            case KNOX_2_7_1:
-            case KNOX_2_8:
-            case KNOX_2_9:
-            case KNOX_3_0:
-            case KNOX_3_1:
-            case KNOX_3_2:
-            case KNOX_3_2_1:
-            case KNOX_3_3:
-                return true;
-            default:
-                return false;
-        }
+        LogUtils.info( "Knox API level: " + apiLevel);
+        return apiLevel >= KNOX_2_6;
     }
 
     private boolean isKnoxSupported() {
