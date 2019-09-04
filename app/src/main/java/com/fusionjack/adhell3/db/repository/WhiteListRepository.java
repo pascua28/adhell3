@@ -1,6 +1,6 @@
 package com.fusionjack.adhell3.db.repository;
 
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
 

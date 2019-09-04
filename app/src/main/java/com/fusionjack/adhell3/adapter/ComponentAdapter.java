@@ -1,7 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.widget.ArrayAdapter;
 
 import com.fusionjack.adhell3.model.IComponentInfo;

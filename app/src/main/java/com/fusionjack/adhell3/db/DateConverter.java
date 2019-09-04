@@ -1,6 +1,6 @@
 package com.fusionjack.adhell3.db;
 
-import android.arch.persistence.room.TypeConverter;
+import androidx.room.TypeConverter;
 
 import java.util.Date;
 

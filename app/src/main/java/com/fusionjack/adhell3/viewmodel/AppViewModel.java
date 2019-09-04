@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.viewmodel;
 
-import android.app.Activity;
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModel;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 

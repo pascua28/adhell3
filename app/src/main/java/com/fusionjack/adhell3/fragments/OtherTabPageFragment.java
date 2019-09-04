@@ -1,7 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 public class OtherTabPageFragment extends Fragment {
     public static final int APP_COMPONENT_PAGE = 0;

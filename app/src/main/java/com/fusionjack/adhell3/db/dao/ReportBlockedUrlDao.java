@@ -1,9 +1,9 @@
 package com.fusionjack.adhell3.db.dao;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.TypeConverters;
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.Query;
+import androidx.room.TypeConverters;
 
 import com.fusionjack.adhell3.db.DateConverter;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;

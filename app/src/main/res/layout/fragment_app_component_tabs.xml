@@ -6,7 +6,7 @@
     android:background="@drawable/border"
     android:orientation="vertical">
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
         android:id="@+id/apps_sliding_tabs"
         style="@style/ManagementTabLayout"
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         app:tabGravity="fill"
         app:tabMode="fixed" />
 
-    <android.support.v4.view.ViewPager
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/apps_viewpager"
         android:layout_width="match_parent"
         android:layout_height="0dp"

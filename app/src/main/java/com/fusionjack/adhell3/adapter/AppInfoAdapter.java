@@ -6,8 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +15,15 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.snackbar.Snackbar;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
@@ -130,7 +131,7 @@ public class AppInfoAdapter extends BaseAdapter {
                                         try {
                                             appPolicy.stopApp(appInfo.packageName);
                                             Snackbar snackBar = Snackbar.make(finalConvertView, String.format(context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT);
-                                            TextView tv = snackBar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                                            TextView tv = snackBar.getView().findViewById(R.id.snackbar_text);
                                             tv.setTextColor(Color.WHITE);
                                             snackBar.show();
                                             holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
