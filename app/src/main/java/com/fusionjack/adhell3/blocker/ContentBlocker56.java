@@ -525,7 +525,7 @@ public class ContentBlocker56 implements ContentBlocker {
             for (String whiteUrl : whiteUrls) {
                 if (whiteUrl.indexOf('|') != -1) {
                     StringTokenizer tokens = new StringTokenizer(whiteUrl, "|");
-                    if (tokens.countTokens() == 2) {
+                    if (tokens.countTokens() == 1) {
                         final String packageName = tokens.nextToken();
                         final String url = tokens.nextToken();
                         urlsIndividualApp.put(packageName, url);

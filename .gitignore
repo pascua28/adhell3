@@ -11,3 +11,4 @@
 fabric.properties
 app/release
 app/libs
+app/debug
