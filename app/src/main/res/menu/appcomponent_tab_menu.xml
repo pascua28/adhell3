@@ -6,7 +6,6 @@
         app:showAsAction="always"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
-        android:id="@+id/action_options"
         android:icon="@drawable/ic_more_vertical_24dp"
         android:title="Options"
         app:showAsAction="always">
