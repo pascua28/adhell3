@@ -24,6 +24,7 @@ import io.reactivex.Single;
 
 public final class AppComponentFactory {
 
+    private static final String STORAGE_FOLDER = "/Adhell3/BatchOp/";
     private static final String SERVICE_FILENAME = "adhell3_services.txt";
     private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
     private static AppComponentFactory instance;
@@ -71,14 +72,15 @@ public final class AppComponentFactory {
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
-        File serviceFile = new File(Environment.getExternalStorageDirectory(), fileName);
-        if (!serviceFile.exists()) {
+        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+        File contentFile = new File(folder, fileName);
+        if (!contentFile.exists()) {
             throw new FileNotFoundException("File name " + fileName + " cannot be found");
         }
 
         Set<String> lines = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(serviceFile), StandardCharsets.UTF_8))) {
+                new InputStreamReader(new FileInputStream(contentFile), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line.trim());

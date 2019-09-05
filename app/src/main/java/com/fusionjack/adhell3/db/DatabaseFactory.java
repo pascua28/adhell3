@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 public final class DatabaseFactory {
-    private static String STORAGE_FOLDER = "/Adhell3/BackupDB/";
+    private static final String STORAGE_FOLDER = "/Adhell3/BackupDB/";
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
     private static final String BACKUP_FILENAME = "adhell_backup.txt";
