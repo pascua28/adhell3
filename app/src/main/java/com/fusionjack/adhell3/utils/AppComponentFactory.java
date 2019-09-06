@@ -73,9 +73,10 @@ public final class AppComponentFactory {
 
     private Set<String> getFileContent(String fileName) throws IOException {
         File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+        if (!folder.exists()) folder.mkdirs();
         File contentFile = new File(folder, fileName);
         if (!contentFile.exists()) {
-            throw new FileNotFoundException("File name " + fileName + " cannot be found");
+            throw new FileNotFoundException("File '" + fileName + "' cannot be found in folder " + folder.getAbsolutePath());
         }
 
         Set<String> lines = new HashSet<>();
