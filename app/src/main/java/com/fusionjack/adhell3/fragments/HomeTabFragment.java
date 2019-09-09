@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -45,6 +46,7 @@ import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -65,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 public class HomeTabFragment extends Fragment {
 
@@ -575,22 +578,33 @@ public class HomeTabFragment extends Fragment {
                     ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, handler);
                     listView.setAdapter(adapter);
                     listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
-                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, listView, false);
-                        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                        titlTextView.setText(R.string.dialog_whitelist_domain_title);
-                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                        questionTextView.setText(R.string.dialog_add_to_whitelist_question);
+                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_whitelist_domain, listView, false);
+                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                        List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
+                        String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
+                        String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
+                        domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
                         new AlertDialog.Builder(context)
                                 .setView(dialogView)
-                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                        AsyncTask.execute(() -> {
-                                            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                                            List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
-                                            final String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
-                                            WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
-                                            appDatabase.whiteUrlDao().insert(whiteUrl);
-                                        })
-                                )
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                    String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
+                                    if (domainToAdd.indexOf('|') == -1) {
+                                        if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                            Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    } else {
+                                        // packageName|url
+                                        StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+                                        if (tokens.countTokens() != 2) {
+                                            Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    }
+                                    WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
+                                    AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
+                                    Toast.makeText(context, "Domain whitelist has been added", Toast.LENGTH_SHORT).show();
+                                })
                                 .setNegativeButton(android.R.string.no, null).show();
                         return false;
                     });
