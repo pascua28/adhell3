@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         // Close Activity if it's not the root of the task
         if (!isTaskRoot()) {
             finish();
@@ -90,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
-        super.onCreate(savedInstanceState);
         themeChange = getIntent().getStringExtra("settingsFragment");
 
         // Remove elevation shadow of ActionBar
