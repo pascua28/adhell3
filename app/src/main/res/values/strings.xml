@@ -257,7 +257,7 @@
     <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>
     <string name="biometric_dialog_cancel_button_text">Cancel</string>
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
-    <string name="dialog_appcomponent_batch_summary">The services and receivers defined in adhell3_services.txt and adhell3_receivers.txt will be used.
+    <string name="dialog_appcomponent_batch_summary">The services and receivers defined in adhell3_services.txt and adhell3_receivers.txt from \'Adhell3/BatchOp/\' folder will be used.
         \nDo you want to enable or disable those services and receivers?</string>
     <string name="dialog_appcomponent_enable_summary">Enabling services and receivers, please wait …</string>
     <string name="dialog_appcomponent_disable_summary">Disabling services and receivers, please wait …</string>
