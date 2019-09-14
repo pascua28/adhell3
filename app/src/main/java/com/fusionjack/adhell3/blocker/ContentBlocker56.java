@@ -36,6 +36,8 @@ public class ContentBlocker56 implements ContentBlocker {
     private Handler handler;
     private final FirewallUtils firewallUtils;
 
+    private List<String> whiteListedAppRules = new ArrayList<>();
+
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
         this.firewall = AdhellFactory.getInstance().getFirewall();
@@ -460,6 +462,8 @@ public class ContentBlocker56 implements ContentBlocker {
         List<AppInfo> whitelistedApps = appDatabase.applicationInfoDao().getWhitelistedApps();
         LogUtils.info("Size: " + whitelistedApps.size(), handler);
 
+        whiteListedAppRules.clear();
+
         if (!isCurrentDomainLimitAboveDefault) {
             List<DomainFilterRule> currentWhitelistedApps = firewallUtils.getWhitelistedAppsFromKnox();
 
@@ -471,13 +475,16 @@ public class ContentBlocker56 implements ContentBlocker {
 
             for (AppInfo appInfo : whitelistedApps) {
                 boolean add = true;
+                whiteListedAppRules.add(appInfo.packageName);
                 for (DomainFilterRule whitelistRule : currentWhitelistedApps) {
                     if (appInfo.packageName.equals(whitelistRule.getApplication().getPackageName())) {
                         removeRules.remove(whitelistRule);
                         add = false;
                     }
                 }
-                if (add) addRules.add(new DomainFilterRule(new AppIdentity(appInfo.packageName, null), new ArrayList<>(), superAllow));
+                if (add) {
+                    addRules.add(new DomainFilterRule(new AppIdentity(appInfo.packageName, null), new ArrayList<>(), superAllow));
+                }
             }
 
             if (addRules.size() > 0 || removeRules.size() > 0 || currentWhitelistedApps.size() > 0) {
@@ -487,7 +494,9 @@ public class ContentBlocker56 implements ContentBlocker {
             }
 
             if (addRules.size() > 0) firewallUtils.addDomainFilterRules(addRules, handler);
-            if (removeRules.size() > 0) firewallUtils.removeDomainFilterRules(removeRules, handler);
+            if (removeRules.size() > 0) {
+                firewallUtils.removeDomainFilterRules(removeRules, handler);
+            }
 
         } else {
             if (whitelistedApps.size() == 0) {
@@ -498,6 +507,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
             for (AppInfo app : whitelistedApps) {
                 LogUtils.info("Package name: " + app.packageName, handler);
+                whiteListedAppRules.add(app.packageName);
                 rules.add(new DomainFilterRule(new AppIdentity(app.packageName, null), new ArrayList<>(), superAllow));
             }
 
@@ -541,7 +551,7 @@ public class ContentBlocker56 implements ContentBlocker {
                             newUrl = new ArrayList<>(Objects.requireNonNull(urlsIndividualApp.get(packageName)));
                         }
                         newUrl.add(url);
-                        urlsIndividualApp.put(packageName, newUrl);
+                        if (isNotWhitelistedApp(packageName)) urlsIndividualApp.put(packageName, newUrl);
                     }
                 }
             }
@@ -658,11 +668,13 @@ public class ContentBlocker56 implements ContentBlocker {
                     if (tokens.countTokens() == 2) {
                         final String packageName = tokens.nextToken();
                         final String url = tokens.nextToken();
-                        LogUtils.info("PackageName: " + packageName + ", Domain: " + url, handler);
-                        final AppIdentity appIdentity = new AppIdentity(packageName, null);
-                        List<String> allowList = new ArrayList<>();
-                        allowList.add(url);
-                        processDomains(appIdentity, denyList, allowList);
+                        if (isNotWhitelistedApp(packageName)) {
+                            LogUtils.info("PackageName: " + packageName + ", Domain: " + url, handler);
+                            final AppIdentity appIdentity = new AppIdentity(packageName, null);
+                            List<String> allowList = new ArrayList<>();
+                            allowList.add(url);
+                            processDomains(appIdentity, denyList, allowList);
+                        }
                     }
                 }
             }
@@ -776,6 +788,16 @@ public class ContentBlocker56 implements ContentBlocker {
             rules.add(new DomainFilterRule(appIdentity, denyList, allowList));
             firewallUtils.removeDomainFilterRules(rules, handler);
         }
+    }
+
+    private boolean isNotWhitelistedApp(String packageName) {
+        boolean isWhitelisted = false;
+        for (String whiteListedAppRule : whiteListedAppRules) {
+            if (whiteListedAppRule.equals(packageName))
+                isWhitelisted = true;
+        }
+
+        return !isWhitelisted;
     }
 
     @Override
