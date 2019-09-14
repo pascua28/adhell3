@@ -12,7 +12,6 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -45,16 +44,45 @@ public final class AppComponentFactory {
     }
 
     public Single<String> processAppComponentInBatch(boolean enabled) {
+        File batchOpFolder;
+        File servicesFile;
+        File receiversFile;
+
+        try {
+            batchOpFolder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+            if (!batchOpFolder.exists()) {
+                if (!batchOpFolder.mkdirs()) {
+                    throw new IOException("Unable to create folder '" + batchOpFolder.getAbsolutePath() + "' !");
+                }
+            }
+
+            servicesFile = new File(batchOpFolder, SERVICE_FILENAME);
+            receiversFile = new File(batchOpFolder, RECEIVER_FILENAME);
+
+            if (!servicesFile.exists()) {
+                if (!servicesFile.createNewFile()) {
+                    throw new IOException("Unable to create file '" + servicesFile.getAbsolutePath() + "' !");
+                }
+            }
+            if (!receiversFile.exists()) {
+                if (!receiversFile.createNewFile()) {
+                    throw new IOException("Unable to create file '" + receiversFile.getAbsolutePath() + "' !");
+                }
+            }
+        } catch (Exception e) {
+            return Single.error(e);
+        }
+
         Set<String> serviceNames;
         try {
-            serviceNames = getFileContent(SERVICE_FILENAME);
+            serviceNames = getFileContent(servicesFile.getAbsolutePath());
         } catch (IOException e) {
             return Single.error(e);
         }
 
         Set<String> receiverNames;
         try {
-            receiverNames = getFileContent(RECEIVER_FILENAME);
+            receiverNames = getFileContent(receiversFile.getAbsolutePath());
         } catch (IOException e) {
             return Single.error(e);
         }
@@ -72,11 +100,9 @@ public final class AppComponentFactory {
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
-        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) folder.mkdirs();
-        File contentFile = new File(folder, fileName);
-        if (!contentFile.exists()) {
-            throw new FileNotFoundException("File '" + fileName + "' cannot be found in folder " + folder.getAbsolutePath());
+        File contentFile = new File(fileName);
+        if (contentFile.length() == 0) {
+            throw new IOException("File '" + fileName + "' is empty !");
         }
 
         Set<String> lines = new HashSet<>();
