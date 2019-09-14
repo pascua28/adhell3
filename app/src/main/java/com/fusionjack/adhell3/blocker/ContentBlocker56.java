@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -250,7 +251,13 @@ public class ContentBlocker56 implements ContentBlocker {
                         String packageName1 = enabledRule.getApplication().getPackageName();
                         String ip1 = enabledRule.getIpAddress();
                         String port1 = enabledRule.getPortNumber();
-                        if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(ip) && port1.equalsIgnoreCase(port)) {
+                        Firewall.NetworkInterface networkInterface = enabledRule.getNetworkInterface();
+                        if (packageName1.equalsIgnoreCase(packageName)
+                                && ip1.equalsIgnoreCase(ip)
+                                && port1.equalsIgnoreCase(port)
+                                && networkInterface != Firewall.NetworkInterface.MOBILE_DATA_ONLY
+                                && networkInterface != Firewall.NetworkInterface.WIFI_DATA_ONLY)
+                        {
                             add = false;
                             break;
                         }
@@ -265,11 +272,13 @@ public class ContentBlocker56 implements ContentBlocker {
                             firewallRules[0].setIpAddress(ip);
                             firewallRules[0].setPortNumber(port);
                             firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                            firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
 
                             firewallRules[1] = new FirewallRule(FirewallRule.RuleType.DENY, Firewall.AddressType.IPV6);
                             firewallRules[1].setIpAddress(ip);
                             firewallRules[1].setPortNumber(port);
                             firewallRules[1].setApplication(new AppIdentity(packageName, null));
+                            firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
                         } else {
                             Firewall.AddressType type;
                             InetAddress address = InetAddress.getByName(ip);
@@ -286,6 +295,7 @@ public class ContentBlocker56 implements ContentBlocker {
                             firewallRules[0].setIpAddress(ip);
                             firewallRules[0].setPortNumber(port);
                             firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                            firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
                         }
 
                         firewallUtils.addFirewallRules(firewallRules, handler);
@@ -298,35 +308,39 @@ public class ContentBlocker56 implements ContentBlocker {
             }
         }
 
+        LogUtils.info("Custom rule size: " + count, handler);
+
         for (FirewallRule enabledRule : enabledRules) {
             String packageName = enabledRule.getApplication().getPackageName();
             String ip = enabledRule.getIpAddress();
             String port = enabledRule.getPortNumber();
-            boolean remove = true;
-            for (String url : urls) {
-                if (url.indexOf('|') != -1) {
-                    StringTokenizer tokens = new StringTokenizer(url, "|");
-                    String packageName1 = tokens.nextToken().trim();
-                    String ip1 = tokens.nextToken().trim();
-                    String port1 = tokens.nextToken().trim();
+            Firewall.NetworkInterface networkInterface = enabledRule.getNetworkInterface();
+            if (networkInterface != Firewall.NetworkInterface.MOBILE_DATA_ONLY
+                    && networkInterface != Firewall.NetworkInterface.WIFI_DATA_ONLY) {
+                boolean remove = true;
+                for (String url : urls) {
+                    if (url.indexOf('|') != -1) {
+                        StringTokenizer tokens = new StringTokenizer(url, "|");
+                        String packageName1 = tokens.nextToken().trim();
+                        String ip1 = tokens.nextToken().trim();
+                        String port1 = tokens.nextToken().trim();
 
-                    if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(ip) && port1.equalsIgnoreCase(port)) {
-                        remove = false;
-                        break;
+                        if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(ip) && port1.equalsIgnoreCase(port)) {
+                            remove = false;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (remove) {
-                String addressType = (enabledRule.getAddressType() == Firewall.AddressType.IPV4) ? "IPv4" : "IPv6";
-                LogUtils.info("\nRemoving " + addressType + " rule: " + packageName + "|" + ip + "|" + port, handler);
-                FirewallRule[] removeRule = new FirewallRule[1];
-                removeRule[0] = enabledRule;
-                firewallUtils.removeFirewallRules(removeRule, handler);
+                if (remove) {
+                    String addressType = (enabledRule.getAddressType() == Firewall.AddressType.IPV4) ? "IPv4" : "IPv6";
+                    LogUtils.info("\nRemoving " + addressType + " rule: " + packageName + "|" + ip + "|" + port, handler);
+                    FirewallRule[] removeRule = new FirewallRule[1];
+                    removeRule[0] = enabledRule;
+                    firewallUtils.removeFirewallRules(removeRule, handler);
+                }
             }
         }
-
-        LogUtils.info("Custom rule size: " + count, handler);
     }
 
     private void processMobileRestrictedApps() throws Exception {
@@ -335,9 +349,6 @@ public class ContentBlocker56 implements ContentBlocker {
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getMobileRestrictedApps();
         int size = restrictedApps.size();
         LogUtils.info("Size: " + size, handler);
-        if (size == 0) {
-            return;
-        }
 
         FirewallRule[] enabledRules = firewall.getRules(Firewall.FIREWALL_DENY_RULE, FirewallRule.Status.ENABLED);
         for (AppInfo app : restrictedApps) {
@@ -366,19 +377,21 @@ public class ContentBlocker56 implements ContentBlocker {
         for (FirewallRule enabledRule : enabledRules) {
             String packageName = enabledRule.getApplication().getPackageName();
             Firewall.NetworkInterface networkInterface = enabledRule.getNetworkInterface();
-            boolean remove = true;
-            for (AppInfo app : restrictedApps) {
-                String packageName1 = app.packageName;
-                if (packageName1.equalsIgnoreCase(packageName) && networkInterface == Firewall.NetworkInterface.MOBILE_DATA_ONLY) {
-                    remove = false;
-                    break;
+            if (networkInterface == Firewall.NetworkInterface.MOBILE_DATA_ONLY) {
+                boolean remove = true;
+                for (AppInfo app : restrictedApps) {
+                    String packageName1 = app.packageName;
+                    if (packageName1.equalsIgnoreCase(packageName)) {
+                        remove = false;
+                        break;
+                    }
                 }
-            }
-            if (remove) {
-                LogUtils.info("Removing package name: " + packageName, handler);
-                FirewallRule[] removeRule = new FirewallRule[1];
-                removeRule[0] = enabledRule;
-                firewallUtils.removeFirewallRules(removeRule, handler);
+                if (remove) {
+                    LogUtils.info("Removing package name: " + packageName, handler);
+                    FirewallRule[] removeRule = new FirewallRule[1];
+                    removeRule[0] = enabledRule;
+                    firewallUtils.removeFirewallRules(removeRule, handler);
+                }
             }
         }
     }
@@ -389,9 +402,6 @@ public class ContentBlocker56 implements ContentBlocker {
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getWifiRestrictedApps();
         int size = restrictedApps.size();
         LogUtils.info("Size: " + size, handler);
-        if (size == 0) {
-            return;
-        }
 
         FirewallRule[] enabledRules = firewall.getRules(Firewall.FIREWALL_DENY_RULE, FirewallRule.Status.ENABLED);
         for (AppInfo app : restrictedApps) {
@@ -420,19 +430,21 @@ public class ContentBlocker56 implements ContentBlocker {
         for (FirewallRule enabledRule : enabledRules) {
             String packageName = enabledRule.getApplication().getPackageName();
             Firewall.NetworkInterface networkInterface = enabledRule.getNetworkInterface();
-            boolean remove = true;
-            for (AppInfo app : restrictedApps) {
-                String packageName1 = app.packageName;
-                if (packageName1.equalsIgnoreCase(packageName) && networkInterface == Firewall.NetworkInterface.WIFI_DATA_ONLY) {
-                    remove = false;
-                    break;
+            if (networkInterface == Firewall.NetworkInterface.WIFI_DATA_ONLY) {
+                boolean remove = true;
+                for (AppInfo app : restrictedApps) {
+                    String packageName1 = app.packageName;
+                    if (packageName1.equalsIgnoreCase(packageName)) {
+                        remove = false;
+                        break;
+                    }
                 }
-            }
-            if (remove) {
-                LogUtils.info("Removing package name: " + packageName, handler);
-                FirewallRule[] removeRule = new FirewallRule[1];
-                removeRule[0] = enabledRule;
-                firewallUtils.removeFirewallRules(removeRule, handler);
+                if (remove) {
+                    LogUtils.info("Removing package name: " + packageName, handler);
+                    FirewallRule[] removeRule = new FirewallRule[1];
+                    removeRule[0] = enabledRule;
+                    firewallUtils.removeFirewallRules(removeRule, handler);
+                }
             }
         }
     }
@@ -441,36 +453,31 @@ public class ContentBlocker56 implements ContentBlocker {
         LogUtils.info("\nProcessing white-listed apps...", handler);
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
 
+        List<String> superAllow = new ArrayList<>();
+        superAllow.add("*");
+
         // Create domain filter rule for white listed apps
         List<AppInfo> whitelistedApps = appDatabase.applicationInfoDao().getWhitelistedApps();
         LogUtils.info("Size: " + whitelistedApps.size(), handler);
 
-        List<DomainFilterRule> addRules = new ArrayList<>();
-        List<DomainFilterRule> removeRules = new ArrayList<>();
-        List<String> superAllow = new ArrayList<>();
-        superAllow.add("*");
-
         if (!isCurrentDomainLimitAboveDefault) {
             List<DomainFilterRule> currentWhitelistedApps = firewallUtils.getWhitelistedAppsFromKnox();
+
+            if (whitelistedApps.size() <= 0 && currentWhitelistedApps.size() <= 0)
+                return;
+
+            List<DomainFilterRule> addRules = new ArrayList<>();
+            List<DomainFilterRule> removeRules = new ArrayList<>(currentWhitelistedApps);
 
             for (AppInfo appInfo : whitelistedApps) {
                 boolean add = true;
                 for (DomainFilterRule whitelistRule : currentWhitelistedApps) {
                     if (appInfo.packageName.equals(whitelistRule.getApplication().getPackageName())) {
+                        removeRules.remove(whitelistRule);
                         add = false;
                     }
                 }
                 if (add) addRules.add(new DomainFilterRule(new AppIdentity(appInfo.packageName, null), new ArrayList<>(), superAllow));
-            }
-
-            for (DomainFilterRule whitelistRule : currentWhitelistedApps) {
-                boolean remove = true;
-                for (AppInfo appInfo : whitelistedApps) {
-                    if (whitelistRule.getApplication().getPackageName().equals(appInfo.packageName)) {
-                        remove = false;
-                    }
-                }
-                if (remove) removeRules.add(whitelistRule);
             }
 
             if (addRules.size() > 0 || removeRules.size() > 0 || currentWhitelistedApps.size() > 0) {
@@ -499,67 +506,66 @@ public class ContentBlocker56 implements ContentBlocker {
     }
 
     private void processWhitelistedDomains() throws Exception {
-        LogUtils.info("\nProcessing whitelist...", handler);
+        LogUtils.info("\nProcessing whitelist domain...", handler);
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
 
         // Process user-defined white list
-        // 1. URL for all packages: url
-        // 2. URL for individual package: packageName|url
+        // 1. URL for individual package: packageName|url
+        // 2. URL for all packages: url
         List<String> whiteUrls = appDatabase.whiteUrlDao().getAll3();
         LogUtils.info("Size: " + whiteUrls.size(), handler);
 
         if (!isCurrentDomainLimitAboveDefault) {
-            Map<String, String> appsToAdd = new HashMap<>();
-            List<DomainFilterRule> appsToRemove = new ArrayList<>();
-            List<DomainFilterRule> appsToUpdate = new ArrayList<>();
-
             List<String> currentWhiteUrlListAllApps = firewallUtils.getWhitelistUrlAllAppsFromKnox();
             List<DomainFilterRule> currentWhiteUrlIndividualAppsList = firewallUtils.getWhitelistUrlAppsFromKnox();
+
+            if (whiteUrls.size() <= 0 && currentWhiteUrlListAllApps.size() <= 0 && currentWhiteUrlIndividualAppsList.size() <= 0)
+                return;
 
             List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
             List<String> userList = BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null);
             denyList.addAll(userList);
 
-            LogUtils.info("\n   Processing whitelist URL for individual package", handler);
-            Map<String, String> urlsIndividualApp = new HashMap<>();
+            LogUtils.info("\n   Processing whitelist domain for specific package", handler);
+            Map<String, List<String>> urlsIndividualApp = new HashMap<>();
             for (String whiteUrl : whiteUrls) {
                 if (whiteUrl.indexOf('|') != -1) {
                     StringTokenizer tokens = new StringTokenizer(whiteUrl, "|");
                     if (tokens.countTokens() == 2) {
                         final String packageName = tokens.nextToken();
                         final String url = tokens.nextToken();
-                        urlsIndividualApp.put(packageName, url);
+                        List<String> newUrl;
+                        if (urlsIndividualApp.get(packageName) == null) {
+                            newUrl = new ArrayList<>();
+                        } else {
+                            newUrl = new ArrayList<>(Objects.requireNonNull(urlsIndividualApp.get(packageName)));
+                        }
+                        newUrl.add(url);
+                        urlsIndividualApp.put(packageName, newUrl);
                     }
                 }
             }
-            for (Map.Entry<String, String> whiteUrl : urlsIndividualApp.entrySet()) {
-                boolean add = true;
+
+            Map<String, List<String>> appsToAdd = new HashMap<>(urlsIndividualApp);
+            List<DomainFilterRule> appsToUpdate = new ArrayList<>();
+            List<DomainFilterRule> appsToRemove = new ArrayList<>(currentWhiteUrlIndividualAppsList);
+
+            for (Map.Entry<String, List<String>> whiteUrl : urlsIndividualApp.entrySet()) {
                 for (DomainFilterRule whitePackage : currentWhiteUrlIndividualAppsList) {
                     if (whitePackage.getApplication().getPackageName().equals(whiteUrl.getKey())) {
+                        appsToAdd.remove(whiteUrl.getKey());
                         appsToUpdate.add(whitePackage);
-                        add = false;
+                        appsToRemove.remove(whitePackage);
                     }
                 }
-                if (add) appsToAdd.put(whiteUrl.getKey(), whiteUrl.getValue());
-            }
-            for (DomainFilterRule whitePackage : currentWhiteUrlIndividualAppsList) {
-                boolean remove = true;
-                for (Map.Entry<String, String> whiteUrl : urlsIndividualApp.entrySet()) {
-                    final String packageName = whiteUrl.getKey();
-                    if (packageName.equals(whitePackage.getApplication().getPackageName())) {
-                        remove = false;
-                    }
-                }
-                if (remove) appsToRemove.add(whitePackage);
             }
 
             if (appsToAdd.size() > 0) {
-                LogUtils.info("     Adding new whitelist rules for specific package:", handler);
-                for (Map.Entry<String, String> appToAdd : appsToAdd.entrySet()) {
+                LogUtils.info("     Adding rules for specific package:", handler);
+                for (Map.Entry<String, List<String>> appToAdd : appsToAdd.entrySet()) {
                     LogUtils.info("        PackageName: " + appToAdd.getKey() + "\n        Domain: " + appToAdd.getValue(), handler);
                     final AppIdentity appIdentity = new AppIdentity(appToAdd.getKey(), null);
-                    List<String> allowList = new ArrayList<>();
-                    allowList.add(appToAdd.getValue());
+                    List<String> allowList = new ArrayList<>(appToAdd.getValue());
                     processDomains(appIdentity, denyList, allowList);
                 }
             }
@@ -570,11 +576,8 @@ public class ContentBlocker56 implements ContentBlocker {
                     LogUtils.info("        PackageName: " + appToUpdate.getApplication().getPackageName(), handler);
 
                     final AppIdentity appIdentity = new AppIdentity(appToUpdate.getApplication().getPackageName(), null);
-                    List<String> allowList = new ArrayList<>();
-                    for (Map.Entry<String, String> whiteUrl : urlsIndividualApp.entrySet()) {
-                        if (whiteUrl.getKey().equals(appToUpdate.getApplication().getPackageName()))
-                            allowList.add(whiteUrl.getValue());
-                    }
+
+                    List<String> allowList = new ArrayList<>(Objects.requireNonNull(urlsIndividualApp.get(appToUpdate.getApplication().getPackageName())));
                     List<String> allowDomainsToAdd = new ArrayList<>(allowList);
                     List<String> allowDomainsToRemove = new ArrayList<>(appToUpdate.getAllowDomains());
                     allowDomainsToAdd.removeAll(allowDomainsToRemove);
@@ -599,7 +602,7 @@ public class ContentBlocker56 implements ContentBlocker {
             }
 
             if (appsToRemove.size() > 0) {
-                LogUtils.info("     Removing deleted rules for specific package:", handler);
+                LogUtils.info("     Removing rules for specific package:", handler);
                 for (DomainFilterRule appToRemove : appsToRemove) {
                     LogUtils.info("        PackageName: " + appToRemove.getApplication().getPackageName(), handler);
                 }
@@ -608,7 +611,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
 
             // Whitelist URL for all apps
-            LogUtils.info("\n   Processing whitelist URL for all packages", handler);
+            LogUtils.info("\n   Processing whitelist domain for all packages", handler);
             Set<String> allowList = new HashSet<>();
             for (String whiteUrl : whiteUrls) {
                 if (whiteUrl.indexOf('|') == -1) {
@@ -648,6 +651,7 @@ public class ContentBlocker56 implements ContentBlocker {
             List<String> userList = BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null);
             denyList.addAll(userList);
 
+            LogUtils.info("\n   Processing whitelist domain for specific package", handler);
             for (String whiteUrl : whiteUrls) {
                 if (whiteUrl.indexOf('|') != -1) {
                     StringTokenizer tokens = new StringTokenizer(whiteUrl, "|");
@@ -663,7 +667,8 @@ public class ContentBlocker56 implements ContentBlocker {
                 }
             }
 
-            // Whitelist URL for all apps
+            // Whitelist domain for all apps
+            LogUtils.info("\n   Processing whitelist domain for all packages", handler);
             Set<String> allowList = new HashSet<>();
             for (String whiteUrl : whiteUrls) {
                 if (whiteUrl.indexOf('|') == -1) {
@@ -725,16 +730,24 @@ public class ContentBlocker56 implements ContentBlocker {
     private void processDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList) throws Exception {
         int start = 0;
         int partitionSize = 5000;
-        List<List<String>> chunks = new ArrayList<>();
-        for (int i=0; i<denyList.size(); i += partitionSize) {
-            chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
-        }
-        for (List<String> chunk : chunks) {
-            LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
-            start += chunk.size();
+        if (denyList.size() > 0) {
+            List<List<String>> chunks = new ArrayList<>();
+            for (int i = 0; i < denyList.size(); i += partitionSize) {
+                chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
+            }
+            for (List<String> chunk : chunks) {
+                LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
+                start += chunk.size();
+
+                List<DomainFilterRule> rules = new ArrayList<>();
+                rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
+                firewallUtils.addDomainFilterRules(rules, handler);
+            }
+        } else if (allowList.size() > 0) {
+            LogUtils.info("\n     Processing " + start + " to " + (start + allowList.size()) + " domains...", handler);
 
             List<DomainFilterRule> rules = new ArrayList<>();
-            rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
+            rules.add(new DomainFilterRule(appIdentity, denyList, allowList));
             firewallUtils.addDomainFilterRules(rules, handler);
         }
     }
@@ -743,16 +756,24 @@ public class ContentBlocker56 implements ContentBlocker {
     private void processRemoveDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList) throws Exception {
         int start = 0;
         int partitionSize = 5000;
-        List<List<String>> chunks = new ArrayList<>();
-        for (int i=0; i<denyList.size(); i += partitionSize) {
-            chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
-        }
-        for (List<String> chunk : chunks) {
-            LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
-            start += chunk.size();
+        if (denyList.size() > 0) {
+            List<List<String>> chunks = new ArrayList<>();
+            for (int i = 0; i < denyList.size(); i += partitionSize) {
+                chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
+            }
+            for (List<String> chunk : chunks) {
+                LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
+                start += chunk.size();
+
+                List<DomainFilterRule> rules = new ArrayList<>();
+                rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
+                firewallUtils.removeDomainFilterRules(rules, handler);
+            }
+        } else if (allowList.size() > 0) {
+            LogUtils.info("\n     Processing " + start + " to " + (start + allowList.size()) + " domains...", handler);
 
             List<DomainFilterRule> rules = new ArrayList<>();
-            rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
+            rules.add(new DomainFilterRule(appIdentity, denyList, allowList));
             firewallUtils.removeDomainFilterRules(rules, handler);
         }
     }
