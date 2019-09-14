@@ -482,9 +482,7 @@ public class ContentBlocker56 implements ContentBlocker {
                         add = false;
                     }
                 }
-                if (add) {
-                    addRules.add(new DomainFilterRule(new AppIdentity(appInfo.packageName, null), new ArrayList<>(), superAllow));
-                }
+                if (add) addRules.add(new DomainFilterRule(new AppIdentity(appInfo.packageName, null), new ArrayList<>(), superAllow));
             }
 
             if (addRules.size() > 0 || removeRules.size() > 0 || currentWhitelistedApps.size() > 0) {
@@ -494,9 +492,7 @@ public class ContentBlocker56 implements ContentBlocker {
             }
 
             if (addRules.size() > 0) firewallUtils.addDomainFilterRules(addRules, handler);
-            if (removeRules.size() > 0) {
-                firewallUtils.removeDomainFilterRules(removeRules, handler);
-            }
+            if (removeRules.size() > 0) firewallUtils.removeDomainFilterRules(removeRules, handler);
 
         } else {
             if (whitelistedApps.size() == 0) {
