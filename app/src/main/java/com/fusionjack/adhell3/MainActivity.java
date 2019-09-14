@@ -6,12 +6,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +15,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
@@ -37,6 +36,7 @@ import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
 
@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Close Activity if it's not the root of the task
         if (!isTaskRoot()) {
             finish();
@@ -85,12 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         biometricSupport = BiometricUtils.checkBiometricSupport(this);
-        getDelegate();
-        if (mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
         themeChange = getIntent().getStringExtra("settingsFragment");
 
         // Remove elevation shadow of ActionBar
@@ -132,10 +127,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                fragmentManager.popBackStack();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            fragmentManager.popBackStack();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -220,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isKnoxValid() {
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
-            if (!isActivationDialogVisible()) {
+            if (isActivationDialogNotVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -233,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             if (!hasInternetAccess) {
                 AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
             }
-            if (!isActivationDialogVisible()) {
+            if (isActivationDialogNotVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -256,9 +250,9 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean isActivationDialogVisible() {
+    private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
-        return activationDialog != null;
+        return activationDialog == null;
     }
 
     private AlertDialog createPasswordDialog() {
