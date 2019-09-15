@@ -29,7 +29,7 @@ public final class AppPreferences {
         return sharedPreferences.getBoolean(DISABLER_TOGGLE, true);
     }
 
-    public void setAppDisablerToggle(boolean enabled) {
+    void setAppDisablerToggle(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(DISABLER_TOGGLE, enabled);
         editor.apply();
@@ -39,7 +39,7 @@ public final class AppPreferences {
         return sharedPreferences.getBoolean(APP_COMPONENT_TOGGLE, true);
     }
 
-    public void setAppComponentToggle(boolean enabled) {
+    void setAppComponentToggle(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(APP_COMPONENT_TOGGLE, enabled);
         editor.apply();
@@ -67,14 +67,14 @@ public final class AppPreferences {
         return sharedPreferences.contains(DNS1) && sharedPreferences.contains(DNS2);
     }
 
-    public void setDns(String dns1, String dns2) {
+    void setDns(String dns1, String dns2) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(DNS1, dns1);
         editor.putString(DNS2, dns2);
         editor.apply();
     }
 
-    public void removeDns() {
+    void removeDns() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(DNS1);
         editor.remove(DNS2);
