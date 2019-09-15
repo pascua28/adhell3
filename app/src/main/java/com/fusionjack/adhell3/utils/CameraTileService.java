@@ -1,10 +1,14 @@
 package com.fusionjack.adhell3.utils;
 
+import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
+import androidx.preference.PreferenceManager;
+
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.fragments.SettingsFragment;
 
 
 public class CameraTileService extends TileService {
@@ -28,9 +32,18 @@ public class CameraTileService extends TileService {
     public void onClick() {
         super.onClick();
 
-        boolean cameraState = AdhellFactory.getInstance().getCameraState();
-        AdhellFactory.getInstance().setCameraState(!cameraState);
-        updateTitle(!cameraState);
+        boolean isAllow = false;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean allowQSTilesLockscreen = preferences.getBoolean(SettingsFragment.ALLOW_QSTILES_LOCKSCREEN, true);
+
+        if (this.isSecure() && allowQSTilesLockscreen) isAllow = true;
+        else if (!this.isSecure()) isAllow = true;
+
+        if (isAllow) {
+            boolean cameraState = AdhellFactory.getInstance().getCameraState();
+            AdhellFactory.getInstance().setCameraState(!cameraState);
+            updateTitle(!cameraState);
+        }
     }
 
     private void updateTitle(boolean cameraState) {

@@ -42,9 +42,10 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
+    public static final String ALLOW_QSTILES_LOCKSCREEN = "allow_qstiles_lockscreen";
+    public static final String SET_NIGHT_MODE_PREFERENCE = "set_night_mode_preference";
     static final String UPDATE_PROVIDERS_PREFERENCE = "update_provider_preference";
     private static final String SET_PASSWORD_PREFERENCE = "set_password_preference";
-    public static final String SET_NIGHT_MODE_PREFERENCE = "set_night_mode_preference";
     private static final String CREATE_LOGCAT_PREFERENCE = "create_logcat_preference";
     private static final String CHANGE_KEY_PREFERENCE = "change_key_preference";
     private static final String ABOUT_PREFERENCE = "about_preference";
