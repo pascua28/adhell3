@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.tasks;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.db.DatabaseFactory;

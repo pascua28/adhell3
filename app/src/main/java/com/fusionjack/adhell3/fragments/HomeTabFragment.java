@@ -453,7 +453,6 @@ public class HomeTabFragment extends Fragment {
         private final boolean isFirewallRuleEmpty;
         private final WeakReference<Context> contextReference;
         private final boolean doRefresh;
-        private boolean isCurrentDomainLimitAboveDefault;
 
         SetFirewallAsyncTask(boolean isDomain, HomeTabFragment parentFragment, FragmentManager fragmentManager, Context context, boolean doRefresh) {
             this.isDomain = isDomain;
@@ -499,7 +498,7 @@ public class HomeTabFragment extends Fragment {
                 updateProviders = false;
             }
 
-            isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
+            boolean isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
 
             if (doRefresh && !isCurrentDomainLimitAboveDefault)
                 contentBlocker.updateAllRules(updateProviders, parentFragment);
@@ -660,7 +659,7 @@ public class HomeTabFragment extends Fragment {
                 }
 
                 File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-                if (!folder.exists()) folder.mkdirs();
+                if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create directory " + folder.getAbsolutePath());
                 File file = new File(folder, "adhell_exported_domains.txt");
                 FileWriter writer = new FileWriter(file);
                 for (String domain : set) {

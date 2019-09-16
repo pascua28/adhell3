@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -23,6 +24,7 @@ public class OtherPagerAdapter extends FragmentPagerAdapter {
         };
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return OtherTabPageFragment.newInstance(BuildConfig.APP_COMPONENT ? position : position + 1);

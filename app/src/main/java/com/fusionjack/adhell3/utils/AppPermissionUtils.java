@@ -20,9 +20,11 @@ public final class AppPermissionUtils {
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
         try {
             android.content.pm.PermissionInfo info = packageManager.getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
-            List<android.content.pm.PermissionInfo> permissions = packageManager.queryPermissionsByGroup(info.group, PackageManager.GET_META_DATA);
-            for (android.content.pm.PermissionInfo permission : permissions) {
-                permissionNames.add(permission.name);
+            if (info.group != null) {
+                List<android.content.pm.PermissionInfo> permissions = packageManager.queryPermissionsByGroup(info.group, PackageManager.GET_META_DATA);
+                for (android.content.pm.PermissionInfo permission : permissions) {
+                    permissionNames.add(permission.name);
+                }
             }
         } catch (PackageManager.NameNotFoundException ignored) {
         }

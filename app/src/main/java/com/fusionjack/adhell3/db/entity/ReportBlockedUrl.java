@@ -1,11 +1,11 @@
 package com.fusionjack.adhell3.db.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
-import androidx.annotation.NonNull;
 
 import com.fusionjack.adhell3.db.DateConverter;
 

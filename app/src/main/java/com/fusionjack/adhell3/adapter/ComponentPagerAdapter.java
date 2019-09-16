@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -13,7 +14,6 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 3;
     private final String[] tabTitles;
     private final String packageName;
-    private final Context context;
 
     public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
         super(fm);
@@ -23,9 +23,9 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
                 context.getString(R.string.receiver_fragment_title)};
 
         this.packageName = packageName;
-        this.context = context;
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return ComponentTabPageFragment.newInstance(position, packageName);

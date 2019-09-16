@@ -1,11 +1,12 @@
 package com.fusionjack.adhell3.db;
 
 
+import android.content.Context;
+
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
-import android.content.Context;
 
 import com.fusionjack.adhell3.db.dao.AppInfoDao;
 import com.fusionjack.adhell3.db.dao.AppPermissionDao;

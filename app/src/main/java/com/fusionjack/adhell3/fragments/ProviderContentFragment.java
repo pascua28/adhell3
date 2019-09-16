@@ -4,10 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -32,7 +33,7 @@ public class ProviderContentFragment extends Fragment {
     private String searchText;
     private Long providerId;
 
-    public void setProviderId(Long providerId) {
+    void setProviderId(Long providerId) {
         this.providerId = providerId;
         new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
     }

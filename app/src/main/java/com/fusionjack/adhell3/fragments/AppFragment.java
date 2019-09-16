@@ -1,15 +1,16 @@
 package com.fusionjack.adhell3.fragments;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -83,7 +84,7 @@ public class AppFragment extends Fragment {
         initSearchView(menu);
     }
 
-    protected void initSearchView(Menu menu) {
+    void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
@@ -107,7 +108,7 @@ public class AppFragment extends Fragment {
         });
     }
 
-    protected void resetSearchView() {
+    void resetSearchView() {
         if (searchView != null) {
             searchText = "";
             searchView.setQuery(searchText, false);

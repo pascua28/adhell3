@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -23,6 +24,7 @@ public class DomainPagerAdapter extends FragmentPagerAdapter {
         };
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return DomainTabPageFragment.newInstance(position);

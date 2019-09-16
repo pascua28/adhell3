@@ -1,8 +1,9 @@
 package com.fusionjack.adhell3.viewmodel;
 
-import androidx.lifecycle.ViewModel;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+
+import androidx.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;

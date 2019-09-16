@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.dagger.module;
 
 import android.content.Context;
+
 import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.dagger.scope.AdhellApplicationScope;

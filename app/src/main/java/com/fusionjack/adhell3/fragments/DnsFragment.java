@@ -5,9 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import androidx.annotation.NonNull;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +15,10 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -37,8 +38,8 @@ import java.util.List;
 
 public class DnsFragment extends AppFragment {
 
-    ProgressBar loadingBar;
-    ListView listView;
+    private ProgressBar loadingBar;
+    private ListView listView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,9 +51,8 @@ public class DnsFragment extends AppFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_enable_all:
-                toggleAllApps();
+        if (item.getItemId() == R.id.action_enable_all) {
+            toggleAllApps();
         }
         return super.onOptionsItemSelected(item);
     }

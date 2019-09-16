@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -23,6 +24,7 @@ public class AppPagerAdapter extends FragmentPagerAdapter {
                 context.getString(R.string.whitelist_fragment_title)};
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return AppTabPageFragment.newInstance(BuildConfig.DISABLE_APPS ? position : position + 1);

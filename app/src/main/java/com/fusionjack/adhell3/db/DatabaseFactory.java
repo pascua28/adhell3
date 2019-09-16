@@ -52,7 +52,7 @@ public final class DatabaseFactory {
 
     public void backupDatabase() throws Exception {
         File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) folder.mkdirs();
+        if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create folder " + folder.getAbsolutePath());
         File file = new File(folder, BACKUP_FILENAME);
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
@@ -78,7 +78,7 @@ public final class DatabaseFactory {
         if (!backupFile.exists()) {
             if (oldFile.exists()) {
                 File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-                if (!folder.exists()) folder.mkdirs();
+                if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create folder " + folder.getAbsolutePath());
                 try (InputStream in = new FileInputStream(oldFile)) {
                     try (OutputStream out = new FileOutputStream(backupFile)) {
                         // Transfer bytes from in to out

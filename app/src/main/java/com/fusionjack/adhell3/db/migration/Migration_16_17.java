@@ -1,10 +1,11 @@
 package com.fusionjack.adhell3.db.migration;
 
-import androidx.sqlite.db.SupportSQLiteDatabase;
-import androidx.room.migration.Migration;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+
 import androidx.annotation.NonNull;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.Date;
 

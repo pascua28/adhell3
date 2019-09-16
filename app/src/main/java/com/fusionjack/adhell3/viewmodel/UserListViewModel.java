@@ -1,9 +1,9 @@
 package com.fusionjack.adhell3.viewmodel;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.annotation.NonNull;
 
 import com.fusionjack.adhell3.db.repository.BlackListRepository;
 import com.fusionjack.adhell3.db.repository.UserListRepository;

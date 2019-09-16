@@ -3,13 +3,14 @@ package com.fusionjack.adhell3.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import androidx.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;

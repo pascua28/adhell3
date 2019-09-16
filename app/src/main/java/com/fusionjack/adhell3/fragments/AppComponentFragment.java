@@ -3,11 +3,6 @@ package com.fusionjack.adhell3.fragments;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,6 +16,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -30,8 +31,6 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-
-import java.util.Objects;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -164,7 +163,7 @@ public class AppComponentFragment extends AppFragment {
         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
-            FragmentManager fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             Bundle bundle = new Bundle();
             AppInfo appInfo = adapter.getItem(position);
             bundle.putString("packageName", appInfo.packageName);

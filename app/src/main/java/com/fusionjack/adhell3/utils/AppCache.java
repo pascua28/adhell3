@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
+
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.App;

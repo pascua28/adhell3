@@ -22,10 +22,10 @@ public final class LogUtils {
 
     public static String createLogcat() {
         info("Build version: " + BuildConfig.VERSION_NAME);
-        info("Knox API: " + Integer.toString(EnterpriseDeviceManager.getAPILevel()));
-        info("Android API: " + Integer.toString(Build.VERSION.SDK_INT));
+        info("Knox API: " + EnterpriseDeviceManager.getAPILevel());
+        info("Android API: " + Build.VERSION.SDK_INT);
         File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) folder.mkdirs();
+        if (!folder.exists()) if (!folder.mkdirs()) error("Unable to create folder");
         String filename = String.format("adhell_logcat_%s.txt", System.currentTimeMillis());
         File logFile = new File(folder, filename);
         try {

@@ -28,7 +28,7 @@ public class PasswordStorage {
     private static final int SALT_INDEX = 3;
     private static final int PBKDF2_INDEX = 4;
 
-    public static String createHash(String password) throws CannotPerformOperationException {
+    static String createHash(String password) throws CannotPerformOperationException {
         return createHash(password.toCharArray());
     }
 

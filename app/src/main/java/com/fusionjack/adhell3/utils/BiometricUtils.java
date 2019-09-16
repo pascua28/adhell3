@@ -7,10 +7,11 @@ import android.content.pm.PackageManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
 import android.os.CancellationSignal;
+import android.widget.Toast;
+
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
-import android.widget.Toast;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;

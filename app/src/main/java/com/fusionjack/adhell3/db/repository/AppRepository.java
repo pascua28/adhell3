@@ -1,18 +1,13 @@
 package com.fusionjack.adhell3.db.repository;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.fusionjack.adhell3.BuildConfig;
-import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -28,8 +23,8 @@ import io.reactivex.Single;
 
 public class AppRepository {
 
-    ProgressBar loadingBar;
-    ListView listView;
+    private ProgressBar loadingBar;
+    private ListView listView;
 
 
     public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar loadingBar, ListView listView) {
@@ -149,13 +144,6 @@ public class AppRepository {
                     listView.startAnimation(animation);
                 }
             });
-        }
-    }
-
-    private void showProgressBar() {
-        if (loadingBar != null) {
-            new Handler(Looper.getMainLooper()).post(() ->
-                loadingBar.setVisibility(View.VISIBLE));
         }
     }
 

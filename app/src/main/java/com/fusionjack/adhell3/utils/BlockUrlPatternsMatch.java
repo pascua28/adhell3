@@ -38,7 +38,7 @@ public final class BlockUrlPatternsMatch {
         return domain_r.matcher(domain).matches();
     }
 
-    public static List<BlockUrl> validHostFileDomains(String hostFileStr, long providerId) {
+    static List<BlockUrl> validHostFileDomains(String hostFileStr, long providerId) {
         // Set for unique domains
         Set<String> uniqueBlockUrls = new HashSet<>();
         // BlockUrl list to return

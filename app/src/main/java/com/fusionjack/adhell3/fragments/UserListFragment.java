@@ -2,8 +2,9 @@ package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;

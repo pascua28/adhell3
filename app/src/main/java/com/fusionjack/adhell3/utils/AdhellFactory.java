@@ -11,10 +11,11 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Patterns;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
@@ -111,7 +112,7 @@ public final class AdhellFactory {
 
     Boolean getCameraState() {
         try {
-            return restrictionPolicy.isCameraEnabled(false);
+            return restrictionPolicy != null && restrictionPolicy.isCameraEnabled(false);
         } catch (Exception e) {
             e.printStackTrace();
             return true;
@@ -120,7 +121,7 @@ public final class AdhellFactory {
 
     void setCameraState(boolean newState) {
         try {
-            restrictionPolicy.setCameraState(newState);
+            if (restrictionPolicy != null) restrictionPolicy.setCameraState(newState);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,7 +129,7 @@ public final class AdhellFactory {
 
     Boolean getMicrophoneState() {
         try {
-            return restrictionPolicy.isMicrophoneEnabled(false);
+            return restrictionPolicy != null && restrictionPolicy.isMicrophoneEnabled(false);
         } catch (Exception e) {
             e.printStackTrace();
             return true;
@@ -137,7 +138,7 @@ public final class AdhellFactory {
 
     void setMicrophoneState(boolean newState) {
         try {
-            restrictionPolicy.setMicrophoneState(newState);
+            if (restrictionPolicy != null) restrictionPolicy.setMicrophoneState(newState);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -310,7 +311,7 @@ public final class AdhellFactory {
         }
         ComponentName devAdminReceiver = new ComponentName(context, CustomDeviceAdminReceiver.class);
         DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
-        dpm.removeActiveAdmin(devAdminReceiver);
+        if (dpm != null) dpm.removeActiveAdmin(devAdminReceiver);
         Intent intent = new Intent(Intent.ACTION_DELETE);
         String packageName = "package:" + BuildConfig.APPLICATION_ID;
         intent.setData(Uri.parse(packageName));

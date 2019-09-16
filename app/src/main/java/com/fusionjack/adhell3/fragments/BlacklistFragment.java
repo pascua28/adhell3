@@ -1,10 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +10,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;

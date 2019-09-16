@@ -1,17 +1,18 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.tabs.TabLayout;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
+
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 
 public class ComponentTabFragment extends Fragment {
 

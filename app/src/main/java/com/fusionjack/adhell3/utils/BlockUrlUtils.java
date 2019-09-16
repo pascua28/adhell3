@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
-import androidx.annotation.NonNull;
 import android.webkit.URLUtil;
+
+import androidx.annotation.NonNull;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -65,19 +66,21 @@ public class BlockUrlUtils {
             Uri contentUri = Uri.parse(blockUrlProvider.url);
             context.getContentResolver().takePersistableUriPermission(contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             InputStream inputStream = context.getContentResolver().openInputStream(contentUri);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            StringBuilder contentBuilder = new StringBuilder();
-            try {
-                BufferedReader in = new BufferedReader(inputStreamReader);
-                String str;
-                while ((str = in.readLine()) != null) {
-                    contentBuilder.append(str).append('\n');
+            if (inputStream != null) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                StringBuilder contentBuilder = new StringBuilder();
+                try {
+                    BufferedReader in = new BufferedReader(inputStreamReader);
+                    String str;
+                    while ((str = in.readLine()) != null) {
+                        contentBuilder.append(str).append('\n');
+                    }
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                hostFileStr = contentBuilder.toString();
             }
-            hostFileStr = contentBuilder.toString();
         } else if (URLUtil.isFileUrl(blockUrlProvider.url)) {
             File file = new File(new URI(blockUrlProvider.url));
             FileInputStream fileInputStream = new FileInputStream(file);
