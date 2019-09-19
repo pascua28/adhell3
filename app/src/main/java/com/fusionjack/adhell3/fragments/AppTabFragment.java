@@ -48,7 +48,7 @@ public class AppTabFragment extends Fragment {
         viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
         viewPager.setOffscreenPageLimit(4);
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setOnTabSelectedListener(
+        tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override

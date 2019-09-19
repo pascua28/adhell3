@@ -44,7 +44,7 @@ public class DomainTabFragment extends Fragment {
         ViewPager viewPager = view.findViewById(R.id.domains_viewpager);
         viewPager.setAdapter(new DomainPagerAdapter(getChildFragmentManager(), getContext()));
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setOnTabSelectedListener(
+        tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override

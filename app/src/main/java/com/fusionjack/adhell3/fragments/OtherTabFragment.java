@@ -53,7 +53,7 @@ public class OtherTabFragment extends Fragment {
         ViewPager viewPager = view.findViewById(R.id.others_viewpager);
         viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setOnTabSelectedListener(
+        tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override

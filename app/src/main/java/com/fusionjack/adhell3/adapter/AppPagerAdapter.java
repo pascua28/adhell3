@@ -16,7 +16,7 @@ public class AppPagerAdapter extends FragmentPagerAdapter {
     private final String[] tabTitles;
 
     public AppPagerAdapter(FragmentManager fm, Context context) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[]{
                 context.getString(R.string.package_disabler_fragment_title),
                 context.getString(R.string.mobile_restricter_fragment_title),

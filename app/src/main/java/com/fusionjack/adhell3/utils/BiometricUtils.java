@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
@@ -30,14 +29,6 @@ public class BiometricUtils {
         }
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.USE_BIOMETRIC) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(context, context.getString(R.string.biometric_check_permission), Toast.LENGTH_LONG).show();
-            return false;
-        }
-        if (!FingerprintManagerCompat.from(context).isHardwareDetected()) {
-            Toast.makeText(context, context.getString(R.string.biometric_check_hardware), Toast.LENGTH_LONG).show();
-            return false;
-        }
-        if (!FingerprintManagerCompat.from(context).hasEnrolledFingerprints()) {
-            Toast.makeText(context, context.getString(R.string.biometric_check_enrolled_fingerprint), Toast.LENGTH_LONG).show();
             return false;
         }
         if (packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) {

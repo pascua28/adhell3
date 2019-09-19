@@ -43,9 +43,6 @@ public final class AppPermissionUtils {
             case android.content.pm.PermissionInfo.PROTECTION_SIGNATURE:
                 protLevel = "signature";
                 break;
-            case android.content.pm.PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM:
-                protLevel = "signatureOrSystem";
-                break;
         }
         if ((level & android.content.pm.PermissionInfo.PROTECTION_FLAG_PRIVILEGED) != 0) {
             protLevel += "|privileged";

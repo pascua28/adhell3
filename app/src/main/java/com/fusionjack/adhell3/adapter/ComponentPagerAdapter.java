@@ -16,7 +16,7 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
     private final String packageName;
 
     public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[]{
                 context.getString(R.string.permission_fragment_title),
                 context.getString(R.string.service_fragment_title),

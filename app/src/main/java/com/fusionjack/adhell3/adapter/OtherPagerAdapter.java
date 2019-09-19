@@ -16,7 +16,7 @@ public class OtherPagerAdapter extends FragmentPagerAdapter {
     private final String[] tabTitles;
 
     public OtherPagerAdapter(FragmentManager fm, Context context) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[]{
                 context.getString(R.string.app_component_fragment_title),
                 context.getString(R.string.dns_fragment_title),
