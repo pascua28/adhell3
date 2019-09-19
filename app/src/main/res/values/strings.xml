@@ -266,4 +266,5 @@
     <string name="menu_batch">Batch operation</string>
     <string name="qstiles_lockscreen_title">Allow QS Tiles on lockscreen</string>
     <string name="qstiles_lockscreen_summary">Allow use of Quick Setting Tiles on lockscreen if phone is locked</string>
+    <string name="menu_show_disabled">Show disabled components</string>
 </resources>

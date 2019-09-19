@@ -175,6 +175,10 @@ public class HomeTabFragment extends Fragment {
             adhellAppIntegrity.fillPackageDb();
         });
 
+        appComponentStatusTextView.setOnClickListener(v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager()));
+        TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
+        appComponentInfoTextView.setOnClickListener(v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager()));
+
         return view;
     }
 

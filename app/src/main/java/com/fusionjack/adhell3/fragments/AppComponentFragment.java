@@ -80,6 +80,9 @@ public class AppComponentFragment extends AppFragment {
             case R.id.action_batch:
                 batchOperation();
                 break;
+            case R.id.action_show_disabled:
+                AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

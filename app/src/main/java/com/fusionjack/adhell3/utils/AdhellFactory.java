@@ -16,6 +16,8 @@ import android.util.Patterns;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
@@ -28,6 +30,7 @@ import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
+import com.fusionjack.adhell3.fragments.ComponentDisabledTabFragment;
 import com.fusionjack.adhell3.receiver.CustomDeviceAdminReceiver;
 import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
@@ -327,5 +330,12 @@ public final class AdhellFactory {
         return appPolicy.getApplicationComponentState(componentName);
     }
 
+    public void showAppComponentDisabledFragment(FragmentManager fragmentManager) {
+        ComponentDisabledTabFragment fragment = new ComponentDisabledTabFragment();
 
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
 }
