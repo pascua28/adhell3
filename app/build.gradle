@@ -69,21 +69,6 @@ android {
         buildConfigField("String", "DEFAULT_HOST", '"' + defaultHost + '"')
     }
 
-    buildTypes {
-        compileOptions {
-            sourceCompatibility JavaVersion.VERSION_1_8
-            targetCompatibility JavaVersion.VERSION_1_8
-        }
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        debug{
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES.txt'
         exclude 'META-INF/LICENSE.txt'
@@ -96,6 +81,23 @@ android {
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
     }
+
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled = true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
 }
 
 dependencies {
@@ -109,15 +111,15 @@ dependencies {
     implementation 'androidx.fragment:fragment:1.1.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'androidx.lifecycle:lifecycle-common-java8:2.1.0'
-    implementation 'androidx.room:room-runtime:2.1.0'
     annotationProcessor 'androidx.room:room-compiler:2.1.0'
+    implementation 'androidx.room:room-runtime:2.1.0'
     implementation 'androidx.room:room-rxjava2:2.1.0'
 
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.12'
 
-    implementation 'com.google.dagger:dagger:2.24'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.24'
+    implementation 'com.google.dagger:dagger:2.24'
 
     implementation 'com.getbase:floatingactionbutton:1.10.1'
 }
