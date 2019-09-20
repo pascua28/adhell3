@@ -234,7 +234,7 @@ public class AppCache {
         }
 
         @Override
-        public AppInfoResult call() throws Exception {
+        public AppInfoResult call() {
             String ownPackageName = App.get().getApplicationContext().getPackageName();
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
             AppInfoResult appInfoResult = new AppInfoResult();

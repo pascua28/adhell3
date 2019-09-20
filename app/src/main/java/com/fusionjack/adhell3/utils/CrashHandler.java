@@ -1,5 +1,7 @@
 package com.fusionjack.adhell3.utils;
 
+import androidx.annotation.NonNull;
+
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     private static CrashHandler instance;
@@ -18,7 +20,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     @Override
-    public void uncaughtException(Thread thread, Throwable throwable) {
+    public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
         LogUtils.createLogcat();
         defaultHandler.uncaughtException(thread, throwable);
     }

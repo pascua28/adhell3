@@ -33,10 +33,9 @@ public class ContentBlocker56 implements ContentBlocker {
 
     private final Firewall firewall;
     private final AppDatabase appDatabase;
-    private Handler handler;
     private final FirewallUtils firewallUtils;
-
-    private List<String> whiteListedAppRules = new ArrayList<>();
+    private final List<String> whiteListedAppRules = new ArrayList<>();
+    private Handler handler;
 
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();

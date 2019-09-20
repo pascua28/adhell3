@@ -16,7 +16,7 @@
         android:paddingBottom="5dp"
         android:text="@string/dns_info" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/dnsSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

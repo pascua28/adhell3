@@ -77,7 +77,7 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.appcomponent_menu, menu);
@@ -114,7 +114,7 @@ public class ComponentTabPageFragment extends Fragment {
     }
 
     private void enableComponent() {
-        new EnableComponentAsyncTask(page, packageName, context).execute();
+        new EnableComponentAsyncTask(page, packageName, context, searchText).execute();
     }
 
     @Override
@@ -164,15 +164,17 @@ public class ComponentTabPageFragment extends Fragment {
         return view;
     }
 
-    private class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
+    private static class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
         private final int page;
         private final String packageName;
         private final WeakReference<Context> contextWeakReference;
+        private final String searchText;
 
-        EnableComponentAsyncTask(int page, String packageName, Context context) {
+        EnableComponentAsyncTask(int page, String packageName, Context context, String searchText) {
             this.page = page;
             this.packageName = packageName;
             this.contextWeakReference = new WeakReference<>(context);
+            this.searchText = searchText;
         }
 
         @Override

@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
@@ -48,7 +49,7 @@ public class AppInfoAdapter extends BaseAdapter {
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
-            public void handleMessage(Message msg) {
+            public void handleMessage(@NonNull Message msg) {
                 notifyDataSetChanged();
             }
         };

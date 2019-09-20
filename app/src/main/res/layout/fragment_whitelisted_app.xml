@@ -14,7 +14,7 @@
         android:paddingBottom="5dp"
         android:text="@string/whitelisted_app_info" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/whitelistedSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

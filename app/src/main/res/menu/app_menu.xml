@@ -11,6 +11,5 @@
         android:icon="@drawable/ic_done_all_24dp"
         android:title="Enable All"
         app:showAsAction="always">
-        <menu></menu>
     </item>
 </menu>

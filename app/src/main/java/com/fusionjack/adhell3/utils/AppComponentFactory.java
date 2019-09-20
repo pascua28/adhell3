@@ -28,8 +28,8 @@ public final class AppComponentFactory {
     private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
     private static AppComponentFactory instance;
 
-    private ApplicationPolicy appPolicy;
-    private AppDatabase appDatabase;
+    private final ApplicationPolicy appPolicy;
+    private final AppDatabase appDatabase;
 
     private AppComponentFactory() {
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();

@@ -53,11 +53,6 @@ public class BiometricUtils {
             }
 
             @Override
-            public void onAuthenticationFailed() {
-                super.onAuthenticationFailed();
-            }
-
-            @Override
             public void onAuthenticationSucceeded(
                 BiometricPrompt.AuthenticationResult result) {
                     //Toast.makeText(context, context.getString(R.string.biometric_auth_succeeded), Toast.LENGTH_SHORT).show();

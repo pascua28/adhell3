@@ -137,8 +137,8 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         private final int page;
         private final WeakReference<Context> contextReference;
         private final String searchText;
-        private Map<String, Drawable> appIcons;
-        private Map<String, String> appNames;
+        private final Map<String, Drawable> appIcons;
+        private final Map<String, String> appNames;
         private final WeakReference<Parcelable> stateReference;
 
         CreateComponentAsyncTask(int page, Context context,

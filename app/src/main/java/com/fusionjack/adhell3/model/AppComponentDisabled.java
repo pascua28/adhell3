@@ -139,8 +139,8 @@ public class AppComponentDisabled {
     }
 
     private static class PermissionsPair {
-        private String packageName;
-        private String permissionName;
+        private final String packageName;
+        private final String permissionName;
 
         PermissionsPair(String packageName, String permissionName) {
             this.packageName = packageName;
@@ -149,8 +149,8 @@ public class AppComponentDisabled {
     }
 
     private static class ServicesPair {
-        private String packageName;
-        private String serviceName;
+        private final String packageName;
+        private final String serviceName;
 
         ServicesPair(String packageName, String serviceName) {
             this.packageName = packageName;
@@ -159,9 +159,9 @@ public class AppComponentDisabled {
     }
 
     private static class ReceiversPair {
-        private String packageName;
-        private String receiverName;
-        private String permission;
+        private final String packageName;
+        private final String receiverName;
+        private final String permission;
 
         ReceiversPair(String packageName, String receiverName, String permission) {
             this.packageName = packageName;

@@ -186,19 +186,19 @@ public class AppComponent {
     }
 
     private static class ReceiverPair {
-        private String name;
-        private String permission;
+        private final String name;
+        private final String permission;
 
         ReceiverPair(String name, String permission) {
             this.name = name;
             this.permission = permission;
         }
 
-        public String getName() {
+        String getName() {
             return name;
         }
 
-        public String getPermission() {
+        String getPermission() {
             return permission;
         }
     }

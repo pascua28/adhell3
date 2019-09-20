@@ -175,9 +175,11 @@ public class HomeTabFragment extends Fragment {
             adhellAppIntegrity.fillPackageDb();
         });
 
-        appComponentStatusTextView.setOnClickListener(v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager()));
+        View.OnClickListener appComponentDisabledOnClickListener =
+                v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+        appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
         TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
-        appComponentInfoTextView.setOnClickListener(v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager()));
+        appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
 
         return view;
     }
@@ -267,7 +269,7 @@ public class HomeTabFragment extends Fragment {
         private int serviceSize;
         private int receiverSize;
         private boolean isCurrentDomainLimitAboveDefault;
-        private WeakReference<ImageView> refreshButton;
+        private final WeakReference<ImageView> refreshButton;
 
         SetInfoAsyncTask(Context context, ImageView refreshButton) {
             this.contextWeakReference = new WeakReference<>(context);
@@ -470,7 +472,7 @@ public class HomeTabFragment extends Fragment {
 
             this.handler = new Handler(Looper.getMainLooper()) {
                 @Override
-                public void handleMessage(Message msg) {
+                public void handleMessage(@NonNull Message msg) {
                     fragment.appendText(msg.obj.toString());
                 }
             };
@@ -572,7 +574,7 @@ public class HomeTabFragment extends Fragment {
                 if (listView != null) {
                     Handler handler = new Handler(Looper.getMainLooper()) {
                         @Override
-                        public void handleMessage(Message msg) {
+                        public void handleMessage(@NonNull Message msg) {
                             ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getExpandableListAdapter();
                             adapter.notifyDataSetChanged();
                         }

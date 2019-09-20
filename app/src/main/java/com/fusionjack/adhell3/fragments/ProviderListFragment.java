@@ -52,7 +52,7 @@ import static android.app.Activity.RESULT_OK;
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
 public class ProviderListFragment extends Fragment {
-    private int SELECT_FILE_REQUEST_CODE = 42;
+    private final int SELECT_FILE_REQUEST_CODE = 42;
     private Context context;
     private FragmentActivity activity;
     private EditText providerEditText;
