@@ -65,8 +65,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
 
         setRetainInstance(true);
 
-        appIcons = AppCache.getInstance(context, null).getIcons();
-        appNames = AppCache.reload(context, null).getNames();
+        AppCache appCache = AppCache.getInstance(context, null);
+        appIcons = appCache.getIcons();
+        appNames = appCache.getNames();
     }
 
     @Override

@@ -47,6 +47,7 @@ public class AppInfoAdapter extends BaseAdapter {
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
+
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -56,8 +57,9 @@ public class AppInfoAdapter extends BaseAdapter {
         if (reload) {
             this.appIcons = AppCache.reload(context, handler).getIcons();
         } else {
-            this.appIcons = AppCache.getInstance(context, handler).getIcons();
-            this.versionNames = AppCache.getInstance(context, handler).getVersionNames();
+            AppCache appCache = AppCache.getInstance(context, handler);
+            this.appIcons = appCache.getIcons();
+            this.versionNames = appCache.getVersionNames();
         }
     }
 

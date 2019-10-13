@@ -17,7 +17,6 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
-import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 
 import java.util.ArrayList;
@@ -65,8 +64,6 @@ public class AppFragment extends Fragment {
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         };
-
-        AppCache.getInstance(context, null);
     }
 
     void loadAppList(AppRepository.Type type, ProgressBar loadingBar, ListView listView) {
