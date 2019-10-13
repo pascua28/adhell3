@@ -161,6 +161,8 @@
     <string name="backup_database_summary">Backup all settings into a backup file in internal storage.</string>
     <string name="restore_database">Restore Database</string>
     <string name="restore_database_summary">Restore all settings from a backup file. A \'storage\' permission needs to be granted.</string>
+    <string name="clean_database">Clean Database</string>
+    <string name="clean_database_summary">Clean the database of all entries related to uninstalled applications.</string>
     <string name="whitelist_fragment_title">App Whitelist</string>
     <string name="blacklist_url_fragment_title">Blacklist</string>
     <string name="whitelist_url_fragment_title">Whitelist</string>
@@ -181,6 +183,8 @@
     <string name="backup_database_dialog_text">Do you really want to backup the database and replace any existing backup?</string>
     <string name="restore_database_dialog_title">Restore Database</string>
     <string name="restore_database_dialog_text">Do you really want to restore the database and replace your entire setup?</string>
+    <string name="clean_database_dialog_title">Clean Database</string>
+    <string name="clean_database_dialog_text">Do you really want to clean the database?</string>
     <string name="not_supported_dialog_title">App Not Supported</string>
     <string name="no_internet_connection_dialog_title">No Internet Connection</string>
     <string name="version">Version %1$s</string>

@@ -23,6 +23,12 @@
         android:title="@string/restore_database"
         app:iconSpaceReserved="false" />
 
+    <androidx.preference.Preference
+        android:key="clean_preference"
+        android:summary="@string/clean_database_summary"
+        android:title="@string/clean_database"
+        app:iconSpaceReserved="false" />
+
     <SwitchPreference
         android:defaultValue="false"
         android:key="set_night_mode_preference"

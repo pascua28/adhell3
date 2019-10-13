@@ -7,6 +7,9 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +19,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -29,16 +34,25 @@ import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
+import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
+import com.fusionjack.adhell3.db.entity.AppPermission;
+import com.fusionjack.adhell3.db.entity.DisabledPackage;
+import com.fusionjack.adhell3.db.entity.DnsPackage;
+import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
+import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
+import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -53,6 +67,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private static final String BACKUP_PREFERENCE = "backup_preference";
     private static final String RESTORE_PREFERENCE = "restore_preference";
     private static final String RESTORE_WARNING_PREFERENCE = "restore_warning_dialog";
+    private static final String CLEAN_PREFERENCE = "clean_preference";
     private Context context;
 
     @Override
@@ -105,7 +120,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseAsyncTask(getActivity(), getContext()).execute()
                         )
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+                break;
+            }
+            case CLEAN_PREFERENCE: {
+                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.clean_database_dialog_title);
+                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                questionTextView.setText(R.string.clean_database_dialog_text);
+
+                new AlertDialog.Builder(context)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
+                                new CleanDatabaseAsyncTask(getActivity(), getContext()).execute()
+                        )
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
                 break;
             }
             case SET_PASSWORD_PREFERENCE: {
@@ -127,8 +159,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
                             TextInputEditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
                             TextInputEditText passwordConfirmEditText = dialogView.findViewById(R.id.passwordConfirmEditText);
-                            String password = passwordEditText.getText().toString();
-                            String passwordConfirm = passwordConfirmEditText.getText().toString();
+                            String password = (passwordEditText.getText() != null) ? passwordEditText.getText().toString() : "";
+                            String passwordConfirm = (passwordConfirmEditText.getText() != null) ? passwordConfirmEditText.getText().toString() : "";
                             if (!password.isEmpty()) {
                                 if (password.equals(passwordConfirm)) {
                                     try {
@@ -164,19 +196,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case SET_NIGHT_MODE_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();
-                if (preferenceManager.getSharedPreferences().getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
-                    startActivity(intent);
-                    Objects.requireNonNull(getActivity()).finish();
-                } else {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
-                    startActivity(intent);
-                    Objects.requireNonNull(getActivity()).finish();
-                }
+                int nightMode = (preferenceManager.getSharedPreferences().getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) ?
+                        AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+
+                AppCompatDelegate.setDefaultNightMode(nightMode);
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
+                startActivity(intent);
+                Objects.requireNonNull(getActivity()).finish();
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {
@@ -276,6 +303,154 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 builder.setTitle("Error");
             }
             builder.create().show();
+        }
+    }
+
+    private static class CleanDatabaseAsyncTask extends AsyncTask<Void, Void, Void> {
+        private final FragmentManager fragmentManager;
+        private final Handler handler;
+        private final WeakReference<Context> contextReference;
+        private FirewallDialogFragment fragment;
+        private AppCache appCache;
+        private AppDatabase appDatabase;
+
+        CleanDatabaseAsyncTask(Activity activity, Context context) {
+            FragmentActivity fragmentActivity = (FragmentActivity) activity;
+            this.fragmentManager = fragmentActivity.getSupportFragmentManager();
+            this.contextReference = new WeakReference<>(context);
+            this.handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+                    fragment.appendText(msg.obj.toString());
+                }
+            };
+        }
+
+        @Override
+        protected void onPreExecute() {
+            fragment = FirewallDialogFragment.newInstance("Cleaning Database");
+            fragment.setCancelable(false);
+            fragment.show(fragmentManager, "dialog_clean_db");
+            appCache = AppCache.getInstance(contextReference.get(), handler);
+            appDatabase = AppDatabase.getAppDatabase(contextReference.get());
+        }
+
+        @Override
+        protected Void doInBackground(Void... args) {
+            int count = 0;
+
+            // Disabled packages rules
+            LogUtils.info("Cleaning disabled packages rules...", handler);
+            List<DisabledPackage> disabledPackages = appDatabase.disabledPackageDao().getAll();
+            for (DisabledPackage disabledPackage: disabledPackages) {
+                if (!appCache.getNames().containsKey(disabledPackage.packageName)) {
+                    try {
+                        LogUtils.info(String.format("    Deleting rule for package: %s.", disabledPackage.packageName), handler);
+                        appDatabase.disabledPackageDao().deleteByPackageName(disabledPackage.packageName);
+                        LogUtils.info("    Done.", handler);
+                    } catch (Exception e) {
+                        LogUtils.error("    Error deleting rule.", e, handler);
+                    }
+                    count++;
+                }
+            }
+            if (count > 0)
+                LogUtils.info("  Done.", handler);
+            else
+                LogUtils.info("  Nothing to clean up.", handler);
+
+            // Restricted packages rules
+            count = 0;
+            LogUtils.info("Cleaning restricted packages rules...", handler);
+            List<RestrictedPackage> restrictedPackages = appDatabase.restrictedPackageDao().getAll();
+            for (RestrictedPackage restrictedPackage: restrictedPackages) {
+                if (!appCache.getNames().containsKey(restrictedPackage.packageName)) {
+                    try {
+                        LogUtils.info(String.format("    Deleting rule for package: %s.", restrictedPackage.packageName), handler);
+                        appDatabase.restrictedPackageDao().deleteByPackageName(restrictedPackage.packageName, restrictedPackage.type);
+                        LogUtils.info("    Done.", handler);
+                    } catch (Exception e) {
+                        LogUtils.error("    Error deleting rule.", e, handler);
+                    }
+                    count++;
+                }
+            }
+            if (count > 0)
+                LogUtils.info("  Done.", handler);
+            else
+                LogUtils.info("  Nothing to clean up.", handler);
+
+            // Firewall whitelisted packages rules
+            count = 0;
+            LogUtils.info("Cleaning firewall whitelisted packages rules...", handler);
+            List<FirewallWhitelistedPackage> whitelistedPackages = appDatabase.firewallWhitelistedPackageDao().getAll();
+            for (FirewallWhitelistedPackage whitelistedPackage: whitelistedPackages) {
+                if (!appCache.getNames().containsKey(whitelistedPackage.packageName)) {
+                    try {
+                        LogUtils.info(String.format("    Deleting rule for package: %s.", whitelistedPackage.packageName), handler);
+                        appDatabase.firewallWhitelistedPackageDao().deleteByPackageName(whitelistedPackage.packageName);
+                        LogUtils.info("    Done.", handler);
+                    } catch (Exception e) {
+                        LogUtils.error("    Error deleting rule.", e, handler);
+                    }
+                    count++;
+                }
+            }
+            if (count > 0)
+                LogUtils.info("  Done.", handler);
+            else
+                LogUtils.info("  Nothing to clean up.", handler);
+
+            // DNS packages rules
+            count = 0;
+            LogUtils.info("Cleaning DNS packages rules...", handler);
+            List<DnsPackage> dnsPackages = appDatabase.dnsPackageDao().getAll();
+            for (DnsPackage dnsPackage: dnsPackages) {
+                if (!appCache.getNames().containsKey(dnsPackage.packageName)) {
+                    try {
+                        LogUtils.info(String.format("    Deleting rule for package: %s.", dnsPackage.packageName), handler);
+                        appDatabase.dnsPackageDao().deleteByPackageName(dnsPackage.packageName);
+                        LogUtils.info("    Done.", handler);
+                    } catch (Exception e) {
+                        LogUtils.error("    Error deleting rule.", e, handler);
+                    }
+                    count++;
+                }
+            }
+            if (count > 0)
+                LogUtils.info("  Done.", handler);
+            else
+                LogUtils.info("  Nothing to clean up.", handler);
+
+            // App component restriction packages rules
+            count = 0;
+            LogUtils.info("Cleaning app component restriction packages rules...", handler);
+            List<AppPermission> appPermissionsPackages = appDatabase.appPermissionDao().getAll();
+            for (AppPermission appPermissionsPackage : appPermissionsPackages) {
+                if (!appCache.getNames().containsKey(appPermissionsPackage.packageName)) {
+                    try {
+                        LogUtils.info(String.format("    Deleting rules for package: %s.", appPermissionsPackage.packageName), handler);
+                        appDatabase.appPermissionDao().deletePermissions(appPermissionsPackage.packageName);
+                        appDatabase.appPermissionDao().deleteServices(appPermissionsPackage.packageName);
+                        appDatabase.appPermissionDao().deleteReceivers(appPermissionsPackage.packageName);
+                        LogUtils.info("    Done.", handler);
+                    } catch (Exception e) {
+                        LogUtils.error("    Error deleting rule.", e, handler);
+                    }
+                    count++;
+                }
+            }
+            if (count > 0)
+                LogUtils.info("  Done.", handler);
+            else
+                LogUtils.info("  Nothing to clean up.", handler);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            fragment.enableCloseButton();
         }
     }
 }
