@@ -75,7 +75,7 @@ public class WhitelistFragment extends UserListFragment {
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
+                        String domainToAdd = domainEditText.getText().toString().trim();
                         if (domainToAdd.indexOf('|') == -1) {
                             if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                 Toast.makeText(this.getContext(), "Url not valid. Please check", Toast.LENGTH_SHORT).show();

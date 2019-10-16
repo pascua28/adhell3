@@ -592,7 +592,7 @@ public class HomeTabFragment extends Fragment {
                         new AlertDialog.Builder(context)
                                 .setView(dialogView)
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                    String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
+                                    String domainToAdd = domainEditText.getText().toString().trim();
                                     if (domainToAdd.indexOf('|') == -1) {
                                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                             Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();

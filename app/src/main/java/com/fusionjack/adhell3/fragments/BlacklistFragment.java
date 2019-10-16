@@ -76,7 +76,7 @@ public class BlacklistFragment extends UserListFragment {
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
+                        String domainToAdd = domainEditText.getText().toString().trim();
                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                             Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
                         } else {
@@ -95,7 +95,7 @@ public class BlacklistFragment extends UserListFragment {
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
-                        String ruleToAdd = ruleEditText.getText().toString().trim().toLowerCase();
+                        String ruleToAdd = ruleEditText.getText().toString().trim();
                         StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
                         if (tokens.countTokens() != 3) {
                             Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
