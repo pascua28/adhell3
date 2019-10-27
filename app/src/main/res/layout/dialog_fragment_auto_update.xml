@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
+        android:paddingTop="15dp"
+        android:paddingBottom="5dp"
+        android:text="@string/auto_update_title"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/summaryTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
+        android:paddingBottom="15dp"
+        android:layout_marginEnd="80dp"
+        android:layout_below="@id/titleTextView"
+        android:text="@string/auto_update_summary"
+        android:textSize="12sp" />
+
+    <Switch
+        android:id="@+id/globalSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:padding="20dp"
+        android:layout_alignParentEnd="true"/>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="@color/colorPrimaryLight"
+        android:layout_below="@id/summaryTextView"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/divider"
+        android:layout_above="@id/saveButton">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/settingsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="25dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:text="Settings" />
+
+            <TextView
+                android:id="@+id/seekLabelTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="15dp"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/settingsTextView"
+                android:text="Interval: 1 hour" />
+
+            <SeekBar
+                android:id="@+id/intervalSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_below="@id/seekLabelTextView"
+                android:layout_gravity="center"/>
+
+            <CheckBox
+                android:id="@+id/logCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/intervalSeekBar"
+                android:text="Create log file" />
+
+            <TextView
+                android:id="@+id/constraintsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="5dp"
+                android:layout_below="@id/logCheckBox"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:text="Constraints" />
+
+            <CheckBox
+                android:id="@+id/lowBatteryCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/constraintsTextView"
+                android:checked="true"
+                android:text="Update when phone as low battery" />
+
+            <CheckBox
+                android:id="@+id/mobileDataCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="15dp"
+                android:layout_below="@id/lowBatteryCheckBox"
+                android:checked="true"
+                android:text="Update on mobile data connexion" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:text="Save" />
+
+
+</RelativeLayout>

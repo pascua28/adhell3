@@ -42,7 +42,9 @@ import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
+import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
+import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
@@ -74,6 +76,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings_preference, rootKey);
         this.context = getContext();
+
+        CustomSwitchPreference switchPreference = (CustomSwitchPreference) findPreference("auto_update_preference");
+        switchPreference.setOnPreferenceClickListener(switchPref -> {
+            AutoUpdateDialogFragment autoUpdateDialogFragment = new AutoUpdateDialogFragment(switchPref);
+            autoUpdateDialogFragment.setCancelable(true);
+            if (getActivity() != null)
+                autoUpdateDialogFragment.show(getActivity().getSupportFragmentManager(), "dialog_auto_update");
+            return false;
+        });
     }
 
     @Override
@@ -193,6 +204,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case RESTORE_WARNING_PREFERENCE: {
                 AppPreferences.getInstance().setWarningDialogAppComponentDontShow(false);
                 Toast.makeText(context, getString(R.string.restore_warning_success), Toast.LENGTH_LONG).show();
+                break;
             }
             case SET_NIGHT_MODE_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();

@@ -9,9 +9,15 @@ import android.util.Log;
 import com.fusionjack.adhell3.BuildConfig;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class LogUtils {
 
@@ -35,6 +41,35 @@ public final class LogUtils {
             return "";
         }
         return filename;
+    }
+
+    public static void appendLogFile(String newLine, File logFile) {
+        try {
+            FileOutputStream fos = new FileOutputStream(logFile, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            osw.write(String.format("%s%s", newLine, System.lineSeparator()));
+            osw.flush();
+            osw.close();
+            fos.close();
+        } catch (IOException e) {
+            error(e.getMessage(), e);
+        }
+    }
+
+    public static File getAutoUpdateLogFile() {
+        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+        if (!folder.exists()) if (!folder.mkdirs()) error("Unable to create folder");
+        String filename = "adhell_auto_update_log.txt";
+        File logFile = new File(folder, filename);
+        try {
+            if (!logFile.exists()) {
+                if (!logFile.createNewFile()) error("Unable to create auto update log file");
+            }
+            shrinkLogFile(logFile, 2097152, 1000);
+        } catch (IOException e) {
+            error(e.getMessage(), e);
+        }
+        return logFile;
     }
 
     public static void info(String text) {
@@ -71,5 +106,28 @@ public final class LogUtils {
             return stackTraceElements[4].getClassName() + "(" + stackTraceElements[4].getMethodName() + ")";
         }
         return "Empty class name";
+    }
+
+    private static void shrinkLogFile(File logFile, int maxFileSizeInBytes, int nbLinesToKeep) throws IOException {
+        if(logFile.length() > maxFileSizeInBytes){
+            String line;
+            BufferedReader br = new BufferedReader(new FileReader(logFile));
+            List<String> tmp = new ArrayList<>();
+            do {
+                line = br.readLine();
+                tmp.add(line);
+            } while (line != null);
+
+            if (tmp.get(tmp.size()-1) == null) tmp.remove(tmp.size()-1);
+
+            RandomAccessFile raf = new RandomAccessFile(logFile, "rw");
+            raf.setLength(0);
+            FileOutputStream fos = new FileOutputStream(logFile);
+            for(int i=((tmp.size()-1)-nbLinesToKeep);i<=tmp.size()-1;i++) {
+                fos.write(String.format("%s%s", tmp.get(i), System.lineSeparator()).getBytes());
+            }
+            fos.flush();
+            fos.close();
+        }
     }
 }

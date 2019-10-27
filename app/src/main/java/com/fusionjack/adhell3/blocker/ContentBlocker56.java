@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 
 public class ContentBlocker56 implements ContentBlocker {
     private static ContentBlocker56 mInstance = null;
-
     private final Firewall firewall;
     private final AppDatabase appDatabase;
     private final FirewallUtils firewallUtils;
@@ -71,9 +70,9 @@ public class ContentBlocker56 implements ContentBlocker {
         LogUtils.info("Enabling firewall rules...", handler);
 
         try {
-            processCustomRules();
-            processMobileRestrictedApps();
-            processWifiRestrictedApps();
+            processCustomRules(handler);
+            processMobileRestrictedApps(handler);
+            processWifiRestrictedApps(handler);
 
             LogUtils.info("\nFirewall rules are enabled.", handler);
 
@@ -124,9 +123,9 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         try {
-            processWhitelistedApps();
-            processWhitelistedDomains();
-            processBlockedDomains();
+            processWhitelistedApps(handler);
+            processWhitelistedDomains(handler);
+            processBlockedDomains(handler);
             AdhellFactory.getInstance().applyDns(handler);
 
             List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
@@ -168,15 +167,15 @@ public class ContentBlocker56 implements ContentBlocker {
 
              try {
                  if (parentFragment.getDomainSwitchState()) {
-                     processWhitelistedApps();
-                     processWhitelistedDomains();
-                     processBlockedDomains();
+                     processWhitelistedApps(handler);
+                     processWhitelistedDomains(handler);
+                     processBlockedDomains(handler);
                      AdhellFactory.getInstance().applyDns(handler);
                  }
                  if (parentFragment.getFirewallSwitchState()) {
-                     processCustomRules();
-                     processMobileRestrictedApps();
-                     processWifiRestrictedApps();
+                     processCustomRules(handler);
+                     processMobileRestrictedApps(handler);
+                     processWifiRestrictedApps(handler);
                  }
 
                  List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
@@ -233,7 +232,7 @@ public class ContentBlocker56 implements ContentBlocker {
         AppPreferences.getInstance().resetBlockedDomainsCount();
     }
 
-    private void processCustomRules() throws Exception {
+    public void processCustomRules(Handler handler) throws Exception {
         LogUtils.info("\nProcessing custom rules...", handler);
 
         FirewallRule[] enabledRules = firewall.getRules(Firewall.FIREWALL_DENY_RULE, FirewallRule.Status.ENABLED);
@@ -344,7 +343,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private void processMobileRestrictedApps() throws Exception {
+    public void processMobileRestrictedApps(Handler handler) throws Exception {
         LogUtils.info("\nProcessing mobile restricted apps...", handler);
 
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getMobileRestrictedApps();
@@ -397,7 +396,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private void processWifiRestrictedApps() throws Exception {
+    public void processWifiRestrictedApps(Handler handler) throws Exception {
         LogUtils.info("\nProcessing wifi restricted apps...", handler);
 
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getWifiRestrictedApps();
@@ -450,7 +449,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private void processWhitelistedApps() throws Exception {
+    public void processWhitelistedApps(Handler handler) throws Exception {
         LogUtils.info("\nProcessing white-listed apps...", handler);
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
 
@@ -510,7 +509,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private void processWhitelistedDomains() throws Exception {
+    public void processWhitelistedDomains(Handler handler) throws Exception {
         LogUtils.info("\nProcessing whitelist domain...", handler);
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
 
@@ -696,7 +695,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private void processBlockedDomains() throws Exception {
+    public void processBlockedDomains(Handler handler) throws Exception {
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
         LogUtils.info("\nProcessing blocked domains...", handler);
 

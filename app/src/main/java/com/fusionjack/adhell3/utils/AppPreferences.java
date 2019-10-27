@@ -6,11 +6,15 @@ public final class AppPreferences {
     private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
-    private final static String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
+    private static final String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
     private static final String DNS1 = "dns1";
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
     private static final String WARNING_DIALOG_APP_COMPONENT = "warningDialogAppComponent";
+    private static final String AUTO_UPDATE_INTERVAL = "autoUpdateInterval";
+    private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
+    private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
+    private static final String AUTO_UPDATE_CONSTRAINT_MOBILE_DATA = "autoUpdateConstraintMobileData";
     private static AppPreferences instance;
     private final SharedPreferences sharedPreferences;
 
@@ -120,6 +124,46 @@ public final class AppPreferences {
     public void setWarningDialogAppComponentDontShow(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(WARNING_DIALOG_APP_COMPONENT, enabled);
+        editor.apply();
+    }
+
+    public int getAutoUpdateInterval() {
+        return sharedPreferences.getInt(AUTO_UPDATE_INTERVAL, 5);
+    }
+
+    public void setAutoUpdateInterval(int interval) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(AUTO_UPDATE_INTERVAL, interval);
+        editor.apply();
+    }
+
+    public boolean getCreateLogOnAutoUpdate() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_LOG, true);
+    }
+
+    public void setCreateLogOnAutoUpdate(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(AUTO_UPDATE_LOG, enabled);
+        editor.apply();
+    }
+
+    public boolean getAutoUpdateConstraintLowBattery() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_CONSTRAINT_LOW_BATTERY, true);
+    }
+
+    public void setAutoUpdateConstraintLowBattery(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(AUTO_UPDATE_CONSTRAINT_LOW_BATTERY, enabled);
+        editor.apply();
+    }
+
+    public boolean getAutoUpdateConstraintMobileData() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_CONSTRAINT_MOBILE_DATA, true);
+    }
+
+    public void setAutoUpdateConstraintMobileData(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(AUTO_UPDATE_CONSTRAINT_MOBILE_DATA, enabled);
         editor.apply();
     }
 }
