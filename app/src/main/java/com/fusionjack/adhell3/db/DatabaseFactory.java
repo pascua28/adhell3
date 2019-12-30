@@ -1,9 +1,13 @@
 package com.fusionjack.adhell3.db;
 
-import android.os.Environment;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
+import androidx.documentfile.provider.DocumentFile;
+
+import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.blocker.ContentBlocker;
+import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
@@ -16,11 +20,9 @@ import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.FileUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,10 +34,10 @@ import java.util.Date;
 import java.util.List;
 
 public final class DatabaseFactory {
-    private static final String STORAGE_FOLDER = "/Adhell3/BackupDB/";
+    private static final String STORAGE_FOLDERS = "Adhell3/BackupDB";
+    private static final String BACKUP_FILENAME = "adhell_backup.txt";
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
-    private static final String BACKUP_FILENAME = "adhell_backup.txt";
     private static DatabaseFactory instance;
     private final AppDatabase appDatabase;
 
@@ -51,80 +53,77 @@ public final class DatabaseFactory {
     }
 
     public void backupDatabase() throws Exception {
-        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create folder " + folder.getAbsolutePath());
-        File file = new File(folder, BACKUP_FILENAME);
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            writer.setIndent("  ");
-            writer.beginObject();
-            writeWhitelistedPackages(writer, appDatabase);
-            writeDisabledPackages(writer, appDatabase);
-            writeRestrictedPackages(writer, appDatabase);
-            writeAppComponent(writer, appDatabase);
-            writeBlockUrlProviders(writer, appDatabase);
-            writeUserBlockUrls(writer, appDatabase);
-            writeWhiteUrls(writer, appDatabase);
-            writeCustomDNS(writer, appDatabase);
-            writer.endObject();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+        DocumentFile backupFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, BACKUP_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+        OutputStream out = App.getAppContext().getContentResolver().openOutputStream(backupFile.getUri());
+
+        if (out != null) {
+            try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
+                writer.setIndent("  ");
+                writer.beginObject();
+                writeWhitelistedPackages(writer, appDatabase);
+                writeDisabledPackages(writer, appDatabase);
+                writeRestrictedPackages(writer, appDatabase);
+                writeAppComponent(writer, appDatabase);
+                writeBlockUrlProviders(writer, appDatabase);
+                writeUserBlockUrls(writer, appDatabase);
+                writeWhiteUrls(writer, appDatabase);
+                writeCustomDNS(writer, appDatabase);
+                writer.endObject();
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
         }
     }
 
     public void restoreDatabase() throws Exception {
-        File backupFile = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER, BACKUP_FILENAME);
-        File oldFile = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
-        if (!backupFile.exists()) {
-            if (oldFile.exists()) {
-                File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-                if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create folder " + folder.getAbsolutePath());
-                try (InputStream in = new FileInputStream(oldFile)) {
-                    try (OutputStream out = new FileOutputStream(backupFile)) {
-                        // Transfer bytes from in to out
-                        byte[] buf = new byte[1024];
-                        int len;
-                        while ((len = in.read(buf)) > 0) {
-                            out.write(buf, 0, len);
-                        }
-                    }
-                }
-                backupFile = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER, BACKUP_FILENAME);
-            } else {
-                throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
-            }
+        DocumentFile backupFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, BACKUP_FILENAME, FileUtils.FileCreationType.NEVER);
+
+        if (backupFile == null || !backupFile.exists()) {
+            throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
         }
 
         try {
+            ContentBlocker contentBlocker = ContentBlocker56.getInstance();
+            contentBlocker.disableDomainRules();
+            contentBlocker.disableFirewallRules();
+            AdhellFactory.getInstance().setAppDisablerToggle(false);
+            AdhellFactory.getInstance().setAppComponentToggle(false);
+
             AdhellAppIntegrity appIntegrity = AdhellAppIntegrity.getInstance();
             appIntegrity.checkDefaultPolicyExists();
             appIntegrity.fillPackageDb();
 
-            try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), StandardCharsets.UTF_8))) {
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    String name = reader.nextName();
-                    if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
-                        readWhitelistedPackages(reader);
-                    } else if (name.equalsIgnoreCase("DisabledPackage")) {
-                        readDisabledPackages(reader);
-                    } else if (name.equalsIgnoreCase("RestrictedPackage")) {
-                        readRestrictedPackages(reader);
-                    } else if (name.equalsIgnoreCase("AppPermission")) {
-                        readAppComponent(reader);
-                    } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
-                        readBlockUrlProviders(reader);
-                    } else if (name.equalsIgnoreCase("UserBlockUrl")) {
-                        readUserBlockUrls(reader);
-                    } else if (name.equalsIgnoreCase("WhiteUrl")) {
-                        readWhiteUrls(reader);
-                    } else if (name.equalsIgnoreCase("DnsPackage")) {
-                        readDnsPackages(reader);
-                    } else if (name.equalsIgnoreCase("DnsAddresses")) {
-                        readDnsAddresses(reader);
+            InputStream input = App.getAppContext().getContentResolver().openInputStream(backupFile.getUri());
+
+            if (input != null) {
+                try (JsonReader reader = new JsonReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                    reader.beginObject();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
+                            readWhitelistedPackages(reader);
+                        } else if (name.equalsIgnoreCase("DisabledPackage")) {
+                            readDisabledPackages(reader);
+                        } else if (name.equalsIgnoreCase("RestrictedPackage")) {
+                            readRestrictedPackages(reader);
+                        } else if (name.equalsIgnoreCase("AppPermission")) {
+                            readAppComponent(reader);
+                        } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
+                            readBlockUrlProviders(reader);
+                        } else if (name.equalsIgnoreCase("UserBlockUrl")) {
+                            readUserBlockUrls(reader);
+                        } else if (name.equalsIgnoreCase("WhiteUrl")) {
+                            readWhiteUrls(reader);
+                        } else if (name.equalsIgnoreCase("DnsPackage")) {
+                            readDnsPackages(reader);
+                        } else if (name.equalsIgnoreCase("DnsAddresses")) {
+                            readDnsAddresses(reader);
+                        }
                     }
+                    reader.endObject();
                 }
-                reader.endObject();
+                input.close();
             }
         } catch (Exception e) {
             e.printStackTrace();

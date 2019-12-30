@@ -56,8 +56,7 @@ public class BiometricUtils {
             public void onAuthenticationSucceeded(
                 BiometricPrompt.AuthenticationResult result) {
                     //Toast.makeText(context, context.getString(R.string.biometric_auth_succeeded), Toast.LENGTH_SHORT).show();
-                    ((MainActivity) context).passwordDialog.dismiss();
-                    ((MainActivity) context).isKnoxValid();
+                    ((MainActivity) context).successAuthentication();
                     super.onAuthenticationSucceeded(result);
 
             }

@@ -71,6 +71,12 @@
         app:iconSpaceReserved="false" />
 
     <Preference
+        android:key="revoke_storage_permission"
+        android:summary="@string/revoke_storage_permission_summary"
+        android:title="@string/revoke_storage_permission_title"
+        app:iconSpaceReserved="false" />
+
+    <Preference
         android:key="create_logcat_preference"
         android:summary="@string/create_logcat_summary"
         android:title="@string/create_logcat_title"

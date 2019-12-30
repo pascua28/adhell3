@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -28,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
@@ -47,14 +47,14 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
+import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +71,8 @@ import java.util.StringTokenizer;
 
 public class HomeTabFragment extends Fragment {
 
-    private static final String STORAGE_FOLDER = "/Adhell3/Exports/";
+    private static final String STORAGE_FOLDERS = "Adhell3/Exports";
+    private static final String EXPORTED_DOMAINS_FILENAME = "adhell_exported_domains.txt";
 
     private FragmentManager fragmentManager;
     private AppCompatActivity parentActivity;
@@ -664,15 +665,21 @@ public class HomeTabFragment extends Fragment {
                     set.add(domain.url);
                 }
 
-                File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-                if (!folder.exists()) if (!folder.mkdirs()) throw new IOException("Unable to create directory " + folder.getAbsolutePath());
-                File file = new File(folder, "adhell_exported_domains.txt");
-                FileWriter writer = new FileWriter(file);
-                for (String domain : set) {
-                    writer.write(domain);
-                    writer.write(System.lineSeparator());
+                DocumentFile file = FileUtils.getDocumentFile(STORAGE_FOLDERS, EXPORTED_DOMAINS_FILENAME, FileUtils.FileCreationType.ALWAYS);
+                if (file != null) {
+                    OutputStream out = contextReference.get().getContentResolver().openOutputStream(file.getUri());
+                    if (out != null) {
+                        for (String domain : set) {
+                            try {
+                                out.write(String.format("%s%s", domain, System.lineSeparator()).getBytes());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        out.flush();
+                        out.close();
+                    }
                 }
-                writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

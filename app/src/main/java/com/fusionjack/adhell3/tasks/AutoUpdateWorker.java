@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -18,7 +19,6 @@ import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.net.firewall.Firewall;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class AutoUpdateWorker extends Worker {
         AutoUpdateWorker.firewall = AdhellFactory.getInstance().getFirewall();
 
         if (AppPreferences.getInstance().getCreateLogOnAutoUpdate()) {
-            File logFile = LogUtils.getAutoUpdateLogFile();
+            DocumentFile logFile = LogUtils.getAutoUpdateLogFile();
             this.handler = new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

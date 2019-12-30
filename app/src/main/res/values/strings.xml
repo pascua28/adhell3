@@ -215,6 +215,10 @@
     <string name="restore_warning_title">Reset Don\'t show again settings</string>
     <string name="restore_warning_summary">Restore Warning dialog that was marked Don\'t show again</string>
     <string name="restore_warning_success">Warning dialog restored</string>
+    <string name="revoke_storage_permission_title">Revoke storage permission</string>
+    <string name="revoke_storage_permission_summary">After revoking storage permission Adhell3 can\'t use local storage.</string>
+    <string name="revoke_storage_permission_question">Are you sure you want to revoke Adhell3 storage permission ?</string>
+    <string name="revoke_storage_permission_success">Adhell3 storage permission revoked</string>
     <string name="set_night_mode">Night Mode</string>
     <string name="set_night_mode_summary">Enable dark theme for adhell3</string>
     <string name="create_logcat_title">Create logcat</string>
@@ -271,4 +275,7 @@
     <string name="qstiles_lockscreen_title">Allow QS Tiles on lockscreen</string>
     <string name="qstiles_lockscreen_summary">Allow use of Quick Setting Tiles on lockscreen if phone is locked</string>
     <string name="menu_show_disabled">Show disabled components</string>
+    <string name="dialog_storage_permission_title">Storage permission needed</string>
+    <string name="dialog_storage_permission_summary">To be compliant with Android 10, Adhell3 must request storage access to function properly.\r
+        \nPlease grant Adhell3 access to the root of internal storage in the next window.</string>
 </resources>

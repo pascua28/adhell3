@@ -1,7 +1,9 @@
 package com.fusionjack.adhell3;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +46,7 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 
 public class MainActivity extends AppCompatActivity {
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static boolean selectFileActivityLaunched = false;
     private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
     private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
@@ -144,10 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
-            if (!isKnoxValid()) {
-                return;
-            }
+            finishOnResume();
         } else {
             selectFileActivityLaunched = false;
         }
@@ -155,10 +155,62 @@ public class MainActivity extends AppCompatActivity {
         LogUtils.info("Everything is okay");
     }
 
+    private void finishOnResume() {
+        // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
+        if (!isKnoxValid()) {
+            finish();
+        }
+        // Check for storage permission
+        requestStoragePermission();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         LogUtils.info("Destroying activity");
+    }
+
+    private void requestStoragePermission() {
+        if (AppPreferences.getInstance().getStorageTreePath().equals("") || this.getContentResolver().getPersistedUriPermissions().size() <= 0) {
+            View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_question, null);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.dialog_storage_permission_title);
+            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+            questionTextView.setText(R.string.dialog_storage_permission_summary);
+
+            new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
+                        setSelectFileActivityLaunched(true);
+
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                        intent.addFlags(
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                                        | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+
+                        startActivityForResult(intent, STORAGE_PERMISSION_REQUEST_CODE);
+                    }
+                )
+                .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
+                .show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
+        super.onActivityResult(requestCode, resultCode, resultData);
+
+        if(resultCode == RESULT_OK && requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            Uri treeUri = resultData.getData();
+            if (treeUri != null) {
+                AppPreferences.getInstance().setStorageTreePath(treeUri.toString());
+                this.grantUriPermission(this.getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                this.getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+        }
     }
 
     private void onTabSelected(int tabId) {
@@ -284,8 +336,7 @@ public class MainActivity extends AppCompatActivity {
                     if (PasswordStorage.verifyPassword(password, passwordHash)) {
                         infoTextView.setText(R.string.dialog_enter_password_summary);
                         passwordEditText.setText("");
-                        passwordDialog.dismiss();
-                        isKnoxValid();
+                        successAuthentication();
                     } else {
                         infoTextView.setText(R.string.dialog_wrong_password);
                     }
@@ -295,6 +346,11 @@ public class MainActivity extends AppCompatActivity {
             });
         });
         return passwordDialog;
+    }
+
+    public void successAuthentication() {
+        passwordDialog.dismiss();
+        finishOnResume();
     }
 
     public void setSelectedAppTab(int selectedTabId) {

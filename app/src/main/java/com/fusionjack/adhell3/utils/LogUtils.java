@@ -1,70 +1,67 @@
 package com.fusionjack.adhell3.utils;
 
-import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.fusionjack.adhell3.BuildConfig;
-import com.samsung.android.knox.EnterpriseDeviceManager;
+import androidx.documentfile.provider.DocumentFile;
+
+import com.fusionjack.adhell3.App;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class LogUtils {
 
-    private static final String STORAGE_FOLDER = "/Adhell3/Logs/";
+    private static final String STORAGE_FOLDERS = "Adhell3/Logs";
+    private static final String ERROR_LOG_BASE_FILENAME = "adhell_logcat_%s.txt";
+    private static final String AUTO_UPDATE_LOG_FILENAME = "adhell_auto_update_log.txt";
 
     private LogUtils() {
     }
 
     public static String createLogcat() {
-        info("Build version: " + BuildConfig.VERSION_NAME);
-        info("Knox API: " + EnterpriseDeviceManager.getAPILevel());
-        info("Android API: " + Build.VERSION.SDK_INT);
-        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) if (!folder.mkdirs()) error("Unable to create folder");
-        String filename = String.format("adhell_logcat_%s.txt", System.currentTimeMillis());
-        File logFile = new File(folder, filename);
+        String filename = String.format(ERROR_LOG_BASE_FILENAME, System.currentTimeMillis());
+        DocumentFile logFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, filename, FileUtils.FileCreationType.IF_NOT_EXIST);
         try {
-            Runtime.getRuntime().exec( "logcat -f " + logFile + " | grep com.fusionjack.adhell3");
-        } catch (IOException e) {
+            Process logcatProcess = Runtime.getRuntime().exec( "logcat -d");
+            InputStream in = logcatProcess.getInputStream();
+            OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri());
+            if (out != null) {
+                int n;
+                byte[] buffer = new byte[16384];
+                while((n = in.read(buffer)) > -1) {
+                    out.write(buffer, 0, n);
+                }
+                out.close();
+            }
+        } catch (Exception e) {
             error(e.getMessage(), e);
             return "";
         }
-        return filename;
+        return logFile.getName();
     }
 
-    public static void appendLogFile(String newLine, File logFile) {
+    public static void appendLogFile(String newLine, DocumentFile logFile) {
         try {
-            FileOutputStream fos = new FileOutputStream(logFile, true);
-            OutputStreamWriter osw = new OutputStreamWriter(fos);
-            osw.write(String.format("%s%s", newLine, System.lineSeparator()));
-            osw.flush();
-            osw.close();
-            fos.close();
+            OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri(), "wa");
+            if (out != null) {
+                out.write(String.format("%s%s", newLine, System.lineSeparator()).getBytes());
+                out.close();
+            }
         } catch (IOException e) {
             error(e.getMessage(), e);
         }
     }
 
-    public static File getAutoUpdateLogFile() {
-        File folder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-        if (!folder.exists()) if (!folder.mkdirs()) error("Unable to create folder");
-        String filename = "adhell_auto_update_log.txt";
-        File logFile = new File(folder, filename);
+    public static DocumentFile getAutoUpdateLogFile() {
+        DocumentFile logFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, AUTO_UPDATE_LOG_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
         try {
-            if (!logFile.exists()) {
-                if (!logFile.createNewFile()) error("Unable to create auto update log file");
-            }
             shrinkLogFile(logFile, 2097152, 1000);
         } catch (IOException e) {
             error(e.getMessage(), e);
@@ -108,26 +105,29 @@ public final class LogUtils {
         return "Empty class name";
     }
 
-    private static void shrinkLogFile(File logFile, int maxFileSizeInBytes, int nbLinesToKeep) throws IOException {
+    private static void shrinkLogFile(DocumentFile logFile, int maxFileSizeInBytes, int nbLinesToKeep) throws IOException {
         if(logFile.length() > maxFileSizeInBytes){
-            String line;
-            BufferedReader br = new BufferedReader(new FileReader(logFile));
-            List<String> tmp = new ArrayList<>();
-            do {
-                line = br.readLine();
-                tmp.add(line);
-            } while (line != null);
+            InputStream input = App.getAppContext().getContentResolver().openInputStream(logFile.getUri());
+            OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri());
+            if (input != null && out != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(input));
+                List<String> tmp = new ArrayList<>();
+                String line;
+                do {
+                    line = br.readLine();
+                    tmp.add(line);
+                } while (line != null);
+                input.close();
 
-            if (tmp.get(tmp.size()-1) == null) tmp.remove(tmp.size()-1);
+                if (tmp.get(tmp.size()-1) == null) tmp.remove(tmp.size()-1);
 
-            RandomAccessFile raf = new RandomAccessFile(logFile, "rw");
-            raf.setLength(0);
-            FileOutputStream fos = new FileOutputStream(logFile);
-            for(int i=((tmp.size()-1)-nbLinesToKeep);i<=tmp.size()-1;i++) {
-                fos.write(String.format("%s%s", tmp.get(i), System.lineSeparator()).getBytes());
+                for(int i=((tmp.size()-1)-nbLinesToKeep);i<=tmp.size()-1;i++) {
+                    out.write(String.format("%s%s", tmp.get(i), System.lineSeparator()).getBytes());
+                }
+                out.flush();
+                out.close();
             }
-            fos.flush();
-            fos.close();
         }
     }
 }
+

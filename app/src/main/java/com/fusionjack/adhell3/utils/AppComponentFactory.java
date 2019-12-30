@@ -1,8 +1,10 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.ComponentName;
-import android.os.Environment;
 
+import androidx.documentfile.provider.DocumentFile;
+
+import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -10,9 +12,8 @@ import com.fusionjack.adhell3.model.AppComponent;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import io.reactivex.Single;
 
 public final class AppComponentFactory {
 
-    private static final String STORAGE_FOLDER = "/Adhell3/BatchOp/";
+    private static final String STORAGE_FOLDERS = "Adhell3/BatchOp";
     private static final String SERVICE_FILENAME = "adhell3_services.txt";
     private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
     private static AppComponentFactory instance;
@@ -44,45 +45,26 @@ public final class AppComponentFactory {
     }
 
     public Single<String> processAppComponentInBatch(boolean enabled) {
-        File batchOpFolder;
-        File servicesFile;
-        File receiversFile;
+        DocumentFile servicesFile;
+        DocumentFile receiversFile;
 
         try {
-            batchOpFolder = new File(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
-            if (!batchOpFolder.exists()) {
-                if (!batchOpFolder.mkdirs()) {
-                    throw new IOException("Unable to create folder '" + batchOpFolder.getAbsolutePath() + "' !");
-                }
-            }
-
-            servicesFile = new File(batchOpFolder, SERVICE_FILENAME);
-            receiversFile = new File(batchOpFolder, RECEIVER_FILENAME);
-
-            if (!servicesFile.exists()) {
-                if (!servicesFile.createNewFile()) {
-                    throw new IOException("Unable to create file '" + servicesFile.getAbsolutePath() + "' !");
-                }
-            }
-            if (!receiversFile.exists()) {
-                if (!receiversFile.createNewFile()) {
-                    throw new IOException("Unable to create file '" + receiversFile.getAbsolutePath() + "' !");
-                }
-            }
+            servicesFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, SERVICE_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+            receiversFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, RECEIVER_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
         } catch (Exception e) {
             return Single.error(e);
         }
 
         Set<String> serviceNames;
         try {
-            serviceNames = getFileContent(servicesFile.getAbsolutePath());
+            serviceNames = getFileContent(servicesFile);
         } catch (IOException e) {
             return Single.error(e);
         }
 
         Set<String> receiverNames;
         try {
-            receiverNames = getFileContent(receiversFile.getAbsolutePath());
+            receiverNames = getFileContent(receiversFile);
         } catch (IOException e) {
             return Single.error(e);
         }
@@ -99,19 +81,23 @@ public final class AppComponentFactory {
         });
     }
 
-    private Set<String> getFileContent(String fileName) throws IOException {
-        File contentFile = new File(fileName);
-        if (contentFile.length() == 0) {
-            throw new IOException("File '" + fileName + "' is empty !");
+    private Set<String> getFileContent(DocumentFile file) throws IOException {
+        if (file.length() == 0) {
+            throw new IOException("File '" + file.getName() + "' is empty !");
         }
 
         Set<String> lines = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(contentFile), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line.trim());
+        InputStream input = App.getAppContext().getContentResolver().openInputStream(file.getUri());
+
+        if (input != null) {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line.trim());
+                }
             }
+            input.close();
         }
 
         return lines;

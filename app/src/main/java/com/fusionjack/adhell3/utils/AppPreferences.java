@@ -15,6 +15,7 @@ public final class AppPreferences {
     private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
     private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
     private static final String AUTO_UPDATE_CONSTRAINT_MOBILE_DATA = "autoUpdateConstraintMobileData";
+    private static final String STORAGE_TREE_PATH = "storageTreePath";
     private static AppPreferences instance;
     private final SharedPreferences sharedPreferences;
 
@@ -165,5 +166,15 @@ public final class AppPreferences {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(AUTO_UPDATE_CONSTRAINT_MOBILE_DATA, enabled);
         editor.apply();
+    }
+
+    public void setStorageTreePath(String treePath) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(STORAGE_TREE_PATH, treePath);
+        editor.apply();
+    }
+
+    public String getStorageTreePath() {
+        return sharedPreferences.getString(STORAGE_TREE_PATH, "");
     }
 }

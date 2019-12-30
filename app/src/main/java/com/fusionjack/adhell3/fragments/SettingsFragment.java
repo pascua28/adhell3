@@ -1,10 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,8 +32,6 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.blocker.ContentBlocker;
-import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -70,6 +68,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private static final String RESTORE_PREFERENCE = "restore_preference";
     private static final String RESTORE_WARNING_PREFERENCE = "restore_warning_dialog";
     private static final String CLEAN_PREFERENCE = "clean_preference";
+    private static final String REVOKE_STORAGE_PERMISSION = "revoke_storage_permission";
     private Context context;
 
     @Override
@@ -97,7 +96,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.delete_app_dialog_text);
 
-                new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
@@ -111,7 +110,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.backup_database_dialog_text);
 
-                new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new BackupDatabaseAsyncTask(getActivity()).execute()
@@ -126,7 +125,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.restore_database_dialog_text);
 
-                new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseAsyncTask(getActivity(), getContext()).execute()
@@ -142,7 +141,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.clean_database_dialog_text);
 
-                new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new CleanDatabaseAsyncTask(getActivity(), getContext()).execute()
@@ -156,7 +155,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, Objects.requireNonNull(this.getActivity()).getTheme());
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
                     View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_password, (ViewGroup) getView(), false);
-                    AlertDialog passwordDialog = new AlertDialog.Builder(context)
+                    AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                             .setView(dialogView)
                             .setPositiveButton(android.R.string.yes, null)
                             .setNegativeButton(android.R.string.no, null)
@@ -206,6 +205,26 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 Toast.makeText(context, getString(R.string.restore_warning_success), Toast.LENGTH_LONG).show();
                 break;
             }
+            case REVOKE_STORAGE_PERMISSION: {
+                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.revoke_storage_permission_title);
+                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                questionTextView.setText(R.string.revoke_storage_permission_question);
+
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            int intentFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                            Uri treePath = Uri.parse(AppPreferences.getInstance().getStorageTreePath());
+                            context.getContentResolver().releasePersistableUriPermission(treePath, intentFlags);
+                            context.revokeUriPermission(treePath, intentFlags);
+                            AppPreferences.getInstance().setStorageTreePath("");
+                            Toast.makeText(context, getString(R.string.revoke_storage_permission_success), Toast.LENGTH_LONG).show();
+                        })
+                        .setNegativeButton(android.R.string.no, null).show();
+                break;
+            }
             case SET_NIGHT_MODE_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();
                 int nightMode = (preferenceManager.getSharedPreferences().getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) ?
@@ -245,7 +264,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.about_content);
                 questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
-                new AlertDialog.Builder(context)
+                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, null).show();
                 break;
@@ -255,31 +274,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private static class RestoreDatabaseAsyncTask extends AsyncTask<Void, String, String> {
-        private final ProgressDialog dialog;
+        private final AlertDialog dialog;
         private final AlertDialog.Builder builder;
         private final WeakReference<Context> contextWeakReference;
 
         RestoreDatabaseAsyncTask(Activity activity, Context context) {
-            this.builder = new AlertDialog.Builder(activity);
-            this.dialog = new ProgressDialog(activity);
+            this.builder = new AlertDialog.Builder(activity, R.style.ThemeOverlay_AlertDialog);
+            this.dialog = LogUtils.getProgressDialog("Restore database is running...", context);
             this.contextWeakReference = new WeakReference<>(context);
         }
 
         @Override
         protected void onPreExecute() {
-            dialog.setMessage("Restore database is running...");
             dialog.show();
         }
 
         @Override
         protected String doInBackground(Void... args) {
             try {
-                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-                contentBlocker.disableDomainRules();
-                contentBlocker.disableFirewallRules();
-                AdhellFactory.getInstance().setAppDisablerToggle(false);
-                AdhellFactory.getInstance().setAppComponentToggle(false);
-
                 DatabaseFactory.getInstance().restoreDatabase();
 
                 Context context = contextWeakReference.get();
