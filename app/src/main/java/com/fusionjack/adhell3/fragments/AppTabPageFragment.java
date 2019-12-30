@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -193,7 +195,7 @@ public class AppTabPageFragment extends AppFragment {
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.enable_apps_dialog_text);
 
-        new AlertDialog.Builder(context)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                     Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
@@ -243,7 +245,13 @@ public class AppTabPageFragment extends AppFragment {
                         loadAppList(type, loadingBar, listView);
                     });
                 })
-                .setNegativeButton(android.R.string.no, null).show();
+                .setNegativeButton(android.R.string.no, null)
+                .create();
+
+        if (alertDialog.getWindow() != null)
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        alertDialog.show();
     }
 }
 

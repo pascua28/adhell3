@@ -1,25 +1,28 @@
 package com.fusionjack.adhell3.tasks;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.DatabaseFactory;
+import com.fusionjack.adhell3.utils.DialogUtils;
 
 public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
-    private final ProgressDialog dialog;
+    private final AlertDialog dialog;
     private final AlertDialog.Builder builder;
 
     public BackupDatabaseAsyncTask(Activity activity) {
-        dialog = new ProgressDialog(activity);
-        builder = new AlertDialog.Builder(activity);
+        dialog = DialogUtils.getProgressDialog("Backup database is running...", activity.getApplicationContext());
+
+        builder = new AlertDialog.Builder(activity, R.style.ThemeOverlay_AlertDialog);
     }
 
     @Override
     protected void onPreExecute() {
-        dialog.setMessage("Backup database is running...");
         dialog.show();
     }
 
@@ -46,6 +49,11 @@ public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
             builder.setMessage(message);
             builder.setTitle("Error");
         }
-        builder.create().show();
+        AlertDialog dialog = builder.create();
+
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        dialog.show();
     }
 }

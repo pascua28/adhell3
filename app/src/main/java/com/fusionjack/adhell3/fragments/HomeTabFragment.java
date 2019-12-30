@@ -1,10 +1,11 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,6 +48,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
+import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -153,11 +155,11 @@ public class HomeTabFragment extends Fragment {
         });
         disablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
-            new AppDisablerAsyncTask(this, getActivity()).execute();
+            new AppDisablerAsyncTask(this, getContext()).execute();
         });
         appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info("App component switch button has been clicked");
-            new AppComponentAsyncTask(this, getActivity()).execute();
+            new AppComponentAsyncTask(this, getContext()).execute();
         });
 
         FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
@@ -387,17 +389,18 @@ public class HomeTabFragment extends Fragment {
 
     private static class AppDisablerAsyncTask extends AsyncTask<Void, Void, Void> {
         private final HomeTabFragment parentFragment;
-        private final ProgressDialog dialog;
+        private final AlertDialog dialog;
 
-        AppDisablerAsyncTask(HomeTabFragment parentFragment, Activity activity) {
+        AppDisablerAsyncTask(HomeTabFragment parentFragment, Context context) {
             this.parentFragment = parentFragment;
-            this.dialog = new ProgressDialog(activity);
+
+            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+            String message = enabled ? "Enabling apps..." : "Disabling apps...";
+            this.dialog = DialogUtils.getProgressDialog(message, context);
         }
 
         @Override
         protected void onPreExecute() {
-            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-            dialog.setMessage(enabled ? "Enabling apps..." : "Disabling apps...");
             dialog.show();
         }
 
@@ -419,17 +422,18 @@ public class HomeTabFragment extends Fragment {
 
     private static class AppComponentAsyncTask extends AsyncTask<Void, Void, Void> {
         private final HomeTabFragment parentFragment;
-        private final ProgressDialog dialog;
+        private final AlertDialog dialog;
 
-        AppComponentAsyncTask(HomeTabFragment parentFragment, Activity activity) {
+        AppComponentAsyncTask(HomeTabFragment parentFragment, Context context) {
             this.parentFragment = parentFragment;
-            this.dialog = new ProgressDialog(activity);
+
+            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+            String message = enabled ? "Enabling app component..." : "Disabling app component...";
+            this.dialog = DialogUtils.getProgressDialog(message, context);
         }
 
         @Override
         protected void onPreExecute() {
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            dialog.setMessage(enabled ? "Enabling app component..." : "Disabling app component...");
             dialog.show();
         }
 
@@ -590,7 +594,7 @@ public class HomeTabFragment extends Fragment {
                         String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
                         String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
                         domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
-                        new AlertDialog.Builder(context)
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                                 .setView(dialogView)
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                     String domainToAdd = domainEditText.getText().toString().trim();
@@ -611,7 +615,14 @@ public class HomeTabFragment extends Fragment {
                                     AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
                                     Toast.makeText(context, "Domain whitelist has been added", Toast.LENGTH_SHORT).show();
                                 })
-                                .setNegativeButton(android.R.string.no, null).show();
+                                .setNegativeButton(android.R.string.no, null)
+                                .create();
+
+                        if (alertDialog.getWindow() != null)
+                            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                        alertDialog.show();
+
                         return false;
                     });
                 }

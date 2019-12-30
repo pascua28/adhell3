@@ -1,10 +1,11 @@
 package com.fusionjack.adhell3.utils;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
@@ -75,7 +77,7 @@ public class AppCache {
     }
 
     private static class AppCacheAsyncTask extends AsyncTask<Void, Void, Throwable> {
-        private ProgressDialog dialog;
+        private AlertDialog dialog;
         private final Map<String, Drawable> appsIcons;
         private final Map<String, String> appsNames;
         private final Map<String, String> versionNames;
@@ -91,7 +93,7 @@ public class AppCache {
             this.contextWeakReference = new WeakReference<>(context);
 
             if (context != null) {
-                dialog = new ProgressDialog(context);
+                dialog = DialogUtils.getProgressDialog("Caching apps, please wait...", context);
                 dialog.setCancelable(false);
             }
         }
@@ -99,7 +101,6 @@ public class AppCache {
         @Override
         protected void onPreExecute() {
             if (dialog != null) {
-                dialog.setMessage("Caching apps, please wait...");
                 dialog.show();
             }
         }
@@ -216,10 +217,15 @@ public class AppCache {
 
             Context context = contextWeakReference.get();
             if (th != null && context != null) {
-                new AlertDialog.Builder(context)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setTitle("Error")
                         .setMessage("Something went wrong when caching apps, please refresh the app list. Error: \n\n" + th.getMessage())
-                        .show();
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
             }
         }
     }

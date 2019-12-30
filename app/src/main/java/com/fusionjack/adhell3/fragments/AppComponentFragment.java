@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.ProgressDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.DialogUtils;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -54,13 +56,19 @@ public class AppComponentFragment extends AppFragment {
             titleTextView.setText(R.string.dialog_system_app_components_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_system_app_components_info);
-            new AlertDialog.Builder(context)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, ((dialog, which) -> {
                         if (dontShowAgain.isChecked()) {
                             AppPreferences.getInstance().setWarningDialogAppComponentDontShow(true);
                         }
-                    })).show();
+                    }))
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         }
     }
 
@@ -89,12 +97,12 @@ public class AppComponentFragment extends AppFragment {
 
     private void batchOperation() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_appcomponent_batch_title);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_appcomponent_batch_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
 
-        ProgressDialog progressDialog = new ProgressDialog(context);
+        AlertDialog progressDialog = DialogUtils.getProgressDialog("", context);
         progressDialog.setCancelable(false);
 
         SingleObserver<String> observer = new SingleObserver<String>() {
@@ -115,25 +123,31 @@ public class AppComponentFragment extends AppFragment {
             }
         };
 
-        new AlertDialog.Builder(context)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                 .setView(dialogView)
                 .setPositiveButton(R.string.button_enable, (dialog, whichButton) -> {
-                    progressDialog.setMessage(getString(R.string.dialog_appcomponent_enable_summary));
                     progressDialog.show();
+                    DialogUtils.setProgressDialogMessage(progressDialog, getString(R.string.dialog_appcomponent_enable_summary));
                     AppComponentFactory.getInstance().processAppComponentInBatch(true)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(observer);
                 })
                 .setNegativeButton(R.string.button_disable, (dialog, whichButton) -> {
-                    progressDialog.setMessage(getString(R.string.dialog_appcomponent_disable_summary));
                     progressDialog.show();
+                    DialogUtils.setProgressDialogMessage(progressDialog, getString(R.string.dialog_appcomponent_disable_summary));
                     AppComponentFactory.getInstance().processAppComponentInBatch(false)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(observer);
                 })
-                .setNeutralButton(android.R.string.no, null).show();
+                .setNeutralButton(android.R.string.no, null)
+                .create();
+
+        if (alertDialog.getWindow() != null)
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        alertDialog.show();
     }
 
     private void enableAllAppComponents() {
@@ -142,7 +156,7 @@ public class AppComponentFragment extends AppFragment {
         titleTextView.setText(R.string.dialog_enable_components_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_enable_components_info);
-        new AlertDialog.Builder(context)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                         AsyncTask.execute(() -> {
@@ -150,7 +164,13 @@ public class AppComponentFragment extends AppFragment {
                             AdhellFactory.getInstance().getAppDatabase().appPermissionDao().deleteAll();
                         })
                 )
-                .setNegativeButton(android.R.string.no, null).show();
+                .setNegativeButton(android.R.string.no, null)
+                .create();
+
+        if (alertDialog.getWindow() != null)
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        alertDialog.show();
     }
 
     @Override

@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -178,12 +180,18 @@ public class ActivationDialogFragment extends DialogFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.backup_database_dialog_text);
 
-            new AlertDialog.Builder(getContext())
+            AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                             new BackupDatabaseAsyncTask(getActivity()).execute()
                     )
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.no, null)
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         });
 
         Button deleteButton = view.findViewById(R.id.deleteButton);
@@ -196,13 +204,23 @@ public class ActivationDialogFragment extends DialogFragment {
 
             Context context = getContext();
             if (context != null) {
-                new AlertDialog.Builder(context)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
             }
         });
+
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         return view;
     }

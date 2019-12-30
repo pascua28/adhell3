@@ -1,5 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,13 +59,19 @@ public class BlacklistFragment extends UserListFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
 
-            new AlertDialog.Builder(context)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String item = (String) parent.getItemAtPosition(position);
                         viewModel.removeItem(item, deleteObserver);
                     })
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.no, null)
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         });
 
         FloatingActionsMenu blackFloatMenu = view.findViewById(R.id.blacklist_actions);
@@ -72,7 +80,7 @@ public class BlacklistFragment extends UserListFragment {
         actionAddBlackDomain.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
-            new AlertDialog.Builder(context)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
@@ -83,7 +91,13 @@ public class BlacklistFragment extends UserListFragment {
                             viewModel.addItem(domainToAdd, addObserver);
                         }
                     })
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.no, null)
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         });
 
         FloatingActionButton actionAddFirewallRule = view.findViewById(R.id.action_add_firewall_rule);
@@ -91,7 +105,7 @@ public class BlacklistFragment extends UserListFragment {
         actionAddFirewallRule.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
-            new AlertDialog.Builder(context)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
@@ -103,7 +117,13 @@ public class BlacklistFragment extends UserListFragment {
                             viewModel.addItem(ruleToAdd, addObserver);
                         }
                     })
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.no, null)
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         });
         view.findViewById(R.id.loadingBar).setVisibility(View.GONE);
         if (blacklistView.getVisibility() == View.GONE) {

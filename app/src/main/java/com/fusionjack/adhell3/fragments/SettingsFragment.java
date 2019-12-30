@@ -3,7 +3,9 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -47,6 +49,7 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.textfield.TextInputEditText;
@@ -96,11 +99,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.delete_app_dialog_text);
 
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
             case BACKUP_PREFERENCE: {
@@ -110,12 +119,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.backup_database_dialog_text);
 
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new BackupDatabaseAsyncTask(getActivity()).execute()
                         )
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
             case RESTORE_PREFERENCE: {
@@ -125,13 +140,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.restore_database_dialog_text);
 
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseAsyncTask(getActivity(), getContext()).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
-                        .show();
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
             case CLEAN_PREFERENCE: {
@@ -141,13 +161,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.clean_database_dialog_text);
 
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new CleanDatabaseAsyncTask(getActivity(), getContext()).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
-                        .show();
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
             case SET_PASSWORD_PREFERENCE: {
@@ -194,6 +219,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         });
                     });
                     passwordDialog.setCancelable(false);
+
+                    if (passwordDialog.getWindow() != null)
+                        passwordDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
                     passwordDialog.show();
                 } else {
                     AppPreferences.getInstance().resetPassword();
@@ -212,7 +241,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.revoke_storage_permission_question);
 
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             int intentFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
@@ -222,7 +251,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             AppPreferences.getInstance().setStorageTreePath("");
                             Toast.makeText(context, getString(R.string.revoke_storage_permission_success), Toast.LENGTH_LONG).show();
                         })
-                        .setNegativeButton(android.R.string.no, null).show();
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
             case SET_NIGHT_MODE_PREFERENCE: {
@@ -264,9 +299,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.about_content);
                 questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
-                new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
-                        .setPositiveButton(android.R.string.yes, null).show();
+                        .setPositiveButton(android.R.string.yes, null)
+                        .create();
+
+                if (alertDialog.getWindow() != null)
+                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                alertDialog.show();
                 break;
             }
         }
@@ -280,7 +321,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         RestoreDatabaseAsyncTask(Activity activity, Context context) {
             this.builder = new AlertDialog.Builder(activity, R.style.ThemeOverlay_AlertDialog);
-            this.dialog = LogUtils.getProgressDialog("Restore database is running...", context);
+            this.dialog = DialogUtils.getProgressDialog("Restore database is running...", context);
             this.contextWeakReference = new WeakReference<>(context);
         }
 
@@ -326,7 +367,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 builder.setMessage(message);
                 builder.setTitle("Error");
             }
-            builder.create().show();
+            AlertDialog dialog = builder.create();
+
+            if (dialog.getWindow() != null)
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            dialog.show();
         }
     }
 

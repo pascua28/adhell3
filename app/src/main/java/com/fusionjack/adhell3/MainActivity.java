@@ -2,7 +2,9 @@ package com.fusionjack.adhell3;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -178,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_storage_permission_summary);
 
-            new AlertDialog.Builder(this)
+            AlertDialog alertDialog = new AlertDialog.Builder(this, R.style.ThemeOverlay_AlertDialog)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
                         setSelectFileActivityLaunched(true);
@@ -195,7 +197,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 )
                 .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
-                .show();
+                    .create();
+
+            if (alertDialog.getWindow() != null)
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+            alertDialog.show();
         }
     }
 
@@ -310,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog createPasswordDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_enter_password, findViewById(android.R.id.content), false);
         int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.getTheme());
-        AlertDialog passwordDialog = new AlertDialog.Builder(this)
+        AlertDialog passwordDialog = new AlertDialog.Builder(this, R.style.ThemeOverlay_AlertDialog)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, null)
                 .setCancelable(false)
@@ -345,6 +352,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
+
+        if (passwordDialog.getWindow() != null)
+            passwordDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         return passwordDialog;
     }
 
