@@ -7,11 +7,17 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.BackoffPolicy;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
+import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
@@ -20,9 +26,12 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.net.firewall.Firewall;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateWorker extends Worker {
     private static AppDatabase appDatabase;
@@ -68,6 +77,13 @@ public class AutoUpdateWorker extends Worker {
             return Result.retry();
         }
         LogUtils.info("------Successful Auto update------", handler);
+        LogUtils.info(String.format("Readjusting the start time of the next job to %s...", getNexStartDateTime()), handler);
+        try{
+            readjustPeriodicWork();
+            LogUtils.info("  Done.", handler);
+        } catch (Exception e) {
+            LogUtils.error("Failure to readjust the start time of the next job.", e, handler);
+        }
         return Result.success();
     }
 
@@ -101,5 +117,36 @@ public class AutoUpdateWorker extends Worker {
             LogUtils.info("Update not possible, the limit of the number of domains is exceeded!", handler);
             throw new ExceededLimitException();
         }
+    }
+
+    private void readjustPeriodicWork() {
+        WorkManager workManager = WorkManager.getInstance(App.getAppContext());
+        int repeatInterval = AppPreferences.getInstance().getAutoUpdateInterval();
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .setInitialDelay(AutoUpdateDialogFragment.getInitialDelayForScheduleWork(AutoUpdateDialogFragment.JOB_LAUNCH_HOUR,AutoUpdateDialogFragment.JOB_LAUNCH_MINUTE), TimeUnit.MILLISECONDS)
+                .build();
+
+        // Cancel previous job
+        workManager.cancelUniqueWork(AutoUpdateDialogFragment.AUTO_UPDATE_WORK_TAG);
+
+        // Enqueue new job with readjusting initial delay
+        workManager.enqueueUniquePeriodicWork(AutoUpdateDialogFragment.AUTO_UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE , workRequest);
+    }
+
+    private String getNexStartDateTime() {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        int repeatInterval = AutoUpdateDialogFragment.intervalArray[AppPreferences.getInstance().getAutoUpdateInterval()];
+
+        calendar.set(Calendar.HOUR_OF_DAY, AutoUpdateDialogFragment.JOB_LAUNCH_HOUR);
+        calendar.set(Calendar.MINUTE, AutoUpdateDialogFragment.JOB_LAUNCH_MINUTE);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        calendar.add(Calendar.HOUR_OF_DAY, repeatInterval);
+
+        return dateFormat.format(calendar.getTime());
     }
 }

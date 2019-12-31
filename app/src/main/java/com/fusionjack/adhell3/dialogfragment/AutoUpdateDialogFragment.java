@@ -36,8 +36,10 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateDialogFragment extends DialogFragment {
-    private static final int[] intervalArray = new int[] {24,48,72,96,120,144,168,336,504,672};
-    private static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
+    public static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
+    public static final int JOB_LAUNCH_HOUR = 8;
+    public static final int JOB_LAUNCH_MINUTE = 0;
+    public static final int[] intervalArray = new int[] {24,48,72,96,120,144,168,336,504,672};
     private final CustomSwitchPreference customSwitchPreference;
     private Switch globalSwitch;
     private TextView seekLabelTextView;
@@ -108,7 +110,23 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
     }
 
-    private Constraints getAutoUpdateConstraints() {
+    public static long getInitialDelayForScheduleWork(int hour, int minute) {
+        Calendar calendar = Calendar.getInstance();
+        long nowMillis = calendar.getTimeInMillis();
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        if (nowMillis > calendar.getTimeInMillis()) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        return calendar.getTimeInMillis() - nowMillis;
+    }
+
+    public static Constraints getAutoUpdateConstraints() {
         Constraints.Builder workerConstraints = new Constraints.Builder();
         if (AppPreferences.getInstance().getAutoUpdateConstraintMobileData()) {
             workerConstraints.setRequiredNetworkType(NetworkType.CONNECTED);
@@ -128,7 +146,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
                 .setConstraints(getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-                .setInitialDelay(getInitialDelayForScheduleWork(8,0), TimeUnit.MILLISECONDS)
+                .setInitialDelay(getInitialDelayForScheduleWork(JOB_LAUNCH_HOUR,JOB_LAUNCH_MINUTE), TimeUnit.MILLISECONDS)
                 .build();
         cancelPeriodicWork();
         workManager.enqueueUniquePeriodicWork(AUTO_UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE , workRequest);
@@ -166,21 +184,5 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
     private int getValueFromSeekBar(int progress) {
         return intervalArray[progress];
-    }
-
-    private static long getInitialDelayForScheduleWork(int hour, int minute) {
-        Calendar calendar = Calendar.getInstance();
-        long nowMillis = calendar.getTimeInMillis();
-
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        if (nowMillis > calendar.getTimeInMillis()) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        return calendar.getTimeInMillis() - nowMillis;
     }
 }
