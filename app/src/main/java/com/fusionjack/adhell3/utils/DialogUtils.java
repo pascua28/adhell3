@@ -1,11 +1,11 @@
 package com.fusionjack.adhell3.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -19,7 +19,7 @@ public class DialogUtils {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         if (inflater != null) {
-            view = inflater.inflate(R.layout.dialog_progress, new RelativeLayout(context), false);
+            view = inflater.inflate(R.layout.dialog_progress, ((Activity)context).findViewById(android.R.id.content), false);
 
             TextView loadingTextView = view.findViewById(R.id.loading_msg);
             loadingTextView.setText(progressText);

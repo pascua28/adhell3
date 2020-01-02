@@ -173,8 +173,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestStoragePermission() {
+
         if (AppPreferences.getInstance().getStorageTreePath().equals("") || this.getContentResolver().getPersistedUriPermissions().size() <= 0) {
-            View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_question, null);
+            View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_question, findViewById(android.R.id.content), false);
             TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
             titleTextView.setText(R.string.dialog_storage_permission_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -353,8 +354,10 @@ public class MainActivity extends AppCompatActivity {
             });
         });
 
-        if (passwordDialog.getWindow() != null)
+        if (passwordDialog.getWindow() != null) {
             passwordDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            passwordDialog.getWindow().setDimAmount(1.0f);
+        }
 
         return passwordDialog;
     }
