@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -122,7 +121,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new BackupDatabaseAsyncTask(getActivity()).execute()
+                                new BackupDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -143,7 +142,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new RestoreDatabaseAsyncTask(getActivity(), getContext()).execute()
+                                new RestoreDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -164,7 +163,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new CleanDatabaseAsyncTask(getActivity(), getContext()).execute()
+                                new CleanDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -319,8 +318,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         private final AlertDialog.Builder builder;
         private final WeakReference<Context> contextWeakReference;
 
-        RestoreDatabaseAsyncTask(Activity activity, Context context) {
-            this.builder = new AlertDialog.Builder(activity, R.style.ThemeOverlay_AlertDialog);
+        RestoreDatabaseAsyncTask(Context context) {
+            this.builder = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog);
             this.dialog = DialogUtils.getProgressDialog("Restore database is running...", context);
             this.contextWeakReference = new WeakReference<>(context);
         }
@@ -384,8 +383,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         private AppCache appCache;
         private AppDatabase appDatabase;
 
-        CleanDatabaseAsyncTask(Activity activity, Context context) {
-            FragmentActivity fragmentActivity = (FragmentActivity) activity;
+        CleanDatabaseAsyncTask(Context context) {
+            FragmentActivity fragmentActivity = (FragmentActivity) context;
             this.fragmentManager = fragmentActivity.getSupportFragmentManager();
             this.contextReference = new WeakReference<>(context);
             this.handler = new Handler(Looper.getMainLooper()) {

@@ -1,6 +1,6 @@
 package com.fusionjack.adhell3.tasks;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -15,10 +15,10 @@ public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
     private final AlertDialog dialog;
     private final AlertDialog.Builder builder;
 
-    public BackupDatabaseAsyncTask(Activity activity) {
-        dialog = DialogUtils.getProgressDialog("Backup database is running...", activity.getApplicationContext());
+    public BackupDatabaseAsyncTask(Context context) {
+        dialog = DialogUtils.getProgressDialog("Backup database is running...", context);
 
-        builder = new AlertDialog.Builder(activity, R.style.ThemeOverlay_AlertDialog);
+        builder = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog);
     }
 
     @Override
