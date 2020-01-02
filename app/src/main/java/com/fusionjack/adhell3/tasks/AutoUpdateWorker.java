@@ -125,7 +125,12 @@ public class AutoUpdateWorker extends Worker {
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-                .setInitialDelay(AutoUpdateDialogFragment.getInitialDelayForScheduleWork(AutoUpdateDialogFragment.JOB_LAUNCH_HOUR,AutoUpdateDialogFragment.JOB_LAUNCH_MINUTE), TimeUnit.MILLISECONDS)
+                .setInitialDelay(
+                        AutoUpdateDialogFragment.getInitialDelayForScheduleWork(
+                                AppPreferences.getInstance().getStartHourAutoUpdate(),
+                                AppPreferences.getInstance().getStartMinuteAutoUpdate()
+                        ), TimeUnit.MILLISECONDS
+                )
                 .build();
 
         // Cancel previous job
@@ -140,8 +145,8 @@ public class AutoUpdateWorker extends Worker {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         int repeatInterval = AutoUpdateDialogFragment.intervalArray[AppPreferences.getInstance().getAutoUpdateInterval()];
 
-        calendar.set(Calendar.HOUR_OF_DAY, AutoUpdateDialogFragment.JOB_LAUNCH_HOUR);
-        calendar.set(Calendar.MINUTE, AutoUpdateDialogFragment.JOB_LAUNCH_MINUTE);
+        calendar.set(Calendar.HOUR_OF_DAY, AppPreferences.getInstance().getStartHourAutoUpdate());
+        calendar.set(Calendar.MINUTE, AppPreferences.getInstance().getStartMinuteAutoUpdate());
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 

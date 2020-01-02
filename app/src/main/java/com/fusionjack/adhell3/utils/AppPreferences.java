@@ -12,6 +12,8 @@ public final class AppPreferences {
     private static final String PASSWORD = "password";
     private static final String WARNING_DIALOG_APP_COMPONENT = "warningDialogAppComponent";
     private static final String AUTO_UPDATE_INTERVAL = "autoUpdateInterval";
+    private static final String AUTO_UPDATE_START_HOUR = "autoUpdateStartHour";
+    private static final String AUTO_UPDATE_START_MINUTE = "autoUpdateStartMinute";
     private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
     private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
     private static final String AUTO_UPDATE_CONSTRAINT_MOBILE_DATA = "autoUpdateConstraintMobileData";
@@ -165,6 +167,26 @@ public final class AppPreferences {
     public void setAutoUpdateConstraintMobileData(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(AUTO_UPDATE_CONSTRAINT_MOBILE_DATA, enabled);
+        editor.apply();
+    }
+
+    public int getStartHourAutoUpdate() {
+        return sharedPreferences.getInt(AUTO_UPDATE_START_HOUR, 8);
+    }
+
+    public void setStartHourAutoUpdate(int hour) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(AUTO_UPDATE_START_HOUR, hour);
+        editor.apply();
+    }
+
+    public int getStartMinuteAutoUpdate() {
+        return sharedPreferences.getInt(AUTO_UPDATE_START_MINUTE, 0);
+    }
+
+    public void setStartMinuteAutoUpdate(int minute) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(AUTO_UPDATE_START_MINUTE, minute);
         editor.apply();
     }
 

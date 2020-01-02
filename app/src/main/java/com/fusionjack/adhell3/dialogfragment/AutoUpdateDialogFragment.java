@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,8 +38,6 @@ import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateDialogFragment extends DialogFragment {
     public static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
-    public static final int JOB_LAUNCH_HOUR = 8;
-    public static final int JOB_LAUNCH_MINUTE = 0;
     public static final int[] intervalArray = new int[] {24,48,72,96,120,144,168,336,504,672};
     private final CustomSwitchPreference customSwitchPreference;
     private Switch globalSwitch;
@@ -48,6 +47,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private CheckBox lowBatteryCheckBox;
     private CheckBox mobileDataCheckBox;
     private WorkManager workManager;
+    private TimePicker startTimePicker;
 
     public AutoUpdateDialogFragment(Preference preference) {
         this.customSwitchPreference = (CustomSwitchPreference) preference;
@@ -60,8 +60,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         Dialog dialog = getDialog();
         if (dialog != null) {
-            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.8);
-            int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.7);
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+            int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.9);
             if (dialog.getWindow() != null)
                 dialog.getWindow().setLayout(width, height);
         }
@@ -103,6 +103,10 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         lowBatteryCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintLowBattery());
         mobileDataCheckBox = view.findViewById(R.id.mobileDataCheckBox);
         mobileDataCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintMobileData());
+        startTimePicker = view.findViewById(R.id.startTimePicker);
+        startTimePicker.setIs24HourView(true);
+        startTimePicker.setHour(AppPreferences.getInstance().getStartHourAutoUpdate());
+        startTimePicker.setMinute(AppPreferences.getInstance().getStartMinuteAutoUpdate());
         Button saveButton = view.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(v -> {
             saveAutoUpdateSettings();
@@ -146,7 +150,12 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
                 .setConstraints(getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-                .setInitialDelay(getInitialDelayForScheduleWork(JOB_LAUNCH_HOUR,JOB_LAUNCH_MINUTE), TimeUnit.MILLISECONDS)
+                .setInitialDelay(
+                        getInitialDelayForScheduleWork(
+                            AppPreferences.getInstance().getStartHourAutoUpdate(),
+                            AppPreferences.getInstance().getStartMinuteAutoUpdate()),
+                        TimeUnit.MILLISECONDS
+                )
                 .build();
         cancelPeriodicWork();
         workManager.enqueueUniquePeriodicWork(AUTO_UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE , workRequest);
@@ -161,6 +170,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(lowBatteryCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintMobileData(mobileDataCheckBox.isChecked());
+        AppPreferences.getInstance().setStartHourAutoUpdate(startTimePicker.getHour());
+        AppPreferences.getInstance().setStartMinuteAutoUpdate(startTimePicker.getMinute());
         customSwitchPreference.setChecked(globalSwitch.isChecked());
 
         if (globalSwitch.isChecked()) {
