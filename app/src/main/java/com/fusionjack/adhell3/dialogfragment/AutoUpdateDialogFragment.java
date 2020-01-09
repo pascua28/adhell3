@@ -21,9 +21,9 @@ import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.fusionjack.adhell3.App;
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateDialogFragment extends DialogFragment {
     public static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
-    public static final int[] intervalArray = new int[] {24,48,72,96,120,144,168,336,504,672};
+    public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
     private Switch globalSwitch;
     private TextView seekLabelTextView;
@@ -114,22 +114,6 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
     }
 
-    public static long getInitialDelayForScheduleWork(int hour, int minute) {
-        Calendar calendar = Calendar.getInstance();
-        long nowMillis = calendar.getTimeInMillis();
-
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        if (nowMillis > calendar.getTimeInMillis()) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-
-        return calendar.getTimeInMillis() - nowMillis;
-    }
-
     public static Constraints getAutoUpdateConstraints() {
         Constraints.Builder workerConstraints = new Constraints.Builder();
         if (AppPreferences.getInstance().getAutoUpdateConstraintMobileData()) {
@@ -146,19 +130,18 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     }
 
     private void enqueuePeriodicWork() {
-        int repeatInterval = getValueFromSeekBar(intervalSeekBar.getProgress());
-        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(AutoUpdateWorker.class)
                 .setConstraints(getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .setInitialDelay(
-                        getInitialDelayForScheduleWork(
+                        getInitialDelayForFirstScheduleWork(
                             AppPreferences.getInstance().getStartHourAutoUpdate(),
                             AppPreferences.getInstance().getStartMinuteAutoUpdate()),
                         TimeUnit.MILLISECONDS
                 )
                 .build();
         cancelPeriodicWork();
-        workManager.enqueueUniquePeriodicWork(AUTO_UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE , workRequest);
+        workManager.enqueueUniqueWork(AUTO_UPDATE_WORK_TAG, ExistingWorkPolicy.REPLACE , workRequest);
     }
 
     private void cancelPeriodicWork() {
@@ -183,14 +166,30 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         }
     }
 
+    private long getInitialDelayForFirstScheduleWork(int hour, int minute) {
+        Calendar calendar = Calendar.getInstance();
+        long nowMillis = calendar.getTimeInMillis();
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        if (nowMillis > calendar.getTimeInMillis()) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        return calendar.getTimeInMillis() - nowMillis;
+    }
+
     private String getSeekBarText(int value) {
         return (value < 168) ?
                     ((value/24) == 1) ?
-                            String.format(Locale.getDefault(), "Interval: %d day", value/24)
-                            : String.format(Locale.getDefault(), "Interval: %d days", value/24)
+                        String.format(Locale.getDefault(), "Interval: %d day", value)
+                        : String.format(Locale.getDefault(), "Interval: %d days", value)
                     : ((value/168) == 1) ?
-                        String.format(Locale.getDefault(), "Interval: %d week", value/168)
-                        : String.format(Locale.getDefault(), "Interval: %d weeks", value/168);
+                        String.format(Locale.getDefault(), "Interval: %d week", value/7)
+                        : String.format(Locale.getDefault(), "Interval: %d weeks", value/7);
     }
 
     private int getValueFromSeekBar(int progress) {

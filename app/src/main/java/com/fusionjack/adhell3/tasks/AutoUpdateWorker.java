@@ -8,8 +8,8 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.work.BackoffPolicy;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -77,7 +77,9 @@ public class AutoUpdateWorker extends Worker {
             return Result.retry();
         }
         LogUtils.info("------Successful Auto update------", handler);
-        LogUtils.info(String.format("Readjusting the start time of the next job to %s...", getNexStartDateTime()), handler);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        LogUtils.info(String.format("Readjusting the start time of the next job to %s...", dateFormat.format(getNexStartDateTime().getTime())), handler);
         try{
             readjustPeriodicWork();
             LogUtils.info("  Done.", handler);
@@ -121,28 +123,25 @@ public class AutoUpdateWorker extends Worker {
 
     private void readjustPeriodicWork() {
         WorkManager workManager = WorkManager.getInstance(App.getAppContext());
-        int repeatInterval = AppPreferences.getInstance().getAutoUpdateInterval();
-        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AutoUpdateWorker.class, repeatInterval, TimeUnit.HOURS)
+        long nextJobMillis = getNexStartDateTime().getTimeInMillis();
+        long nowMillis = Calendar.getInstance().getTimeInMillis();
+        long initialDelay = nextJobMillis - nowMillis;
+
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(AutoUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-                .setInitialDelay(
-                        AutoUpdateDialogFragment.getInitialDelayForScheduleWork(
-                                AppPreferences.getInstance().getStartHourAutoUpdate(),
-                                AppPreferences.getInstance().getStartMinuteAutoUpdate()
-                        ), TimeUnit.MILLISECONDS
-                )
+                .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
                 .build();
 
         // Cancel previous job
         workManager.cancelUniqueWork(AutoUpdateDialogFragment.AUTO_UPDATE_WORK_TAG);
 
         // Enqueue new job with readjusting initial delay
-        workManager.enqueueUniquePeriodicWork(AutoUpdateDialogFragment.AUTO_UPDATE_WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE , workRequest);
+        workManager.enqueueUniqueWork(AutoUpdateDialogFragment.AUTO_UPDATE_WORK_TAG, ExistingWorkPolicy.REPLACE , workRequest);
     }
 
-    private String getNexStartDateTime() {
+    private Calendar getNexStartDateTime() {
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         int repeatInterval = AutoUpdateDialogFragment.intervalArray[AppPreferences.getInstance().getAutoUpdateInterval()];
 
         calendar.set(Calendar.HOUR_OF_DAY, AppPreferences.getInstance().getStartHourAutoUpdate());
@@ -150,8 +149,8 @@ public class AutoUpdateWorker extends Worker {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        calendar.add(Calendar.HOUR_OF_DAY, repeatInterval);
+        calendar.add(Calendar.DAY_OF_MONTH, repeatInterval);
 
-        return dateFormat.format(calendar.getTime());
+        return calendar;
     }
 }
