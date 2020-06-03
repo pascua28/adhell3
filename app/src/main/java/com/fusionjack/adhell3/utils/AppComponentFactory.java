@@ -25,8 +25,7 @@ import io.reactivex.rxjava3.core.Single;
 public final class AppComponentFactory {
 
     private static final String STORAGE_FOLDERS = "Adhell3/BatchOp";
-    private static final String SERVICE_FILENAME = "adhell3_services.txt";
-    private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
+    private static final String COMPONENTS_FILENAME = "adhell3_components.txt";
     private static AppComponentFactory instance;
 
     private final ApplicationPolicy appPolicy;
@@ -45,37 +44,30 @@ public final class AppComponentFactory {
     }
 
     public Single<String> processAppComponentInBatch(boolean enabled) {
-        DocumentFile servicesFile;
-        DocumentFile receiversFile;
+        DocumentFile componentsFile;
 
         try {
-            servicesFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, SERVICE_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
-            receiversFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, RECEIVER_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+            componentsFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
         } catch (Exception e) {
             return Single.error(e);
         }
 
-        Set<String> serviceNames;
+        Set<String> componentNames;
         try {
-            serviceNames = getFileContent(servicesFile);
-        } catch (IOException e) {
-            return Single.error(e);
-        }
-
-        Set<String> receiverNames;
-        try {
-            receiverNames = getFileContent(receiversFile);
+            componentNames = getFileContent(componentsFile);
         } catch (IOException e) {
             return Single.error(e);
         }
 
         return Single.create(emitter -> {
             if (enabled) {
-                enableServices(serviceNames);
-                enableReceivers(receiverNames);
+                enableServices(componentNames);
+                enableReceivers(componentNames);
+                enableActivities(componentNames);
             } else {
-                disableServices(serviceNames);
-                disableReceivers(receiverNames);
+                disableServices(componentNames);
+                disableReceivers(componentNames);
+                disableActivities(componentNames);
             }
             emitter.onSuccess("Success!");
         });
@@ -94,7 +86,9 @@ public final class AppComponentFactory {
                     new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    lines.add(line.trim());
+                    if ((!line.trim().startsWith("#")) && (line.trim().length() > 0)) {
+                        lines.add(line.trim());
+                    }
                 }
             }
             input.close();
@@ -187,6 +181,51 @@ public final class AppComponentFactory {
                             appReceiver.permissionStatus = AppPermission.STATUS_RECEIVER;
                             appReceiver.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
                             appDatabase.appPermissionDao().insert(appReceiver);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void enableActivities(Set<String> compNames) {
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            String packageName = app.packageName;
+            Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+            for (String compName : compNames) {
+                if (availableActivityNames.contains(compName)) {
+                    boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                    if (!compState) {
+                        ComponentName componentName = new ComponentName(packageName, compName);
+                        boolean success = appPolicy.setApplicationComponentState(componentName, true);
+                        if (success) {
+                            appDatabase.appPermissionDao().delete(packageName, compName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void disableActivities(Set<String> compNames) {
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            String packageName = app.packageName;
+            Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+            for (String compName : compNames) {
+                if (availableActivityNames.contains(compName)) {
+                    boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                    if (compState) {
+                        ComponentName componentName = new ComponentName(packageName, compName);
+                        boolean success = appPolicy.setApplicationComponentState(componentName, false);
+                        if (success) {
+                            AppPermission appActivity = new AppPermission();
+                            appActivity.packageName = packageName;
+                            appActivity.permissionName = compName;
+                            appActivity.permissionStatus = AppPermission.STATUS_ACTIVITY;
+                            appActivity.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                            appDatabase.appPermissionDao().insert(appActivity);
                         }
                     }
                 }
