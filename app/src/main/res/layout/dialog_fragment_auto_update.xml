@@ -114,13 +114,32 @@
                 android:timePickerMode="spinner"/>
 
             <CheckBox
+                android:id="@+id/appComponentsCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_below="@id/startTimePicker"
+                android:enabled="true"
+                android:text="Update app components form batchop file" />
+
+            <CheckBox
+                android:id="@+id/cleanDBCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:layout_below="@id/appComponentsCheckBox"
+                android:text="Auto-clean database" />
+
+            <CheckBox
                 android:id="@+id/logCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
                 android:layout_marginEnd="15dp"
                 android:layout_marginBottom="15dp"
-                android:layout_below="@id/startTimePicker"
+                android:layout_below="@id/cleanDBCheckBox"
                 android:text="Create log file" />
 
             <TextView

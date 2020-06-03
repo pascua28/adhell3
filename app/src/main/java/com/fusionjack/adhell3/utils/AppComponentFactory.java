@@ -24,8 +24,8 @@ import io.reactivex.rxjava3.core.Single;
 
 public final class AppComponentFactory {
 
-    private static final String STORAGE_FOLDERS = "Adhell3/BatchOp";
-    private static final String COMPONENTS_FILENAME = "adhell3_components.txt";
+    public static final String STORAGE_FOLDERS = "Adhell3/BatchOp";
+    public static final String COMPONENTS_FILENAME = "adhell3_components.txt";
     private static AppComponentFactory instance;
 
     private final ApplicationPolicy appPolicy;
@@ -73,7 +73,7 @@ public final class AppComponentFactory {
         });
     }
 
-    private Set<String> getFileContent(DocumentFile file) throws IOException {
+    public Set<String> getFileContent(DocumentFile file) throws IOException {
         if (file.length() == 0) {
             throw new IOException("File '" + file.getName() + "' is empty !");
         }
@@ -117,7 +117,7 @@ public final class AppComponentFactory {
         }
     }
 
-    private void disableServices(Set<String> compNames) {
+    public void disableServices(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
@@ -163,7 +163,7 @@ public final class AppComponentFactory {
         }
     }
 
-    private void disableReceivers(Set<String> compNames) {
+    public void disableReceivers(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
@@ -208,7 +208,7 @@ public final class AppComponentFactory {
         }
     }
 
-    private void disableActivities(Set<String> compNames) {
+    public void disableActivities(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;

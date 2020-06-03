@@ -17,10 +17,18 @@ import androidx.work.WorkerParameters;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
+import com.fusionjack.adhell3.db.entity.AppPermission;
+import com.fusionjack.adhell3.db.entity.DisabledPackage;
+import com.fusionjack.adhell3.db.entity.DnsPackage;
+import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
+import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.net.firewall.Firewall;
@@ -31,20 +39,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateWorker extends Worker {
     private static AppDatabase appDatabase;
     private static Firewall firewall;
+    private static AppCache appCache;
     private int retryCount;
     private Handler handler = null;
 
-    private class ExceededLimitException extends Exception{}
+    private static class ExceededLimitException extends Exception{}
 
     public AutoUpdateWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-        AutoUpdateWorker.appDatabase = AppDatabase.getAppDatabase(context);
-        AutoUpdateWorker.firewall = AdhellFactory.getInstance().getFirewall();
 
         if (AppPreferences.getInstance().getCreateLogOnAutoUpdate()) {
             DocumentFile logFile = LogUtils.getAutoUpdateLogFile();
@@ -56,6 +64,10 @@ public class AutoUpdateWorker extends Worker {
                 }
             };
         }
+
+        AutoUpdateWorker.appDatabase = AppDatabase.getAppDatabase(context);
+        AutoUpdateWorker.firewall = AdhellFactory.getInstance().getFirewall();
+        AutoUpdateWorker.appCache = AppCache.getInstance(context, this.handler);
     }
 
     @NonNull
@@ -65,28 +77,59 @@ public class AutoUpdateWorker extends Worker {
         if (retryCount > 5) {
             return Result.failure();
         }
-        LogUtils.info("------Start Auto update------", handler);
+
+        boolean retryForFailing = false;
+
+        LogUtils.info("------Start Rules auto update------", handler);
         try {
             autoUpdateRules();
         } catch (ExceededLimitException e) {
-            LogUtils.info("------Failed Auto update------", handler);
-            return Result.failure();
+            LogUtils.info("------Failed Rules auto update. Domains limit exceeded------", handler);
         } catch (Exception e) {
-            LogUtils.error("Failed auto update! Will be retried.", e, handler);
-            LogUtils.info("------Failed Auto update------", handler);
-            return Result.retry();
+            LogUtils.error("Failed Rules auto update! Will be retried.", e, handler);
+            LogUtils.info("------Failed Rules auto update------", handler);
+            retryForFailing = true;
         }
-        LogUtils.info("------Successful Auto update------", handler);
+        LogUtils.info("------Successful Rules auto update------", handler);
+
+        if (AppPreferences.getInstance().getAppComponentsAutoUpdate()) {
+            LogUtils.info("------Start App components auto update------", handler);
+            try {
+                processAppComponentsInAutoUpdate();
+            } catch (Exception e) {
+                LogUtils.error("Failed App components auto update! Will be retried.", e, handler);
+                LogUtils.info("------Failed App components auto update------", handler);
+                retryForFailing = true;
+            }
+            LogUtils.info("------Successful App components auto update------", handler);
+        }
+
+        if (AppPreferences.getInstance().getCleanDatabaseAutoUpdate()) {
+            LogUtils.info("------Start auto clean database------", handler);
+            try {
+                autoCleanDatabase();
+            } catch (Exception e) {
+                LogUtils.error("Failed auto clean database! Will be retried.", e, handler);
+                LogUtils.info("------Failed auto clean database------", handler);
+                retryForFailing = true;
+            }
+            LogUtils.info("------Successful auto clean database------", handler);
+        }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        LogUtils.info(String.format("Readjusting the start time of the next job to %s...", dateFormat.format(getNexStartDateTime().getTime())), handler);
+        LogUtils.info(String.format(Locale.getDefault(), "Readjusting the start time of the next job to %s...", dateFormat.format(getNexStartDateTime().getTime())), handler);
         try{
             readjustPeriodicWork();
             LogUtils.info("  Done.", handler);
         } catch (Exception e) {
-            LogUtils.error("Failure to readjust the start time of the next job.", e, handler);
+            LogUtils.error("Failure to readjust the start time of the next job. Will be retried.", e, handler);
+            retryForFailing = true;
         }
-        return Result.success();
+
+        if (retryForFailing)
+            return Result.retry();
+        else
+            return Result.success();
     }
 
     private void autoUpdateRules() throws Exception {
@@ -114,11 +157,139 @@ public class AutoUpdateWorker extends Worker {
             denyList.addAll(userList);
             AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
 
-            LogUtils.info("\nAuto update completed.", handler);
+            LogUtils.info("\nRules auto update completed.", handler);
         } else {
             LogUtils.info("Update not possible, the limit of the number of domains is exceeded!", handler);
             throw new ExceededLimitException();
         }
+    }
+
+    private void processAppComponentsInAutoUpdate() throws Exception {
+        AppComponentFactory appComponentFactory = AppComponentFactory.getInstance();
+        LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);
+        DocumentFile componentsFile = FileUtils.getDocumentFile(AppComponentFactory.STORAGE_FOLDERS, AppComponentFactory.COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+
+        LogUtils.info("Listing services, receivers and activities to be disabled...", handler);
+        Set<String> componentNames = appComponentFactory.getFileContent(componentsFile);
+
+        LogUtils.info("Updating disabled services...", handler);
+        appComponentFactory.disableServices(componentNames);
+        LogUtils.info("Updating disabled receivers...", handler);
+        appComponentFactory.disableReceivers(componentNames);
+        LogUtils.info("Updating disabled activities...", handler);
+        appComponentFactory.disableActivities(componentNames);
+    }
+
+    private void autoCleanDatabase() {
+        int count = 0;
+
+        // Disabled packages rules
+        LogUtils.info("Cleaning disabled packages rules...", handler);
+        List<DisabledPackage> disabledPackages = appDatabase.disabledPackageDao().getAll();
+        for (DisabledPackage disabledPackage: disabledPackages) {
+            if (!appCache.getNames().containsKey(disabledPackage.packageName)) {
+                try {
+                    LogUtils.info(String.format(Locale.getDefault(), "    Deleting rule for package: %s.", disabledPackage.packageName), handler);
+                    appDatabase.disabledPackageDao().deleteByPackageName(disabledPackage.packageName);
+                    LogUtils.info("    Done.", handler);
+                } catch (Exception e) {
+                    LogUtils.error("    Error deleting rule.", e, handler);
+                }
+                count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // Restricted packages rules
+        count = 0;
+        LogUtils.info("Cleaning restricted packages rules...", handler);
+        List<RestrictedPackage> restrictedPackages = appDatabase.restrictedPackageDao().getAll();
+        for (RestrictedPackage restrictedPackage: restrictedPackages) {
+            if (!appCache.getNames().containsKey(restrictedPackage.packageName)) {
+                try {
+                    LogUtils.info(String.format(Locale.getDefault(), "    Deleting rule for package: %s.", restrictedPackage.packageName), handler);
+                    appDatabase.restrictedPackageDao().deleteByPackageName(restrictedPackage.packageName, restrictedPackage.type);
+                    LogUtils.info("    Done.", handler);
+                } catch (Exception e) {
+                    LogUtils.error("    Error deleting rule.", e, handler);
+                }
+                count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // Firewall whitelisted packages rules
+        count = 0;
+        LogUtils.info("Cleaning firewall whitelisted packages rules...", handler);
+        List<FirewallWhitelistedPackage> whitelistedPackages = appDatabase.firewallWhitelistedPackageDao().getAll();
+        for (FirewallWhitelistedPackage whitelistedPackage: whitelistedPackages) {
+            if (!appCache.getNames().containsKey(whitelistedPackage.packageName)) {
+                try {
+                    LogUtils.info(String.format(Locale.getDefault(), "    Deleting rule for package: %s.", whitelistedPackage.packageName), handler);
+                    appDatabase.firewallWhitelistedPackageDao().deleteByPackageName(whitelistedPackage.packageName);
+                    LogUtils.info("    Done.", handler);
+                } catch (Exception e) {
+                    LogUtils.error("    Error deleting rule.", e, handler);
+                }
+                count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // DNS packages rules
+        count = 0;
+        LogUtils.info("Cleaning DNS packages rules...", handler);
+        List<DnsPackage> dnsPackages = appDatabase.dnsPackageDao().getAll();
+        for (DnsPackage dnsPackage: dnsPackages) {
+            if (!appCache.getNames().containsKey(dnsPackage.packageName)) {
+                try {
+                    LogUtils.info(String.format(Locale.getDefault(), "    Deleting rule for package: %s.", dnsPackage.packageName), handler);
+                    appDatabase.dnsPackageDao().deleteByPackageName(dnsPackage.packageName);
+                    LogUtils.info("    Done.", handler);
+                } catch (Exception e) {
+                    LogUtils.error("    Error deleting rule.", e, handler);
+                }
+                count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // App component restriction packages rules
+        count = 0;
+        LogUtils.info("Cleaning app component restriction packages rules...", handler);
+        List<AppPermission> appPermissionsPackages = appDatabase.appPermissionDao().getAll();
+        for (AppPermission appPermissionsPackage : appPermissionsPackages) {
+            if (!appCache.getNames().containsKey(appPermissionsPackage.packageName)) {
+                try {
+                    LogUtils.info(String.format(Locale.getDefault(), "    Deleting rules for package: %s.", appPermissionsPackage.packageName), handler);
+                    appDatabase.appPermissionDao().deletePermissions(appPermissionsPackage.packageName);
+                    appDatabase.appPermissionDao().deleteServices(appPermissionsPackage.packageName);
+                    appDatabase.appPermissionDao().deleteReceivers(appPermissionsPackage.packageName);
+                    appDatabase.appPermissionDao().deleteActivities(appPermissionsPackage.packageName);
+                    LogUtils.info("    Done.", handler);
+                } catch (Exception e) {
+                    LogUtils.error("    Error deleting rule.", e, handler);
+                }
+                count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
     }
 
     private void readjustPeriodicWork() {

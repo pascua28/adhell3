@@ -43,6 +43,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private Switch globalSwitch;
     private TextView seekLabelTextView;
     private SeekBar intervalSeekBar;
+    private CheckBox appComponentsCheckBox;
+    private CheckBox cleanDBCheckBox;
     private CheckBox logCheckBox;
     private CheckBox lowBatteryCheckBox;
     private CheckBox mobileDataCheckBox;
@@ -97,6 +99,10 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
         seekLabelTextView = view.findViewById(R.id.seekLabelTextView);
         seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(intervalSeekBar.getProgress())));
+        appComponentsCheckBox = view.findViewById(R.id.appComponentsCheckBox);
+        appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
+        cleanDBCheckBox = view.findViewById(R.id.cleanDBCheckBox);
+        cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDatabaseAutoUpdate());
         logCheckBox = view.findViewById(R.id.logCheckBox);
         logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
         lowBatteryCheckBox = view.findViewById(R.id.lowBatteryCheckBox);
@@ -150,6 +156,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
     private void saveAutoUpdateSettings() {
         AppPreferences.getInstance().setAutoUpdateInterval(intervalSeekBar.getProgress());
+        AppPreferences.getInstance().setAppComponentsAutoUpdate(appComponentsCheckBox.isChecked());
+        AppPreferences.getInstance().setCleanDatabaseAutoUpdate(cleanDBCheckBox.isChecked());
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(lowBatteryCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintMobileData(mobileDataCheckBox.isChecked());
