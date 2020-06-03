@@ -26,19 +26,21 @@ public class ComponentTabFragment extends Fragment {
             appName = bundle.getString("appName");
         }
 
-        getActivity().setTitle(appName.isEmpty() ? "App Component" : appName);
-        AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        if (parentActivity.getSupportActionBar() != null) {
-            parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            parentActivity.getSupportActionBar().setHomeButtonEnabled(true);
-            parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        if (getActivity() != null) {
+            getActivity().setTitle((appName != null && appName.isEmpty()) ? "App Component" : appName);
+            AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
+            if (parentActivity.getSupportActionBar() != null) {
+                parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                parentActivity.getSupportActionBar().setHomeButtonEnabled(true);
+                parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+            }
         }
 
         View view = inflater.inflate(R.layout.fragment_app_component_tabs, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName));
+        viewPager.setAdapter(new ComponentPagerAdapter(getChildFragmentManager(), requireContext(), packageName));
         viewPager.setOffscreenPageLimit(3);
         tabLayout.setupWithViewPager(viewPager);
 

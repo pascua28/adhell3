@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.model;
 
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
@@ -121,7 +120,7 @@ public class AppComponent {
         Set<String> receiverNameSet = new HashSet<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
-        // Disabled services won't be appear in the package manager anymore
+        // Disabled receivers won't be appear in the package manager anymore
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getReceivers(packageName);
         for (AppPermission storedReceiver : storedReceivers) {
@@ -133,9 +132,9 @@ public class AppComponent {
         try {
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_RECEIVERS);
             if (packageInfo != null) {
-                ActivityInfo[] receivers = packageInfo.receivers;
+                android.content.pm.ActivityInfo[] receivers = packageInfo.receivers;
                 if (receivers != null) {
-                    for (ActivityInfo activityInfo : receivers) {
+                    for (android.content.pm.ActivityInfo activityInfo : receivers) {
                         receiverNameSet.add(activityInfo.name);
                     }
                 }
@@ -150,7 +149,7 @@ public class AppComponent {
         Set<ReceiverPair> receiverNameSet = new HashSet<>();
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
-        // Disabled services won't be appear in the package manager anymore
+        // Disabled receivers won't be appear in the package manager anymore
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getReceivers(packageName);
         for (AppPermission storedReceiver : storedReceivers) {
@@ -163,9 +162,9 @@ public class AppComponent {
         try {
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_RECEIVERS);
             if (packageInfo != null) {
-                ActivityInfo[] receivers = packageInfo.receivers;
+                android.content.pm.ActivityInfo[] receivers = packageInfo.receivers;
                 if (receivers != null) {
-                    for (ActivityInfo activityInfo : receivers) {
+                    for (android.content.pm.ActivityInfo activityInfo : receivers) {
                         receiverNameSet.add(new ReceiverPair(activityInfo.name, activityInfo.permission));
                     }
                 }
@@ -183,6 +182,69 @@ public class AppComponent {
         }
 
         return receiverInfoList;
+    }
+
+    public static Set<String> getActivityNames(String packageName) {
+        Set<String> activityNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled activities won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedActivities = appDatabase.appPermissionDao().getActivities(packageName);
+        for (AppPermission storedActivity : storedActivities) {
+            activityNameSet.add(storedActivity.permissionName);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            if (packageInfo != null) {
+                android.content.pm.ActivityInfo[] activities = packageInfo.activities;
+                if (activities != null) {
+                    for (android.content.pm.ActivityInfo activityInfo : activities) {
+                        activityNameSet.add(activityInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return activityNameSet;
+    }
+
+    public static List<IComponentInfo> getActivities(String packageName, String searchText) {
+        Set<String> activityNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled activities won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedActivities = appDatabase.appPermissionDao().getActivities(packageName);
+        for (AppPermission storedActivity : storedActivities) {
+            activityNameSet.add(storedActivity.permissionName);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            if (packageInfo != null) {
+                android.content.pm.ActivityInfo[] activities = packageInfo.activities;
+                if (activities != null) {
+                    for (android.content.pm.ActivityInfo activityInfo : activities) {
+                        activityNameSet.add(activityInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        List<String> activityNameList = new ArrayList<>(activityNameSet);
+        Collections.sort(activityNameList);
+        List<IComponentInfo> activityInfoList = new ArrayList<>();
+        for (String activityName : activityNameList) {
+            if (searchText.length() <= 0 || activityName.toLowerCase().contains(searchText.toLowerCase())) {
+                activityInfoList.add(new ActivityInfo(packageName, activityName));
+            }
+        }
+
+        return activityInfoList;
     }
 
     private static class ReceiverPair {

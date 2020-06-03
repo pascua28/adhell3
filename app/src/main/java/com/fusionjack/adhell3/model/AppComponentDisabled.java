@@ -30,7 +30,7 @@ public class AppComponentDisabled {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             List<AppPermission> storedPermissions = appDatabase.appPermissionDao().getAll();
             for (AppPermission storedPermission : storedPermissions) {
-                if (storedPermission.permissionStatus == -1) {
+                if (storedPermission.permissionStatus == AppPermission.STATUS_PERMISSION) {
                     if (!packagesList.contains(storedPermission.packageName)) {
                         ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
                         List<String> deniedPermissions = null;
@@ -85,7 +85,7 @@ public class AppComponentDisabled {
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         List<AppPermission> storedServices = appDatabase.appPermissionDao().getAll();
         for (AppPermission storedService : storedServices) {
-            if (storedService.permissionStatus == 2) {
+            if (storedService.permissionStatus == AppPermission.STATUS_SERVICE) {
                 serviceNameSet.add(new ServicesPair(storedService.packageName, storedService.permissionName));
             }
         }
@@ -106,7 +106,6 @@ public class AppComponentDisabled {
         return serviceInfoList;
     }
 
-
     public static List<IComponentInfo> getDisabledReceivers(String searchText) {
         Set<ReceiversPair> receiverNameSet = new HashSet<>();
 
@@ -114,7 +113,7 @@ public class AppComponentDisabled {
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getAll();
         for (AppPermission storedReceiver : storedReceivers) {
-            if (storedReceiver.permissionStatus == 5) {
+            if (storedReceiver.permissionStatus == AppPermission.STATUS_RECEIVER) {
                 StringTokenizer tokenizer = new StringTokenizer(storedReceiver.permissionName, "|");
                 String name = tokenizer.nextToken();
                 String permission = tokenizer.nextToken();
@@ -136,6 +135,34 @@ public class AppComponentDisabled {
         }
 
         return receiverInfoList;
+    }
+
+    public static List<IComponentInfo> getDisabledActivities(String searchText) {
+        Set<ActivitiesPair> activityNameSet = new HashSet<>();
+
+        // Disabled services won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedActivities = appDatabase.appPermissionDao().getAll();
+        for (AppPermission storedActivity : storedActivities) {
+            if (storedActivity.permissionStatus == AppPermission.STATUS_ACTIVITY) {
+                activityNameSet.add(new ActivitiesPair(storedActivity.packageName, storedActivity.permissionName));
+            }
+        }
+
+        List<ActivitiesPair> activityNameList = new ArrayList<>(activityNameSet);
+        Collections.sort(activityNameList, (r1, r2) -> r1.activityName.compareToIgnoreCase(r2.activityName));
+        Collections.sort(activityNameList, (r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+        List<IComponentInfo> activityInfoList = new ArrayList<>();
+        for (ActivitiesPair pair : activityNameList) {
+            if (searchText.length() <= 0
+                    || pair.packageName.toLowerCase().contains(searchText.toLowerCase())
+                    || pair.activityName.toLowerCase().contains(searchText.toLowerCase())
+            ) {
+                activityInfoList.add(new ActivityInfo(pair.packageName, pair.activityName));
+            }
+        }
+
+        return activityInfoList;
     }
 
     private static class PermissionsPair {
@@ -167,6 +194,16 @@ public class AppComponentDisabled {
             this.packageName = packageName;
             this.receiverName = receiverName;
             this.permission = permission;
+        }
+    }
+
+    private static class ActivitiesPair {
+        private final String packageName;
+        private final String activityName;
+
+        ActivitiesPair(String packageName, String activityName) {
+            this.packageName = packageName;
+            this.activityName = activityName;
         }
     }
 }

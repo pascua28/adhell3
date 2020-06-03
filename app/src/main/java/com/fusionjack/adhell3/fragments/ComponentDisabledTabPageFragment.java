@@ -19,6 +19,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.adapter.ActivityDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentDisabledAdapter;
 import com.fusionjack.adhell3.adapter.PermissionDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverDisabledInfoAdapter;
@@ -31,7 +32,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 public class ComponentDisabledTabPageFragment extends Fragment {
@@ -39,6 +39,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private static final int PERMISSIONS_PAGE = 0;
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
+    private static final int ACTIVITIES_PAGE = 3;
     private static final String ARG_PAGE = "page";
     private int page;
     private Context context;
@@ -59,7 +60,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.page = Objects.requireNonNull(getArguments()).getInt(ARG_PAGE);
+        if (getArguments() != null) {
+            this.page = getArguments().getInt(ARG_PAGE);
+        }
         this.context = getContext();
         if (this.searchText == null) this.searchText = "";
 
@@ -121,6 +124,11 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 view = inflater.inflate(R.layout.fragment_app_receiver_disabled, container, false);
                 listViewID = R.id.receiverExpandableListView;
                 break;
+
+            case ACTIVITIES_PAGE:
+                view = inflater.inflate(R.layout.fragment_app_activity_disabled, container, false);
+                listViewID = R.id.activityExpandableListView;
+                break;
         }
         new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
 
@@ -169,6 +177,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     list = AppComponentDisabled.getDisabledReceivers(searchText);
                     break;
+                case ACTIVITIES_PAGE:
+                    list = AppComponentDisabled.getDisabledActivities(searchText);
+                    break;
             }
             Map<String, List<IComponentInfo>> componentMap = new TreeMap<>(String::compareToIgnoreCase);
             if (list != null) {
@@ -209,6 +220,10 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                     case RECEIVERS_PAGE:
                         listViewId = R.id.receiverExpandableListView;
                         adapter = new ReceiverDisabledInfoAdapter(context, componentInfos, appIcons);
+                        break;
+                    case ACTIVITIES_PAGE:
+                        listViewId = R.id.activityExpandableListView;
+                        adapter = new ActivityDisabledInfoAdapter(context, componentInfos, appIcons);
                         break;
                 }
 

@@ -18,19 +18,22 @@ public class ComponentDisabledTabFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Disabled app component");
-        AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        if (parentActivity.getSupportActionBar() != null) {
-            parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            parentActivity.getSupportActionBar().setHomeButtonEnabled(true);
-            parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        if (getActivity() != null) {
+            getActivity().setTitle("Disabled app component");
+
+            AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
+            if (parentActivity.getSupportActionBar() != null) {
+                parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                parentActivity.getSupportActionBar().setHomeButtonEnabled(true);
+                parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+            }
         }
 
         View view = inflater.inflate(R.layout.fragment_app_component_tabs, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new ComponentDisabledPagerAdapter(getChildFragmentManager(), getContext()));
+        viewPager.setAdapter(new ComponentDisabledPagerAdapter(getChildFragmentManager(), requireContext()));
         viewPager.setOffscreenPageLimit(3);
         tabLayout.setupWithViewPager(viewPager);
 

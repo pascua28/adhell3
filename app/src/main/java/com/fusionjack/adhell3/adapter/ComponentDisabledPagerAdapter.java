@@ -11,7 +11,7 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.ComponentDisabledTabPageFragment;
 
 public class ComponentDisabledPagerAdapter extends FragmentStatePagerAdapter {
-    private static final int PAGE_COUNT = 3;
+    private static final int PAGE_COUNT = 4;
     private final String[] tabTitles;
 
     public ComponentDisabledPagerAdapter(FragmentManager fragmentManager, Context context) {
@@ -19,7 +19,8 @@ public class ComponentDisabledPagerAdapter extends FragmentStatePagerAdapter {
         tabTitles = new String[]{
                 context.getString(R.string.permission_fragment_title),
                 context.getString(R.string.service_fragment_title),
-                context.getString(R.string.receiver_fragment_title)};
+                context.getString(R.string.receiver_fragment_title),
+                context.getString(R.string.activity_fragment_title)};
     }
 
     @NonNull

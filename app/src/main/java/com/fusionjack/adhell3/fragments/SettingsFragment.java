@@ -502,6 +502,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         appDatabase.appPermissionDao().deletePermissions(appPermissionsPackage.packageName);
                         appDatabase.appPermissionDao().deleteServices(appPermissionsPackage.packageName);
                         appDatabase.appPermissionDao().deleteReceivers(appPermissionsPackage.packageName);
+                        appDatabase.appPermissionDao().deleteActivities(appPermissionsPackage.packageName);
                         LogUtils.info("    Done.", handler);
                     } catch (Exception e) {
                         LogUtils.error("    Error deleting rule.", e, handler);

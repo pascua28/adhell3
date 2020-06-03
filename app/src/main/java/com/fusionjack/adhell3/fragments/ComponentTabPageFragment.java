@@ -21,12 +21,14 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
+import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponent;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
@@ -41,7 +43,6 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_NONE;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
@@ -51,6 +52,7 @@ public class ComponentTabPageFragment extends Fragment {
     private static final int PERMISSIONS_PAGE = 0;
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
+    private static final int ACTIVITIES_PAGE = 3;
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGENAME = "packageName";
     private int page;
@@ -70,8 +72,10 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.page = Objects.requireNonNull(getArguments()).getInt(ARG_PAGE);
-        this.packageName = getArguments().getString(ARG_PACKAGENAME);
+        if (getArguments() != null) {
+            this.page = getArguments().getInt(ARG_PAGE);
+            this.packageName = getArguments().getString(ARG_PACKAGENAME);
+        }
         this.context = getContext();
         if (this.searchText == null) this.searchText = "";
     }
@@ -159,6 +163,19 @@ public class ComponentTabPageFragment extends Fragment {
                 }
                 new CreateComponentAsyncTask(RECEIVERS_PAGE, packageName, context, searchText).execute();
                 break;
+
+            case ACTIVITIES_PAGE:
+                view = inflater.inflate(R.layout.fragment_app_activity, container, false);
+                listView = view.findViewById(R.id.activityInfoListView);
+                if (listView != null && toggleEnabled) {
+                    listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+                        ActivityInfoAdapter adapter = (ActivityInfoAdapter) adView.getAdapter();
+                        new SetComponentAsyncTask(ACTIVITIES_PAGE, packageName, adapter.getItem(position), context).execute();
+                    });
+                }
+                new CreateComponentAsyncTask(ACTIVITIES_PAGE, packageName, context, searchText).execute();
+                break;
+
         }
 
         return view;
@@ -213,6 +230,17 @@ public class ComponentTabPageFragment extends Fragment {
                         appDatabase.appPermissionDao().deleteReceivers(packageName);
                     }
                     break;
+                case ACTIVITIES_PAGE:
+                    if (appPolicy != null) {
+                        List<IComponentInfo> componentInfos = AppComponent.getActivities(packageName, searchText);
+                        for (IComponentInfo componentInfo : componentInfos) {
+                            ActivityInfo activityInfo = (ActivityInfo) componentInfo;
+                            ComponentName activityCompName = new ComponentName(packageName, activityInfo.getName());
+                            appPolicy.setApplicationComponentState(activityCompName, true);
+                        }
+                        appDatabase.appPermissionDao().deleteActivities(packageName);
+                    }
+                    break;
             }
             return null;
         }
@@ -231,6 +259,9 @@ public class ComponentTabPageFragment extends Fragment {
                         break;
                     case RECEIVERS_PAGE:
                         listViewId = R.id.receiverInfoListView;
+                        break;
+                    case ACTIVITIES_PAGE:
+                        listViewId = R.id.activityInfoListView;
                         break;
                 }
 
@@ -350,6 +381,33 @@ public class ComponentTabPageFragment extends Fragment {
                         Log.w("", "Failed talking with application policy", e);
                     }
                     break;
+
+                case ACTIVITIES_PAGE:
+                    if (appPolicy == null) {
+                        return null;
+                    }
+                    ActivityInfo activityInfo = (ActivityInfo) componentInfo;
+                    String activityName = activityInfo.getName();
+                    ComponentName activityCompName = new ComponentName(packageName, activityName);
+                    boolean activityState = !AdhellFactory.getInstance().getComponentState(packageName, activityName);
+                    try {
+                        boolean success = appPolicy.setApplicationComponentState(activityCompName, activityState);
+                        if (success) {
+                            if (activityState) {
+                                appDatabase.appPermissionDao().delete(packageName, activityName);
+                            } else {
+                                AppPermission appActivity = new AppPermission();
+                                appActivity.packageName = packageName;
+                                appActivity.permissionName = activityName;
+                                appActivity.permissionStatus = AppPermission.STATUS_ACTIVITY;
+                                appActivity.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                                appDatabase.appPermissionDao().insert(appActivity);
+                            }
+                        }
+                    } catch (SecurityException e) {
+                        Log.w("", "Failed talking with application policy", e);
+                    }
+                    break;
             }
 
             return null;
@@ -369,6 +427,9 @@ public class ComponentTabPageFragment extends Fragment {
                         break;
                     case RECEIVERS_PAGE:
                         listViewId = R.id.receiverInfoListView;
+                        break;
+                    case ACTIVITIES_PAGE:
+                        listViewId = R.id.activityInfoListView;
                         break;
                 }
 
@@ -404,6 +465,8 @@ public class ComponentTabPageFragment extends Fragment {
                     return AppComponent.getServices(packageName, searchText);
                 case RECEIVERS_PAGE:
                     return AppComponent.getReceivers(packageName, searchText);
+                case ACTIVITIES_PAGE:
+                    return AppComponent.getActivities(packageName, searchText);
             }
             return null;
         }
@@ -426,6 +489,10 @@ public class ComponentTabPageFragment extends Fragment {
                     case RECEIVERS_PAGE:
                         listViewId = R.id.receiverInfoListView;
                         adapter = new ReceiverInfoAdapter(context, componentInfos);
+                        break;
+                    case ACTIVITIES_PAGE:
+                        listViewId = R.id.activityInfoListView;
+                        adapter = new ActivityInfoAdapter(context, componentInfos);
                         break;
                 }
 

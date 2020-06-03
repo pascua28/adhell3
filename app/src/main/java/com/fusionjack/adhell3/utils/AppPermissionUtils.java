@@ -74,6 +74,7 @@ public final class AppPermissionUtils {
         return protLevel;
     }
 
+    @SuppressWarnings("deprecation")
     public static int fixProtectionLevel(int level) {
         if (level == android.content.pm.PermissionInfo.PROTECTION_SIGNATURE_OR_SYSTEM) {
             level = android.content.pm.PermissionInfo.PROTECTION_SIGNATURE | android.content.pm.PermissionInfo.PROTECTION_FLAG_PRIVILEGED;

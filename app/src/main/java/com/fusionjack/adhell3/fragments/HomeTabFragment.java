@@ -95,7 +95,7 @@ public class HomeTabFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+        fragmentManager = requireActivity().getSupportFragmentManager();
         parentActivity = (AppCompatActivity) getActivity();
         contentBlocker = ContentBlocker56.getInstance();
     }
@@ -110,11 +110,11 @@ public class HomeTabFragment extends Fragment {
             View view = inflater.inflate(R.layout.activity_actionbar, container, false);
             TextView subtitleTextView = view.findViewById(R.id.subtitleTextView);
             if (subtitleTextView != null) {
-                String versionInfo = Objects.requireNonNull(getContext()).getResources().getString(R.string.version);
+                String versionInfo = requireContext().getResources().getString(R.string.version);
                 subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
             }
             this.refreshButton = view.findViewById(R.id.refreshButton);
-            int themeColor = getResources().getColor(R.color.colorBottomNavUnselected, Objects.requireNonNull(getContext()).getTheme());
+            int themeColor = getResources().getColor(R.color.colorBottomNavUnselected, requireContext().getTheme());
             refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
             refreshButton.setOnClickListener(v -> new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute());
             actionBar.setCustomView(view);
@@ -271,6 +271,7 @@ public class HomeTabFragment extends Fragment {
         private int permissionSize;
         private int serviceSize;
         private int receiverSize;
+        private int activitySize;
         private boolean isCurrentDomainLimitAboveDefault;
         private final WeakReference<ImageView> refreshButton;
 
@@ -301,7 +302,7 @@ public class HomeTabFragment extends Fragment {
                 TextView appComponentInfoTextView = ((Activity) context).findViewById(R.id.appComponentInfoTextView);
                 if (appComponentInfoTextView != null) {
                     String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0));
+                    appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
                 }
             }
         }
@@ -322,6 +323,9 @@ public class HomeTabFragment extends Fragment {
                         break;
                     case AppPermission.STATUS_RECEIVER:
                         receiverSize++;
+                        break;
+                    case AppPermission.STATUS_ACTIVITY:
+                        activitySize++;
                         break;
                 }
             }
@@ -369,9 +373,9 @@ public class HomeTabFragment extends Fragment {
                     boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
                     String info;
                     if (enabled) {
-                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
+                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize, activitySize);
                     } else {
-                        info = String.format(appComponentInfo, 0, 0, 0);
+                        info = String.format(appComponentInfo, 0, 0, 0, 0);
                     }
                     appComponentInfoTextView.setText(info);
                 }

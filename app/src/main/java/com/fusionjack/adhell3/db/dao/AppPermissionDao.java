@@ -21,6 +21,9 @@ public interface AppPermissionDao {
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 5")
     List<AppPermission> getReceivers(String packageName);
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 8")
+    List<AppPermission> getActivities(String packageName);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(AppPermission appPermission);
 
@@ -38,6 +41,9 @@ public interface AppPermissionDao {
 
     @Query("DELETE FROM AppPermission WHERE permissionStatus = 5 AND packageName = :packageName")
     void deleteReceivers(String packageName);
+
+    @Query("DELETE FROM AppPermission WHERE permissionStatus = 8 AND packageName = :packageName")
+    void deleteActivities(String packageName);
 
     @Query("DELETE FROM AppPermission")
     void deleteAll();
