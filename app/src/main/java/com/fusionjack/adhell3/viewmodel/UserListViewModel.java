@@ -11,9 +11,9 @@ import com.fusionjack.adhell3.db.repository.WhiteListRepository;
 
 import java.util.List;
 
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class UserListViewModel extends ViewModel {
     private LiveData<List<String>> items;

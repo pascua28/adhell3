@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public final class AppComponentFactory {
 
