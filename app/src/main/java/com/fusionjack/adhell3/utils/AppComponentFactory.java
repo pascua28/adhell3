@@ -117,7 +117,7 @@ public final class AppComponentFactory {
         }
     }
 
-    public void disableServices(Set<String> compNames) {
+    private void disableServices(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
@@ -163,7 +163,7 @@ public final class AppComponentFactory {
         }
     }
 
-    public void disableReceivers(Set<String> compNames) {
+    private void disableReceivers(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
@@ -208,7 +208,7 @@ public final class AppComponentFactory {
         }
     }
 
-    public void disableActivities(Set<String> compNames) {
+    private void disableActivities(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;

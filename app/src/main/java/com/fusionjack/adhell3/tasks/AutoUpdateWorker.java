@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.tasks;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,12 +18,15 @@ import androidx.work.WorkerParameters;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
+import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
+import com.fusionjack.adhell3.model.AppComponent;
+import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
@@ -31,6 +35,7 @@ import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.net.firewall.Firewall;
 
 import java.text.DateFormat;
@@ -165,20 +170,69 @@ public class AutoUpdateWorker extends Worker {
     }
 
     private void processAppComponentsInAutoUpdate() throws Exception {
-        AppComponentFactory appComponentFactory = AppComponentFactory.getInstance();
         LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);
         DocumentFile componentsFile = FileUtils.getDocumentFile(AppComponentFactory.STORAGE_FOLDERS, AppComponentFactory.COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
 
         LogUtils.info("Listing services, receivers and activities to be disabled...", handler);
-        Set<String> componentNames = appComponentFactory.getFileContent(componentsFile);
+        Set<String> compNames = AppComponentFactory.getInstance().getFileContent(componentsFile);
 
-        if (componentNames.size() > 0) {
-            LogUtils.info("Updating disabled services...", handler);
-            appComponentFactory.disableServices(componentNames);
-            LogUtils.info("Updating disabled receivers...", handler);
-            appComponentFactory.disableReceivers(componentNames);
-            LogUtils.info("Updating disabled activities...", handler);
-            appComponentFactory.disableActivities(componentNames);
+        if (compNames.size() > 0) {
+            LogUtils.info("Updating disabled app components...", handler);
+            int count = 0;
+            List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+            for (AppInfo app : apps) {
+                String packageName = app.packageName;
+                Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
+                Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
+                Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+                for (String compName : compNames) {
+                    boolean disable = false;
+                    int permissionStatus = 0;
+
+                    if (availableServiceNames.contains(compName)) {
+                        disable = true;
+                        permissionStatus = AppPermission.STATUS_SERVICE;
+                        LogUtils.info(String.format(Locale.getDefault(), "Disabling service '%s' for package '%s'", compName, packageName), handler);
+                    } else if (availableReceiverNames.contains(compName)) {
+                        disable = true;
+                        permissionStatus = AppPermission.STATUS_RECEIVER;
+                        LogUtils.info(String.format(Locale.getDefault(), "Disabling receiver '%s' for package '%s'", compName, packageName), handler);
+                    } else if (availableActivityNames.contains(compName)) {
+                        disable = true;
+                        permissionStatus = AppPermission.STATUS_ACTIVITY;
+                        LogUtils.info(String.format(Locale.getDefault(), "Disabling activity '%s' for package '%s'", compName, packageName), handler);
+                    }
+
+                    if (disable) {
+                        try {
+                            count++;
+                            boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                            if (compState) {
+                                ComponentName componentName = new ComponentName(packageName, compName);
+                                ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                                if (appPolicy != null) {
+                                    boolean success = appPolicy.setApplicationComponentState(componentName, false);
+                                    if (success) {
+                                        AppPermission appService = new AppPermission();
+                                        appService.packageName = packageName;
+                                        appService.permissionName = compName;
+                                        appService.permissionStatus = permissionStatus;
+                                        appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                                        appDatabase.appPermissionDao().insert(appService);
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            LogUtils.error("Unable to disable app components!", e, handler);
+                        }
+                    }
+                }
+            }
+            if (count <= 0) {
+                LogUtils.info("Nothing new to disable", handler);
+            } else {
+                LogUtils.info("Update for disabled app components completed.", handler);
+            }
         } else {
             LogUtils.info("File is empty. Nothing to do.", handler);
         }
