@@ -50,12 +50,15 @@ public final class BlockUrlPatternsMatch {
 
         // Filter domains - something.com and *.something.com
         while (filterPatternMatch.find()) {
-            String filterDomain = getValidKnoxUrl(filterPatternMatch.group(1));
-            // Add something.com
-            uniqueBlockUrls.add(filterDomain);
-            // Conditionally add *.something.com
-            if (!filterDomain.startsWith(WILDCARD_PREFIX)) {
-                uniqueBlockUrls.add("*." + filterDomain);
+            String url =  filterPatternMatch.group(1);
+            if (url != null) {
+                String filterDomain = getValidKnoxUrl(url);
+                // Add something.com
+                uniqueBlockUrls.add(filterDomain);
+                // Conditionally add *.something.com
+                if (!filterDomain.startsWith(WILDCARD_PREFIX)) {
+                    uniqueBlockUrls.add("*." + filterDomain);
+                }
             }
         }
 

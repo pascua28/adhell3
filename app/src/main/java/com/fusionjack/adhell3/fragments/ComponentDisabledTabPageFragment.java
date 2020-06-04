@@ -320,14 +320,14 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     }
 
     private static class EnableAppComponentAsyncTask extends AsyncTask<Void, Void, String> {
-        String packageName;
-        String compName;
-        int page;
-        WeakReference<Context> contextWeakReference;
-        String searchText;
-        Map<String, Drawable> appIcons;
-        Map<String, String> appNames;
-        Parcelable state;
+        final String packageName;
+        final String compName;
+        final int page;
+        final WeakReference<Context> contextWeakReference;
+        final String searchText;
+        final Map<String, Drawable> appIcons;
+        final Map<String, String> appNames;
+        final Parcelable state;
 
         ApplicationPolicy appPolicy;
         ComponentName componentName;

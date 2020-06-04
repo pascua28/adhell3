@@ -89,7 +89,9 @@ public class AppComponentFragment extends AppFragment {
                 batchOperation();
                 break;
             case R.id.action_show_disabled:
-                AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+                if (getActivity() != null) {
+                    AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -186,18 +188,21 @@ public class AppComponentFragment extends AppFragment {
         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            Bundle bundle = new Bundle();
-            AppInfo appInfo = adapter.getItem(position);
-            bundle.putString("packageName", appInfo.packageName);
-            bundle.putString("appName", appInfo.appName);
-            ComponentTabFragment fragment = new ComponentTabFragment();
-            fragment.setArguments(bundle);
+            if (getActivity() != null) {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
 
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-            fragmentTransaction.addToBackStack("appComponents");
-            fragmentTransaction.commit();
+                Bundle bundle = new Bundle();
+                AppInfo appInfo = adapter.getItem(position);
+                bundle.putString("packageName", appInfo.packageName);
+                bundle.putString("appName", appInfo.appName);
+                ComponentTabFragment fragment = new ComponentTabFragment();
+                fragment.setArguments(bundle);
+
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+                fragmentTransaction.addToBackStack("appComponents");
+                fragmentTransaction.commit();
+            }
         });
 
         SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());

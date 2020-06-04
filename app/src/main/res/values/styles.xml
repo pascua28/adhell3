@@ -14,6 +14,7 @@
         <item name="android:titleTextColor">@color/colorText</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item>
         <item name="android:buttonStyle">@style/buttonStyle</item>
+        <item name="android:windowDisablePreview">true</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
 

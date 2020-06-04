@@ -82,7 +82,7 @@ public class AppTabPageFragment extends AppFragment {
                 break;
 
             default:
-                type = AppRepository.Type.DISABLER;
+                type = null;
                 break;
         }
         initAppModel(type);

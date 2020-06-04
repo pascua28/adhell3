@@ -40,6 +40,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     public static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
     public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
+    private final WorkManager workManager;
     private Switch globalSwitch;
     private TextView seekLabelTextView;
     private SeekBar intervalSeekBar;
@@ -48,7 +49,6 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private CheckBox logCheckBox;
     private CheckBox lowBatteryCheckBox;
     private CheckBox mobileDataCheckBox;
-    private WorkManager workManager;
     private TimePicker startTimePicker;
 
     public AutoUpdateDialogFragment(Preference preference) {

@@ -47,7 +47,12 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(groupPosition)).size();
+        List<IComponentInfo> children = this.expandableListDetail.get(this.expandableListTitle.get(groupPosition));
+        if (children != null) {
+            return children.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -57,7 +62,12 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
 
     @Override
     public IComponentInfo getChild(int groupPosition, int childPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(groupPosition)).get(childPosition);
+        List<IComponentInfo> children = this.expandableListDetail.get(this.expandableListTitle.get(groupPosition));
+        if (children != null) {
+            return children.get(childPosition);
+        } else {
+            return null;
+        }
     }
 
     @Override

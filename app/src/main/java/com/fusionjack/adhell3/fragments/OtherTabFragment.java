@@ -37,10 +37,10 @@ public class OtherTabFragment extends Fragment {
         if (bundle != null) {
             viewpagerPosition = getArguments().getString("viewpager_position");
         }
-        Objects.requireNonNull(getActivity()).setTitle("Others");
+        requireActivity().setTitle("Others");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         MainActivity mainActivity = (MainActivity) parentActivity;
-        if (parentActivity.getSupportActionBar() != null) {
+        if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
             parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -51,32 +51,36 @@ public class OtherTabFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.others_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.others_viewpager);
-        viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
+        viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), requireContext()));
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
+                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
                         super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedOtherTab(tab.getPosition());
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedOtherTab(tab.getPosition());
+                        }
                     }
 
                     @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
                         super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorText);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
 
                     @Override
                     public void onTabReselected(TabLayout.Tab tab) {
                         super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedOtherTab(tab.getPosition());
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedOtherTab(tab.getPosition());
+                        }
                     }
                 }
         );
@@ -87,16 +91,20 @@ public class OtherTabFragment extends Fragment {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             if (tab != null) {
                 tab.setIcon(imageResId[i]);
-                int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
+                int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorBottomNavUnselected);
                 Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
             }
         }
 
-        if (viewpagerPosition != null) if (viewpagerPosition.equals("Settings")) {
+        if (viewpagerPosition != null && viewpagerPosition.equals("Settings") && mainActivity != null) {
+
             mainActivity.setSelectedOtherTab(SETTINGS_PAGE);
             mainActivity.themeChange = null;
         }
-        TabLayout.Tab tab = tabLayout.getTabAt(mainActivity.getSelectedOtherTab());
+        TabLayout.Tab tab = null;
+        if (mainActivity != null) {
+            tab = tabLayout.getTabAt(mainActivity.getSelectedOtherTab());
+        }
         if (tab != null) {
             tab.select();
         }

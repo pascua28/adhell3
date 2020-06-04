@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class BlacklistFragment extends UserListFragment {
-    private ArrayAdapter adapter;
+    private ArrayAdapter<String> adapter;
     private UserListViewModel viewModel;
 
     @Override
@@ -38,7 +38,7 @@ public class BlacklistFragment extends UserListFragment {
         List<String> items = new ArrayList<>();
         adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
 
-        viewModel = ViewModelProviders.of(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
+        viewModel = new ViewModelProvider(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
         viewModel.getItems().observe(this, blackItems -> {
             items.clear();
             items.addAll(blackItems);

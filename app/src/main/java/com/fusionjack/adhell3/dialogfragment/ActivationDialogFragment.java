@@ -92,7 +92,9 @@ public class ActivationDialogFragment extends DialogFragment {
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS);
                 filter.addAction(EnterpriseLicenseManager.ACTION_LICENSE_STATUS);
-                getActivity().registerReceiver(receiver, filter);
+                if (getActivity() != null) {
+                    getActivity().registerReceiver(receiver, filter);
+                }
             }
 
             @Override
@@ -112,7 +114,9 @@ public class ActivationDialogFragment extends DialogFragment {
 
             @Override
             public void onError(Throwable e) {
-                getActivity().unregisterReceiver(receiver);
+                if (getActivity() != null) {
+                    getActivity().unregisterReceiver(receiver);
+                }
                 setLicenseState(false);
             }
         };
@@ -125,15 +129,19 @@ public class ActivationDialogFragment extends DialogFragment {
         Dialog dialog = getDialog();
         if (dialog != null) {
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
-            dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
         }
     }
 
     @androidx.annotation.NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-        deviceAdminInteractor.setKnoxKey(sharedPreferences, BuildConfig.SKL_KEY);
+        if (getActivity() != null) {
+            sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+            deviceAdminInteractor.setKnoxKey(sharedPreferences, BuildConfig.SKL_KEY);
+        }
         return super.onCreateDialog(savedInstanceState);
     }
 
@@ -179,7 +187,7 @@ public class ActivationDialogFragment extends DialogFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.backup_database_dialog_text);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_AlertDialog)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                             new BackupDatabaseAsyncTask(getActivity()).execute()
@@ -225,7 +233,9 @@ public class ActivationDialogFragment extends DialogFragment {
     }
 
     private void handleResult(Intent intent, Context context) {
-        getActivity().unregisterReceiver(receiver);
+        if (getActivity() != null) {
+            getActivity().unregisterReceiver(receiver);
+        }
 
         int result_type = intent.getIntExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_RESULT_TYPE, -1);
         if (result_type != -1) {
@@ -264,7 +274,9 @@ public class ActivationDialogFragment extends DialogFragment {
     }
 
     private void handleError(Intent intent, Context context, int errorCode) {
-        getActivity().unregisterReceiver(receiver);
+        if (getActivity() != null) {
+            getActivity().unregisterReceiver(receiver);
+        }
 
         if (intent != null) {
             String status = intent.getStringExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_STATUS);

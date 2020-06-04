@@ -129,7 +129,7 @@ public class ProviderContentFragment extends Fragment {
 
                 TextView totalBlockedUrls = ((Activity) context).findViewById(R.id.total_blocked_urls);
                 if (totalBlockedUrls != null) {
-                    totalBlockedUrls.setText(String.format("%s%s", context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
+                    totalBlockedUrls.setText(String.format("%s%s", context.getString(R.string.total_domains), blockedUrls.size()));
                 }
 
                 ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarContent);

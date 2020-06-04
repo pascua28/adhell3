@@ -47,7 +47,12 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(groupPosition)).size();
+        List<ReportBlockedUrl> children = this.expandableListDetail.get(this.expandableListTitle.get(groupPosition));
+        if (children != null) {
+            return children.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -57,7 +62,12 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
 
     @Override
     public ReportBlockedUrl getChild(int groupPosition, int childPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(groupPosition)).get(childPosition);
+        List<ReportBlockedUrl> children = this.expandableListDetail.get(this.expandableListTitle.get(groupPosition));
+        if (children != null) {
+            return children.get(childPosition);
+        } else {
+            return null;
+        }
     }
 
     @Override

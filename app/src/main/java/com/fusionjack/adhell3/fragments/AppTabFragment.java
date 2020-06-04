@@ -31,10 +31,10 @@ public class AppTabFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Objects.requireNonNull(getActivity()).setTitle("Apps Management");
+        requireActivity().setTitle("Apps Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         MainActivity mainActivity = (MainActivity) parentActivity;
-        if (parentActivity.getSupportActionBar() != null) {
+        if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
             parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -45,33 +45,39 @@ public class AppTabFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), Objects.requireNonNull(getContext())));
+        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), requireContext()));
         viewPager.setOffscreenPageLimit(4);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
+                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
                         super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedAppTab(tab.getPosition());
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedAppTab(tab.getPosition());
+                        }
                     }
 
                     @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
                         super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorText);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
                         Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
 
                     @Override
                     public void onTabReselected(TabLayout.Tab tab) {
                         super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedAppTab(tab.getPosition());
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
+                        if (tab.getIcon() != null) {
+                            tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        }
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedAppTab(tab.getPosition());
+                        }
                     }
                 }
         );
@@ -80,11 +86,14 @@ public class AppTabFragment extends Fragment {
         int tabCount = Objects.requireNonNull(viewPager.getAdapter()).getCount();
         for (int i = 0; i < tabCount; i++, imageIndex++) {
             Objects.requireNonNull(tabLayout.getTabAt(i)).setIcon(imageResId[imageIndex]);
-            int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
+            int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorBottomNavUnselected);
             Objects.requireNonNull(Objects.requireNonNull(tabLayout.getTabAt(i)).getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
         }
 
-        TabLayout.Tab tab = tabLayout.getTabAt(mainActivity.getSelectedAppTab());
+        TabLayout.Tab tab = null;
+        if (mainActivity != null) {
+            tab = tabLayout.getTabAt(mainActivity.getSelectedAppTab());
+        }
         if (tab != null) {
             tab.select();
         }

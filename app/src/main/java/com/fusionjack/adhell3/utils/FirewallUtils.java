@@ -318,13 +318,13 @@ public final class FirewallUtils {
         }
     }
 
-    public class FirewallStat {
+    public static class FirewallStat {
         public int mobileDataSize;
         public int wifiDataSize;
         public int allNetworkSize;
     }
 
-    public class DomainStat {
+    public static class DomainStat {
         public int blackListSize;
         public int whiteListSize;
     }

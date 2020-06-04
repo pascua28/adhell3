@@ -178,8 +178,10 @@ public class HomeTabFragment extends Fragment {
             adhellAppIntegrity.fillPackageDb();
         });
 
-        View.OnClickListener appComponentDisabledOnClickListener =
-                v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+        View.OnClickListener appComponentDisabledOnClickListener = v -> {
+            if (getActivity() != null) {
+                    AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+            }};
         appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
         TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
         appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
@@ -638,7 +640,7 @@ public class HomeTabFragment extends Fragment {
                         totalCount += entry.getValue().size();
                     }
                     infoTextView.setText(String.format("%s%s",
-                            context.getString(R.string.last_day_blocked), String.valueOf(totalCount)));
+                            context.getString(R.string.last_day_blocked), totalCount));
                 }
 
                 SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);

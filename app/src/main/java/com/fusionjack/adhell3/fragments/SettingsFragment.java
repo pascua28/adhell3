@@ -176,7 +176,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case SET_PASSWORD_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();
-                int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, Objects.requireNonNull(this.getActivity()).getTheme());
+                int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.requireActivity().getTheme());
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
                     View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_password, (ViewGroup) getView(), false);
                     AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
@@ -268,7 +268,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 Intent intent = new Intent(getActivity(), MainActivity.class);
                 intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
                 startActivity(intent);
-                Objects.requireNonNull(getActivity()).finish();
+                requireActivity().finish();
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {
@@ -282,7 +282,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CHANGE_KEY_PREFERENCE: {
-                FragmentManager fragmentManager = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 Fragment activationDialog = fragmentManager.findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
                 if (activationDialog == null) {
                     ActivationDialogFragment fragment = new ActivationDialogFragment();

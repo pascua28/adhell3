@@ -23,7 +23,7 @@ public class BiometricUtils {
     public static Boolean checkBiometricSupport(Context context) {
         KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(KEYGUARD_SERVICE);
         PackageManager packageManager = context.getPackageManager();
-        if (!keyguardManager.isKeyguardSecure()) {
+        if (keyguardManager != null && !keyguardManager.isKeyguardSecure()) {
             Toast.makeText(context, context.getString(R.string.biometric_check_lockscreen_security), Toast.LENGTH_LONG).show();
             return false;
         }
@@ -31,9 +31,8 @@ public class BiometricUtils {
             Toast.makeText(context, context.getString(R.string.biometric_check_permission), Toast.LENGTH_LONG).show();
             return false;
         }
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) {
-            return true;
-        }
+        packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
+
         return true;
     }
 

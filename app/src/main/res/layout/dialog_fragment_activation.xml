@@ -55,7 +55,8 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
         android:hint="@string/license_key"
-        android:inputType="text" />
+        android:inputType="text"
+        android:autofillHints="" />
 
     <Button
         android:id="@+id/activateKnoxButton"

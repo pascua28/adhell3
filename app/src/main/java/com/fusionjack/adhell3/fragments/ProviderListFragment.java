@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.App;
@@ -48,7 +48,6 @@ import com.google.android.material.tabs.TabLayout;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
@@ -87,8 +86,8 @@ public class ProviderListFragment extends Fragment {
         // Provider list
         ListView providerListView = view.findViewById(R.id.providerListView);
         if (providerListView.getVisibility() == View.VISIBLE) loadingBar.setVisibility(View.VISIBLE);
-        BlockUrlProvidersViewModel providersViewModel = ViewModelProviders.of(activity).get(BlockUrlProvidersViewModel.class);
-        providersViewModel.getBlockUrlProviders().observe(this, blockUrlProviders -> {
+        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
+        providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
             ListAdapter adapter = providerListView.getAdapter();
             if (adapter == null) {
                 BlockUrlProviderAdapter arrayAdapter = new BlockUrlProviderAdapter(context, blockUrlProviders);
@@ -98,7 +97,7 @@ public class ProviderListFragment extends Fragment {
 
         providerListView.setOnItemClickListener((parent, view1, position, id) -> {
             BlockUrlProvider provider = (BlockUrlProvider) parent.getItemAtPosition(position);
-            List<Fragment> fragments = Objects.requireNonNull(getFragmentManager()).getFragments();
+            List<Fragment> fragments = getParentFragmentManager().getFragments();
             for (Fragment fragment : fragments) {
                 if (fragment instanceof ProviderContentFragment) {
                     ((ProviderContentFragment) fragment).setProviderId(provider.id);
@@ -106,7 +105,7 @@ public class ProviderListFragment extends Fragment {
             }
             TabLayout tabLayout = null;
             if (getParentFragment() != null) {
-                tabLayout = Objects.requireNonNull(getParentFragment().getActivity()).findViewById(R.id.domains_sliding_tabs);
+                tabLayout = getParentFragment().requireActivity().findViewById(R.id.domains_sliding_tabs);
             }
             if (tabLayout != null) {
                 TabLayout.Tab tab = tabLayout.getTabAt(PROVIDER_CONTENT_PAGE);

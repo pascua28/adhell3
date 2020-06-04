@@ -28,10 +28,12 @@ public class DomainTabFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Domains Management");
+        if (getActivity() != null) {
+            getActivity().setTitle("Domains Management");
+        }
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         MainActivity mainActivity = (MainActivity) parentActivity;
-        if (parentActivity.getSupportActionBar() != null) {
+        if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
             parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -42,32 +44,42 @@ public class DomainTabFragment extends Fragment {
 
         TabLayout tabLayout = view.findViewById(R.id.domains_sliding_tabs);
         ViewPager viewPager = view.findViewById(R.id.domains_viewpager);
-        viewPager.setAdapter(new DomainPagerAdapter(getChildFragmentManager(), getContext()));
+        viewPager.setAdapter(new DomainPagerAdapter(getChildFragmentManager(), requireContext()));
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
 
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
+                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
                         super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedDomainTab(tab.getPosition());
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
+                        if (tab.getIcon() != null) {
+                            tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        }
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedDomainTab(tab.getPosition());
+                        }
                     }
 
                     @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
                         super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorText);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
+                        if (tab.getIcon() != null) {
+                            tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        }
                     }
 
                     @Override
                     public void onTabReselected(TabLayout.Tab tab) {
                         super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        mainActivity.setSelectedDomainTab(tab.getPosition());
+                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
+                        if (tab.getIcon() != null) {
+                            tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                        }
+                        if (mainActivity != null) {
+                            mainActivity.setSelectedDomainTab(tab.getPosition());
+                        }
                     }
                 }
         );
@@ -75,13 +87,18 @@ public class DomainTabFragment extends Fragment {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
             if (tab != null) {
                 tab.setIcon(imageResId[i]);
-                int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
-                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorBottomNavUnselected);
+                if (tab.getIcon() != null) {
+                    tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                }
             }
         }
 
         // Select provider list tab as default
-        TabLayout.Tab tab = tabLayout.getTabAt(mainActivity.getSelectedDomainTab());
+        TabLayout.Tab tab = null;
+        if (mainActivity != null) {
+            tab = tabLayout.getTabAt(mainActivity.getSelectedDomainTab());
+        }
         if (tab != null) {
             tab.select();
         }

@@ -278,7 +278,6 @@ public class ContentBlocker56 implements ContentBlocker {
                             firewallRules[1].setIpAddress(ip);
                             firewallRules[1].setPortNumber(port);
                             firewallRules[1].setApplication(new AppIdentity(packageName, null));
-                            firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
                         } else {
                             Firewall.AddressType type;
                             InetAddress address = InetAddress.getByName(ip);
@@ -295,8 +294,8 @@ public class ContentBlocker56 implements ContentBlocker {
                             firewallRules[0].setIpAddress(ip);
                             firewallRules[0].setPortNumber(port);
                             firewallRules[0].setApplication(new AppIdentity(packageName, null));
-                            firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
                         }
+                        firewallRules[0].setNetworkInterface(Firewall.NetworkInterface.ALL_NETWORKS);
 
                         firewallUtils.addFirewallRules(firewallRules, handler);
                     } else {
@@ -787,8 +786,10 @@ public class ContentBlocker56 implements ContentBlocker {
     private boolean isNotWhitelistedApp(String packageName) {
         boolean isWhitelisted = false;
         for (String whiteListedAppRule : whiteListedAppRules) {
-            if (whiteListedAppRule.equals(packageName))
+            if (whiteListedAppRule.equals(packageName)) {
                 isWhitelisted = true;
+                break;
+            }
         }
 
         return !isWhitelisted;

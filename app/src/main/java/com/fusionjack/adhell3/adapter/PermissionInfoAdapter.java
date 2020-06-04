@@ -52,14 +52,16 @@ public class PermissionInfoAdapter extends ComponentAdapter {
 
             boolean checked = false;
             ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-            List<String> deniedPermissions = appPolicy.getRuntimePermissions(permissionInfo.getPackageName(), PERMISSION_POLICY_STATE_DENY);
-            if (!deniedPermissions.contains(permissionInfo.name)) {
-                checked = true;
-            }
-            permissionSwitch.setChecked(checked);
+            if (appPolicy != null) {
+                List<String> deniedPermissions = appPolicy.getRuntimePermissions(permissionInfo.getPackageName(), PERMISSION_POLICY_STATE_DENY);
+                if (!deniedPermissions.contains(permissionInfo.name)) {
+                    checked = true;
+                }
+                permissionSwitch.setChecked(checked);
 
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+                boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+                permissionSwitch.setEnabled(enabled);
+            }
         }
 
         return convertView;

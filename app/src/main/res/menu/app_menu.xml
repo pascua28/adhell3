@@ -5,11 +5,11 @@
         android:id="@+id/search"
         android:title="Search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_enable_all"
         android:icon="@drawable/ic_done_all_24dp"
         android:title="Enable All"
-        app:showAsAction="always">
+        app:showAsAction="ifRoom">
     </item>
 </menu>
