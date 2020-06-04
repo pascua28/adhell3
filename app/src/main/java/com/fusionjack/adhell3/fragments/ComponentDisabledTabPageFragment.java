@@ -1,7 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,8 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
@@ -24,9 +29,15 @@ import com.fusionjack.adhell3.adapter.ComponentDisabledAdapter;
 import com.fusionjack.adhell3.adapter.PermissionDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceDisabledInfoAdapter;
+import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponentDisabled;
 import com.fusionjack.adhell3.model.IComponentInfo;
+import com.fusionjack.adhell3.model.PermissionInfo;
+import com.fusionjack.adhell3.model.ReceiverInfo;
+import com.fusionjack.adhell3.model.ServiceInfo;
+import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -230,6 +241,65 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 ExpandableListView listView = ((Activity) context).findViewById(listViewId);
                 if (listView != null && adapter != null) {
                     listView.setAdapter(adapter);
+                    listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
+                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
+                        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                        titleTextView.setText(R.string.enable_app_component_dialog_title);
+                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                        questionTextView.setText(R.string.enable_app_component_dialog_text);
+                        List<String> groupList = new ArrayList<>(componentInfos.keySet());
+
+                        final String packageName;
+                        String packageNameTmp = "";
+                        final String compName;
+                        String compNameTmp = "";
+                        IComponentInfo component = null;
+
+                        List<IComponentInfo> compList = componentInfos.get(groupList.get(groupPosition));
+                        if (compList != null) {
+                            packageNameTmp = compList.get(childPosition).getPackageName();
+                            component = compList.get(childPosition);
+                        }
+
+                        packageName = packageNameTmp;
+
+                        if (component instanceof PermissionInfo) {
+                            PermissionInfo permissionInfo = (PermissionInfo) component;
+                            compNameTmp = permissionInfo.name;
+                        }
+                        if (component instanceof ServiceInfo) {
+                            ServiceInfo serviceInfo = (ServiceInfo) component;
+                            compNameTmp = serviceInfo.getName();
+                        }
+                        if (component instanceof ReceiverInfo) {
+                            ReceiverInfo receiverInfo = (ReceiverInfo) component;
+                            compNameTmp = receiverInfo.getName();
+                        }
+                        if (component instanceof ActivityInfo) {
+                            ActivityInfo activityInfo = (ActivityInfo) component;
+                            compNameTmp = activityInfo.getName();
+                        }
+                        compName = compNameTmp;
+
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                                .setView(dialogView)
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                    ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                                    if (appPolicy != null) {
+                                        new EnableAppComponentAsyncTask(packageName, compName, page, context, searchText, appIcons, appNames, stateReference.get()).execute();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, null)
+                                .create();
+
+                        if (alertDialog.getWindow() != null)
+                            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                        alertDialog.show();
+
+                        return false;
+                    });
+
                     Parcelable state = stateReference.get();
                     if (state != null) {
                         listView.onRestoreInstanceState(state);
@@ -246,6 +316,64 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                     }
                 }
             }
+        }
+    }
+
+    private static class EnableAppComponentAsyncTask extends AsyncTask<Void, Void, String> {
+        String packageName;
+        String compName;
+        int page;
+        WeakReference<Context> contextWeakReference;
+        String searchText;
+        Map<String, Drawable> appIcons;
+        Map<String, String> appNames;
+        Parcelable state;
+
+        ApplicationPolicy appPolicy;
+        ComponentName componentName;
+
+
+        EnableAppComponentAsyncTask(String packageName,
+                                    String compName,
+                                    int page,
+                                    Context context,
+                                    String searchText,
+                                    Map<String, Drawable> appIcons,
+                                    Map<String, String> appNames,
+                                    Parcelable state) {
+            this.packageName = packageName;
+            this.compName = compName;
+            this.page = page;
+            this.contextWeakReference = new WeakReference<>(context);
+            this.searchText = searchText;
+            this.appIcons = appIcons;
+            this.appNames = appNames;
+            this.state = state;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            appPolicy = AdhellFactory.getInstance().getAppPolicy();
+            componentName= new ComponentName(packageName, compName);
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            if (appPolicy != null) {
+                boolean success = appPolicy.setApplicationComponentState(componentName, true);
+                if (success) {
+                    AdhellFactory.getInstance().getAppDatabase().appPermissionDao().delete(packageName, compName);
+                }
+            }
+            return "Success";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            new CreateComponentAsyncTask(page, contextWeakReference.get(), searchText, appIcons, appNames, state).execute();
         }
     }
 }

@@ -193,6 +193,8 @@
     <string name="restore_database_dialog_text">Do you really want to restore the database and replace your entire setup?</string>
     <string name="clean_database_dialog_title">Clean Database</string>
     <string name="clean_database_dialog_text">Do you really want to clean the database?</string>
+    <string name="enable_app_component_dialog_title">Enable App component</string>
+    <string name="enable_app_component_dialog_text">Do you really want to enable this app component?</string>
     <string name="not_supported_dialog_title">App Not Supported</string>
     <string name="no_internet_connection_dialog_title">No Internet Connection</string>
     <string name="version">Version %1$s</string>
