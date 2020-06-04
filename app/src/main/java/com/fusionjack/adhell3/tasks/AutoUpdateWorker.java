@@ -172,12 +172,16 @@ public class AutoUpdateWorker extends Worker {
         LogUtils.info("Listing services, receivers and activities to be disabled...", handler);
         Set<String> componentNames = appComponentFactory.getFileContent(componentsFile);
 
-        LogUtils.info("Updating disabled services...", handler);
-        appComponentFactory.disableServices(componentNames);
-        LogUtils.info("Updating disabled receivers...", handler);
-        appComponentFactory.disableReceivers(componentNames);
-        LogUtils.info("Updating disabled activities...", handler);
-        appComponentFactory.disableActivities(componentNames);
+        if (componentNames.size() > 0) {
+            LogUtils.info("Updating disabled services...", handler);
+            appComponentFactory.disableServices(componentNames);
+            LogUtils.info("Updating disabled receivers...", handler);
+            appComponentFactory.disableReceivers(componentNames);
+            LogUtils.info("Updating disabled activities...", handler);
+            appComponentFactory.disableActivities(componentNames);
+        } else {
+            LogUtils.info("File is empty. Nothing to do.", handler);
+        }
     }
 
     private void autoCleanDatabase() {
