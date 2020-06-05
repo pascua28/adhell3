@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -47,6 +46,8 @@ import java.util.Objects;
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
+    public AlertDialog passwordDialog;
+    public String themeChange;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static boolean selectFileActivityLaunched = false;
@@ -55,29 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
     private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
-    public AlertDialog passwordDialog;
     private BottomNavigationView bottomBar;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
-    public String themeChange;
     private boolean biometricSupport;
-
-    @Override
-    public void onBackPressed() {
-        int count = fragmentManager.getBackStackEntryCount();
-        if (count <= 1) {
-            if (doubleBackToExitPressedOnce) {
-                finish();
-            }
-
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
-
-            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        } else {
-            fragmentManager.popBackStackImmediate();
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,15 +113,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            fragmentManager.popBackStack();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
 
@@ -157,6 +130,119 @@ public class MainActivity extends AppCompatActivity {
         LogUtils.info("Everything is okay");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LogUtils.info("Destroying activity");
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
+        super.onActivityResult(requestCode, resultCode, resultData);
+
+        if(resultCode == RESULT_OK && requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            Uri treeUri = resultData.getData();
+            if (treeUri != null) {
+                AppPreferences.getInstance().setStorageTreePath(treeUri.toString());
+                this.grantUriPermission(this.getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                this.getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        int count = fragmentManager.getBackStackEntryCount();
+        if (count <= 1) {
+            if (doubleBackToExitPressedOnce) {
+                finish();
+            }
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        } else {
+            fragmentManager.popBackStackImmediate();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            fragmentManager.popBackStack();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void successAuthentication() {
+        passwordDialog.dismiss();
+        finishOnResume();
+    }
+
+    public void setSelectedAppTab(int selectedTabId) {
+        this.SELECTED_APP_TAB = selectedTabId;
+    }
+    public int getSelectedAppTab() {
+        return this.SELECTED_APP_TAB;
+    }
+
+    public void setSelectedDomainTab(int selectedTabId) {
+        this.SELECTED_DOMAIN_TAB = selectedTabId;
+    }
+    public int getSelectedDomainTab() {
+        return this.SELECTED_DOMAIN_TAB;
+    }
+
+    public void setSelectedOtherTab(int selectedTabId) {
+        this.SELECTED_OTHER_TAB = selectedTabId;
+    }
+    public int getSelectedOtherTab() {
+        return this.SELECTED_OTHER_TAB;
+    }
+
+    public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
+
+    public boolean isKnoxValid() {
+        if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
+            LogUtils.info("Admin is not active, showing activation dialog");
+            if (isActivationDialogNotVisible()) {
+                activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
+            }
+            return false;
+        }
+
+        if (!DeviceAdminInteractor.getInstance().isKnoxEnabled(this)) {
+            LogUtils.info("Knox is disabled, showing activation dialog");
+            LogUtils.info("Check if internet connection exists");
+            boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(this);
+            if (!hasInternetAccess) {
+                AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
+            }
+            if (isActivationDialogNotVisible()) {
+                activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
+            }
+            return false;
+        }
+
+        // Select the Home tab manually if nothing is selected
+        if (selectedTabId == -1) {
+            if (themeChange != null) {
+                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
+                    bottomBar.setSelectedItemId(R.id.othersTab);
+                    onTabSelected(R.id.othersTab);
+
+                } else {
+                    onTabSelected(R.id.homeTab);
+                }
+            } else {
+                onTabSelected(R.id.homeTab);
+            }
+        }
+        return true;
+    }
+
     private void finishOnResume() {
         // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
         if (!isKnoxValid()) {
@@ -164,12 +250,6 @@ public class MainActivity extends AppCompatActivity {
         }
         // Check for storage permission
         requestStoragePermission();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        LogUtils.info("Destroying activity");
     }
 
     private void requestStoragePermission() {
@@ -204,20 +284,6 @@ public class MainActivity extends AppCompatActivity {
                 alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
-        super.onActivityResult(requestCode, resultCode, resultData);
-
-        if(resultCode == RESULT_OK && requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
-            Uri treeUri = resultData.getData();
-            if (treeUri != null) {
-                AppPreferences.getInstance().setStorageTreePath(treeUri.toString());
-                this.grantUriPermission(this.getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                this.getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            }
         }
     }
 
@@ -271,45 +337,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    public boolean isKnoxValid() {
-        if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
-            LogUtils.info("Admin is not active, showing activation dialog");
-            if (isActivationDialogNotVisible()) {
-                activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
-            }
-            return false;
-        }
-
-        if (!DeviceAdminInteractor.getInstance().isKnoxEnabled(this)) {
-            LogUtils.info("Knox is disabled, showing activation dialog");
-            LogUtils.info("Check if internet connection exists");
-            boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(this);
-            if (!hasInternetAccess) {
-                AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
-            }
-            if (isActivationDialogNotVisible()) {
-                activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
-            }
-            return false;
-        }
-
-        // Select the Home tab manually if nothing is selected
-        if (selectedTabId == -1) {
-            if (themeChange != null) {
-                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
-                    bottomBar.setSelectedItemId(R.id.othersTab);
-                    onTabSelected(R.id.othersTab);
-
-                } else {
-                    onTabSelected(R.id.homeTab);
-                }
-            } else {
-                onTabSelected(R.id.homeTab);
-            }
-        }
-        return true;
-    }
-
     private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog == null;
@@ -328,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
         icon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
         ImageButton fingerprintButton = dialogView.findViewById(R.id.fingerprintButton);
         passwordDialog.setOnShowListener(dialogInterface -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && biometricSupport) {
+            if (biometricSupport) {
                 fingerprintButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                 fingerprintButton.setVisibility(View.VISIBLE);
                 fingerprintButton.setOnClickListener(v -> BiometricUtils.authenticateUser(this));
@@ -361,32 +388,4 @@ public class MainActivity extends AppCompatActivity {
 
         return passwordDialog;
     }
-
-    public void successAuthentication() {
-        passwordDialog.dismiss();
-        finishOnResume();
-    }
-
-    public void setSelectedAppTab(int selectedTabId) {
-        this.SELECTED_APP_TAB = selectedTabId;
-    }
-    public int getSelectedAppTab() {
-        return this.SELECTED_APP_TAB;
-    }
-
-    public void setSelectedDomainTab(int selectedTabId) {
-        this.SELECTED_DOMAIN_TAB = selectedTabId;
-    }
-    public int getSelectedDomainTab() {
-        return this.SELECTED_DOMAIN_TAB;
-    }
-
-    public void setSelectedOtherTab(int selectedTabId) {
-        this.SELECTED_OTHER_TAB = selectedTabId;
-    }
-    public int getSelectedOtherTab() {
-        return this.SELECTED_OTHER_TAB;
-    }
-
-    public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 }
