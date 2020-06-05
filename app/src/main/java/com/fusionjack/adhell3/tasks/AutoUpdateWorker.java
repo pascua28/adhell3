@@ -188,24 +188,24 @@ public class AutoUpdateWorker extends Worker {
                 for (String compName : compNames) {
                     boolean disable = false;
                     int permissionStatus = 0;
+                    String componentType = "";
 
                     if (availableServiceNames.contains(compName)) {
                         disable = true;
                         permissionStatus = AppPermission.STATUS_SERVICE;
-                        LogUtils.info(String.format(Locale.getDefault(), "Disabling service '%s' for package '%s'", compName, packageName), handler);
+                        componentType = "service";
                     } else if (availableReceiverNames.contains(compName)) {
                         disable = true;
                         permissionStatus = AppPermission.STATUS_RECEIVER;
-                        LogUtils.info(String.format(Locale.getDefault(), "Disabling receiver '%s' for package '%s'", compName, packageName), handler);
+                        componentType = "receiver";
                     } else if (availableActivityNames.contains(compName)) {
                         disable = true;
                         permissionStatus = AppPermission.STATUS_ACTIVITY;
-                        LogUtils.info(String.format(Locale.getDefault(), "Disabling activity '%s' for package '%s'", compName, packageName), handler);
+                        componentType = "activity";
                     }
 
                     if (disable) {
                         try {
-                            count++;
                             boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
                             if (compState) {
                                 ComponentName componentName = new ComponentName(packageName, compName);
@@ -213,6 +213,9 @@ public class AutoUpdateWorker extends Worker {
                                 if (appPolicy != null) {
                                     boolean success = appPolicy.setApplicationComponentState(componentName, false);
                                     if (success) {
+                                        count++;
+                                        LogUtils.info(String.format(Locale.getDefault(), "Disabling %s '%s' for package '%s'", componentType, compName, packageName), handler);
+
                                         AppPermission appService = new AppPermission();
                                         appService.packageName = packageName;
                                         appService.permissionName = compName;

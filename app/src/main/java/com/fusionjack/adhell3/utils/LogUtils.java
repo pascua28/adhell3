@@ -62,7 +62,7 @@ public final class LogUtils {
     public static DocumentFile getAutoUpdateLogFile() {
         DocumentFile logFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, AUTO_UPDATE_LOG_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
         try {
-            shrinkLogFile(logFile, 2097152, 1000);
+            shrinkLogFile(logFile, 1572864, 1000);
         } catch (IOException e) {
             error(e.getMessage(), e);
         }
