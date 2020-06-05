@@ -23,6 +23,7 @@
         app:itemIconTint="@color/nav_item_state_list"
         app:itemTextColor="@color/nav_item_state_list"
         app:labelVisibilityMode="labeled"
+        app:elevation="0dp"
         app:menu="@menu/bottombar_menu" />
 
 </RelativeLayout>
