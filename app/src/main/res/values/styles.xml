@@ -14,8 +14,13 @@
         <item name="android:titleTextColor">@color/colorText</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item>
         <item name="android:buttonStyle">@style/buttonStyle</item>
-        <item name="android:windowDisablePreview">true</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
+    <style name="AppTheme.Launcher" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+        <item name="android:colorPrimaryDark">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="WindowAnimationTransition">

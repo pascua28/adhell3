@@ -264,10 +264,8 @@
     <string name="menu_item_show_stopped_apps">Show stopped Apps</string>
     <string name="home_status_title">Application status</string>
     <string name="dialog_question_dont_show_again">Don\'t show again</string>
-    <string name="biometric_check_lockscreen_security">Lock screen security not enabled in Settings</string>
-    <string name="biometric_check_permission">Fingerprint authentication permission not enabled</string>
     <string name="biometric_auth_error">Authentication error:</string>
-    <string name="biometric_auth_cancel">Authentication cancelled</string>
+    <string name="biometric_auth_failed">Authentication failed! Please try again</string>
     <string name="biometric_dialog_title">Fingerprint Authentication</string>
     <string name="biometric_dialog_subtitle">Authentication is required to continue</string>
     <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>

@@ -12,5 +12,5 @@
     <color name="colorButton">@color/colorAccent</color>
     <color name="colorBottomNavSelected">@color/colorAccent</color>
     <color name="colorBottomNavUnselected">@android:color/black</color>
-    <color name="colorRed">#F44336</color>
+    <color name="colorRed">#fe4445</color>
 </resources>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/colorPrimary"
+    tools:context="com.fusionjack.adhell3.SplashScreenActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="30dp"
+        android:src="@drawable/ic_logo"
+        android:contentDescription="logo" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="70dp"
+        android:textColor="@color/colorText"
+        android:textAlignment="center"
+        android:shadowDy="7"
+        android:shadowRadius="10"
+        android:shadowColor="#50000000"
+        android:textSize="40sp"
+        android:elevation="5dp"
+        android:textStyle="bold"
+        android:text="Adhell3"/>
+
+    <LinearLayout
+        android:id="@+id/passwordLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/passwordInfoTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textAlignment="center"
+            android:shadowDy="3"
+            android:shadowRadius="7"
+            android:shadowColor="#50000000"
+            android:elevation="3dp"
+            android:text="@string/dialog_enter_password_summary" />
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_edittext"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="70dp"
+            android:layout_marginEnd="70dp"
+            android:padding="7dp"
+            android:textAlignment="center"
+            android:textColor="@color/colorText"
+            android:elevation="3dp"
+            android:inputType="textPassword"
+            android:hint="Password"
+            android:autofillHints="password" />
+
+        <ImageButton
+            android:id="@+id/passwordButton"
+            android:layout_width="130dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center_horizontal"
+            android:elevation="3dp"
+            android:tint="@color/colorPrimary"
+            android:tintMode="src_in"
+            android:background="@drawable/rounded_red_button"
+            android:src="@drawable/ic_submit"
+            android:scaleType="fitCenter"
+            android:contentDescription="Ok" />
+
+        <ImageView
+            android:id="@+id/biometricButton"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="80dp"
+            android:padding="15dp"
+            android:elevation="3dp"
+            android:tint="@color/colorText"
+            android:tintMode="src_in"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_fingerprint"
+            android:visibility="invisible"
+            android:contentDescription="Biometric button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>

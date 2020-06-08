@@ -8,8 +8,8 @@ import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.fragment.app.FragmentActivity;
 
-import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.SplashScreenActivity;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -41,15 +41,20 @@ public class BiometricUtils {
 
         return new BiometricPrompt.AuthenticationCallback() {
             @Override
+            public void onAuthenticationFailed() {
+                ((SplashScreenActivity) context).runOnUiThread(() -> Toast.makeText(context, context.getString(R.string.biometric_auth_failed), Toast.LENGTH_SHORT).show());
+                super.onAuthenticationFailed();
+            }
+
+            @Override
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                ((MainActivity) context).runOnUiThread(() -> Toast.makeText(context, context.getString(R.string.biometric_auth_error) + errString, Toast.LENGTH_LONG).show());
+                ((SplashScreenActivity) context).runOnUiThread(() -> Toast.makeText(context, context.getString(R.string.biometric_auth_error) + errString, Toast.LENGTH_SHORT).show());
                 super.onAuthenticationError(errorCode, errString);
             }
 
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                //Toast.makeText(context, context.getString(R.string.biometric_auth_succeeded), Toast.LENGTH_SHORT).show();
-                ((MainActivity) context).runOnUiThread(((MainActivity) context)::successAuthentication);
+                ((SplashScreenActivity) context).runOnUiThread(((SplashScreenActivity) context)::successAuthentication);
                 super.onAuthenticationSucceeded(result);
 
             }

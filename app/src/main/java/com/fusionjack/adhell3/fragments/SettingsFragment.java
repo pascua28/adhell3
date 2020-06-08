@@ -55,7 +55,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String ALLOW_QSTILES_LOCKSCREEN = "allow_qstiles_lockscreen";

@@ -3,19 +3,13 @@ package com.fusionjack.adhell3;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,19 +28,14 @@ import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.BiometricUtils;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.Objects;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
-    public AlertDialog passwordDialog;
     public String themeChange;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
@@ -59,24 +48,29 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomBar;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
-    private boolean biometricSupport;
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Close Activity if it's not the root of the task
-        if (!isTaskRoot()) {
-            finish();
-            return;
-        }
-
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        biometricSupport = BiometricUtils.checkBiometricSupport(this);
         themeChange = getIntent().getStringExtra("settingsFragment");
 
+        // Set the crash handler to log crash's stack trace into a file
+        if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
+            Thread.setDefaultUncaughtExceptionHandler(CrashHandler.getInstance());
+        }
+
         // Remove elevation shadow of ActionBar
-        Objects.requireNonNull(getSupportActionBar()).setElevation(0);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setElevation(0);
+        }
 
         // Change status bar icon tint based on theme
         View decor = getWindow().getDecorView();
@@ -86,22 +80,9 @@ public class MainActivity extends AppCompatActivity {
             decor.setSystemUiVisibility(0);
         }
 
-        // Set the crash handler to log crash's stack trace into a file
-        if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
-            Thread.setDefaultUncaughtExceptionHandler(CrashHandler.getInstance());
-        }
-
         fragmentManager = getSupportFragmentManager();
         activationDialogFragment = new ActivationDialogFragment();
         activationDialogFragment.setCancelable(false);
-        passwordDialog = createPasswordDialog();
-
-        // Early exit if the device doesn't support Knox
-        if (!DeviceAdminInteractor.getInstance().isSupported()) {
-            LogUtils.info("Device not supported");
-            AdhellFactory.getInstance().createNotSupportedDialog(this);
-            return;
-        }
 
         setContentView(R.layout.activity_main);
 
@@ -117,9 +98,10 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         if (!selectFileActivityLaunched) {
-            // Show password dialog if password has been set and wait until the user enter the password
-            if (isPasswordShowing()) {
-                return;
+            if (!getIntent().getBooleanExtra("START", false)) {
+                Intent splashIntent = new Intent(this, SplashScreenActivity.class);
+                splashIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(splashIntent);
             }
 
             finishOnResume();
@@ -128,6 +110,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         LogUtils.info("Everything is okay");
+    }
+
+    @Override
+    protected void onPause() {
+        onNewIntent(new Intent());
+        super.onPause();
     }
 
     @Override
@@ -155,6 +143,11 @@ public class MainActivity extends AppCompatActivity {
         int count = fragmentManager.getBackStackEntryCount();
         if (count <= 1) {
             if (doubleBackToExitPressedOnce) {
+                Intent intent = new Intent(this, SplashScreenActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.putExtra("EXIT", true);
+                startActivity(intent);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             }
 
@@ -174,11 +167,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void successAuthentication() {
-        passwordDialog.dismiss();
-        finishOnResume();
     }
 
     public void setSelectedAppTab(int selectedTabId) {
@@ -325,67 +313,8 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private boolean isPasswordShowing() {
-        String passwordHash = AppPreferences.getInstance().getPasswordHash();
-        if (!passwordHash.isEmpty()) {
-            if (!passwordDialog.isShowing()) {
-                LogUtils.info("Showing password dialog");
-                passwordDialog.show();
-            }
-            return true;
-        }
-        return false;
-    }
-
     private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog == null;
-    }
-
-    private AlertDialog createPasswordDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_enter_password, findViewById(android.R.id.content), false);
-        int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.getTheme());
-        AlertDialog passwordDialog = new AlertDialog.Builder(this, R.style.ThemeOverlay_AlertDialog)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, null)
-                .setCancelable(false)
-                .create();
-
-        ImageView icon = dialogView.findViewById(R.id.passwordIcon);
-        icon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-        ImageButton fingerprintButton = dialogView.findViewById(R.id.fingerprintButton);
-        passwordDialog.setOnShowListener(dialogInterface -> {
-            if (biometricSupport) {
-                fingerprintButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                fingerprintButton.setVisibility(View.VISIBLE);
-                fingerprintButton.setOnClickListener(v -> BiometricUtils.authenticateUser(this));
-                BiometricUtils.authenticateUser(this);
-            }
-            Button button = passwordDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            button.setOnClickListener(view -> {
-                EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
-                String password = passwordEditText.getText().toString();
-                try {
-                    TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
-                    String passwordHash = AppPreferences.getInstance().getPasswordHash();
-                    if (PasswordStorage.verifyPassword(password, passwordHash)) {
-                        infoTextView.setText(R.string.dialog_enter_password_summary);
-                        passwordEditText.setText("");
-                        successAuthentication();
-                    } else {
-                        infoTextView.setText(R.string.dialog_wrong_password);
-                    }
-                } catch (PasswordStorage.CannotPerformOperationException | PasswordStorage.InvalidHashException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        if (passwordDialog.getWindow() != null) {
-            passwordDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            passwordDialog.getWindow().setDimAmount(1.0f);
-        }
-
-        return passwordDialog;
     }
 }
