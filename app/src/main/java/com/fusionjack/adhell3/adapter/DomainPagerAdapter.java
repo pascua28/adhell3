@@ -1,47 +1,26 @@
 package com.fusionjack.adhell3.adapter;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
 
-public class DomainPagerAdapter extends FragmentPagerAdapter {
+public class DomainPagerAdapter extends FragmentStateAdapter {
     private static final int PAGE_COUNT = 4;
-    private final String[] tabTitles;
 
-    public DomainPagerAdapter(FragmentManager fm, Context context) {
-        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        tabTitles = new String[]{
-                context.getString(R.string.blacklist_url_fragment_title),
-                context.getString(R.string.whitelist_url_fragment_title),
-                context.getString(R.string.provider_url_fragment_title),
-                context.getString(R.string.list_url_fragment_title)
-        };
+    public DomainPagerAdapter(Fragment fragment) {
+        super(fragment);
     }
 
     @NonNull
     @Override
-    public Fragment getItem(int position) {
+    public Fragment createFragment(int position) {
         return DomainTabPageFragment.newInstance(position);
     }
 
     @Override
-    public int getItemPosition(@NonNull Object object) {
-        return POSITION_NONE;
-    }
-
-    @Override
-    public int getCount() {
+    public int getItemCount() {
         return PAGE_COUNT;
-    }
-
-    @Override
-    public CharSequence getPageTitle(int position) {
-        return tabTitles[position];
     }
 }

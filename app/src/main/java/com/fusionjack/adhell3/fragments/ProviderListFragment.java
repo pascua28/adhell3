@@ -36,7 +36,6 @@ import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
-import com.fusionjack.adhell3.tasks.SetDomainCountAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
@@ -81,8 +80,6 @@ public class ProviderListFragment extends Fragment {
         strFormat = getResources().getString(R.string.total_unique_domains);
         infoTextView.setText(String.format(strFormat, 0));
 
-        new SetDomainCountAsyncTask(context).execute();
-
         // Provider list
         ListView providerListView = view.findViewById(R.id.providerListView);
         if (providerListView.getVisibility() == View.VISIBLE) loadingBar.setVisibility(View.VISIBLE);
@@ -115,12 +112,12 @@ public class ProviderListFragment extends Fragment {
             }
         });
 
-        SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.providerSwipeContainer);
-        dnsSwipeContainer.setOnRefreshListener(() -> {
+        SwipeRefreshLayout providerSwipeContainer = view.findViewById(R.id.providerSwipeContainer);
+        providerSwipeContainer.setOnRefreshListener(() -> {
             if (loadingBar != null) {
                 loadingBar.setVisibility(View.VISIBLE);
             }
-            new UpdateProviderAsyncTask(context).execute();
+            new UpdateProviderAsyncTask(context, true).execute();
         });
 
         FloatingActionsMenu providerFloatMenu = view.findViewById(R.id.provider_actions);
@@ -190,6 +187,8 @@ public class ProviderListFragment extends Fragment {
         } else {
             loadingBar.setVisibility(View.GONE);
         }
+
+        new SetDomainCountAsyncTask(context, 100).execute();
 
         return view;
     }
@@ -312,16 +311,18 @@ public class ProviderListFragment extends Fragment {
 
     private static class UpdateProviderAsyncTask extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> contextWeakReference;
+        private final boolean updateProviders;
 
-        UpdateProviderAsyncTask(Context context) {
+        UpdateProviderAsyncTask(Context context, boolean updateProviders) {
             this.contextWeakReference = new WeakReference<>(context);
+            this.updateProviders = updateProviders;
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
             Context context = contextWeakReference.get();
             if (context != null) {
-                if (AdhellFactory.getInstance().hasInternetAccess(context)) {
+                if (AdhellFactory.getInstance().hasInternetAccess(context) && updateProviders) {
                     AdhellFactory.getInstance().updateAllProviders();
                 }
             }
@@ -344,7 +345,7 @@ public class ProviderListFragment extends Fragment {
                     swipeContainer.setRefreshing(false);
                 }
 
-                new SetDomainCountAsyncTask(context).execute();
+                new SetDomainCountAsyncTask(context, 0).execute();
             }
         }
     }
@@ -407,6 +408,44 @@ public class ProviderListFragment extends Fragment {
                 }
             }
             return null;
+        }
+    }
+
+    private static class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
+        private final WeakReference<Context> contextWeakReference;
+        private final int delay;
+
+        SetDomainCountAsyncTask(Context context, int delay) {
+            this.contextWeakReference = new WeakReference<>(context);
+            this.delay = delay;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return BlockUrlUtils.getAllBlockedUrlsCount(appDatabase);
+        }
+
+        @Override
+        protected void onPostExecute(Integer count) {
+            Context context = contextWeakReference.get();
+            if (context != null) {
+                TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
+                if (infoTextView != null) {
+                    String strFormat = context.getResources().getString(R.string.total_unique_domains);
+                    infoTextView.setText(String.format(strFormat, count));
+                }
+
+                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarProvider);
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.GONE);
+                }
+            }
         }
     }
 }

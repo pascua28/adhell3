@@ -10,15 +10,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
-
-import java.util.Objects;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAGE;
 
@@ -50,83 +49,75 @@ public class OtherTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_others, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.others_sliding_tabs);
-        ViewPager viewPager = view.findViewById(R.id.others_viewpager);
-        viewPager.setAdapter(new OtherPagerAdapter(getChildFragmentManager(), requireContext()));
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.addOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+        ViewPager2 viewPager = view.findViewById(R.id.others_viewpager);
+        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        viewPager.setOffscreenPageLimit(BuildConfig.APP_COMPONENT ? 3 : 2);
+        viewPager.setAdapter(new OtherPagerAdapter(this));
 
-                    @Override
-                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
-                        super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
-                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        if (mainActivity != null) {
-                            mainActivity.setSelectedOtherTab(tab.getPosition());
-                        }
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> tab.setText(GetTabTitle(position))
+        ).attach();
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                TabLayout.Tab currentTab = tabLayout.getTabAt(position);
+                if (currentTab != null) {
+                    int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
+                    if (currentTab.getIcon() != null) {
+                        currentTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
-
-                    @Override
-                    public void onTabUnselected(TabLayout.Tab tab) {
-                        super.onTabUnselected(tab);
+                }
+                for (int i = 0; i < tabLayout.getTabCount(); i++) {
+                    if (i != position) {
                         int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
-                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                    }
-
-                    @Override
-                    public void onTabReselected(TabLayout.Tab tab) {
-                        super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
-                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        if (mainActivity != null) {
-                            mainActivity.setSelectedOtherTab(tab.getPosition());
+                        TabLayout.Tab otherTab = tabLayout.getTabAt(i);
+                        if (otherTab!= null && otherTab.getIcon() != null) {
+                            otherTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                         }
                     }
                 }
-        );
+                if (mainActivity != null) {
+                    mainActivity.setSelectedOtherTab(position);
+                }
+            }
+        });
 
         int imageIndex = BuildConfig.APP_COMPONENT ? 0 : 1;
-        int tabCount = Objects.requireNonNull(viewPager.getAdapter()).getCount();
-        for (int i = 0; i < tabCount; i++, imageIndex++) {
-            TabLayout.Tab tab = tabLayout.getTabAt(i);
-            if (tab != null) {
-                tab.setIcon(imageResId[i]);
-                int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorBottomNavUnselected);
-                Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+        if (viewPager.getAdapter() != null) {
+            int tabCount = viewPager.getAdapter().getItemCount();
+            for (int i = 0; i < tabCount; i++, imageIndex++) {
+                TabLayout.Tab tab = tabLayout.getTabAt(i);
+                if (tab != null) {
+                    tab.setIcon(imageResId[i]);
+                    int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
+                    if (tab.getIcon() != null) {
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+                }
             }
         }
 
         if (viewpagerPosition != null && viewpagerPosition.equals("Settings") && mainActivity != null) {
-
             mainActivity.setSelectedOtherTab(SETTINGS_PAGE);
             mainActivity.themeChange = null;
         }
-        TabLayout.Tab tab = null;
+
         if (mainActivity != null) {
-            tab = tabLayout.getTabAt(mainActivity.getSelectedOtherTab());
-        }
-        if (tab != null) {
-            tab.select();
+            viewPager.setCurrentItem(mainActivity.getSelectedOtherTab(), false);
         }
 
-/*        if (viewpagerPosition == null) {
-            TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
-            if (tab != null) {
-                tab.select();
-            }
-        } else {
-            if (viewpagerPosition.equals("Settings")) {
-                TabLayout.Tab tab = tabLayout.getTabAt(SETTINGS_PAGE);
-                if (tab != null) {
-                    tab.select();
-                }
-            } else {
-                TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
-                if (tab != null) {
-                    tab.select();
-                }
-            }
-        }*/
         return view;
+    }
+
+    private String GetTabTitle(int position) {
+        String[] tabTitles = new String[]{
+                requireContext().getString(R.string.app_component_fragment_title),
+                requireContext().getString(R.string.dns_fragment_title),
+                requireContext().getString(R.string.settings_fragment_title)};
+
+        return tabTitles[position];
     }
 }

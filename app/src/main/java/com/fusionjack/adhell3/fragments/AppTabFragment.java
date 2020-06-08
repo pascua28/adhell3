@@ -10,15 +10,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
-
-import java.util.Objects;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class AppTabFragment extends Fragment {
 
@@ -44,59 +43,71 @@ public class AppTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_apps, container, false);
 
         TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
-        ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), requireContext()));
-        viewPager.setOffscreenPageLimit(4);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.addOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+        ViewPager2 viewPager = view.findViewById(R.id.apps_viewpager);
+        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        viewPager.setOffscreenPageLimit(BuildConfig.DISABLE_APPS ? 4 : 3);
+        viewPager.setAdapter(new AppPagerAdapter( this));
 
-                    @Override
-                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
-                        super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
-                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        if (mainActivity != null) {
-                            mainActivity.setSelectedAppTab(tab.getPosition());
-                        }
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> tab.setText(GetTabTitle(position))
+        ).attach();
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                TabLayout.Tab currentTab = tabLayout.getTabAt(position);
+                if (currentTab != null) {
+                    int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
+                    if (currentTab.getIcon() != null) {
+                        currentTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
-
-                    @Override
-                    public void onTabUnselected(TabLayout.Tab tab) {
-                        super.onTabUnselected(tab);
+                }
+                for (int i = 0; i < tabLayout.getTabCount(); i++) {
+                    if (i != position) {
                         int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
-                        Objects.requireNonNull(tab.getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                    }
-
-                    @Override
-                    public void onTabReselected(TabLayout.Tab tab) {
-                        super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
-                        if (tab.getIcon() != null) {
-                            tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                        }
-                        if (mainActivity != null) {
-                            mainActivity.setSelectedAppTab(tab.getPosition());
+                        TabLayout.Tab otherTab = tabLayout.getTabAt(i);
+                        if (otherTab!= null && otherTab.getIcon() != null) {
+                            otherTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                         }
                     }
                 }
-        );
+                if (mainActivity != null) {
+                    mainActivity.setSelectedAppTab(position);
+                }
+            }
+        });
 
         int imageIndex = BuildConfig.DISABLE_APPS ? 0 : 1;
-        int tabCount = Objects.requireNonNull(viewPager.getAdapter()).getCount();
-        for (int i = 0; i < tabCount; i++, imageIndex++) {
-            Objects.requireNonNull(tabLayout.getTabAt(i)).setIcon(imageResId[imageIndex]);
-            int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorBottomNavUnselected);
-            Objects.requireNonNull(Objects.requireNonNull(tabLayout.getTabAt(i)).getIcon()).setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+        if (viewPager.getAdapter() != null) {
+            int tabCount = viewPager.getAdapter().getItemCount();
+            for (int i = 0; i < tabCount; i++, imageIndex++) {
+                TabLayout.Tab tab = tabLayout.getTabAt(i);
+                if (tab != null) {
+                    tab.setIcon(imageResId[imageIndex]);
+                    int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
+                    if (tab.getIcon() != null) {
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+                }
+            }
         }
 
-        TabLayout.Tab tab = null;
         if (mainActivity != null) {
-            tab = tabLayout.getTabAt(mainActivity.getSelectedAppTab());
+            viewPager.setCurrentItem(mainActivity.getSelectedAppTab(), false);
         }
-        if (tab != null) {
-            tab.select();
-        }
+
         return view;
+    }
+
+    private String GetTabTitle(int position) {
+        String[] tabTitles = new String[]{
+                requireContext().getString(R.string.package_disabler_fragment_title),
+                requireContext().getString(R.string.mobile_restricter_fragment_title),
+                requireContext().getString(R.string.wifi_restricter_fragment_title),
+                requireContext().getString(R.string.whitelist_fragment_title)};
+
+        return tabTitles[position];
     }
 }

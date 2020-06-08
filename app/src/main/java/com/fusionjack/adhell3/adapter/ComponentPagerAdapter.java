@@ -1,49 +1,29 @@
 package com.fusionjack.adhell3.adapter;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.ComponentTabPageFragment;
 
-public class ComponentPagerAdapter extends FragmentPagerAdapter {
+public class ComponentPagerAdapter extends FragmentStateAdapter {
     private static final int PAGE_COUNT = 4;
-    private final String[] tabTitles;
     private final String packageName;
 
-    public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
-        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        tabTitles = new String[]{
-                context.getString(R.string.permission_fragment_title),
-                context.getString(R.string.service_fragment_title),
-                context.getString(R.string.receiver_fragment_title),
-                context.getString(R.string.activity_fragment_title)};
+    public ComponentPagerAdapter(Fragment fragment, String packageName) {
+        super(fragment);
 
         this.packageName = packageName;
     }
 
     @NonNull
     @Override
-    public Fragment getItem(int position) {
+    public Fragment createFragment(int position) {
         return ComponentTabPageFragment.newInstance(position, packageName);
     }
 
     @Override
-    public int getItemPosition(@NonNull Object object) {
-        return POSITION_NONE;
-    }
-
-    @Override
-    public int getCount() {
+    public int getItemCount() {
         return PAGE_COUNT;
-    }
-
-    @Override
-    public CharSequence getPageTitle(int position) {
-        return tabTitles[position];
     }
 }
