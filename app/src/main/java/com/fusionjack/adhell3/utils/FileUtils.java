@@ -8,6 +8,12 @@ import com.fusionjack.adhell3.App;
 
 public class FileUtils {
 
+    public enum FileCreationType {
+        NEVER,
+        IF_NOT_EXIST,
+        ALWAYS
+    }
+
     public static DocumentFile getDocumentFile(String filePath, String fileName, FileCreationType fileCreationType) {
         String[] storageFolders = filePath.split("/");
         DocumentFile parentDirectory = DocumentFile.fromTreeUri(App.getAppContext(), Uri.parse(AppPreferences.getInstance().getStorageTreePath()));
@@ -35,11 +41,5 @@ public class FileUtils {
         }
 
         return file;
-    }
-
-    public enum FileCreationType {
-        NEVER,
-        IF_NOT_EXIST,
-        ALWAYS
     }
 }

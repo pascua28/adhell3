@@ -34,6 +34,8 @@ import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.DialogUtils;
 
+import java.lang.ref.WeakReference;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.SingleObserver;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -150,6 +152,10 @@ public class AppComponentFragment extends AppFragment {
             alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         alertDialog.show();
+
+        if (getView() != null) {
+            AppComponentFactory.checkMigrateOldBatchFiles(new WeakReference<>(getContext()), getView().findViewById(android.R.id.content));
+        }
     }
 
     private void enableAllAppComponents() {

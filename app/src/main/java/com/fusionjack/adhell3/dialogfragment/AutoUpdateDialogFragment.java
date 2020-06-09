@@ -30,8 +30,10 @@ import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.AutoUpdateWorker;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -156,6 +158,12 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     }
 
     private void saveAutoUpdateSettings() {
+        if (appComponentsCheckBox.isChecked()) {
+            if (getView() != null) {
+                AppComponentFactory.checkMigrateOldBatchFiles(new WeakReference<>(getContext()), getView().findViewById(android.R.id.content));
+            }
+        }
+
         AppPreferences.getInstance().setAutoUpdateInterval(intervalSeekBar.getProgress());
         AppPreferences.getInstance().setAppComponentsAutoUpdate(appComponentsCheckBox.isChecked());
         AppPreferences.getInstance().setCleanDatabaseAutoUpdate(cleanDBCheckBox.isChecked());
