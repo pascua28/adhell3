@@ -6,7 +6,7 @@
 
     <ExpandableListView
         android:id="@+id/activityExpandableListView"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />

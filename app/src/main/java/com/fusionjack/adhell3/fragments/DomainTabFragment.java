@@ -51,7 +51,7 @@ public class DomainTabFragment extends Fragment {
         viewPager.setAdapter(new DomainPagerAdapter(this));
 
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> tab.setText(GetTabTitle(position))
+                (tab, position) -> tab.setText(getTabTitle(position))
         ).attach();
 
         viewPager.registerOnPageChangeCallback(new OnPageChangeCallback() {
@@ -99,7 +99,7 @@ public class DomainTabFragment extends Fragment {
         return view;
     }
 
-    private String GetTabTitle(int position) {
+    private String getTabTitle(int position) {
         String[] tabTitles = new String[]{
                 requireContext().getString(R.string.blacklist_url_fragment_title),
                 requireContext().getString(R.string.whitelist_url_fragment_title),

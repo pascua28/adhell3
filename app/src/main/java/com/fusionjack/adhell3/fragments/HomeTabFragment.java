@@ -170,7 +170,6 @@ public class HomeTabFragment extends Fragment {
             new ExportDomainsAsyncTask(getContext()).execute();
         });
 
-
         AsyncTask.execute(() -> {
             AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
             adhellAppIntegrity.checkDefaultPolicyExists();

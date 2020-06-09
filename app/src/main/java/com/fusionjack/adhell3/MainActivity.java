@@ -45,8 +45,6 @@ public class MainActivity extends AppCompatActivity {
     private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
     private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
-    private BottomNavigationView bottomBar;
-    private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
 
     @Override
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        themeChange = getIntent().getStringExtra("settingsFragment");
 
         // Set the crash handler to log crash's stack trace into a file
         if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
@@ -84,21 +81,36 @@ public class MainActivity extends AppCompatActivity {
         activationDialogFragment = new ActivationDialogFragment();
         activationDialogFragment.setCancelable(false);
 
+        themeChange = getIntent().getStringExtra("settingsFragment");
+
         setContentView(R.layout.activity_main);
 
-        bottomBar = findViewById(R.id.bottomBar);
+        BottomNavigationView bottomBar = findViewById(R.id.bottomBar);
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             onTabSelected(item.getItemId());
             return true;
         });
+
+        // Select Other tab if theme has been changed or select Home tab by default
+        if (themeChange != null) {
+            if (themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
+                bottomBar.setSelectedItemId(R.id.othersTab);
+            } else {
+                bottomBar.setSelectedItemId(R.id.homeTab);
+            }
+        } else {
+            bottomBar.setSelectedItemId(R.id.homeTab);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        themeChange = getIntent().getStringExtra("settingsFragment");
+
         if (!selectFileActivityLaunched) {
-            if (!getIntent().getBooleanExtra("START", false)) {
+            if (!getIntent().getBooleanExtra("START", false) && themeChange == null) {
                 Intent splashIntent = new Intent(this, SplashScreenActivity.class);
                 splashIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(splashIntent);
@@ -144,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         if (count <= 1) {
             if (doubleBackToExitPressedOnce) {
                 Intent intent = new Intent(this, SplashScreenActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 intent.putExtra("EXIT", true);
                 startActivity(intent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -214,20 +226,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        // Select the Home tab manually if nothing is selected
-        if (selectedTabId == -1) {
-            if (themeChange != null) {
-                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
-                    bottomBar.setSelectedItemId(R.id.othersTab);
-                    onTabSelected(R.id.othersTab);
-
-                } else {
-                    onTabSelected(R.id.homeTab);
-                }
-            } else {
-                onTabSelected(R.id.homeTab);
-            }
-        }
         return true;
     }
 
@@ -236,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isKnoxValid()) {
             finish();
         }
+
         // Check for storage permission
         requestStoragePermission();
     }
@@ -281,19 +280,15 @@ public class MainActivity extends AppCompatActivity {
         Fragment replacing;
         switch (tabId) {
             case R.id.homeTab:
-                selectedTabId = R.id.homeTab;
                 replacing = new HomeTabFragment();
                 break;
             case R.id.appsManagementTab:
-                selectedTabId = R.id.appsManagementTab;
                 replacing = new AppTabFragment();
                 break;
             case R.id.domainsTab:
-                selectedTabId = R.id.domainsTab;
                 replacing = new DomainTabFragment();
                 break;
             case R.id.othersTab:
-                selectedTabId = R.id.othersTab;
                 replacing = new OtherTabFragment();
                 if (themeChange != null) {
                     if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
@@ -304,8 +299,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             default:
-                selectedTabId = -1;
-                replacing = new HomeTabFragment();
+                replacing = new Fragment();
+                break;
         }
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, replacing)

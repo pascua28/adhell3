@@ -54,7 +54,7 @@ public class ComponentTabFragment extends Fragment {
         viewPager.setAdapter(new ComponentPagerAdapter(this, packageName));
 
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> tab.setText(GetTabTitle(position))
+                (tab, position) -> tab.setText(getTabTitle(position))
         ).attach();
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -100,7 +100,7 @@ public class ComponentTabFragment extends Fragment {
         return view;
     }
 
-    private String GetTabTitle(int position) {
+    private String getTabTitle(int position) {
         String[] tabTitles = new String[]{
                 requireContext().getString(R.string.permission_fragment_title),
                 requireContext().getString(R.string.service_fragment_title),

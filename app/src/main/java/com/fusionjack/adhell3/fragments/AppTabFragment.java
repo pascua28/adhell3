@@ -49,7 +49,7 @@ public class AppTabFragment extends Fragment {
         viewPager.setAdapter(new AppPagerAdapter( this));
 
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> tab.setText(GetTabTitle(position))
+                (tab, position) -> tab.setText(getTabTitle(position))
         ).attach();
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -101,7 +101,7 @@ public class AppTabFragment extends Fragment {
         return view;
     }
 
-    private String GetTabTitle(int position) {
+    private String getTabTitle(int position) {
         String[] tabTitles = new String[]{
                 requireContext().getString(R.string.package_disabler_fragment_title),
                 requireContext().getString(R.string.mobile_restricter_fragment_title),
