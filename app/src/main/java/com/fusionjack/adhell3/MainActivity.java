@@ -310,6 +310,8 @@ public class MainActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             if (previousSelectedTab != -1) {
                 fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+            } else {
+                fragmentTransaction.setCustomAnimations(0, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
             }
             fragmentTransaction
                     .replace(R.id.fragmentContainer, replacing)
