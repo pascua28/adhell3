@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
@@ -227,6 +228,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            getDialog().getWindow().getAttributes().windowAnimations = R.style.FragmentDialogAnimation;
         }
 
         return view;
@@ -245,8 +247,9 @@ public class ActivationDialogFragment extends DialogFragment {
                 Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                fragmentManager
-                        .beginTransaction()
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+                fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
             } else if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_DEACTIVATION) {
@@ -265,8 +268,9 @@ public class ActivationDialogFragment extends DialogFragment {
                 Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                fragmentManager
-                        .beginTransaction()
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+                fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
             }

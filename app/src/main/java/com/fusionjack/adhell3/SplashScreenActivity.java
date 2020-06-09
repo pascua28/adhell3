@@ -94,7 +94,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("EXIT", true);
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
         finish();
     }
 
@@ -108,7 +108,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("START", true);
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
     }
 
     private boolean isPasswordShowing() {

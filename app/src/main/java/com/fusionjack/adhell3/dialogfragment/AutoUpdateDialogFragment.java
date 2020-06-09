@@ -74,6 +74,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            getDialog().getWindow().getAttributes().windowAnimations = R.style.FragmentDialogAnimation;
         }
         return inflater.inflate(R.layout.dialog_fragment_auto_update, container);
     }

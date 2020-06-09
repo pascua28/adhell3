@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
@@ -33,6 +34,8 @@ import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.HashMap;
+
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
     private boolean doubleBackToExitPressedOnce = false;
+    private int previousSelectedTab = -1;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -159,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 intent.putExtra("EXIT", true);
                 startActivity(intent);
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
                 finish();
             }
 
@@ -276,40 +280,61 @@ public class MainActivity extends AppCompatActivity {
 
     private void onTabSelected(int tabId) {
         LogUtils.info("Tab '" + tabId + "' is selected");
-        fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        Fragment replacing;
-        switch (tabId) {
-            case R.id.homeTab:
-                replacing = new HomeTabFragment();
-                break;
-            case R.id.appsManagementTab:
-                replacing = new AppTabFragment();
-                break;
-            case R.id.domainsTab:
-                replacing = new DomainTabFragment();
-                break;
-            case R.id.othersTab:
-                replacing = new OtherTabFragment();
-                if (themeChange != null) {
-                    if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("viewpager_position", "Settings");
-                        replacing.setArguments(bundle);
+        if (previousSelectedTab != getTabIndex(tabId) || fragmentManager.getBackStackEntryCount() > 1) {
+            fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            Fragment replacing;
+            switch (tabId) {
+                case R.id.homeTab:
+                    replacing = new HomeTabFragment();
+                    break;
+                case R.id.appsManagementTab:
+                    replacing = new AppTabFragment();
+                    break;
+                case R.id.domainsTab:
+                    replacing = new DomainTabFragment();
+                    break;
+                case R.id.othersTab:
+                    replacing = new OtherTabFragment();
+                    if (themeChange != null) {
+                        if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
+                            Bundle bundle = new Bundle();
+                            bundle.putString("viewpager_position", "Settings");
+                            replacing.setArguments(bundle);
+                        }
                     }
-                }
-                break;
-            default:
-                replacing = new Fragment();
-                break;
+                    break;
+                default:
+                    replacing = new Fragment();
+                    break;
+            }
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            if (previousSelectedTab != -1) {
+                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+            }
+            fragmentTransaction
+                    .replace(R.id.fragmentContainer, replacing)
+                    .addToBackStack(BACK_STACK_TAB_TAG)
+                    .commit();
         }
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, replacing)
-                .addToBackStack(BACK_STACK_TAB_TAG)
-                .commit();
+        previousSelectedTab = getTabIndex(tabId);
     }
 
     private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog == null;
+    }
+
+    private int getTabIndex(int tabId) {
+        HashMap<Integer, Integer> tabsIndex = new HashMap<>();
+        tabsIndex.put(R.id.homeTab, 0);
+        tabsIndex.put(R.id.appsManagementTab, 1);
+        tabsIndex.put(R.id.domainsTab, 2);
+        tabsIndex.put(R.id.othersTab, 3);
+
+        if (tabsIndex.get(tabId) != null) {
+            return tabsIndex.get(tabId);
+        } else {
+            return 0;
+        }
     }
 }

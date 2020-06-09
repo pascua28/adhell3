@@ -199,6 +199,7 @@ public class AppComponentFragment extends AppFragment {
                 fragment.setArguments(bundle);
 
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
                 fragmentTransaction.replace(R.id.fragmentContainer, fragment);
                 fragmentTransaction.addToBackStack("appComponents");
                 fragmentTransaction.commit();
