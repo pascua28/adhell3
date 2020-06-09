@@ -264,9 +264,10 @@
     <string name="menu_item_show_stopped_apps">Show stopped Apps</string>
     <string name="home_status_title">Application status</string>
     <string name="dialog_question_dont_show_again">Don\'t show again</string>
-    <string name="biometric_auth_error">Authentication error:</string>
-    <string name="biometric_auth_failed">Authentication failed! Please try again</string>
-    <string name="biometric_dialog_title">Fingerprint Authentication</string>
+    <string name="biometric_auth_error">Biometric authentication error: </string>
+    <string name="biometric_auth_failed">Biometric authentication failed!</string>
+    <string name="biometric_auth_success">Biometric authentication was successful!</string>
+    <string name="biometric_dialog_title">Biometric Authentication</string>
     <string name="biometric_dialog_subtitle">Authentication is required to continue</string>
     <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>
     <string name="biometric_dialog_cancel_button_text">Cancel</string>

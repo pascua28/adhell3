@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.biometric.BiometricManager;
@@ -42,18 +41,19 @@ public class BiometricUtils {
         return new BiometricPrompt.AuthenticationCallback() {
             @Override
             public void onAuthenticationFailed() {
-                ((SplashScreenActivity) context).runOnUiThread(() -> Toast.makeText(context, context.getString(R.string.biometric_auth_failed), Toast.LENGTH_SHORT).show());
+                LogUtils.error(context.getString(R.string.biometric_auth_failed));
                 super.onAuthenticationFailed();
             }
 
             @Override
             public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                ((SplashScreenActivity) context).runOnUiThread(() -> Toast.makeText(context, context.getString(R.string.biometric_auth_error) + errString, Toast.LENGTH_SHORT).show());
+                LogUtils.error(context.getString(R.string.biometric_auth_error) + errString);
                 super.onAuthenticationError(errorCode, errString);
             }
 
             @Override
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                LogUtils.info(context.getString(R.string.biometric_auth_success));
                 ((SplashScreenActivity) context).runOnUiThread(((SplashScreenActivity) context)::successAuthentication);
                 super.onAuthenticationSucceeded(result);
 
