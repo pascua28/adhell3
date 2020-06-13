@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_6;
 
 public final class DeviceAdminInteractor {
-    private static final int RESULT_ENABLE = 42;
+    private static final int RESULT_ENABLE = 41;
 
     private static DeviceAdminInteractor instance;
 

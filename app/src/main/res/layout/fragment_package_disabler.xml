@@ -30,7 +30,7 @@
             android:contentDescription="@string/iv_refresh_button_desc"
             android:focusable="true"
             android:focusableInTouchMode="false"
-            android:src="@drawable/ic_filter_white" />
+            android:src="@drawable/ic_filter" />
 
 
     </RelativeLayout>

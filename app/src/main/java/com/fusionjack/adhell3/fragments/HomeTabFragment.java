@@ -381,10 +381,12 @@ public class HomeTabFragment extends Fragment {
 
                 Switch domainRulesSwitch = ((Activity) context).findViewById(R.id.domainRulesSwitch);
                 Switch firewallRulesSwitch = ((Activity) context).findViewById(R.id.firewallRulesSwitch);
-                if (!isCurrentDomainLimitAboveDefault && ((domainRulesSwitch.isChecked() || firewallRulesSwitch.isChecked())))  {
-                    refreshButton.get().setVisibility(View.VISIBLE);
-                } else {
-                    refreshButton.get().setVisibility(View.GONE);
+                if (domainRulesSwitch != null && firewallRulesSwitch != null) {
+                    if (!isCurrentDomainLimitAboveDefault && ((domainRulesSwitch.isChecked() || firewallRulesSwitch.isChecked()))) {
+                        refreshButton.get().setVisibility(View.VISIBLE);
+                    } else {
+                        refreshButton.get().setVisibility(View.GONE);
+                    }
                 }
             }
         }

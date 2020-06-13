@@ -39,6 +39,7 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 public class MainActivity extends AppCompatActivity {
     public String themeChange;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
+    private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static boolean selectFileActivityLaunched = false;
     private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean doubleBackToExitPressedOnce = false;
     private int previousSelectedTab = -1;
     private AlertDialog permissionDialog;
+    private BottomNavigationView bottomBar;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -88,22 +90,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView bottomBar = findViewById(R.id.bottomBar);
+        bottomBar = findViewById(R.id.bottomBar);
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             onTabSelected(item.getItemId());
             return true;
         });
-
-        // Select Other tab if theme has been changed or select Home tab by default
-        if (themeChange != null) {
-            if (themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
-                bottomBar.setSelectedItemId(R.id.othersTab);
-            } else {
-                bottomBar.setSelectedItemId(R.id.homeTab);
-            }
-        } else {
-            bottomBar.setSelectedItemId(R.id.homeTab);
-        }
     }
 
     @Override
@@ -150,6 +141,13 @@ public class MainActivity extends AppCompatActivity {
                 this.grantUriPermission(this.getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 this.getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
+            if (permissionDialog != null) {
+                permissionDialog.dismiss();
+            }
+            finishOnResume();
+        } else if (resultCode == RESULT_OK && requestCode == ADMIN_PERMISSION_REQUEST_CODE) {
+            Toast.makeText(this, "Admin OK!", Toast.LENGTH_LONG).show();
+            finishOnResume();
         }
     }
 
@@ -207,7 +205,28 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 
-    public boolean isKnoxValid() {
+    public void finishOnResume() {
+        // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
+        if (!isKnoxValid()) {
+            return;
+        }
+
+        // Check for storage permission
+        requestStoragePermission();
+
+        // Select Other tab if theme has been changed or select Home tab by default
+        if (themeChange != null) {
+            if (themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
+                bottomBar.setSelectedItemId(R.id.othersTab);
+            } else {
+                bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
+            }
+        } else {
+            bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
+        }
+    }
+
+    private boolean isKnoxValid() {
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
             if (isActivationDialogNotVisible()) {
@@ -229,21 +248,13 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
+        if (!isActivationDialogNotVisible()) {
+            activationDialogFragment.dismiss();
+        }
         return true;
     }
 
-    private void finishOnResume() {
-        // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
-        if (!isKnoxValid()) {
-            finish();
-        }
-
-        // Check for storage permission
-        requestStoragePermission();
-    }
-
     private void requestStoragePermission() {
-
         if (AppPreferences.getInstance().getStorageTreePath().equals("") || this.getContentResolver().getPersistedUriPermissions().size() <= 0) {
             View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_question, findViewById(android.R.id.content), false);
             TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
@@ -270,8 +281,9 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
                     .create();
 
-
+            if (!permissionDialog.isShowing()) {
                 permissionDialog.show();
+            }
         }
     }
 
