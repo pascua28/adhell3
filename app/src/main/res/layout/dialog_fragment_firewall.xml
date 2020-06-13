@@ -18,8 +18,9 @@
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/titleTextView">
+        android:layout_height="match_parent"
+        android:layout_below="@+id/titleTextView"
+        android:layout_above="@id/closeButton">
 
         <TextView
             android:id="@+id/logTextView"
@@ -36,10 +37,10 @@
         android:id="@+id/closeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/scrollView"
-        android:layout_alignParentBottom="@+id/scrollView"
+        android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:text="Close" />
 
 </RelativeLayout>
