@@ -191,6 +191,7 @@ public final class AdhellFactory {
                     setAppPermission(packageName, permissions, state);
                     break;
                 case AppPermission.STATUS_SERVICE:
+                case AppPermission.STATUS_ACTIVITY:
                     ComponentName componentName = new ComponentName(packageName, permissionName);
                     appPolicy.setApplicationComponentState(componentName, state);
                     break;
