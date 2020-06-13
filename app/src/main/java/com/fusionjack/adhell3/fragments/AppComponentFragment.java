@@ -1,7 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -58,7 +56,7 @@ public class AppComponentFragment extends AppFragment {
             titleTextView.setText(R.string.dialog_system_app_components_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_system_app_components_info);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, ((dialog, which) -> {
                         if (dontShowAgain.isChecked()) {
@@ -66,9 +64,6 @@ public class AppComponentFragment extends AppFragment {
                         }
                     }))
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         }
@@ -127,7 +122,7 @@ public class AppComponentFragment extends AppFragment {
             }
         };
 
-        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(R.string.button_enable, (dialog, whichButton) -> {
                     progressDialog.show();
@@ -148,9 +143,6 @@ public class AppComponentFragment extends AppFragment {
                 .setNeutralButton(android.R.string.no, null)
                 .create();
 
-        if (alertDialog.getWindow() != null)
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         alertDialog.show();
 
         if (getView() != null) {
@@ -164,7 +156,7 @@ public class AppComponentFragment extends AppFragment {
         titleTextView.setText(R.string.dialog_enable_components_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_enable_components_info);
-        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                         AsyncTask.execute(() -> {
@@ -174,9 +166,6 @@ public class AppComponentFragment extends AppFragment {
                 )
                 .setNegativeButton(android.R.string.no, null)
                 .create();
-
-        if (alertDialog.getWindow() != null)
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         alertDialog.show();
     }

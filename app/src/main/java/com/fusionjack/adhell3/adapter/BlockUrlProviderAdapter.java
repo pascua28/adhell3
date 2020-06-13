@@ -1,8 +1,6 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,7 +79,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_provider_dialog_text);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         int position2 = (Integer) imageView.getTag();
@@ -90,9 +88,6 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });

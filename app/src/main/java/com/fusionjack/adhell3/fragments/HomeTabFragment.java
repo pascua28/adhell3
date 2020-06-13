@@ -3,9 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -599,7 +597,7 @@ public class HomeTabFragment extends Fragment {
                         String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
                         String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
                         domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
-                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setView(dialogView)
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                     String domainToAdd = domainEditText.getText().toString().trim();
@@ -622,9 +620,6 @@ public class HomeTabFragment extends Fragment {
                                 })
                                 .setNegativeButton(android.R.string.no, null)
                                 .create();
-
-                        if (alertDialog.getWindow() != null)
-                            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                         alertDialog.show();
 

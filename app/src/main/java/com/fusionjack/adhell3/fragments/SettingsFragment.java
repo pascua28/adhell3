@@ -2,9 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -97,15 +95,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.delete_app_dialog_text);
 
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -117,16 +112,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.backup_database_dialog_text);
 
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new BackupDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -138,16 +130,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.restore_database_dialog_text);
 
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -159,16 +148,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.clean_database_dialog_text);
 
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new CleanDatabaseAsyncTask(context).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -178,7 +164,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.requireActivity().getTheme());
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
                     View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_password, (ViewGroup) getView(), false);
-                    AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                    AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                             .setView(dialogView)
                             .setPositiveButton(android.R.string.yes, null)
                             .setNegativeButton(android.R.string.no, null)
@@ -218,9 +204,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     });
                     passwordDialog.setCancelable(false);
 
-                    if (passwordDialog.getWindow() != null)
-                        passwordDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
                     passwordDialog.show();
                 } else {
                     AppPreferences.getInstance().resetPassword();
@@ -239,7 +222,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.revoke_storage_permission_question);
 
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             int intentFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
@@ -251,9 +234,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         })
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -301,13 +281,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                 questionTextView.setText(R.string.about_content);
                 questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
                 break;
@@ -322,7 +299,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         private final WeakReference<Context> contextWeakReference;
 
         RestoreDatabaseAsyncTask(Context context) {
-            this.builder = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog);
+            this.builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
             this.dialog = DialogUtils.getProgressDialog("Restore database is running...", context);
             this.contextWeakReference = new WeakReference<>(context);
         }
@@ -370,9 +347,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 builder.setTitle("Error");
             }
             AlertDialog dialog = builder.create();
-
-            if (dialog.getWindow() != null)
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             dialog.show();
         }

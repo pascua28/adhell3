@@ -2,8 +2,6 @@ package com.fusionjack.adhell3.utils;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -157,7 +155,7 @@ public final class AppComponentFactory {
                             )
                     );
 
-                    AlertDialog alertDialog = new AlertDialog.Builder(contextReference.get(), R.style.ThemeOverlay_AlertDialog)
+                    AlertDialog alertDialog = new AlertDialog.Builder(contextReference.get(), R.style.AlertDialogStyle)
                             .setView(dialogView)
                             .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                 migrateOldBatchFilesToNew(oldFiles, newBatchComponents)
@@ -167,9 +165,6 @@ public final class AppComponentFactory {
                             })
                             .setNegativeButton(android.R.string.no, null)
                             .create();
-
-                    if (alertDialog.getWindow() != null)
-                        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                     alertDialog.show();
                 }

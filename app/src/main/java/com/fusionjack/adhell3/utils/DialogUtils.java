@@ -2,8 +2,6 @@ package com.fusionjack.adhell3.utils;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -25,13 +23,11 @@ public class DialogUtils {
             loadingTextView.setText(progressText);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
         builder.setCancelable(true);
         builder.setView(view);
 
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null)
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         return dialog;
     }

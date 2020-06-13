@@ -2,7 +2,6 @@ package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -129,7 +128,7 @@ public class AppInfoAdapter extends BaseAdapter {
                             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                             questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), finalAppName));
 
-                            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                     .setView(dialogView)
                                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                         try {
@@ -146,9 +145,6 @@ public class AppInfoAdapter extends BaseAdapter {
                                     })
                                     .setNegativeButton(android.R.string.no, null)
                                     .create();
-
-                            if (alertDialog.getWindow() != null)
-                                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                             alertDialog.show();
                         });

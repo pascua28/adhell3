@@ -69,8 +69,8 @@
         <item name="android:minHeight">42dp</item>
     </style>
 
-    <style name="ThemeOverlay.AlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:background">@drawable/dialog_rounded_bg</item>
+    <style name="AlertDialogStyle" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_rounded_bg</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">@style/NeutralButtonStyle</item>

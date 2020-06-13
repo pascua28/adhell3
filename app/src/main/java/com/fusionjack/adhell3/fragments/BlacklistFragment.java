@@ -1,7 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,7 +57,7 @@ public class BlacklistFragment extends UserListFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String item = (String) parent.getItemAtPosition(position);
@@ -67,9 +65,6 @@ public class BlacklistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });
@@ -80,7 +75,7 @@ public class BlacklistFragment extends UserListFragment {
         actionAddBlackDomain.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
@@ -94,9 +89,6 @@ public class BlacklistFragment extends UserListFragment {
                     .setNegativeButton(android.R.string.no, null)
                     .create();
 
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
             alertDialog.show();
         });
 
@@ -105,7 +97,7 @@ public class BlacklistFragment extends UserListFragment {
         actionAddFirewallRule.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
@@ -119,9 +111,6 @@ public class BlacklistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });

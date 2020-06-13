@@ -3,8 +3,6 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -127,7 +125,7 @@ public class ProviderListFragment extends Fragment {
             providerFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);
             providerEditText = dialogView.findViewById(R.id.providerEditText);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String provider = providerEditText.getText().toString();
@@ -139,9 +137,6 @@ public class ProviderListFragment extends Fragment {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
 

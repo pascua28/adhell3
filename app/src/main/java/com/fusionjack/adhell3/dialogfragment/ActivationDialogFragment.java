@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
@@ -188,16 +189,13 @@ public class ActivationDialogFragment extends DialogFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.backup_database_dialog_text);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                             new BackupDatabaseAsyncTask(getActivity()).execute()
                     )
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });
@@ -212,15 +210,12 @@ public class ActivationDialogFragment extends DialogFragment {
 
             Context context = getContext();
             if (context != null) {
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
                         .setNegativeButton(android.R.string.no, null)
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
             }
@@ -273,6 +268,12 @@ public class ActivationDialogFragment extends DialogFragment {
                 fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
+            }
+        }
+
+        if (context != null) {
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).finishOnResume();
             }
         }
     }

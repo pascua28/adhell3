@@ -1,7 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,7 +63,7 @@ public class DnsFragment extends AppFragment {
         titleTextView.setText(R.string.dialog_toggle_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_toggle_info);
-        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                         AsyncTask.execute(() -> {
@@ -99,9 +97,6 @@ public class DnsFragment extends AppFragment {
                 )
                 .setNegativeButton(android.R.string.no, null)
                 .create();
-
-        if (alertDialog.getWindow() != null)
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         alertDialog.show();
     }
@@ -145,7 +140,7 @@ public class DnsFragment extends AppFragment {
             }
             primaryDnsEditText.requestFocus();
 
-            new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         Handler handler = new Handler(Looper.getMainLooper()) {

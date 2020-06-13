@@ -3,8 +3,6 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -279,7 +277,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                         }
                         compName = compNameTmp;
 
-                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setView(dialogView)
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                     ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
@@ -289,9 +287,6 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                                 })
                                 .setNegativeButton(android.R.string.no, null)
                                 .create();
-
-                        if (alertDialog.getWindow() != null)
-                            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                         alertDialog.show();
 

@@ -2,8 +2,6 @@ package com.fusionjack.adhell3;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivationDialogFragment activationDialogFragment;
     private boolean doubleBackToExitPressedOnce = false;
     private int previousSelectedTab = -1;
+    private AlertDialog permissionDialog;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -252,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_storage_permission_summary);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(this, R.style.ThemeOverlay_AlertDialog)
+            permissionDialog = new AlertDialog.Builder(this, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
                         setSelectFileActivityLaunched(true);
@@ -271,10 +270,8 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
                     .create();
 
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-            alertDialog.show();
+                permissionDialog.show();
         }
     }
 

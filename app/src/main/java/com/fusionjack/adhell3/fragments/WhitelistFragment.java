@@ -1,7 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,7 +56,7 @@ public class WhitelistFragment extends UserListFragment {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_dialog_text);
 
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String item = (String) parent.getItemAtPosition(position);
@@ -66,9 +64,6 @@ public class WhitelistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });
@@ -79,7 +74,7 @@ public class WhitelistFragment extends UserListFragment {
         actionAddWhiteDomain.setOnClickListener(v -> {
             whiteFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_whitelist_domain, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
@@ -101,9 +96,6 @@ public class WhitelistFragment extends UserListFragment {
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
-
-            if (alertDialog.getWindow() != null)
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             alertDialog.show();
         });

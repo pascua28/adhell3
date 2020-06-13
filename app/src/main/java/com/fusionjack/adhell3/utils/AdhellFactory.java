@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -152,26 +150,20 @@ public final class AdhellFactory {
     public void createNotSupportedDialog(Context context) {
         String knoxIsSupported = "Knox Enterprise License Manager is " + (knoxEnterpriseLicenseManager == null ? "not available" : "available");
         String knoxApiLevel = "Knox API Level: " + EnterpriseDeviceManager.getAPILevel();
-        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setTitle(context.getString(R.string.not_supported_dialog_title))
                 .setMessage(knoxIsSupported + "\n" + knoxApiLevel)
                 .create();
-
-        if (alertDialog.getWindow() != null)
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         alertDialog.show();
     }
 
     public void createNoInternetConnectionDialog(Context context) {
-        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setIcon(R.drawable.ic_error_black_24dp)
                 .setTitle(context.getString(R.string.no_internet_connection_dialog_title))
                 .setMessage(context.getString(R.string.no_internet_connection))
                 .create();
-
-        if (alertDialog.getWindow() != null)
-            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         alertDialog.show();
     }

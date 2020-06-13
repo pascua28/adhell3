@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -217,13 +215,10 @@ public class AppCache {
 
             Context context = contextWeakReference.get();
             if (th != null && context != null) {
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.ThemeOverlay_AlertDialog)
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setTitle("Error")
                         .setMessage("Something went wrong when caching apps, please refresh the app list. Error: \n\n" + th.getMessage())
                         .create();
-
-                if (alertDialog.getWindow() != null)
-                    alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                 alertDialog.show();
             }
