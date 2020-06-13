@@ -40,8 +40,7 @@
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan"
-            android:launchMode="singleInstance">
+            android:windowSoftInputMode="adjustPan">
         </activity>
 
         <receiver
