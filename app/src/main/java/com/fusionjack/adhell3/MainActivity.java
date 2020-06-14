@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static boolean selectFileActivityLaunched = false;
+    private static boolean restoreBackStack = false;
     private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
     private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
     private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
@@ -121,6 +122,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         onNewIntent(new Intent());
+        if (fragmentManager.getBackStackEntryCount() > 1) {
+            restoreBackStack = true;
+        }
         super.onPause();
     }
 
@@ -215,14 +219,14 @@ public class MainActivity extends AppCompatActivity {
         requestStoragePermission();
 
         // Select Other tab if theme has been changed or select Home tab by default
-        if (themeChange != null) {
-            if (themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
-                bottomBar.setSelectedItemId(R.id.othersTab);
+        if (themeChange != null && themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
+            bottomBar.setSelectedItemId(R.id.othersTab);
+        } else {
+            if (restoreBackStack){
+                restoreBackStack = false;
             } else {
                 bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
             }
-        } else {
-            bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
         }
     }
 
