@@ -32,7 +32,6 @@ public class AppTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         requireActivity().setTitle("Apps Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        MainActivity mainActivity = (MainActivity) parentActivity;
         if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -73,9 +72,7 @@ public class AppTabFragment extends Fragment {
                         }
                     }
                 }
-                if (mainActivity != null) {
-                    mainActivity.setSelectedAppTab(position);
-                }
+                MainActivity.setSelectedAppTab(position);
             }
         });
 
@@ -94,9 +91,7 @@ public class AppTabFragment extends Fragment {
             }
         }
 
-        if (mainActivity != null) {
-            viewPager.setCurrentItem(mainActivity.getSelectedAppTab(), false);
-        }
+        viewPager.setCurrentItem(MainActivity.getSelectedAppTab(), false);
 
         return view;
     }

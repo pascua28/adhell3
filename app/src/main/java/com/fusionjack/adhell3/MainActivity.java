@@ -32,26 +32,25 @@ import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.HashMap;
-
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
-    public String themeChange;
+    public static String themeChange;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
-    private int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
-    private int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
-    private int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
-    private FragmentManager fragmentManager;
+    private static int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
+    private static int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
+    private static int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
+    private static FragmentManager fragmentManager;
+    private static boolean doubleBackToExitPressedOnce = false;
+    private static int previousSelectedTabId = -1;
+    private static AlertDialog permissionDialog;
+    private static BottomNavigationView bottomBar;
+    private static boolean themeChanged = false;
     private ActivationDialogFragment activationDialogFragment;
-    private boolean doubleBackToExitPressedOnce = false;
-    private int previousSelectedTab = -1;
-    private AlertDialog permissionDialog;
-    private BottomNavigationView bottomBar;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -122,9 +121,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         onNewIntent(new Intent());
-        if (fragmentManager.getBackStackEntryCount() > 1) {
-            restoreBackStack = true;
-        }
+        restoreBackStack = fragmentManager.getBackStackEntryCount() > 1;
         super.onPause();
     }
 
@@ -160,6 +157,10 @@ public class MainActivity extends AppCompatActivity {
         int count = fragmentManager.getBackStackEntryCount();
         if (count <= 1) {
             if (doubleBackToExitPressedOnce) {
+                previousSelectedTabId = -1;
+                themeChanged = false;
+                themeChange = null;
+                restoreBackStack = false;
                 Intent intent = new Intent(this, SplashScreenActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 intent.putExtra("EXIT", true);
@@ -168,12 +169,12 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
 
-            this.doubleBackToExitPressedOnce = true;
+            doubleBackToExitPressedOnce = true;
             Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         } else {
-            fragmentManager.popBackStackImmediate();
+            super.onBackPressed();
         }
     }
 
@@ -186,25 +187,25 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void setSelectedAppTab(int selectedTabId) {
-        this.SELECTED_APP_TAB = selectedTabId;
+    public static void setSelectedAppTab(int selectedTabId) {
+        SELECTED_APP_TAB = selectedTabId;
     }
-    public int getSelectedAppTab() {
-        return this.SELECTED_APP_TAB;
-    }
-
-    public void setSelectedDomainTab(int selectedTabId) {
-        this.SELECTED_DOMAIN_TAB = selectedTabId;
-    }
-    public int getSelectedDomainTab() {
-        return this.SELECTED_DOMAIN_TAB;
+    public static int getSelectedAppTab() {
+        return SELECTED_APP_TAB;
     }
 
-    public void setSelectedOtherTab(int selectedTabId) {
-        this.SELECTED_OTHER_TAB = selectedTabId;
+    public static void setSelectedDomainTab(int selectedTabId) {
+        SELECTED_DOMAIN_TAB = selectedTabId;
     }
-    public int getSelectedOtherTab() {
-        return this.SELECTED_OTHER_TAB;
+    public static int getSelectedDomainTab() {
+        return SELECTED_DOMAIN_TAB;
+    }
+
+    public static void setSelectedOtherTab(int selectedTabId) {
+        SELECTED_OTHER_TAB = selectedTabId;
+    }
+    public static int getSelectedOtherTab() {
+        return SELECTED_OTHER_TAB;
     }
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
@@ -220,10 +221,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Select Other tab if theme has been changed or select Home tab by default
         if (themeChange != null && themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
-            bottomBar.setSelectedItemId(R.id.othersTab);
-        } else {
-            if (restoreBackStack){
-                restoreBackStack = false;
+                bottomBar.setSelectedItemId(R.id.othersTab);
+                themeChanged = true;
+        }
+
+        if (!themeChanged && !restoreBackStack){
+            if (previousSelectedTabId == -1) {
+                bottomBar.setSelectedItemId(R.id.homeTab);
             } else {
                 bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
             }
@@ -293,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void onTabSelected(int tabId) {
         LogUtils.info("Tab '" + tabId + "' is selected");
-        if (previousSelectedTab != getTabIndex(tabId) || fragmentManager.getBackStackEntryCount() > 1) {
+        if (previousSelectedTabId != tabId || fragmentManager.getBackStackEntryCount() > 1 || themeChanged) {
             fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             Fragment replacing;
             switch (tabId) {
@@ -321,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            if (previousSelectedTab != -1) {
+            if (previousSelectedTabId != -1) {
                 fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
             } else {
                 fragmentTransaction.setCustomAnimations(0, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
@@ -331,25 +335,12 @@ public class MainActivity extends AppCompatActivity {
                     .addToBackStack(BACK_STACK_TAB_TAG)
                     .commit();
         }
-        previousSelectedTab = getTabIndex(tabId);
+        previousSelectedTabId = tabId;
+        themeChanged = false;
     }
 
     private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog == null;
-    }
-
-    private int getTabIndex(int tabId) {
-        HashMap<Integer, Integer> tabsIndex = new HashMap<>();
-        tabsIndex.put(R.id.homeTab, 0);
-        tabsIndex.put(R.id.appsManagementTab, 1);
-        tabsIndex.put(R.id.domainsTab, 2);
-        tabsIndex.put(R.id.othersTab, 3);
-
-        if (tabsIndex.get(tabId) != null) {
-            return tabsIndex.get(tabId);
-        } else {
-            return 0;
-        }
     }
 }

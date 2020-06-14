@@ -34,7 +34,6 @@ public class DomainTabFragment extends Fragment {
             getActivity().setTitle("Domains Management");
         }
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        MainActivity mainActivity = (MainActivity) parentActivity;
         if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -75,9 +74,7 @@ public class DomainTabFragment extends Fragment {
                         }
                     }
                 }
-                if (mainActivity != null) {
-                    mainActivity.setSelectedDomainTab(position);
-                }
+                MainActivity.setSelectedDomainTab(position);
             }
         });
 
@@ -92,9 +89,7 @@ public class DomainTabFragment extends Fragment {
             }
         }
 
-        if (mainActivity != null) {
-            viewPager.setCurrentItem(mainActivity.getSelectedDomainTab(), false);
-        }
+        viewPager.setCurrentItem(MainActivity.getSelectedDomainTab(), false);
 
         return view;
     }

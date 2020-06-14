@@ -38,7 +38,6 @@ public class OtherTabFragment extends Fragment {
         }
         requireActivity().setTitle("Others");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        MainActivity mainActivity = (MainActivity) parentActivity;
         if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
             parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
@@ -79,9 +78,7 @@ public class OtherTabFragment extends Fragment {
                         }
                     }
                 }
-                if (mainActivity != null) {
-                    mainActivity.setSelectedOtherTab(position);
-                }
+                MainActivity.setSelectedOtherTab(position);
             }
         });
 
@@ -100,14 +97,12 @@ public class OtherTabFragment extends Fragment {
             }
         }
 
-        if (viewpagerPosition != null && viewpagerPosition.equals("Settings") && mainActivity != null) {
-            mainActivity.setSelectedOtherTab(SETTINGS_PAGE);
-            mainActivity.themeChange = null;
+        if (viewpagerPosition != null && viewpagerPosition.equals("Settings")) {
+            MainActivity.setSelectedOtherTab(SETTINGS_PAGE);
+            MainActivity.themeChange = null;
         }
 
-        if (mainActivity != null) {
-            viewPager.setCurrentItem(mainActivity.getSelectedOtherTab(), false);
-        }
+        viewPager.setCurrentItem(MainActivity.getSelectedOtherTab(), false);
 
         return view;
     }

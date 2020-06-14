@@ -30,7 +30,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private EditText passwordEditText;
     private ImageButton passwordButton;
     private ImageView biometricButton;
-    private boolean biometricSupport;
+    private static boolean biometricSupport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
