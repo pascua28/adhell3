@@ -3,11 +3,13 @@ package com.fusionjack.adhell3;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,8 +64,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
         // Set the crash handler to log crash's stack trace into a file
         if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
             Thread.setDefaultUncaughtExceptionHandler(CrashHandler.getInstance());
@@ -72,14 +72,6 @@ public class MainActivity extends AppCompatActivity {
         // Remove elevation shadow of ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setElevation(0);
-        }
-
-        // Change status bar icon tint based on theme
-        View decor = getWindow().getDecorView();
-        if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-            decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        } else {
-            decor.setSystemUiVisibility(0);
         }
 
         fragmentManager = getSupportFragmentManager();
@@ -102,6 +94,26 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         themeChange = getIntent().getStringExtra("settingsFragment");
+
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Window window = getWindow();
+        View decor = window.getDecorView();
+
+        // Change status bar icon and navigation bar tint based on theme
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                window.setNavigationBarColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        } else {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        }
 
         if (!selectFileActivityLaunched) {
             if (!getIntent().getBooleanExtra("START", false) && themeChange == null) {

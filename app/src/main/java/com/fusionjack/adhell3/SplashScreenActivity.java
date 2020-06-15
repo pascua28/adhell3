@@ -1,10 +1,13 @@
 package com.fusionjack.adhell3;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -55,14 +58,6 @@ public class SplashScreenActivity extends AppCompatActivity {
             Thread.setDefaultUncaughtExceptionHandler(CrashHandler.getInstance());
         }
 
-        // Change status bar icon tint based on theme
-        View decor = getWindow().getDecorView();
-        if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-            decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        } else {
-            decor.setSystemUiVisibility(0);
-        }
-
         // Remove ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -82,6 +77,26 @@ public class SplashScreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Window window = getWindow();
+        View decor = window.getDecorView();
+
+        // Change status bar icon and navigation bar tint based on theme
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                window.setNavigationBarColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        } else {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        }
 
         if (!isPasswordShowing()) {
             launchMainActivity();
