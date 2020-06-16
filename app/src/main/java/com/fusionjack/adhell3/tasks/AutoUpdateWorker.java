@@ -218,7 +218,11 @@ public class AutoUpdateWorker extends Worker {
 
                                         AppPermission appService = new AppPermission();
                                         appService.packageName = packageName;
-                                        appService.permissionName = compName;
+                                        if (permissionStatus == AppPermission.STATUS_RECEIVER) {
+                                            appService.permissionName = compName + "|Auto";
+                                        } else {
+                                            appService.permissionName = compName;
+                                        }
                                         appService.permissionStatus = permissionStatus;
                                         appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
                                         appDatabase.appPermissionDao().insert(appService);
