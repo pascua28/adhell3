@@ -53,7 +53,11 @@ public final class DatabaseFactory {
     }
 
     public void backupDatabase() throws Exception {
-        DocumentFile backupFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, BACKUP_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+        DocumentFile backupFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, BACKUP_FILENAME, FileUtils.FileCreationType.NEVER);
+        if (backupFile != null && backupFile.exists()) {
+            backupFile.delete();
+        }
+        backupFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, BACKUP_FILENAME, FileUtils.FileCreationType.ALWAYS);
         OutputStream out = App.getAppContext().getContentResolver().openOutputStream(backupFile.getUri());
 
         if (out != null) {
