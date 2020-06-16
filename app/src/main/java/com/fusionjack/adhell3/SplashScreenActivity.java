@@ -49,6 +49,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         // Exit if intent extra EXIT exist
         if (getIntent().getBooleanExtra("EXIT", false)) {
+            finishAffinity();
             finish();
             return;
         }
@@ -124,6 +125,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         intent.putExtra("START", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
+        finish();
     }
 
     private boolean isPasswordShowing() {

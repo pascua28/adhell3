@@ -139,8 +139,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         LogUtils.info("Destroying activity");
+        closeActivity(false);
+        super.onDestroy();
     }
 
     @Override
@@ -169,16 +170,7 @@ public class MainActivity extends AppCompatActivity {
         int count = fragmentManager.getBackStackEntryCount();
         if (count <= 1) {
             if (doubleBackToExitPressedOnce) {
-                previousSelectedTabId = -1;
-                themeChanged = false;
-                themeChange = null;
-                restoreBackStack = false;
-                Intent intent = new Intent(this, SplashScreenActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent.putExtra("EXIT", true);
-                startActivity(intent);
-                overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
-                finish();
+                closeActivity(true);
             }
 
             doubleBackToExitPressedOnce = true;
@@ -187,6 +179,28 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         } else {
             super.onBackPressed();
+        }
+    }
+
+    private void closeActivity(boolean finish) {
+        previousSelectedTabId = -1;
+        themeChanged = false;
+        themeChange = null;
+        restoreBackStack = false;
+        setSelectedAppTab(AppTabPageFragment.PACKAGE_DISABLER_PAGE);
+        setSelectedDomainTab(DomainTabPageFragment.PROVIDER_LIST_PAGE);
+        setSelectedOtherTab(OtherTabPageFragment.APP_COMPONENT_PAGE);
+
+        onNewIntent(new Intent());
+
+         Intent intent = new Intent(this, SplashScreenActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("EXIT", true);
+        startActivity(intent);
+        overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
+        if (finish) {
+            finishAffinity();
+            finish();
         }
     }
 

@@ -245,13 +245,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
                 AppCompatDelegate.setDefaultNightMode(nightMode);
                 Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
                 startActivity(intent);
-                if (getActivity() != null) {
-                    getActivity().overridePendingTransition(0, 0);
-                }
-                requireActivity().finish();
+                requireActivity().overridePendingTransition(0, 0);
+                //requireActivity().finish();
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {
