@@ -75,14 +75,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.settings_preference, rootKey);
         this.context = getContext();
 
-        CustomSwitchPreference switchPreference = (CustomSwitchPreference) findPreference("auto_update_preference");
-        switchPreference.setOnPreferenceClickListener(switchPref -> {
-            AutoUpdateDialogFragment autoUpdateDialogFragment = new AutoUpdateDialogFragment(switchPref);
-            autoUpdateDialogFragment.setCancelable(true);
-            if (getActivity() != null)
-                autoUpdateDialogFragment.show(getActivity().getSupportFragmentManager(), "dialog_auto_update");
-            return false;
-        });
+        CustomSwitchPreference switchPreference = findPreference("auto_update_preference");
+        if (switchPreference != null) {
+            switchPreference.setOnPreferenceClickListener(switchPref -> {
+                AutoUpdateDialogFragment autoUpdateDialogFragment = new AutoUpdateDialogFragment(switchPref);
+                autoUpdateDialogFragment.setCancelable(true);
+                if (getActivity() != null)
+                    autoUpdateDialogFragment.show(getActivity().getSupportFragmentManager(), "dialog_auto_update");
+                return false;
+            });
+        }
     }
 
     @Override
