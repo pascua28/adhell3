@@ -37,7 +37,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
-    public static String themeChange;
+    public static boolean themeChanged = false;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private static int previousSelectedTabId = -1;
     private static AlertDialog permissionDialog;
     private static BottomNavigationView bottomBar;
-    private static boolean themeChanged = false;
     private ActivationDialogFragment activationDialogFragment;
 
     @Override
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         activationDialogFragment = new ActivationDialogFragment();
         activationDialogFragment.setCancelable(false);
 
-        themeChange = getIntent().getStringExtra("settingsFragment");
+        setTheme();
 
         setContentView(R.layout.activity_main);
 
@@ -93,30 +92,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        themeChange = getIntent().getStringExtra("settingsFragment");
-
-        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Window window = getWindow();
-        View decor = window.getDecorView();
-
-        // Change status bar icon and navigation bar tint based on theme
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-                window.setNavigationBarColor(getResources().getColor(R.color.colorPrimary, getTheme()));
-                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-            } else {
-                decor.setSystemUiVisibility(0);
-            }
-        } else {
-            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-            } else {
-                decor.setSystemUiVisibility(0);
-            }
-        }
+        setTheme();
 
         if (!selectFileActivityLaunched) {
-            if (!getIntent().getBooleanExtra("START", false) && themeChange == null) {
+            if (!getIntent().getBooleanExtra("START", false) && !themeChanged) {
                 Intent splashIntent = new Intent(this, SplashScreenActivity.class);
                 splashIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(splashIntent);
@@ -185,19 +164,20 @@ public class MainActivity extends AppCompatActivity {
     private void closeActivity(boolean finish) {
         previousSelectedTabId = -1;
         themeChanged = false;
-        themeChange = null;
         restoreBackStack = false;
+
         setSelectedAppTab(AppTabPageFragment.PACKAGE_DISABLER_PAGE);
         setSelectedDomainTab(DomainTabPageFragment.PROVIDER_LIST_PAGE);
         setSelectedOtherTab(OtherTabPageFragment.APP_COMPONENT_PAGE);
 
         onNewIntent(new Intent());
 
-         Intent intent = new Intent(this, SplashScreenActivity.class);
+        Intent intent = new Intent(this, SplashScreenActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("EXIT", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
+
         if (finish) {
             finishAffinity();
             finish();
@@ -246,9 +226,8 @@ public class MainActivity extends AppCompatActivity {
         requestStoragePermission();
 
         // Select Other tab if theme has been changed or select Home tab by default
-        if (themeChange != null && themeChange.contains(SET_NIGHT_MODE_PREFERENCE)) {
+        if (themeChanged) {
                 bottomBar.setSelectedItemId(R.id.othersTab);
-                themeChanged = true;
         }
 
         if (!themeChanged && !restoreBackStack){
@@ -338,12 +317,10 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.othersTab:
                     replacing = new OtherTabFragment();
-                    if (themeChange != null) {
-                        if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)) {
-                            Bundle bundle = new Bundle();
-                            bundle.putString("viewpager_position", "Settings");
-                            replacing.setArguments(bundle);
-                        }
+                    if (themeChanged) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("viewpager_position", "Settings");
+                        replacing.setArguments(bundle);
                     }
                     break;
                 default:
@@ -368,5 +345,34 @@ public class MainActivity extends AppCompatActivity {
     private boolean isActivationDialogNotVisible() {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog == null;
+    }
+
+    private void setTheme() {
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Window window = getWindow();
+        View decor = window.getDecorView();
+
+        String extraStringSetting = getIntent().getStringExtra("settingsFragment");
+        if (extraStringSetting != null) {
+            themeChanged = extraStringSetting.contains(SET_NIGHT_MODE_PREFERENCE);
+        } else {
+            themeChanged = false;
+        }
+
+        // Change status bar icon and navigation bar tint based on theme
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                window.setNavigationBarColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR|View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        } else {
+            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
+                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            } else {
+                decor.setSystemUiVisibility(0);
+            }
+        }
     }
 }
