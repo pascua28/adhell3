@@ -65,14 +65,16 @@ public class AutoUpdateWorker extends Worker {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     String nowDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(new java.util.Date());
-                    LogUtils.appendLogFile(String.format(Locale.getDefault(), "%s [retry%d]: %s", nowDate, retryCount, msg.obj.toString().trim()), logFile);
+                    if (msg.obj != null) {
+                        LogUtils.appendLogFile(String.format(Locale.getDefault(), "%s [retry%d]: %s", nowDate, retryCount, msg.obj.toString().trim()), logFile);
+                    }
                 }
             };
         }
 
         AutoUpdateWorker.appDatabase = AppDatabase.getAppDatabase(context);
         AutoUpdateWorker.firewall = AdhellFactory.getInstance().getFirewall();
-        AutoUpdateWorker.appCache = AppCache.getInstance(context, this.handler);
+        AutoUpdateWorker.appCache = AppCache.reload(null, this.handler);
     }
 
     @NonNull
@@ -109,7 +111,7 @@ public class AutoUpdateWorker extends Worker {
             LogUtils.info("------Successful App components auto update------", handler);
         }
 
-        if (AppPreferences.getInstance().getCleanDatabaseAutoUpdate()) {
+        if (AppPreferences.getInstance().getCleanDatabaseAutoUpdate() && !retryForFailing) {
             LogUtils.info("------Start auto clean database------", handler);
             try {
                 autoCleanDatabase();
