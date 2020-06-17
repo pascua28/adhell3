@@ -32,10 +32,9 @@
     </string>
     <string name="turn_on_admin">Turn On Admin</string>
     <string name="license_key_info">
-        Adhell3 utilizes Knox SDK which requires KPE or ELM license key.
-        \nKPE Development Limited cannot be used as it doesn\'t have needed permissions.
+        Adhell3 utilizes Knox SDK which requires KLM or ELM license key.
     </string>
-    <string name="license_key">KPE or ELM license key</string>
+    <string name="license_key">KLM or ELM license key</string>
     <string name="activate_license">Activate License</string>
     <string name="deactivate_license">Deactivate License</string>
     <string name="enable_admin">Enable Admin</string>
@@ -83,14 +82,14 @@
     <string name="dialog_add_provider_button">Select file</string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">
-        This will enable all apps\' permissions, services and receivers.
+        This will enable all apps\' permissions, services, receivers and activities.
         \nSamsung Knox doesn\'t have an API to clear disabled components.
         \nTherefore, if they are still disabled after this operation, you need to uninstall adhell3 to enable them.
         \n\nDo you really want to enable all apps\' components?
     </string>
     <string name="dialog_system_app_components_title">System apps are listed</string>
     <string name="dialog_system_app_components_info">
-        Be careful when disabling system apps\' permissions, services and receivers.
+        Be careful when disabling system apps\' permissions, services, receivers and activities.
         \nSamsung Knox doesn\'t have an API to clear disabled components.
         \nIf the database is corrupted, you cannot re-enable them and you need to do a factory reset.
     </string>
@@ -274,8 +273,8 @@
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
     <string name="dialog_appcomponent_batch_summary">The services, receivers and activities defined in adhell3_components.txt from \'Adhell3/BatchOp/\' folder will be used.
         \nDo you want to enable or disable those components?</string>
-    <string name="dialog_appcomponent_enable_summary">Enabling services and receivers, please wait …</string>
-    <string name="dialog_appcomponent_disable_summary">Disabling services and receivers, please wait …</string>
+    <string name="dialog_appcomponent_enable_summary">Enabling apps components, please wait …</string>
+    <string name="dialog_appcomponent_disable_summary">Disabling apps components, please wait …</string>
     <string name="button_enable">Enable</string>
     <string name="button_disable">Disable</string>
     <string name="menu_enable_all">Enable all</string>
