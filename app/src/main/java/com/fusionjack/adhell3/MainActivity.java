@@ -1,8 +1,12 @@
 package com.fusionjack.adhell3;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,11 +32,17 @@ import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
@@ -222,6 +232,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Reload AppCache if needed
+        new ReloadAppCacheIfNeeded(new WeakReference<>(this)).execute();
+
         // Check for storage permission
         requestStoragePermission();
 
@@ -372,6 +385,42 @@ public class MainActivity extends AppCompatActivity {
                 decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
             } else {
                 decor.setSystemUiVisibility(0);
+            }
+        }
+    }
+
+    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
+        private WeakReference<Context> applicationContextReference;
+        Set<String> appCachePackageNames;
+        List<ApplicationInfo> installedPackages;
+
+        ReloadAppCacheIfNeeded(WeakReference<Context> applicationContextReference) {
+            this.applicationContextReference = applicationContextReference;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            this.appCachePackageNames = AppCache.getInstance(applicationContextReference.get(), null).getNames().keySet();
+            this.installedPackages = AdhellFactory.getInstance().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            // make a copy of the list so the original list is not changed, and remove() is supported
+            ArrayList<String> cp = new ArrayList<>( appCachePackageNames );
+            cp.add(applicationContextReference.get().getPackageName());
+            for ( ApplicationInfo ai : installedPackages ) {
+                if ( !cp.remove( ai.packageName ) ) {
+                    return true;
+                }
+            }
+            return !cp.isEmpty();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean needReload) {
+            if (needReload) {
+                AppCache.reload(applicationContextReference.get(), null);
             }
         }
     }
