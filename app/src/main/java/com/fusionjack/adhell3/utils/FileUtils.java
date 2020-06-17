@@ -11,7 +11,8 @@ public class FileUtils {
     public enum FileCreationType {
         NEVER,
         IF_NOT_EXIST,
-        ALWAYS
+        ALWAYS,
+        RECREATE
     }
 
     public static DocumentFile getDocumentFile(String filePath, String fileName, FileCreationType fileCreationType) {
@@ -34,6 +35,9 @@ public class FileUtils {
         }
         if (parentDirectory != null) {
             file = parentDirectory.findFile(fileName);
+            if (file != null && file.exists() && fileCreationType == FileUtils.FileCreationType.RECREATE) {
+                file.delete();
+            }
 
             if (file == null || !file.exists() || fileCreationType == FileUtils.FileCreationType.ALWAYS) {
                 if (fileCreationType != FileUtils.FileCreationType.NEVER) file = parentDirectory.createFile(documentFileMimeType, fileName);
