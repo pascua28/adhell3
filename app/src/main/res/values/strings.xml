@@ -285,4 +285,7 @@
     <string name="dialog_storage_permission_title">Storage permission needed</string>
     <string name="dialog_storage_permission_summary">To be compliant with Android 10, Adhell3 must request storage access to function properly.
         \nPlease grant Adhell3 access to the root of internal storage in the next window.</string>
+    <string name="dialog_appcomponent_batch_migrate_file_title">Migrate old batch files</string>
+    <string name="dialog_appcomponent_batch_migrate_file_summary">Adhell has detected that you are using old \'%s\' and \'%s\' batch files.
+        \nDo you want to automatically migrate these files to the new \'%s\'?</string>
 </resources>

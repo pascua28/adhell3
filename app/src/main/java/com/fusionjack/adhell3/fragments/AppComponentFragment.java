@@ -146,7 +146,7 @@ public class AppComponentFragment extends AppFragment {
         alertDialog.show();
 
         if (getView() != null) {
-            AppComponentFactory.checkMigrateOldBatchFiles(new WeakReference<>(getContext()), getView().findViewById(android.R.id.content));
+            AppComponentFactory.getInstance().checkMigrateOldBatchFiles(new WeakReference<>(getContext()), new WeakReference<>(getView().findViewById(android.R.id.content)));
         }
     }
 

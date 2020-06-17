@@ -115,8 +115,8 @@ public final class AppComponentFactory {
         return lines;
     }
 
-    public static void checkMigrateOldBatchFiles(WeakReference<Context> contextReference, ViewGroup viewGroup) {
-        SingleObserver<String> observer = new SingleObserver<String>() {
+    public void checkMigrateOldBatchFiles(WeakReference<Context> contextReference, WeakReference<ViewGroup> viewGroupReference) {
+        SingleObserver<String> migrateObserver = new SingleObserver<String>() {
             @Override
             public void onSubscribe(Disposable d) {
             }
@@ -128,27 +128,26 @@ public final class AppComponentFactory {
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(contextReference.get(), e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(contextReference.get(), "Unable to migrate old batch files!" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         };
 
-        try {
-            DocumentFile oldBatchServices = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_SERVICE_FILENAME, FileUtils.FileCreationType.NEVER);
-            DocumentFile oldBatchReceivers = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_RECEIVER_FILENAME, FileUtils.FileCreationType.NEVER);
-            DocumentFile newBatchComponents = FileUtils.getDocumentFile(STORAGE_FOLDERS, COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
-            DocumentFile[] oldFiles = { oldBatchReceivers, oldBatchServices };
+        SingleObserver<Boolean> checkObserver = new SingleObserver<Boolean>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
 
-            // Check if Old batch file exist and new one is empty
-            if ((oldBatchServices.exists() && oldBatchServices.length() > 0) || (oldBatchReceivers.exists() && oldBatchReceivers.length() > 0)) {
-                if (!newBatchComponents.exists() || newBatchComponents.length() == 0) {
-                    View dialogView = LayoutInflater.from(contextReference.get()).inflate(R.layout.dialog_question, viewGroup, false);
+            @Override
+            public void onSuccess(Boolean s) {
+                if (s) {
+                    View dialogView = LayoutInflater.from(contextReference.get()).inflate(R.layout.dialog_question, viewGroupReference.get(), false);
                     TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                    titleTextView.setText("Migrate old batch files");
+                    titleTextView.setText(R.string.dialog_appcomponent_batch_migrate_file_title);
                     TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
                     questionTextView.setText(
                             String.format(
                                     Locale.getDefault(),
-                                    "Adhell has detected that you are using old '%s' and '%s' batch files.\nDo you want to automatically migrate these files to the new '%s'?",
+                                    contextReference.get().getString(R.string.dialog_appcomponent_batch_migrate_file_summary),
                                     OLD_RECEIVER_FILENAME,
                                     OLD_SERVICE_FILENAME,
                                     COMPONENTS_FILENAME
@@ -157,26 +156,59 @@ public final class AppComponentFactory {
 
                     AlertDialog alertDialog = new AlertDialog.Builder(contextReference.get(), R.style.AlertDialogStyle)
                             .setView(dialogView)
-                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                migrateOldBatchFilesToNew(oldFiles, newBatchComponents)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(observer);
-                            })
+                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> migrateOldBatchFilesToNewSingle()
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(migrateObserver))
                             .setNegativeButton(android.R.string.no, null)
                             .create();
 
                     alertDialog.show();
                 }
             }
-        } catch (Exception e) {
-            LogUtils.error("Unable to check batch files", e);
-        }
+
+            @Override
+            public void onError(Throwable e) {
+                Toast.makeText(contextReference.get(), "Unable to check if migrate old batch files is needed!" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        };
+
+        checkMigrateOldBatchFilesSingle()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(checkObserver);
     }
 
-    private static Single<String> migrateOldBatchFilesToNew(DocumentFile[] oldFiles, DocumentFile newBatchComponents) {
+    private Single<Boolean> checkMigrateOldBatchFilesSingle() {
         return Single.create(emitter -> {
             try {
+                DocumentFile oldBatchServices = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_SERVICE_FILENAME, FileUtils.FileCreationType.NEVER);
+                DocumentFile oldBatchReceivers = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_RECEIVER_FILENAME, FileUtils.FileCreationType.NEVER);
+                DocumentFile newBatchComponents = FileUtils.getDocumentFile(STORAGE_FOLDERS, COMPONENTS_FILENAME, FileUtils.FileCreationType.NEVER);
+
+                // Check if Old batch file exist and new one is empty
+                if ((oldBatchServices != null && oldBatchServices.exists() && oldBatchServices.length() > 0) || (oldBatchReceivers != null && oldBatchReceivers.exists() && oldBatchReceivers.length() > 0)) {
+                    if (newBatchComponents == null || !newBatchComponents.exists() || newBatchComponents.length() == 0) {
+                        emitter.onSuccess(true);
+                    }
+                }
+                emitter.onSuccess(false);
+            } catch (Exception e) {
+                emitter.onError(e);
+                LogUtils.error("Unable to check batch files", e);
+            }
+        });
+    }
+
+    private Single<String> migrateOldBatchFilesToNewSingle() {
+        return Single.create(emitter -> {
+            try {
+                // Get files
+                DocumentFile oldBatchServices = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_SERVICE_FILENAME, FileUtils.FileCreationType.NEVER);
+                DocumentFile oldBatchReceivers = FileUtils.getDocumentFile(STORAGE_FOLDERS, OLD_RECEIVER_FILENAME, FileUtils.FileCreationType.NEVER);
+                DocumentFile newBatchComponents = FileUtils.getDocumentFile(STORAGE_FOLDERS, COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+                DocumentFile[] oldFiles = { oldBatchReceivers, oldBatchServices };
+
                 // Get contents form old files
                 List<String> lines = new ArrayList<>();
                 lines.add("## This new batch file can contain services, receivers and activity to enable/disable them");

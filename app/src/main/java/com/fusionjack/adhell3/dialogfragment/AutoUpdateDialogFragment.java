@@ -160,7 +160,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private void saveAutoUpdateSettings() {
         if (appComponentsCheckBox.isChecked()) {
             if (getView() != null) {
-                AppComponentFactory.checkMigrateOldBatchFiles(new WeakReference<>(getContext()), getView().findViewById(android.R.id.content));
+                AppComponentFactory.getInstance().checkMigrateOldBatchFiles(new WeakReference<>(getContext()), new WeakReference<>(getView().findViewById(android.R.id.content)));
             }
         }
 
