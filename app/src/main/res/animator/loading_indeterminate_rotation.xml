@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@anim/loading_sine_in_out_67"
+    android:duration="3000"
+    android:repeatCount="infinite"
+    android:valueFrom="0"
+    android:valueTo="1800"
+    android:valueType="floatType"
+    android:propertyName="rotation" />

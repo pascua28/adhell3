@@ -44,12 +44,12 @@
 
     <ProgressBar
         android:id="@+id/loadingBarProvider"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/indeterminate_progressbar"
+        android:indeterminateDrawable="@drawable/loading_animated"
         android:visibility="visible" />
 
     <com.leinardi.android.speeddial.SpeedDialView

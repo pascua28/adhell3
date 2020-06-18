@@ -12,6 +12,7 @@
         android:layout_marginEnd="5dp"
         android:layout_width="45dp"
         android:layout_height="45dp"
+        android:indeterminateDrawable="@drawable/loading_animated"
         android:layout_centerVertical="true" />
 
     <TextView
