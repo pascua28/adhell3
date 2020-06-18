@@ -25,16 +25,18 @@ import java.util.Map;
 
 public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
-    private final Map<String, Drawable> appIcons;
-    private final Map<String, String> appNames;
+    private static Map<String, Drawable> appIcons;
+    private static Map<String, String> appNames;
     private final Context context;
     private final List<String> expandableListTitle;
     private final HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects, Handler handler) {
         AppCache appCache = AppCache.getInstance(context, handler);
-        appIcons = appCache.getIcons();
-        appNames = appCache.getNames();
+        if (appCache.getNames().size() > 0) {
+            appIcons = appCache.getIcons();
+            appNames = appCache.getNames();
+        }
         this.context = context;
         this.expandableListTitle = new ArrayList<>(objects.keySet());
         this.expandableListDetail = objects;
@@ -42,13 +44,17 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
-        return this.expandableListTitle.size();
+        if (appNames.size() > 0) {
+            return this.expandableListTitle.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
         List<ReportBlockedUrl> children = this.expandableListDetail.get(this.expandableListTitle.get(groupPosition));
-        if (children != null) {
+        if (children != null && appNames.size() > 0) {
             return children.size();
         } else {
             return 0;

@@ -288,26 +288,27 @@ public class MainActivity extends AppCompatActivity {
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_storage_permission_summary);
 
-            permissionDialog = new AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
-                        setSelectFileActivityLaunched(true);
+            if (permissionDialog == null || !permissionDialog.isShowing()) {
+                permissionDialog = new AlertDialog.Builder(this, R.style.AlertDialogStyle)
+                    .setView(dialogView)
+                    .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
+                            setSelectFileActivityLaunched(true);
 
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                        intent.addFlags(
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                                        | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                            intent.addFlags(
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
 
-                        startActivityForResult(intent, STORAGE_PERMISSION_REQUEST_CODE);
-                    }
-                )
-                .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
+                            startActivityForResult(intent, STORAGE_PERMISSION_REQUEST_CODE);
+                        }
+                    )
+                    .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())
+                    .setCancelable(false)
                     .create();
 
-            if (!permissionDialog.isShowing()) {
                 permissionDialog.show();
             }
         }

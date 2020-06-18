@@ -195,6 +195,26 @@ public class HomeTabFragment extends Fragment {
         TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
         appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
 
+        if (!contentBlocker.isDomainRuleEmpty()) {
+            infoTextView.setVisibility(View.VISIBLE);
+            swipeContainer.setVisibility(View.VISIBLE);
+            swipeContainer.setOnRefreshListener(() -> {
+                if (loadingBar != null) {
+                    loadingBar.setVisibility(View.VISIBLE);
+                }
+                new RefreshAsyncTask(getContext()).execute();
+            });
+
+            if (loadingBar != null) {
+                loadingBar.setVisibility(View.VISIBLE);
+            }
+            new RefreshAsyncTask(getContext()).execute();
+        } else {
+            infoTextView.setVisibility(View.INVISIBLE);
+            swipeContainer.setVisibility(View.INVISIBLE);
+        }
+
+
         return view;
     }
 
@@ -594,16 +614,17 @@ public class HomeTabFragment extends Fragment {
             if (context != null) {
                 ExpandableListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
                 if (listView != null) {
-                    Handler handler = new Handler(Looper.getMainLooper()) {
+                    /* Handler handler = new Handler(Looper.getMainLooper()) {
                         @Override
                         public void handleMessage(@NonNull Message msg) {
                             ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getExpandableListAdapter();
                             adapter.notifyDataSetChanged();
                         }
-                    };
+                    }; */
 
-                    ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, handler);
+                    ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, null);
                     listView.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
                     listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
                         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_whitelist_domain, listView, false);
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);

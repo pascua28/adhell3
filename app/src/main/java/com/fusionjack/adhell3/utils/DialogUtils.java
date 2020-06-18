@@ -27,9 +27,7 @@ public class DialogUtils {
         builder.setCancelable(true);
         builder.setView(view);
 
-        AlertDialog dialog = builder.create();
-
-        return dialog;
+        return builder.create();
     }
 
     public static void setProgressDialogMessage(AlertDialog dialog, String message) {

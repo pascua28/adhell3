@@ -70,7 +70,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         Date lastUpdated = blockUrlProvider.lastUpdated == null ? new Date() : blockUrlProvider.lastUpdated;
         lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
         if (!blockUrlProvider.deletable) {
-            deleteUrlImageView.setVisibility(View.GONE);
+            deleteUrlImageView.setVisibility(View.INVISIBLE);
         }
         deleteUrlImageView.setOnClickListener(imageView -> {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, parent, false);
