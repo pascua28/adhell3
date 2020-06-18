@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="action_export_domains" type="id" />
+    <item name="action_add_domain" type="id" />
+    <item name="action_add_firewall_rule" type="id" />
+    <item name="action_set_dns" type="id" />
+    <item name="action_add_provider" type="id" />
+</resources>

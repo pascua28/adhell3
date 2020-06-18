@@ -18,8 +18,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,36 +68,47 @@ public class WhitelistFragment extends UserListFragment {
             alertDialog.show();
         });
 
-        FloatingActionsMenu whiteFloatMenu = view.findViewById(R.id.whitelist_actions);
-        FloatingActionButton actionAddWhiteDomain = view.findViewById(R.id.action_add_domain);
-        actionAddWhiteDomain.setIcon(R.drawable.ic_public_white_24dp);
-        actionAddWhiteDomain.setOnClickListener(v -> {
-            whiteFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_whitelist_domain, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim();
-                        if (domainToAdd.indexOf('|') == -1) {
-                            if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                Toast.makeText(this.getContext(), "Url not valid. Please check", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                        } else {
-                            // packageName|url
-                            StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                            if (tokens.countTokens() != 2) {
-                                Toast.makeText(this.getContext(), "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                        }
-                        viewModel.addItem(domainToAdd, addObserver);
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .create();
+        SpeedDialView speedDialView = view.findViewById(R.id.whitelist_actions);
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, getResources().getDrawable(R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.dialog_whitelist_domain_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
 
-            alertDialog.show();
+        speedDialView.setOnActionSelectedListener(actionItem -> {
+            if (actionItem.getId() == R.id.action_add_domain) {
+                View dialogView = inflater.inflate(R.layout.dialog_whitelist_domain, container, false);
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                            String domainToAdd = domainEditText.getText().toString().trim();
+                            if (domainToAdd.indexOf('|') == -1) {
+                                if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                    Toast.makeText(this.getContext(), "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            } else {
+                                // packageName|url
+                                StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+                                if (tokens.countTokens() != 2) {
+                                    Toast.makeText(this.getContext(), "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            }
+                            viewModel.addItem(domainToAdd, addObserver);
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                alertDialog.show();
+                speedDialView.close();
+                return true;
+            }
+            return false;
         });
 
         view.findViewById(R.id.loadingBar).setVisibility(View.GONE);

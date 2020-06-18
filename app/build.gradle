@@ -104,6 +104,7 @@ android {
 
 dependencies {
     compileOnly files('libs/knoxsdk.jar')
+    def speeddial_version = "3.1.1"
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
@@ -135,5 +136,5 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
 
-    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation "com.leinardi.android:speed-dial:$speeddial_version"
 }

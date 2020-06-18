@@ -38,9 +38,9 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.material.tabs.TabLayout;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -118,57 +118,68 @@ public class ProviderListFragment extends Fragment {
             new UpdateProviderAsyncTask(context, true).execute();
         });
 
-        FloatingActionsMenu providerFloatMenu = view.findViewById(R.id.provider_actions);
-        FloatingActionButton actionAddProvider = view.findViewById(R.id.action_add_provider);
-        actionAddProvider.setIcon(R.drawable.ic_event_note_white_24dp);
-        actionAddProvider.setOnClickListener(v -> {
-            providerFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);
-            providerEditText = dialogView.findViewById(R.id.providerEditText);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        String provider = providerEditText.getText().toString();
-                        if (isValidUri(provider)) {
-                            new AddProviderAsyncTask(provider, context).execute();
-                        } else {
-                            Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .create();
+        SpeedDialView speedDialView = view.findViewById(R.id.provider_actions);
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_provider, getResources().getDrawable(R.drawable.ic_event_note_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.dialog_add_provider_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
 
-            alertDialog.show();
+        speedDialView.setOnActionSelectedListener(actionItem -> {
+            if (actionItem.getId() == R.id.action_add_provider) {
+                View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);
+                providerEditText = dialogView.findViewById(R.id.providerEditText);
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            String provider = providerEditText.getText().toString();
+                            if (isValidUri(provider)) {
+                                new AddProviderAsyncTask(provider, context).execute();
+                            } else {
+                                Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
 
-            Button filePicker = dialogView.findViewById(R.id.filePicker);
-            filePicker.setOnClickListener(v1 -> {
-                MainActivity.setSelectFileActivityLaunched(true);
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                intent.setType("*/*");
+                alertDialog.show();
 
-                startActivityForResult(intent, SELECT_FILE_REQUEST_CODE);
-            });
+                Button filePicker = dialogView.findViewById(R.id.filePicker);
+                filePicker.setOnClickListener(v1 -> {
+                    MainActivity.setSelectFileActivityLaunched(true);
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    intent.setType("*/*");
 
-            RadioGroup providerTypeRadioGroup = dialogView.findViewById(R.id.providerTypeRadioGroup);
-            providerTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                switch (checkedId) {
-                    case R.id.providerTypeRemote:
-                        filePicker.setVisibility(View.GONE);
-                        providerEditText.setEnabled(true);
-                        providerEditText.setHint(R.string.dialog_add_provider_hint);
-                        providerEditText.setText("");
-                        break;
-                    case R.id.providerTypeLocal:
-                        filePicker.setVisibility(View.VISIBLE);
-                        providerEditText.setEnabled(false);
-                        providerEditText.setHint("");
-                        providerEditText.setText("");
-                        break;
-                }
-            });
+                    startActivityForResult(intent, SELECT_FILE_REQUEST_CODE);
+                });
+
+                RadioGroup providerTypeRadioGroup = dialogView.findViewById(R.id.providerTypeRadioGroup);
+                providerTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                    switch (checkedId) {
+                        case R.id.providerTypeRemote:
+                            filePicker.setVisibility(View.GONE);
+                            providerEditText.setEnabled(true);
+                            providerEditText.setHint(R.string.dialog_add_provider_hint);
+                            providerEditText.setText("");
+                            break;
+                        case R.id.providerTypeLocal:
+                            filePicker.setVisibility(View.VISIBLE);
+                            providerEditText.setEnabled(false);
+                            providerEditText.setHint("");
+                            providerEditText.setText("");
+                            break;
+                    }
+                });
+                speedDialView.close();
+                return true;
+            }
+            return false;
         });
 
         if (providerListView.getVisibility() == View.GONE) {

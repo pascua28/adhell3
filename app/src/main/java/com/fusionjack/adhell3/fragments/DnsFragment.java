@@ -31,8 +31,8 @@ import com.fusionjack.adhell3.tasks.SetAppAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.List;
 
@@ -125,50 +125,62 @@ public class DnsFragment extends AppFragment {
             resetSearchView();
         });
 
-        FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);
-        FloatingActionButton actionSetDns = view.findViewById(R.id.action_set_dns);
-        actionSetDns.setIcon(R.drawable.ic_dns_white_24dp);
-        actionSetDns.setOnClickListener(v -> {
-            dnsFloatMenu.collapse();
+        SpeedDialView speedDialView = view.findViewById(R.id.dns_actions);
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, getResources().getDrawable(R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.dialog_set_dns_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
 
-            View dialogView = inflater.inflate(R.layout.dialog_set_dns, container, false);
-            EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
-            EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
-            if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
-                secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
-            }
-            primaryDnsEditText.requestFocus();
+        speedDialView.setOnActionSelectedListener(actionItem -> {
+            if (actionItem.getId() == R.id.action_set_dns) {
+                View dialogView = inflater.inflate(R.layout.dialog_set_dns, container, false);
+                EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
+                EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
+                if (AppPreferences.getInstance().isDnsNotEmpty()) {
+                    primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
+                    secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
+                }
+                primaryDnsEditText.requestFocus();
 
-            new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        Handler handler = new Handler(Looper.getMainLooper()) {
-                            @Override
-                            public void handleMessage(Message msg) {
-                                Toast.makeText(context, getString(Integer.parseInt(msg.obj.toString())), Toast.LENGTH_LONG).show();
+                new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            Handler handler = new Handler(Looper.getMainLooper()) {
+                                @Override
+                                public void handleMessage(Message msg) {
+                                    Toast.makeText(context, getString(Integer.parseInt(msg.obj.toString())), Toast.LENGTH_LONG).show();
+                                }
+                            };
+
+                            String primaryDns = primaryDnsEditText.getText().toString();
+                            String secondaryDns = secondaryDnsEditText.getText().toString();
+                            AdhellFactory.getInstance().setDns(primaryDns, secondaryDns, handler);
+
+                            if (AppPreferences.getInstance().isDnsNotEmpty()) {
+                                listView.setEnabled(true);
+                                listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+                                    AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
+                                    new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
+                                });
+                            } else {
+                                listView.setEnabled(false);
                             }
-                        };
 
-                        String primaryDns = primaryDnsEditText.getText().toString();
-                        String secondaryDns = secondaryDnsEditText.getText().toString();
-                        AdhellFactory.getInstance().setDns(primaryDns, secondaryDns, handler);
+                            if (listView.getAdapter() instanceof AppInfoAdapter) {
+                                ((AppInfoAdapter) listView.getAdapter()).notifyDataSetChanged();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
 
-                        if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                            listView.setEnabled(true);
-                            listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                                AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-                                new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
-                            });
-                        } else {
-                            listView.setEnabled(false);
-                        }
-
-                        if (listView.getAdapter() instanceof AppInfoAdapter) {
-                            ((AppInfoAdapter) listView.getAdapter()).notifyDataSetChanged();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+                speedDialView.close();
+                return true;
+            }
+            return false;
         });
 
         loadAppList(type, loadingBar, listView);

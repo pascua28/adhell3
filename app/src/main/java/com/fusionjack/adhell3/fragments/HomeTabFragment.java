@@ -50,8 +50,9 @@ import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -160,12 +161,23 @@ public class HomeTabFragment extends Fragment {
             new AppComponentAsyncTask(this, getContext()).execute();
         });
 
-        FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
-        FloatingActionButton actionAddWhiteDomain = view.findViewById(R.id.action_export_domains);
-        actionAddWhiteDomain.setIcon(R.drawable.ic_public_white_24dp);
-        actionAddWhiteDomain.setOnClickListener(v -> {
-            domainFloatMenu.collapse();
-            new ExportDomainsAsyncTask(getContext()).execute();
+        SpeedDialView speedDialView = view.findViewById(R.id.domain_actions);
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, getResources().getDrawable(R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.export_domains_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
+
+        speedDialView.setOnActionSelectedListener(actionItem -> {
+            if (actionItem.getId() == R.id.action_export_domains) {
+                new ExportDomainsAsyncTask(getContext()).execute();
+                speedDialView.close();
+                return true;
+            }
+            return false;
         });
 
         AsyncTask.execute(() -> {

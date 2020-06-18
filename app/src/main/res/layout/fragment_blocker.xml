@@ -258,27 +258,15 @@
             android:indeterminateDrawable="@drawable/indeterminate_progressbar"
             android:visibility="visible" />
 
-        <com.getbase.floatingactionbutton.FloatingActionsMenu
+        <com.leinardi.android.speeddial.SpeedDialView
             android:id="@+id/domain_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="1dp"
-            android:layout_marginBottom="5dp"
-            fab:fab_addButtonColorNormal="@color/colorFab"
-            fab:fab_addButtonColorPressed="@color/colorFab"
-            fab:fab_addButtonPlusIconColor="@android:color/white"
-            fab:fab_labelStyle="@style/menu_labels_style">
+            android:layout_marginEnd="-4dp"
+            android:paddingBottom="5dp"
+            fab:sdMainFabClosedSrc="@drawable/ic_add" />
 
-            <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/action_export_domains"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                fab:fab_colorNormal="@color/colorFab"
-                fab:fab_colorPressed="@color/colorFab"
-                fab:fab_title="@string/export_domains_title" />
-
-        </com.getbase.floatingactionbutton.FloatingActionsMenu>
     </RelativeLayout>
 </LinearLayout>
