@@ -77,17 +77,16 @@
         <item name="android:windowExitAnimation">@anim/dialog_pop_out</item>
     </style>
 
-    <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/colorText</item>
+    <style name="DialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:layout_height">30.0dip</item>
     </style>
 
-    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/colorText</item>
-    </style>
-
-    <style name="NeutralButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/colorText</item>
-    </style>
+    <style name="NegativeButtonStyle" parent="DialogButton"/>
+    <style name="PositiveButtonStyle" parent="DialogButton"/>
+    <style name="NeutralButtonStyle" parent="DialogButton"/>
 
     <style name="FragmentDialogAnimation">
         <item name="android:windowEnterAnimation">@anim/dialog_pop_in</item>
