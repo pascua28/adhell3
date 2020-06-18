@@ -141,6 +141,11 @@ public class ComponentDisabledTabPageFragment extends Fragment {
 
         return view;
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
+    }
 
     @Override
     public void onPause() {

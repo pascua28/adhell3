@@ -179,6 +179,12 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        loadAppList(type, loadingBar, listView);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_enable_all) {
             enableAllPackages();

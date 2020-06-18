@@ -186,4 +186,10 @@ public class DnsFragment extends AppFragment {
         loadAppList(type, loadingBar, listView);
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadAppList(type, loadingBar, listView);
+    }
 }

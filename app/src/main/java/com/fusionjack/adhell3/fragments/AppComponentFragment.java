@@ -40,6 +40,8 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
+    private ListView listView;
+    private ProgressBar loadingBar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,6 +94,54 @@ public class AppComponentFragment extends AppFragment {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+
+        View view = inflater.inflate(R.layout.fragment_app_component, container, false);
+        loadingBar = view.findViewById(R.id.loadingBar);
+
+        AppFlag appFlag = AppFlag.createComponentFlag();
+        listView = view.findViewById(appFlag.getLoadLayout());
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+            AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
+
+            if (getActivity() != null) {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+
+                Bundle bundle = new Bundle();
+                AppInfo appInfo = adapter.getItem(position);
+                bundle.putString("packageName", appInfo.packageName);
+                bundle.putString("appName", appInfo.appName);
+                ComponentTabFragment fragment = new ComponentTabFragment();
+                fragment.setArguments(bundle);
+
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+                fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+                fragmentTransaction.addToBackStack("appComponents");
+                fragmentTransaction.commit();
+            }
+        });
+
+        SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
+        swipeContainer.setOnRefreshListener(() -> {
+            loadAppList(type, loadingBar, listView);
+            swipeContainer.setRefreshing(false);
+            resetSearchView();
+        });
+
+        loadAppList(type, loadingBar, listView);
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadAppList(type, loadingBar, listView);
     }
 
     private void batchOperation() {
@@ -168,47 +218,5 @@ public class AppComponentFragment extends AppFragment {
                 .create();
 
         alertDialog.show();
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
-        View view = inflater.inflate(R.layout.fragment_app_component, container, false);
-        ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
-
-        AppFlag appFlag = AppFlag.createComponentFlag();
-        ListView listView = view.findViewById(appFlag.getLoadLayout());
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-            AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-
-            if (getActivity() != null) {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-
-                Bundle bundle = new Bundle();
-                AppInfo appInfo = adapter.getItem(position);
-                bundle.putString("packageName", appInfo.packageName);
-                bundle.putString("appName", appInfo.appName);
-                ComponentTabFragment fragment = new ComponentTabFragment();
-                fragment.setArguments(bundle);
-
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
-                fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-                fragmentTransaction.addToBackStack("appComponents");
-                fragmentTransaction.commit();
-            }
-        });
-
-        SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
-        swipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, loadingBar, listView);
-            swipeContainer.setRefreshing(false);
-            resetSearchView();
-        });
-
-        loadAppList(type, loadingBar, listView);
-        return view;
     }
 }

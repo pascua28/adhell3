@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Reload AppCache if needed
-        new ReloadAppCacheIfNeeded(new WeakReference<>(this)).execute();
+        new ReloadAppCacheIfNeeded(new WeakReference<>(this), getSupportFragmentManager()).execute();
 
         // Check for storage permission
         requestStoragePermission();
@@ -390,12 +390,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
-        private WeakReference<Context> applicationContextReference;
-        Set<String> appCachePackageNames;
-        List<ApplicationInfo> installedPackages;
+        private final WeakReference<Context> applicationContextReference;
+        private final FragmentManager fragmentManager;
+        private Fragment visibleFragment;
+        private Set<String> appCachePackageNames;
+        private List<ApplicationInfo> installedPackages;
 
-        ReloadAppCacheIfNeeded(WeakReference<Context> applicationContextReference) {
+        ReloadAppCacheIfNeeded(WeakReference<Context> applicationContextReference, FragmentManager fragmentManager) {
             this.applicationContextReference = applicationContextReference;
+            this.fragmentManager = fragmentManager;
         }
 
         @Override
@@ -406,6 +409,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            // Get visible fragment
+            if (fragmentManager != null) {
+                for (Fragment fragment: fragmentManager.getFragments()) {
+                    if (fragment != null && fragment.isVisible()) {
+                        visibleFragment = fragment;
+                        break;
+                    }
+                }
+            }
+
             // make a copy of the list so the original list is not changed, and remove() is supported
             ArrayList<String> cp = new ArrayList<>( appCachePackageNames );
             cp.add(applicationContextReference.get().getPackageName());
@@ -421,6 +434,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Boolean needReload) {
             if (needReload) {
                 AppCache.reload(applicationContextReference.get(), null);
+                if (visibleFragment != null) {
+                    visibleFragment.onResume();
+                }
             }
         }
     }
