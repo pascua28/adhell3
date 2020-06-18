@@ -18,8 +18,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,51 +69,70 @@ public class BlacklistFragment extends UserListFragment {
             alertDialog.show();
         });
 
-        FloatingActionsMenu blackFloatMenu = view.findViewById(R.id.blacklist_actions);
-        FloatingActionButton actionAddBlackDomain = view.findViewById(R.id.action_add_domain);
-        actionAddBlackDomain.setIcon(R.drawable.ic_public_white_24dp);
-        actionAddBlackDomain.setOnClickListener(v -> {
-            blackFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim();
-                        if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                            Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
-                        } else {
-                            viewModel.addItem(domainToAdd, addObserver);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .create();
+        SpeedDialView speedDialView = view.findViewById(R.id.blacklist_actions);
 
-            alertDialog.show();
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, getResources().getDrawable(R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.dialog_blacklist_domain_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
+
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_firewall_rule, getResources().getDrawable(R.drawable.ic_whatshot_white_24dp, requireContext().getTheme()))
+                .setLabel(getString(R.string.dialog_blacklist_rule_title))
+                .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
+                .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
+                .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
+                .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setLabelClickable(false)
+                .create());
+
+        speedDialView.setOnActionSelectedListener(actionItem -> {
+            if (actionItem.getId() == R.id.action_add_domain) {
+                View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                            String domainToAdd = domainEditText.getText().toString().trim();
+                            if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                            } else {
+                                viewModel.addItem(domainToAdd, addObserver);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                alertDialog.show();
+                speedDialView.close();
+                return true;
+            } else if (actionItem.getId() == R.id.action_add_firewall_rule) {
+                View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setView(dialogView)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                            EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
+                            String ruleToAdd = ruleEditText.getText().toString().trim();
+                            StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
+                            if (tokens.countTokens() != 3) {
+                                Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                            } else {
+                                viewModel.addItem(ruleToAdd, addObserver);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .create();
+
+                alertDialog.show();
+                speedDialView.close();
+                return true;
+            }
+            return false;
         });
 
-        FloatingActionButton actionAddFirewallRule = view.findViewById(R.id.action_add_firewall_rule);
-        actionAddFirewallRule.setIcon(R.drawable.ic_whatshot_white_24dp);
-        actionAddFirewallRule.setOnClickListener(v -> {
-            blackFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
-            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
-                        String ruleToAdd = ruleEditText.getText().toString().trim();
-                        StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
-                        if (tokens.countTokens() != 3) {
-                            Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
-                        } else {
-                            viewModel.addItem(ruleToAdd, addObserver);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .create();
-
-            alertDialog.show();
-        });
         view.findViewById(R.id.loadingBar).setVisibility(View.GONE);
         if (blacklistView.getVisibility() == View.GONE) {
             AlphaAnimation animation = new AlphaAnimation(0f, 1f);
@@ -124,7 +143,6 @@ public class BlacklistFragment extends UserListFragment {
             blacklistView.setVisibility(View.VISIBLE);
             blacklistView.startAnimation(animation);
         }
-
 
         return view;
     }
