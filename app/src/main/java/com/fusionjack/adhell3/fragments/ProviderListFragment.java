@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -125,10 +126,12 @@ public class ProviderListFragment extends Fragment {
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
                 .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
                 .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setFabImageTintColor(Color.WHITE)
                 .setLabelClickable(false)
                 .create());
 
         speedDialView.setOnActionSelectedListener(actionItem -> {
+            speedDialView.close();
             if (actionItem.getId() == R.id.action_add_provider) {
                 View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);
                 providerEditText = dialogView.findViewById(R.id.providerEditText);
@@ -178,7 +181,6 @@ public class ProviderListFragment extends Fragment {
                             break;
                     }
                 });
-                speedDialView.close();
                 return true;
             }
             return false;

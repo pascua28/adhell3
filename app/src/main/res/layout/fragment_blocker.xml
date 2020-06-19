@@ -249,10 +249,10 @@
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <ProgressBar
+            android:id="@+id/loadingBar"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
 
-        android:id="@+id/loadingBar"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:indeterminate="true"
@@ -267,7 +267,10 @@
             android:layout_alignParentBottom="true"
             android:layout_marginEnd="-4dp"
             android:paddingBottom="5dp"
-            fab:sdMainFabClosedSrc="@drawable/ic_add" />
+            app:layout_behavior="@string/speeddial_scrolling_view_snackbar_behavior"
+            app:sdMainFabClosedSrc="@drawable/ic_add"
+            app:sdMainFabClosedIconColor="@android:color/white"
+            app:sdMainFabOpenedIconColor="@android:color/white" />
 
     </RelativeLayout>
 </LinearLayout>

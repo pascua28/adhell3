@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,6 +79,7 @@ public class BlacklistFragment extends UserListFragment {
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
                 .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
                 .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setFabImageTintColor(Color.WHITE)
                 .setLabelClickable(false)
                 .create());
 
@@ -87,10 +89,12 @@ public class BlacklistFragment extends UserListFragment {
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
                 .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
                 .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setFabImageTintColor(Color.WHITE)
                 .setLabelClickable(false)
                 .create());
 
         speedDialView.setOnActionSelectedListener(actionItem -> {
+            speedDialView.close();
             if (actionItem.getId() == R.id.action_add_domain) {
                 View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
@@ -110,7 +114,6 @@ public class BlacklistFragment extends UserListFragment {
                         .create();
 
                 alertDialog.show();
-                speedDialView.close();
                 return true;
             } else if (actionItem.getId() == R.id.action_add_firewall_rule) {
                 View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
@@ -132,7 +135,6 @@ public class BlacklistFragment extends UserListFragment {
                         .create();
 
                 alertDialog.show();
-                speedDialView.close();
                 return true;
             }
             return false;

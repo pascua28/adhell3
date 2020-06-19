@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
         android:id="@+id/blockedDomainIconImageView"
@@ -19,15 +20,19 @@
     <TextView
         android:id="@+id/blockedDomainAppNameTextView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
         android:layout_toEndOf="@+id/blockedDomainIconImageView"
-        android:paddingStart="-40dp"
+        android:paddingEnd="40dp"
         android:text="Adhell"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textAlignment="gravity"
+        android:gravity="center"
+        android:textStyle="bold"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="18sp"
+        app:autoSizeStepGranularity="1sp" />
 
     <TextView
         android:id="@+id/blockedDomainPackageNameTextView"
@@ -36,7 +41,7 @@
         android:layout_alignParentEnd="true"
         android:layout_marginTop="30dp"
         android:layout_toEndOf="@+id/blockedDomainIconImageView"
-        android:paddingStart="-40dp"
+        android:paddingEnd="40dp"
         android:text="Adhell"
         android:textAlignment="center"
         android:textSize="12sp" />

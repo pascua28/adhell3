@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -169,13 +170,14 @@ public class HomeTabFragment extends Fragment {
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
                 .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
                 .setFabSize(FloatingActionButton.SIZE_NORMAL)
+                .setFabImageTintColor(Color.WHITE)
                 .setLabelClickable(false)
                 .create());
 
         speedDialView.setOnActionSelectedListener(actionItem -> {
             if (actionItem.getId() == R.id.action_export_domains) {
-                new ExportDomainsAsyncTask(getContext()).execute();
                 speedDialView.close();
+                new ExportDomainsAsyncTask(getContext()).execute();
                 return true;
             }
             return false;
@@ -615,13 +617,6 @@ public class HomeTabFragment extends Fragment {
             if (context != null) {
                 ExpandableListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
                 if (listView != null) {
-                    /* Handler handler = new Handler(Looper.getMainLooper()) {
-                        @Override
-                        public void handleMessage(@NonNull Message msg) {
-                            ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getExpandableListAdapter();
-                            adapter.notifyDataSetChanged();
-                        }
-                    }; */
 
                     ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, null);
                     listView.setAdapter(adapter);

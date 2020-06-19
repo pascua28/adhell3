@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -133,10 +134,12 @@ public class DnsFragment extends AppFragment {
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
                 .setLabelBackgroundColor(getResources().getColor(R.color.colorBorder, requireContext().getTheme()))
                 .setFabSize(com.google.android.material.floatingactionbutton.FloatingActionButton.SIZE_NORMAL)
+                .setFabImageTintColor(Color.WHITE)
                 .setLabelClickable(false)
                 .create());
 
         speedDialView.setOnActionSelectedListener(actionItem -> {
+            speedDialView.close();
             if (actionItem.getId() == R.id.action_set_dns) {
                 View dialogView = inflater.inflate(R.layout.dialog_set_dns, container, false);
                 EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
@@ -180,7 +183,6 @@ public class DnsFragment extends AppFragment {
                         .setNegativeButton(android.R.string.no, null)
                         .show();
 
-                speedDialView.close();
                 return true;
             }
             return false;

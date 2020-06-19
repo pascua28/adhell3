@@ -44,8 +44,8 @@
 
     <ProgressBar
         android:id="@+id/loadingBarProvider"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:indeterminate="true"
@@ -54,11 +54,14 @@
 
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/provider_actions"
+        android:tag="fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="5dp"
-        fab:sdMainFabClosedSrc="@drawable/ic_add" />
+        fab:sdMainFabClosedSrc="@drawable/ic_add"
+        fab:sdMainFabClosedIconColor="@android:color/white"
+        fab:sdMainFabOpenedIconColor="@android:color/white" />
 
 </RelativeLayout>

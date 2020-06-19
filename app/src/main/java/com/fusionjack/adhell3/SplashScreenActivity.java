@@ -37,20 +37,28 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
+        if (!getIntent().getBooleanExtra("EXIT", false)) {
+            setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
+
+        // Exit if intent extra EXIT exist
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+            //finishAffinity();
+            return;
+        }
+
+        // Launch main activity if no password set
+        if (AppPreferences.getInstance().getPasswordHash().isEmpty()) {
+            launchMainActivity();
+            return;
+        }
 
         // Early exit if the device doesn't support Knox
         if (!DeviceAdminInteractor.getInstance().isSupported()) {
             LogUtils.info("Device not supported");
             AdhellFactory.getInstance().createNotSupportedDialog(this);
-            return;
-        }
-
-        // Exit if intent extra EXIT exist
-        if (getIntent().getBooleanExtra("EXIT", false)) {
-            finishAffinity();
-            finish();
             return;
         }
 
