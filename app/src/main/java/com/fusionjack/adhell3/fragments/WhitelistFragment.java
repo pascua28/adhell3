@@ -9,15 +9,16 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
+import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -88,14 +89,18 @@ public class WhitelistFragment extends UserListFragment {
                             String domainToAdd = domainEditText.getText().toString().trim();
                             if (domainToAdd.indexOf('|') == -1) {
                                 if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                    Toast.makeText(this.getContext(), "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                                    Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                            .setAnchorView(R.id.bottomBar)
+                                            .show();
                                     return;
                                 }
                             } else {
                                 // packageName|url
                                 StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                 if (tokens.countTokens() != 2) {
-                                    Toast.makeText(this.getContext(), "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                                    Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                            .setAnchorView(R.id.bottomBar)
+                                            .show();
                                     return;
                                 }
                             }

@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -20,6 +19,7 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -30,6 +30,7 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.tasks.SetAppAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.snackbar.Snackbar;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
@@ -202,7 +203,9 @@ public class AppTabPageFragment extends AppFragment {
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
+                    Snackbar.make(MainActivity.getAppRootView(), getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                     AsyncTask.execute(() -> {
                         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
                         switch (page) {

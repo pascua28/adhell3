@@ -4,19 +4,19 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.model.AppComponent;
+import com.google.android.material.snackbar.Snackbar;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.io.BufferedReader;
@@ -111,7 +111,10 @@ public final class AppComponentFactory {
         return lines;
     }
 
-    public void checkMigrateOldBatchFiles(WeakReference<Context> contextReference, WeakReference<ViewGroup> viewGroupReference) {
+    public void checkMigrateOldBatchFiles(Context context, View view) {
+        WeakReference<Context> contextReference = new WeakReference<>(context);
+        WeakReference<View> viewReference = new WeakReference<>(view);
+
         SingleObserver<String> migrateObserver = new SingleObserver<String>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -119,12 +122,16 @@ public final class AppComponentFactory {
 
             @Override
             public void onSuccess(String s) {
-                Toast.makeText(contextReference.get(), s, Toast.LENGTH_LONG).show();
+                Snackbar.make(MainActivity.getAppRootView(), s, Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
             }
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(contextReference.get(), "Unable to migrate old batch files!" + e.getMessage(), Toast.LENGTH_LONG).show();
+                Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), "Unable to migrate old batch files! %s", e.getMessage()), Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
             }
         };
 
@@ -136,7 +143,7 @@ public final class AppComponentFactory {
             @Override
             public void onSuccess(Boolean s) {
                 if (s) {
-                    View dialogView = LayoutInflater.from(contextReference.get()).inflate(R.layout.dialog_question, viewGroupReference.get(), false);
+                    View dialogView = LayoutInflater.from(contextReference.get()).inflate(R.layout.dialog_question, viewReference.get().findViewById(android.R.id.content), false);
                     TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
                     titleTextView.setText(R.string.dialog_appcomponent_batch_migrate_file_title);
                     TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
@@ -165,7 +172,9 @@ public final class AppComponentFactory {
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(contextReference.get(), "Unable to check if migrate old batch files is needed!" + e.getMessage(), Toast.LENGTH_LONG).show();
+                Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), "Unable to check if migrate old batch files is needed! %s", e.getMessage()), Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
             }
         };
 

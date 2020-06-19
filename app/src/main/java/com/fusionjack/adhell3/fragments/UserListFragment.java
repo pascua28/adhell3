@@ -2,9 +2,12 @@ package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+
+import com.fusionjack.adhell3.MainActivity;
+import com.fusionjack.adhell3.R;
+import com.google.android.material.snackbar.Snackbar;
 
 import io.reactivex.rxjava3.core.SingleObserver;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -28,15 +31,23 @@ public abstract class UserListFragment extends Fragment {
             @Override
             public void onSuccess(String item) {
                 if (item.indexOf('|') == -1) {
-                    Toast.makeText(context, "Domain has been added", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(MainActivity.getAppRootView(), "Domain has been added", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 } else {
-                    Toast.makeText(context, "Rule has been added", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(MainActivity.getAppRootView(), "Rule has been added", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 }
             }
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (e.getMessage() != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
             }
         };
 
@@ -48,15 +59,23 @@ public abstract class UserListFragment extends Fragment {
             @Override
             public void onSuccess(String item) {
                 if (item.indexOf('|') == -1) {
-                    Toast.makeText(context, "Domain has been removed", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(MainActivity.getAppRootView(), "Domain has been removed", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 } else {
-                    Toast.makeText(context, "Rule has been removed", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(MainActivity.getAppRootView(), "Rule has been removed", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 }
             }
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (e.getMessage() != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
             }
         };
     }

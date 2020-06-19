@@ -9,19 +9,20 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -153,7 +154,9 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                 if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
                     String message = String.format(Locale.getDefault(), "The total number of unique domains %d exceeds the maximum limit of %d",
                             totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                    Snackbar.make(MainActivity.getAppRootView(), message, Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 }
             }
         }

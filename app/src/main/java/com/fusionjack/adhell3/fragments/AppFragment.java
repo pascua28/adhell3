@@ -6,18 +6,19 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,11 @@ public class AppFragment extends Fragment {
 
             @Override
             public void onError(Throwable e) {
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (e.getMessage() != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_SHORT)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
             }
         };
     }

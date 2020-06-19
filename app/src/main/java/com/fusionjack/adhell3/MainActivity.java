@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +37,7 @@ import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private static AlertDialog permissionDialog;
     private static BottomNavigationView bottomBar;
     private ActivationDialogFragment activationDialogFragment;
+
+    private static MainActivity mainActivity;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -96,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             onTabSelected(item.getItemId());
             return true;
         });
+
+        mainActivity = this;
     }
 
     @Override
@@ -149,7 +153,9 @@ public class MainActivity extends AppCompatActivity {
             }
             finishOnResume();
         } else if (resultCode == RESULT_OK && requestCode == ADMIN_PERMISSION_REQUEST_CODE) {
-            Toast.makeText(this, "Admin OK!", Toast.LENGTH_LONG).show();
+            Snackbar.make(MainActivity.getAppRootView(), "Admin OK!", Snackbar.LENGTH_LONG)
+                    .setAnchorView(R.id.bottomBar)
+                    .show();
             finishOnResume();
         }
     }
@@ -160,10 +166,13 @@ public class MainActivity extends AppCompatActivity {
         if (count <= 1) {
             if (doubleBackToExitPressedOnce) {
                 closeActivity(true);
+                return;
             }
 
             doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
+            Snackbar.make(MainActivity.getAppRootView(), "Press once again to exit", Snackbar.LENGTH_SHORT)
+                    .setAnchorView(R.id.bottomBar)
+                    .show();
 
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         } else {
@@ -226,6 +235,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 
+    public static View getAppRootView() {
+        return mainActivity.findViewById(android.R.id.content).getRootView();
+    }
+
     public void finishOnResume() {
         // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
         if (!isKnoxValid()) {
@@ -233,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Reload AppCache if needed
-        new ReloadAppCacheIfNeeded(new WeakReference<>(this), getSupportFragmentManager()).execute();
+        new ReloadAppCacheIfNeeded(this, getSupportFragmentManager()).execute();
 
         // Check for storage permission
         requestStoragePermission();
@@ -397,8 +410,8 @@ public class MainActivity extends AppCompatActivity {
         private Set<String> appCachePackageNames;
         private List<ApplicationInfo> installedPackages;
 
-        ReloadAppCacheIfNeeded(WeakReference<Context> applicationContextReference, FragmentManager fragmentManager) {
-            this.applicationContextReference = applicationContextReference;
+        ReloadAppCacheIfNeeded(Context applicationContext, FragmentManager fragmentManager) {
+            this.applicationContextReference = new WeakReference<>(applicationContext);
             this.fragmentManager = fragmentManager;
         }
 

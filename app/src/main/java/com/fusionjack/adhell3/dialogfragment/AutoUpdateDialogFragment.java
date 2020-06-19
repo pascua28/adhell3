@@ -13,7 +13,6 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,13 +26,14 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.AutoUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.snackbar.Snackbar;
 
-import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -160,7 +160,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private void saveAutoUpdateSettings() {
         if (appComponentsCheckBox.isChecked()) {
             if (getView() != null) {
-                AppComponentFactory.getInstance().checkMigrateOldBatchFiles(new WeakReference<>(getContext()), new WeakReference<>(getView().findViewById(android.R.id.content)));
+                AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext(), getView());
             }
         }
 
@@ -176,10 +176,18 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         if (globalSwitch.isChecked()) {
             enqueuePeriodicWork();
-            Toast.makeText(getContext(), "Auto update enabled", Toast.LENGTH_LONG).show();
+            if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                Snackbar.make(MainActivity.getAppRootView(), "Auto update enabled", Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
+            }
         } else {
             cancelPeriodicWork();
-            Toast.makeText(getContext(), "Auto update disabled", Toast.LENGTH_LONG).show();
+            if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                Snackbar.make(MainActivity.getAppRootView(), "Auto update disabled", Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
+            }
         }
     }
 

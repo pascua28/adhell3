@@ -14,12 +14,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -31,6 +31,7 @@ import com.fusionjack.adhell3.tasks.SetAppAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -152,7 +153,9 @@ public class DnsFragment extends AppFragment {
                             Handler handler = new Handler(Looper.getMainLooper()) {
                                 @Override
                                 public void handleMessage(Message msg) {
-                                    Toast.makeText(context, getString(Integer.parseInt(msg.obj.toString())), Toast.LENGTH_LONG).show();
+                                    Snackbar.make(MainActivity.getAppRootView(), getString(Integer.parseInt(msg.obj.toString())), Snackbar.LENGTH_LONG)
+                                            .setAnchorView(R.id.bottomBar)
+                                            .show();
                                 }
                             };
 

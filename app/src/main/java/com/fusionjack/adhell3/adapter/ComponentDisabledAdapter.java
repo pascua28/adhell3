@@ -1,20 +1,12 @@
 package com.fusionjack.adhell3.adapter;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 
-import androidx.annotation.NonNull;
-
-import com.fusionjack.adhell3.model.IComponentInfo;
-
-import java.util.List;
-import java.util.Map;
-
 public class ComponentDisabledAdapter extends BaseExpandableListAdapter {
 
-    ComponentDisabledAdapter(@NonNull Context context, @NonNull Map<String, List<IComponentInfo>> componentInfos) {
+    ComponentDisabledAdapter() {
 
     }
 

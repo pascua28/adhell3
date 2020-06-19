@@ -13,7 +13,6 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -22,6 +21,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -31,8 +31,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.DialogUtils;
-
-import java.lang.ref.WeakReference;
+import com.google.android.material.snackbar.Snackbar;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.SingleObserver;
@@ -162,13 +161,19 @@ public class AppComponentFragment extends AppFragment {
             @Override
             public void onSuccess(String s) {
                 progressDialog.dismiss();
-                Toast.makeText(context, s, Toast.LENGTH_LONG).show();
+                Snackbar.make(MainActivity.getAppRootView(), s, Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
             }
 
             @Override
             public void onError(Throwable e) {
                 progressDialog.dismiss();
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
+                if (e.getMessage() != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
             }
         };
 
@@ -196,7 +201,7 @@ public class AppComponentFragment extends AppFragment {
         alertDialog.show();
 
         if (getView() != null) {
-            AppComponentFactory.getInstance().checkMigrateOldBatchFiles(new WeakReference<>(getContext()), new WeakReference<>(getView().findViewById(android.R.id.content)));
+            AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext(), getView());
         }
     }
 

@@ -18,7 +18,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -38,6 +37,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
@@ -139,7 +139,9 @@ public class ProviderListFragment extends Fragment {
                             if (isValidUri(provider)) {
                                 new AddProviderAsyncTask(provider, context).execute();
                             } else {
-                                Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
+                                Snackbar.make(MainActivity.getAppRootView(), "Url is invalid", Snackbar.LENGTH_LONG)
+                                        .setAnchorView(R.id.bottomBar)
+                                        .show();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)

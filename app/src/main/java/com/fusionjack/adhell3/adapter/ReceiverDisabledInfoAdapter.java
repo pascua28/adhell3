@@ -30,7 +30,7 @@ public class ReceiverDisabledInfoAdapter extends ComponentDisabledAdapter {
                                        @NonNull Map<String, List<IComponentInfo>> componentInfos,
                                        Map<String, Drawable> appIcons)
     {
-        super(context, componentInfos);
+        super();
 
         this.contextReference = new WeakReference<>(context);
         this.appIcons = appIcons;

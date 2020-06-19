@@ -9,15 +9,16 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
+import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -98,7 +99,9 @@ public class BlacklistFragment extends UserListFragment {
                             EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
                             String domainToAdd = domainEditText.getText().toString().trim();
                             if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                                Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                        .setAnchorView(R.id.bottomBar)
+                                        .show();
                             } else {
                                 viewModel.addItem(domainToAdd, addObserver);
                             }
@@ -118,7 +121,9 @@ public class BlacklistFragment extends UserListFragment {
                             String ruleToAdd = ruleEditText.getText().toString().trim();
                             StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
                             if (tokens.countTokens() != 3) {
-                                Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                                Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                        .setAnchorView(R.id.bottomBar)
+                                        .show();
                             } else {
                                 viewModel.addItem(ruleToAdd, addObserver);
                             }

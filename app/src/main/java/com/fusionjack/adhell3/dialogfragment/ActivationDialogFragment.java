@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -32,8 +31,11 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.google.android.material.snackbar.Snackbar;
 import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
+
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
@@ -106,7 +108,11 @@ public class ActivationDialogFragment extends DialogFragment {
                     try {
                         deviceAdminInteractor.deactivateKnoxKey(sharedPreferences, getContext());
                     } catch (Exception ex) {
-                        Toast.makeText(getContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
+                        if (ex.getMessage() != null && getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                            Snackbar.make(MainActivity.getAppRootView(), ex.getMessage(), Snackbar.LENGTH_LONG)
+                                    .setAnchorView(R.id.bottomBar)
+                                    .show();
+                        }
                         setLicenseState(true);
                     }
                 } else {
@@ -239,7 +245,11 @@ public class ActivationDialogFragment extends DialogFragment {
             if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_ACTIVATION) {
                 setLicenseState(true);
                 LogUtils.info("License activated");
-                Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
+                if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), "License activated", Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -250,7 +260,11 @@ public class ActivationDialogFragment extends DialogFragment {
             } else if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_DEACTIVATION) {
                 setLicenseState(false);
                 LogUtils.info("License deactivated");
-                Toast.makeText(context, "License deactivated", Toast.LENGTH_LONG).show();
+                if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), "License deactivated", Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
                 setCancelable(false);
             }
         }
@@ -260,7 +274,11 @@ public class ActivationDialogFragment extends DialogFragment {
             if (result_type == EnterpriseLicenseManager.LICENSE_RESULT_TYPE_ACTIVATION) {
                 setLicenseState(true);
                 LogUtils.info("License activated");
-                Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
+                if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                    Snackbar.make(MainActivity.getAppRootView(), "License activated", Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+                }
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -289,7 +307,13 @@ public class ActivationDialogFragment extends DialogFragment {
                 status = intent.getStringExtra(EnterpriseLicenseManager.EXTRA_LICENSE_STATUS);
             }
             LogUtils.error("Status: " + status + ". Error code: " + errorCode);
-            Toast.makeText(context, "Status: " + status + ". Error code: " + errorCode, Toast.LENGTH_LONG).show();
+            if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
+                Snackbar.make(MainActivity.getAppRootView(),
+                        String.format(Locale.getDefault(), "Status: %s. Error code: %d", status, errorCode),
+                        Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
+            }
         }
 
         // Allow the user to try again

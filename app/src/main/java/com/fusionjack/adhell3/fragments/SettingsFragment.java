@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -49,10 +48,12 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Locale;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String ALLOW_QSTILES_LOCKSCREEN = "allow_qstiles_lockscreen";
@@ -214,7 +215,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case RESTORE_WARNING_PREFERENCE: {
                 AppPreferences.getInstance().setWarningDialogAppComponentDontShow(false);
-                Toast.makeText(context, getString(R.string.restore_warning_success), Toast.LENGTH_LONG).show();
+                Snackbar.make(MainActivity.getAppRootView(), getString(R.string.restore_warning_success), Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
                 break;
             }
             case REVOKE_STORAGE_PERMISSION: {
@@ -232,7 +235,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             context.getContentResolver().releasePersistableUriPermission(treePath, intentFlags);
                             context.revokeUriPermission(treePath, intentFlags);
                             AppPreferences.getInstance().setStorageTreePath("");
-                            Toast.makeText(context, getString(R.string.revoke_storage_permission_success), Toast.LENGTH_LONG).show();
+                            Snackbar.make(MainActivity.getAppRootView(), getString(R.string.revoke_storage_permission_success), Snackbar.LENGTH_LONG)
+                                    .setAnchorView(R.id.bottomBar)
+                                    .show();
                         })
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -257,10 +262,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case CREATE_LOGCAT_PREFERENCE: {
                 String filename = LogUtils.createLogcat();
                 if (filename.isEmpty()) {
-                    Toast.makeText(context, R.string.logcat_not_created, Toast.LENGTH_LONG).show();
+                    Snackbar.make(MainActivity.getAppRootView(), getString(R.string.logcat_not_created), Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 } else {
-                    String message = context.getResources().getString(R.string.logcat_created);
-                    Toast.makeText(context, String.format(message, filename), Toast.LENGTH_LONG).show();
+                    Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), getString(R.string.logcat_created), filename), Snackbar.LENGTH_LONG)
+                            .setAnchorView(R.id.bottomBar)
+                            .show();
                 }
                 break;
             }

@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
@@ -29,6 +29,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class AppInfoAdapter extends BaseAdapter {
@@ -116,7 +117,6 @@ public class AppInfoAdapter extends BaseAdapter {
                 boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                 holder.switchH.setEnabled(enabled);
                 if (isAppRunning) {
-                    View finalConvertView = convertView;
                     holder.nameH.setTextColor(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
                     if (!appInfo.disabled) {
                         holder.stopH.setVisibility(View.VISIBLE);
@@ -133,10 +133,9 @@ public class AppInfoAdapter extends BaseAdapter {
                                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                         try {
                                             appPolicy.stopApp(appInfo.packageName);
-                                            Snackbar snackBar = Snackbar.make(finalConvertView, String.format(context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT);
-                                            TextView tv = snackBar.getView().findViewById(R.id.snackbar_text);
-                                            tv.setTextColor(Color.WHITE);
-                                            snackBar.show();
+                                            Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT)
+                                                .setAnchorView(R.id.bottomBar)
+                                                .show();
                                             holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
                                             holder.stopH.setVisibility(View.GONE);
                                         } catch (Exception e) {

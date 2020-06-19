@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +32,7 @@ import androidx.preference.PreferenceManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
@@ -51,6 +51,7 @@ import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -638,20 +639,26 @@ public class HomeTabFragment extends Fragment {
                                     String domainToAdd = domainEditText.getText().toString().trim();
                                     if (domainToAdd.indexOf('|') == -1) {
                                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                            Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                                            Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                    .setAnchorView(R.id.bottomBar)
+                                                    .show();
                                             return;
                                         }
                                     } else {
                                         // packageName|url
                                         StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                         if (tokens.countTokens() != 2) {
-                                            Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                                            Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                    .setAnchorView(R.id.bottomBar)
+                                                    .show();
                                             return;
                                         }
                                     }
                                     WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
                                     AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                                    Toast.makeText(context, "Domain whitelist has been added", Toast.LENGTH_SHORT).show();
+                                    Snackbar.make(MainActivity.getAppRootView(), "Domain whitelist has been added", Snackbar.LENGTH_SHORT)
+                                            .setAnchorView(R.id.bottomBar)
+                                            .show();
                                 })
                                 .setNegativeButton(android.R.string.no, null)
                                 .create();
@@ -736,7 +743,9 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             Context context = contextReference.get();
             if (context != null) {
-                Toast.makeText(context, "Blocked domains have been exported!", Toast.LENGTH_LONG).show();
+                    Snackbar.make(MainActivity.getAppRootView(), "Blocked domains have been exported!", Snackbar.LENGTH_LONG)
+                        .setAnchorView(R.id.bottomBar)
+                        .show();
             }
         }
     }
