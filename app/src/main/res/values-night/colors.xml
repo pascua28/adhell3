@@ -9,7 +9,7 @@
     <color name="colorBorder">#333</color>
     <color name="colorSelector">@color/colorPrimaryDark</color>
     <color name="colorFab">@color/colorAccent</color>
-    <color name="colorSnackbar">#ee424242</color>
+    <color name="colorSnackbar">#ee515151</color>
     <color name="colorBottomNavSelected">@color/colorAccent</color>
     <color name="colorBottomNavUnselected">@android:color/white</color>
     <color name="colorRed">#fe4445</color>

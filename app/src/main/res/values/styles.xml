@@ -7,6 +7,7 @@
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
         <item name="android:textColor">@color/colorText</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowDisablePreview">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -15,16 +16,9 @@
         <item name="windowActionBar">true</item>
         <item name="titleTextColor">@color/colorText</item>
         <item name="materialButtonStyle">@style/buttonStyle</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="snackbarStyle">@style/SnackbarStyle</item>
         <item name="textInputStyle">@style/TextInputLayoutStyle</item>
         <item name="snackbarTextViewStyle">@style/SnackbarTextStyle</item>
-    </style>
-
-    <style name="AppTheme.Launcher" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="android:windowBackground">@drawable/launch_screen</item>
-        <item name="android:colorPrimaryDark">@color/colorPrimary</item>
-        <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="ActionBarStyle" parent="Widget.MaterialComponents.Light.ActionBar.Solid">

@@ -37,8 +37,8 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!getIntent().getBooleanExtra("EXIT", false)) {
-            setTheme(R.style.AppTheme);
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            setTheme(android.R.style.Theme_NoDisplay);
         }
         super.onCreate(savedInstanceState);
 

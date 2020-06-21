@@ -198,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
 
         if (finish) {
-            finishAffinity();
             finish();
         }
     }
