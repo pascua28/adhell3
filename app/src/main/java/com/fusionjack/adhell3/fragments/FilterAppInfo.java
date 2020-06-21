@@ -1,16 +1,26 @@
 package com.fusionjack.adhell3.fragments;
 
 public class FilterAppInfo {
+    private boolean HIGHLIGHT_RUNNING_APPS;
     private boolean FILTER_MENU_SYSTEM_APPS;
     private boolean FILTER_MENU_USERS_APPS;
     private boolean FILTER_MENU_RUNNING_APPS;
     private boolean FILTER_MENU_STOPPED_APPS;
 
-    FilterAppInfo() {
+    public FilterAppInfo() {
+        this.HIGHLIGHT_RUNNING_APPS = false;
         this.FILTER_MENU_SYSTEM_APPS = true;
         this.FILTER_MENU_USERS_APPS = true;
         this.FILTER_MENU_RUNNING_APPS = true;
         this.FILTER_MENU_STOPPED_APPS = true;
+    }
+
+    public boolean getHighlightRunningApps() {
+        return this.HIGHLIGHT_RUNNING_APPS;
+    }
+
+    void setHighlightRunningApps(boolean filterState) {
+        this.HIGHLIGHT_RUNNING_APPS = filterState;
     }
 
     public boolean getSystemAppsFilter() {

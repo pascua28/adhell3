@@ -65,24 +65,28 @@ public class AppRepository {
                         tempList.clear();
                     }
 
-                    for (AppInfo item : list) {
-                        boolean isRunning = false;
-                        try {
-                            if (appPolicy != null) {
-                                isRunning = appPolicy.isApplicationRunning(item.packageName);
+                    if (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter()) {
+                        for (AppInfo item : list) {
+                            boolean isRunning = false;
+                            try {
+                                if (appPolicy != null) {
+                                    isRunning = appPolicy.isApplicationRunning(item.packageName);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                            if (filterAppInfo.getRunningAppsFilter() && isRunning) {
+                                if (filterAppInfo.getHighlightRunningApps()) {
+                                    item.appName = item.appName + AppInfoAdapter.RUNNING_TAG;
+                                }
+                                tempList.add(item);
+                            } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
+                                tempList.add(item);
                         }
-                        if (filterAppInfo.getRunningAppsFilter() && isRunning) {
-                            item.appName = item.appName + AppInfoAdapter.RUNNING_TAG;
-                            tempList.add(item);
-                        } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
-                            tempList.add(item);
+                        list.clear();
+                        list.addAll(tempList);
+                        tempList.clear();
                     }
-                    list.clear();
-                    list.addAll(tempList);
-                    tempList.clear();
                     break;
                 case MOBILE_RESTRICTED:
                     if (text.length() == 0) {

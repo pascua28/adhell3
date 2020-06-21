@@ -257,6 +257,7 @@
     <string name="stopped_app">Application \'%1$s\' stopped</string>
     <string name="iv_stop_button_desc">Stop</string>
     <string name="iv_refresh_button_desc">Refresh</string>
+    <string name="menu_item_highlight_running_apps">Highlight Running Apps</string>
     <string name="menu_item_show_system_apps">Show System Apps</string>
     <string name="menu_item_show_user_apps">Show User Apps</string>
     <string name="menu_item_show_running_apps">Show running Apps</string>

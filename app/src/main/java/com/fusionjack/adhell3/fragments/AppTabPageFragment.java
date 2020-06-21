@@ -132,6 +132,7 @@ public class AppTabPageFragment extends AppFragment {
                 filterButton.setOnClickListener(v -> {
                     PopupMenu popup = new PopupMenu(context, filterButton);
                     popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+                    popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
                     popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
                     popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
                     popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
@@ -140,6 +141,9 @@ public class AppTabPageFragment extends AppFragment {
                     popup.setOnMenuItemClickListener(item -> {
                         item.setChecked(!item.isChecked());
                         switch (item.getItemId()) {
+                            case R.id.highlightRunningApps:
+                                filterAppInfo.setHighlightRunningApps(item.isChecked());
+                                break;
                             case R.id.filterSystemApps:
                                 filterAppInfo.setSystemAppsFilter(item.isChecked());
                                 break;
@@ -153,18 +157,36 @@ public class AppTabPageFragment extends AppFragment {
                                 filterAppInfo.setStoppedAppsFilter(item.isChecked());
                                 break;
                         }
-                        if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter() && filterAppInfo.getRunningAppsFilter() && filterAppInfo.getStoppedAppsFilter()) {
+                        if (!filterAppInfo.getHighlightRunningApps() &&
+                                filterAppInfo.getSystemAppsFilter() &&
+                                filterAppInfo.getUserAppsFilter() &&
+                                filterAppInfo.getRunningAppsFilter() &&
+                                filterAppInfo.getStoppedAppsFilter()
+                        ) {
                             filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                         } else {
                             int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
                             filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
                         }
+
+                        MainActivity.setFilterAppInfo(filterAppInfo);
                         resetSearchView();
                         loadAppList(type, loadingBar, listView);
                         return false;
                     });
                     popup.show();
                 });
+                if (!filterAppInfo.getHighlightRunningApps() &&
+                        filterAppInfo.getSystemAppsFilter() &&
+                        filterAppInfo.getUserAppsFilter() &&
+                        filterAppInfo.getRunningAppsFilter() &&
+                        filterAppInfo.getStoppedAppsFilter()
+                ) {
+                    filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                } else {
+                    int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+                    filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                }
             }
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());

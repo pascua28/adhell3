@@ -31,7 +31,7 @@ public class AppFragment extends Fragment {
     Context context;
     AppRepository.Type type;
     AppInfoAdapter adapter;
-    FilterAppInfo filterAppInfo;
+    static FilterAppInfo filterAppInfo;
     private AppViewModel viewModel;
     private String searchText;
     private SearchView searchView;
@@ -39,7 +39,7 @@ public class AppFragment extends Fragment {
     private List<AppInfo> appList;
 
     void initAppModel(AppRepository.Type type) {
-        this.filterAppInfo = new FilterAppInfo();
+        filterAppInfo = MainActivity.getFilterAppInfo();
         this.context = getContext();
         this.type = type;
         this.searchText = "";

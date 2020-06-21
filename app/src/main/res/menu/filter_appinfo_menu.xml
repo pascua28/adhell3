@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/highlightRunningApps"
+        android:checkable="true"
+        android:title="@string/menu_item_highlight_running_apps" />
+
     <group>
         <item
             android:id="@+id/filterSystemApps"
             android:checkable="true"
+
             android:title="@string/menu_item_show_system_apps" />
         <item
             android:id="@+id/filterUserApps"

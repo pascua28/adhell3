@@ -27,6 +27,7 @@ import com.fusionjack.adhell3.fragments.AppTabFragment;
 import com.fusionjack.adhell3.fragments.AppTabPageFragment;
 import com.fusionjack.adhell3.fragments.DomainTabFragment;
 import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
+import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static int previousSelectedTabId = -1;
     private static AlertDialog permissionDialog;
     private static BottomNavigationView bottomBar;
+    private static FilterAppInfo filterAppInfo;
     private ActivationDialogFragment activationDialogFragment;
 
     private static MainActivity mainActivity;
@@ -185,6 +187,8 @@ public class MainActivity extends AppCompatActivity {
         themeChanged = false;
         restoreBackStack = false;
 
+        setFilterAppInfo(new FilterAppInfo());
+
         setSelectedAppTab(AppTabPageFragment.PACKAGE_DISABLER_PAGE);
         setSelectedDomainTab(DomainTabPageFragment.PROVIDER_LIST_PAGE);
         setSelectedOtherTab(OtherTabPageFragment.APP_COMPONENT_PAGE);
@@ -236,6 +240,18 @@ public class MainActivity extends AppCompatActivity {
 
     public static View getAppRootView() {
         return mainActivity.findViewById(android.R.id.content).getRootView();
+    }
+
+    public static FilterAppInfo getFilterAppInfo() {
+        if (MainActivity.filterAppInfo == null) {
+            return new FilterAppInfo();
+        } else {
+            return MainActivity.filterAppInfo;
+        }
+    }
+
+    public static void setFilterAppInfo(FilterAppInfo filterAppInfo) {
+        MainActivity.filterAppInfo = filterAppInfo;
     }
 
     public void finishOnResume() {
