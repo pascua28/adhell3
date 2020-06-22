@@ -58,6 +58,7 @@ public class AppComponentsUpdateWorker extends Worker {
     public Result doWork() {
         retryCount = this.getRunAttemptCount();
         if (retryCount > AutoUpdateDialogFragment.MAX_RETRY) {
+            AutoUpdateDialogFragment.enqueueNextAutoUpdateWork();
             return Result.failure();
         }
 

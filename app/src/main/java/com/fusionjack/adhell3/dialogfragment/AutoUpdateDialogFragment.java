@@ -148,6 +148,16 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         return workerConstraints.build();
     }
 
+    public static void enqueueNextAutoUpdateWork() {
+        OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
+        // Enqueue new job with readjusting initial delay
+        WorkManager.getInstance(App.getAppContext()).enqueue(reScheduleWorkRequest);
+    }
+
     private static void enqueueAutoUpdateWork(WorkManager workManager) {
         OneTimeWorkRequest rulesWorkRequest = new OneTimeWorkRequest.Builder(RulesUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())

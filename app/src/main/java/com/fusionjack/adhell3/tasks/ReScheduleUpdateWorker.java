@@ -50,6 +50,7 @@ public class ReScheduleUpdateWorker extends Worker {
     public Result doWork() {
         retryCount = this.getRunAttemptCount();
         if (retryCount > AutoUpdateDialogFragment.MAX_RETRY) {
+            AutoUpdateDialogFragment.enqueueNextAutoUpdateWork();
             return Result.failure();
         }
 
