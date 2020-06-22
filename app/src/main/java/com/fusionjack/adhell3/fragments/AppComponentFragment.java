@@ -133,7 +133,6 @@ public class AppComponentFragment extends AppFragment {
             resetSearchView();
         });
 
-        loadAppList(type, loadingBar, listView);
         return view;
     }
 

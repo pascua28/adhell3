@@ -9,7 +9,7 @@
 
         <TextView
             android:id="@+id/infoTextView"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="35dp"
             android:background="@drawable/border"
@@ -31,7 +31,6 @@
             android:focusable="true"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_filter" />
-
 
     </RelativeLayout>
 

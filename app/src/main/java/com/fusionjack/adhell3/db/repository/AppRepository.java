@@ -37,76 +37,87 @@ public class AppRepository {
             //showProgressBar();
             switch (type) {
                 case DISABLER:
-                    ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-                    List<AppInfo> tempList = list;
                     if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
-                            tempList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+                            list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
                         } else {
-                            tempList = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
+                            list = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
                         }
-                        list.addAll(tempList);
-                        tempList.clear();
                     } else if (filterAppInfo.getSystemAppsFilter()) {
                         if (text.length() == 0) {
-                            tempList = appDatabase.applicationInfoDao().getAllSystemApps();
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder();
                         } else {
-                            tempList = appDatabase.applicationInfoDao().getAllSystemApps(filterText);
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder(filterText);
                         }
-                        list.addAll(tempList);
-                        tempList.clear();
                     } else if (filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
-                            tempList = appDatabase.applicationInfoDao().getAllUserApps();
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder();
                         } else {
-                            tempList = appDatabase.applicationInfoDao().getAllUserApps(filterText);
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder(filterText);
                         }
-                        list.addAll(tempList);
-                        tempList.clear();
-                    }
-
-                    if (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter()) {
-                        for (AppInfo item : list) {
-                            boolean isRunning = false;
-                            try {
-                                if (appPolicy != null) {
-                                    isRunning = appPolicy.isApplicationRunning(item.packageName);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            if (filterAppInfo.getRunningAppsFilter() && isRunning) {
-                                if (filterAppInfo.getHighlightRunningApps()) {
-                                    item.appName = item.appName + AppInfoAdapter.RUNNING_TAG;
-                                }
-                                tempList.add(item);
-                            } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
-                                tempList.add(item);
-                        }
-                        list.clear();
-                        list.addAll(tempList);
-                        tempList.clear();
                     }
                     break;
                 case MOBILE_RESTRICTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder(filterText);
+                    if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getSystemAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInMobileRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInMobileRestrictedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInMobileRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInMobileRestrictedOrder(filterText);
+                        }
                     }
                     break;
                 case WIFI_RESTRICTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder(filterText);
+                    if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getSystemAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInWifiRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInWifiRestrictedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInWifiRestrictedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInWifiRestrictedOrder(filterText);
+                        }
                     }
                     break;
                 case WHITELISTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder(filterText);
+                    if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getSystemAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInWhitelistedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInWhitelistedOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInWhitelistedOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInWhitelistedOrder(filterText);
+                        }
                     }
                     break;
                 case COMPONENT:
@@ -122,12 +133,51 @@ public class AppRepository {
                     }
                     break;
                 case DNS:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInDnsOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
+                    if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAppsInDnsOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getSystemAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDnsOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDnsOrder(filterText);
+                        }
+                    } else if (filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInDnsOrder();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getAllUserAppsInDnsOrder(filterText);
+                        }
                     }
                     break;
+            }
+
+            if (type != Type.COMPONENT && (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter())) {
+                List<AppInfo> tempList = new ArrayList<>();
+                ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                for (AppInfo item : list) {
+                    boolean isRunning = false;
+                    try {
+                        if (appPolicy != null) {
+                            isRunning = appPolicy.isApplicationRunning(item.packageName);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (filterAppInfo.getRunningAppsFilter() && isRunning) {
+                        if (filterAppInfo.getHighlightRunningApps()) {
+                            item.appName = item.appName + AppInfoAdapter.RUNNING_TAG;
+                        }
+                        tempList.add(item);
+                    } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
+                        tempList.add(item);
+                }
+                list.clear();
+                list.addAll(tempList);
+                tempList.clear();
             }
             hideProgressBar();
             emitter.onSuccess(list);

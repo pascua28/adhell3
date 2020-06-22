@@ -4,10 +4,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
     <TextView
         android:id="@+id/infoTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="35dp"
         android:background="@drawable/border"
         android:paddingStart="10dp"
         android:paddingTop="7dp"
@@ -15,11 +21,26 @@
         android:paddingBottom="5dp"
         android:text="@string/dns_info" />
 
+        <ImageView
+            android:id="@+id/filterButton"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="25dp"
+            android:clickable="true"
+            android:contentDescription="@string/iv_refresh_button_desc"
+            android:focusable="true"
+            android:focusableInTouchMode="false"
+            android:src="@drawable/ic_filter" />
+
+    </RelativeLayout>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/dnsSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/infoTextView">
+        android:layout_below="@id/headerLayout">
 
         <ListView
             android:id="@+id/dns_apps_list"

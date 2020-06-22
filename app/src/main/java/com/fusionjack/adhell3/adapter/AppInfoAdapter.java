@@ -116,39 +116,6 @@ public class AppInfoAdapter extends BaseAdapter {
                 checked = !appInfo.disabled;
                 boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                 holder.switchH.setEnabled(enabled);
-                if (isAppRunning) {
-                    holder.nameH.setTextColor(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
-                    if (!appInfo.disabled) {
-                        holder.stopH.setVisibility(View.VISIBLE);
-                        String finalAppName = appName;
-                        holder.stopH.setOnClickListener(v -> {
-                            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-                            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                            titleTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
-                            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                            questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), finalAppName));
-
-                            AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                                    .setView(dialogView)
-                                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                        try {
-                                            appPolicy.stopApp(appInfo.packageName);
-                                            Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT)
-                                                .setAnchorView(R.id.bottomBar)
-                                                .show();
-                                            holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
-                                            holder.stopH.setVisibility(View.GONE);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    })
-                                    .setNegativeButton(android.R.string.no, null)
-                                    .create();
-
-                            alertDialog.show();
-                        });
-                    }
-                }
                 break;
             case MOBILE_RESTRICTED:
                 checked = !appInfo.mobileRestricted;
@@ -172,6 +139,40 @@ public class AppInfoAdapter extends BaseAdapter {
                 break;
         }
         holder.switchH.setChecked(checked);
+
+        if (isAppRunning) {
+            holder.nameH.setTextColor(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
+            //if (!appInfo.disabled) {
+                holder.stopH.setVisibility(View.VISIBLE);
+                String finalAppName = appName;
+                holder.stopH.setOnClickListener(v -> {
+                    View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
+                    TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                    titleTextView.setText(context.getResources().getString(R.string.stop_app_dialog_title));
+                    TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+                    questionTextView.setText(String.format(context.getResources().getString(R.string.stop_app_dialog_text), finalAppName));
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                            .setView(dialogView)
+                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                try {
+                                    appPolicy.stopApp(appInfo.packageName);
+                                    Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT)
+                                            .setAnchorView(R.id.bottomBar)
+                                            .show();
+                                    holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
+                                    holder.stopH.setVisibility(View.GONE);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, null)
+                            .create();
+
+                    alertDialog.show();
+                });
+            //}
+        }
 
         String info = appInfo.system ? "System" : "User";
         holder.infoH.setText(String.format("%s (%s)", info, versionNames.get(appInfo.packageName)));

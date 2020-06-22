@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,12 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.view.MenuCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.MainActivity;
@@ -120,6 +124,58 @@ public class DnsFragment extends AppFragment {
             });
         }
 
+        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+
+        ImageView filterButton = view.findViewById(R.id.filterButton);
+        filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        filterButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(context, filterButton);
+            popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+            popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
+            popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
+            popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
+            popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
+            popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
+            MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
+            popup.setOnMenuItemClickListener(item -> {
+                item.setChecked(!item.isChecked());
+                switch (item.getItemId()) {
+                    case R.id.highlightRunningApps:
+                        filterAppInfo.setHighlightRunningApps(item.isChecked());
+                        break;
+                    case R.id.filterSystemApps:
+                        filterAppInfo.setSystemAppsFilter(item.isChecked());
+                        break;
+                    case R.id.filterUserApps:
+                        filterAppInfo.setUserAppsFilter(item.isChecked());
+                        break;
+                    case R.id.filterRunningApps:
+                        filterAppInfo.setRunningAppsFilter(item.isChecked());
+                        break;
+                    case R.id.filterStoppedApps:
+                        filterAppInfo.setStoppedAppsFilter(item.isChecked());
+                        break;
+                }
+                if (!filterAppInfo.getHighlightRunningApps() &&
+                        filterAppInfo.getSystemAppsFilter() &&
+                        filterAppInfo.getUserAppsFilter() &&
+                        filterAppInfo.getRunningAppsFilter() &&
+                        filterAppInfo.getStoppedAppsFilter()
+                ) {
+                    filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                } else {
+                    int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+                    filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                }
+
+                MainActivity.setFilterAppInfo(filterAppInfo);
+                resetSearchView();
+                loadAppList(type, loadingBar, listView);
+                return false;
+            });
+            popup.show();
+        });
+
         SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.dnsSwipeContainer);
         dnsSwipeContainer.setOnRefreshListener(() -> {
             loadAppList(type, loadingBar, listView);
@@ -188,13 +244,27 @@ public class DnsFragment extends AppFragment {
             return false;
         });
 
-        loadAppList(type, loadingBar, listView);
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        // Set filter button color
+        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+        ImageView filterButton = requireView().findViewById(R.id.filterButton);
+        if (!filterAppInfo.getHighlightRunningApps() &&
+                filterAppInfo.getSystemAppsFilter() &&
+                filterAppInfo.getUserAppsFilter() &&
+                filterAppInfo.getRunningAppsFilter() &&
+                filterAppInfo.getStoppedAppsFilter()
+        ) {
+            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        } else {
+            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+            filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+        }
+
         loadAppList(type, loadingBar, listView);
     }
 }

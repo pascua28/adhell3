@@ -8,13 +8,13 @@
         <item
             android:id="@+id/filterSystemApps"
             android:checkable="true"
-
             android:title="@string/menu_item_show_system_apps" />
         <item
             android:id="@+id/filterUserApps"
             android:checkable="true"
             android:title="@string/menu_item_show_user_apps" />
     </group>
+
     <group>
         <item
             android:id="@+id/filterRunningApps"

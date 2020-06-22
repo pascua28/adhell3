@@ -124,70 +124,56 @@ public class AppTabPageFragment extends AppFragment {
                 });
             }
 
-            if (page == PACKAGE_DISABLER_PAGE) {
-                int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+            int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+            ImageView filterButton = view.findViewById(R.id.filterButton);
+            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+            filterButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(context, filterButton);
+                popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+                popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
+                popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
+                popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
+                popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
+                popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
+                MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
+                popup.setOnMenuItemClickListener(item -> {
+                    item.setChecked(!item.isChecked());
+                    switch (item.getItemId()) {
+                        case R.id.highlightRunningApps:
+                            filterAppInfo.setHighlightRunningApps(item.isChecked());
+                            break;
+                        case R.id.filterSystemApps:
+                            filterAppInfo.setSystemAppsFilter(item.isChecked());
+                            break;
+                        case R.id.filterUserApps:
+                            filterAppInfo.setUserAppsFilter(item.isChecked());
+                            break;
+                        case R.id.filterRunningApps:
+                            filterAppInfo.setRunningAppsFilter(item.isChecked());
+                            break;
+                        case R.id.filterStoppedApps:
+                            filterAppInfo.setStoppedAppsFilter(item.isChecked());
+                            break;
+                    }
+                    if (!filterAppInfo.getHighlightRunningApps() &&
+                            filterAppInfo.getSystemAppsFilter() &&
+                            filterAppInfo.getUserAppsFilter() &&
+                            filterAppInfo.getRunningAppsFilter() &&
+                            filterAppInfo.getStoppedAppsFilter()
+                    ) {
+                        filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                    } else {
+                        int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+                        filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                    }
 
-                ImageView filterButton = view.findViewById(R.id.filterButton);
-                filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                filterButton.setOnClickListener(v -> {
-                    PopupMenu popup = new PopupMenu(context, filterButton);
-                    popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
-                    popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
-                    popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
-                    popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
-                    popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
-                    popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
-                    MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
-                    popup.setOnMenuItemClickListener(item -> {
-                        item.setChecked(!item.isChecked());
-                        switch (item.getItemId()) {
-                            case R.id.highlightRunningApps:
-                                filterAppInfo.setHighlightRunningApps(item.isChecked());
-                                break;
-                            case R.id.filterSystemApps:
-                                filterAppInfo.setSystemAppsFilter(item.isChecked());
-                                break;
-                            case R.id.filterUserApps:
-                                filterAppInfo.setUserAppsFilter(item.isChecked());
-                                break;
-                            case R.id.filterRunningApps:
-                                filterAppInfo.setRunningAppsFilter(item.isChecked());
-                                break;
-                            case R.id.filterStoppedApps:
-                                filterAppInfo.setStoppedAppsFilter(item.isChecked());
-                                break;
-                        }
-                        if (!filterAppInfo.getHighlightRunningApps() &&
-                                filterAppInfo.getSystemAppsFilter() &&
-                                filterAppInfo.getUserAppsFilter() &&
-                                filterAppInfo.getRunningAppsFilter() &&
-                                filterAppInfo.getStoppedAppsFilter()
-                        ) {
-                            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                        } else {
-                            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-                            filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
-                        }
-
-                        MainActivity.setFilterAppInfo(filterAppInfo);
-                        resetSearchView();
-                        loadAppList(type, loadingBar, listView);
-                        return false;
-                    });
-                    popup.show();
+                    MainActivity.setFilterAppInfo(filterAppInfo);
+                    resetSearchView();
+                    loadAppList(type, loadingBar, listView);
+                    return false;
                 });
-                if (!filterAppInfo.getHighlightRunningApps() &&
-                        filterAppInfo.getSystemAppsFilter() &&
-                        filterAppInfo.getUserAppsFilter() &&
-                        filterAppInfo.getRunningAppsFilter() &&
-                        filterAppInfo.getStoppedAppsFilter()
-                ) {
-                    filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                } else {
-                    int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-                    filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
-                }
-            }
+                popup.show();
+            });
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
@@ -195,8 +181,6 @@ public class AppTabPageFragment extends AppFragment {
                 swipeContainer.setRefreshing(false);
                 resetSearchView();
             });
-
-            loadAppList(type, loadingBar, listView);
         }
         return view;
     }
@@ -204,6 +188,21 @@ public class AppTabPageFragment extends AppFragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Set filter button color
+        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+        ImageView filterButton = requireView().findViewById(R.id.filterButton);
+        if (!filterAppInfo.getHighlightRunningApps() &&
+                filterAppInfo.getSystemAppsFilter() &&
+                filterAppInfo.getUserAppsFilter() &&
+                filterAppInfo.getRunningAppsFilter() &&
+                filterAppInfo.getStoppedAppsFilter()
+        ) {
+            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        } else {
+            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+            filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+        }
+
         loadAppList(type, loadingBar, listView);
     }
 
