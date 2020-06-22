@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3.dialogfragment;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -18,9 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
-import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -29,7 +31,9 @@ import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
-import com.fusionjack.adhell3.tasks.AutoUpdateWorker;
+import com.fusionjack.adhell3.tasks.AppComponentsUpdateWorker;
+import com.fusionjack.adhell3.tasks.ReScheduleUpdateWorker;
+import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
@@ -39,15 +43,14 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateDialogFragment extends DialogFragment {
-    public static final String AUTO_UPDATE_WORK_TAG = "adhell_auto_update";
+    public static int MAX_RETRY = 5;
     public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
-    private final WorkManager workManager;
+    private static WorkManager workManager;
     private Switch globalSwitch;
     private TextView seekLabelTextView;
     private SeekBar intervalSeekBar;
     private CheckBox appComponentsCheckBox;
-    private CheckBox cleanDBCheckBox;
     private CheckBox logCheckBox;
     private CheckBox lowBatteryCheckBox;
     private CheckBox mobileDataCheckBox;
@@ -55,7 +58,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
     public AutoUpdateDialogFragment(Preference preference) {
         this.customSwitchPreference = (CustomSwitchPreference) preference;
-        this.workManager = WorkManager.getInstance(App.getAppContext());
+        workManager = WorkManager.getInstance(App.getAppContext());
     }
 
     @Override
@@ -104,8 +107,6 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(intervalSeekBar.getProgress())));
         appComponentsCheckBox = view.findViewById(R.id.appComponentsCheckBox);
         appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
-        cleanDBCheckBox = view.findViewById(R.id.cleanDBCheckBox);
-        cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDatabaseAutoUpdate());
         logCheckBox = view.findViewById(R.id.logCheckBox);
         logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
         lowBatteryCheckBox = view.findViewById(R.id.lowBatteryCheckBox);
@@ -123,6 +124,15 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
     }
 
+    public static void migrateOldAutoUpdateJob(Activity activity) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+        boolean autoUpdateEnabled = sharedPref.getBoolean("auto_update_preference", false);
+        if (autoUpdateEnabled && !AppPreferences.getInstance().getAutoUpdateMigrated()) {
+            enqueueAutoUpdateWork(WorkManager.getInstance(App.getAppContext()));
+            AppPreferences.getInstance().setAutoUpdateMigrated(true);
+        }
+    }
+
     public static Constraints getAutoUpdateConstraints() {
         Constraints.Builder workerConstraints = new Constraints.Builder();
         if (AppPreferences.getInstance().getAutoUpdateConstraintMobileData()) {
@@ -138,23 +148,39 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         return workerConstraints.build();
     }
 
-    private void enqueuePeriodicWork() {
-        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(AutoUpdateWorker.class)
-                .setConstraints(getAutoUpdateConstraints())
+    private static void enqueueAutoUpdateWork(WorkManager workManager) {
+        OneTimeWorkRequest rulesWorkRequest = new OneTimeWorkRequest.Builder(RulesUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .setInitialDelay(
                         getInitialDelayForFirstScheduleWork(
-                            AppPreferences.getInstance().getStartHourAutoUpdate(),
-                            AppPreferences.getInstance().getStartMinuteAutoUpdate()),
-                        TimeUnit.MILLISECONDS
-                )
+                                AppPreferences.getInstance().getStartHourAutoUpdate(),
+                                AppPreferences.getInstance().getStartMinuteAutoUpdate()),
+                        TimeUnit.MILLISECONDS)
                 .build();
-        cancelPeriodicWork();
-        workManager.enqueueUniqueWork(AUTO_UPDATE_WORK_TAG, ExistingWorkPolicy.REPLACE , workRequest);
+
+        OneTimeWorkRequest appComponentsWorkRequest = new OneTimeWorkRequest.Builder(AppComponentsUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
+        OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
+        // Cancel previous job
+        cancelAllWork(workManager);
+
+        // Enqueue new job with readjusting initial delay
+        workManager.beginWith(rulesWorkRequest)
+                .then(appComponentsWorkRequest)
+                .then(reScheduleWorkRequest)
+                .enqueue();
     }
 
-    private void cancelPeriodicWork() {
-        workManager.cancelUniqueWork(AUTO_UPDATE_WORK_TAG);
+    private static void cancelAllWork(WorkManager workManager) {
+        workManager.cancelAllWork();
     }
 
     private void saveAutoUpdateSettings() {
@@ -166,7 +192,6 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         AppPreferences.getInstance().setAutoUpdateInterval(intervalSeekBar.getProgress());
         AppPreferences.getInstance().setAppComponentsAutoUpdate(appComponentsCheckBox.isChecked());
-        AppPreferences.getInstance().setCleanDatabaseAutoUpdate(cleanDBCheckBox.isChecked());
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(lowBatteryCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintMobileData(mobileDataCheckBox.isChecked());
@@ -175,23 +200,24 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         customSwitchPreference.setChecked(globalSwitch.isChecked());
 
         if (globalSwitch.isChecked()) {
-            enqueuePeriodicWork();
+            enqueueAutoUpdateWork(workManager);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
                 Snackbar.make(MainActivity.getAppRootView(), "Auto update enabled", Snackbar.LENGTH_LONG)
                         .setAnchorView(R.id.bottomBar)
                         .show();
             }
         } else {
-            cancelPeriodicWork();
+            cancelAllWork(workManager);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
                 Snackbar.make(MainActivity.getAppRootView(), "Auto update disabled", Snackbar.LENGTH_LONG)
                         .setAnchorView(R.id.bottomBar)
                         .show();
             }
         }
+        AppPreferences.getInstance().setAutoUpdateMigrated(true);
     }
 
-    private long getInitialDelayForFirstScheduleWork(int hour, int minute) {
+    private static long getInitialDelayForFirstScheduleWork(int hour, int minute) {
         Calendar calendar = Calendar.getInstance();
         long nowMillis = calendar.getTimeInMillis();
 

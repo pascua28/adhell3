@@ -15,10 +15,10 @@ public final class AppPreferences {
     private static final String AUTO_UPDATE_START_HOUR = "autoUpdateStartHour";
     private static final String AUTO_UPDATE_START_MINUTE = "autoUpdateStartMinute";
     private static final String AUTO_UPDATE_APP_COMPONENTS_UPDATE = "autoUpdateAppComponentsUpdate";
-    private static final String AUTO_UPDATE_CLEAN_DATABASE = "autoUpdateCleanDatabase";
     private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
     private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
     private static final String AUTO_UPDATE_CONSTRAINT_MOBILE_DATA = "autoUpdateConstraintMobileData";
+    private static final String AUTO_UPDATE_MIGRATED = "autoUpdateMigrated";
     private static final String STORAGE_TREE_PATH = "storageTreePath";
     private static AppPreferences instance;
     private final SharedPreferences sharedPreferences;
@@ -152,16 +152,6 @@ public final class AppPreferences {
         editor.apply();
     }
 
-    public boolean getCleanDatabaseAutoUpdate() {
-        return sharedPreferences.getBoolean(AUTO_UPDATE_CLEAN_DATABASE, false);
-    }
-
-    public void setCleanDatabaseAutoUpdate(boolean enabled) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(AUTO_UPDATE_CLEAN_DATABASE, enabled);
-        editor.apply();
-    }
-
     public boolean getCreateLogOnAutoUpdate() {
         return sharedPreferences.getBoolean(AUTO_UPDATE_LOG, true);
     }
@@ -209,6 +199,16 @@ public final class AppPreferences {
     public void setStartMinuteAutoUpdate(int minute) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(AUTO_UPDATE_START_MINUTE, minute);
+        editor.apply();
+    }
+
+    public boolean getAutoUpdateMigrated() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_MIGRATED, false);
+    }
+
+    public void setAutoUpdateMigrated(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(AUTO_UPDATE_MIGRATED, enabled);
         editor.apply();
     }
 

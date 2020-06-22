@@ -23,6 +23,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
+import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
 import com.fusionjack.adhell3.fragments.AppTabPageFragment;
 import com.fusionjack.adhell3.fragments.DomainTabFragment;
@@ -100,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
             onTabSelected(item.getItemId());
             return true;
         });
+
+        // Migrate auto update job to new class if needed
+        AutoUpdateDialogFragment.migrateOldAutoUpdateJob(this);
 
         mainActivity = this;
     }
