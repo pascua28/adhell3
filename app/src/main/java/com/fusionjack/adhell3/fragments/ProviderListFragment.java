@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.webkit.URLUtil;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -183,6 +185,38 @@ public class ProviderListFragment extends Fragment {
                 return true;
             }
             return false;
+        });
+
+        final boolean[] noScroll = { false };
+        final int[] previousDistanceFromFirstCellToTop = {0};
+        providerListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && noScroll[0]) {
+                    if (speedDialView.isShown()) speedDialView.hide();
+                    else speedDialView.show();
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (firstVisibleItem == 0 && visibleItemCount == totalItemCount) {
+                    noScroll[0] = true;
+                } else {
+                    noScroll[0] = false;
+                    View firstCell = providerListView.getChildAt(0);
+                    if (firstCell == null) {
+                        return;
+                    }
+                    int distanceFromFirstCellToTop = firstVisibleItem * firstCell.getHeight() - firstCell.getTop();
+                    if (distanceFromFirstCellToTop < previousDistanceFromFirstCellToTop[0]) {
+                        speedDialView.show();
+                    } else if (distanceFromFirstCellToTop > previousDistanceFromFirstCellToTop[0]) {
+                        speedDialView.hide();
+                    }
+                    previousDistanceFromFirstCellToTop[0] = distanceFromFirstCellToTop;
+                }
+            }
         });
 
         if (providerListView.getVisibility() == View.GONE) {
