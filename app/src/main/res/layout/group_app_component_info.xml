@@ -23,8 +23,8 @@
         android:layout_height="25dp"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
+        android:layout_marginEnd="40dp"
         android:layout_toEndOf="@+id/appIconImageView"
-        android:paddingEnd="40dp"
         android:text="Adhell"
         android:textAlignment="gravity"
         android:gravity="center"
@@ -40,8 +40,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="30dp"
+        android:layout_marginEnd="40dp"
         android:layout_toEndOf="@+id/appIconImageView"
-        android:paddingEnd="40dp"
         android:text="Adhell"
         android:textAlignment="center"
         android:textSize="12sp" />
@@ -53,7 +53,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="20dp"
         android:textStyle="bold"
         android:text="30" />
 

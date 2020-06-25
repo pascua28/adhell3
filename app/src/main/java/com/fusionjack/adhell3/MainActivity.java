@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (finish) {
             finish();
+            finishAffinity();
         }
     }
 

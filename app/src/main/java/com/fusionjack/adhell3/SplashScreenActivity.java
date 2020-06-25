@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -45,7 +46,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         // Exit if intent extra EXIT exist
         if (getIntent().getBooleanExtra("EXIT", false)) {
             finish();
-            //finishAffinity();
+            finishAffinity();
             return;
         }
 
@@ -120,6 +121,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
         finish();
+        finishAffinity();
     }
 
     public void successAuthentication() {
@@ -134,6 +136,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
         finish();
+        finishAffinity();
     }
 
     private boolean isPasswordShowing() {
@@ -179,6 +182,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 successAuthentication();
             } else {
                 passwordInfoTextView.setText(R.string.dialog_wrong_password);
+                passwordInfoTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
             }
         } catch (PasswordStorage.CannotPerformOperationException | PasswordStorage.InvalidHashException e) {
             e.printStackTrace();

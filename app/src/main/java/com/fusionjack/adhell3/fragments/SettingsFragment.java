@@ -254,7 +254,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
                 startActivity(intent);
                 requireActivity().overridePendingTransition(0, 0);
-                //requireActivity().finish();
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {

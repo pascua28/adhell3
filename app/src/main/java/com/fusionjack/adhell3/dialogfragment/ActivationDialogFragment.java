@@ -67,7 +67,7 @@ public class ActivationDialogFragment extends DialogFragment {
                     if (errorCode == KnoxEnterpriseLicenseManager.ERROR_NONE) {
                         handleResult(intent, context);
                     } else {
-                        handleError(intent, context, errorCode);
+                        handleError(intent, errorCode);
                     }
                 }
 
@@ -76,7 +76,7 @@ public class ActivationDialogFragment extends DialogFragment {
                     if (errorCode == EnterpriseLicenseManager.ERROR_NONE) {
                         handleResult(intent, context);
                     } else  {
-                        handleError(intent, context, errorCode);
+                        handleError(intent, errorCode);
                     }
                 }
             }
@@ -292,7 +292,7 @@ public class ActivationDialogFragment extends DialogFragment {
         }
     }
 
-    private void handleError(Intent intent, Context context, int errorCode) {
+    private void handleError(Intent intent, int errorCode) {
         if (getActivity() != null) {
             getActivity().unregisterReceiver(receiver);
         }
