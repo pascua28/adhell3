@@ -634,8 +634,7 @@ public class HomeTabFragment extends Fragment {
                                     String domainToAdd = domainEditText.getText().toString().trim();
                                     if (domainToAdd.indexOf('|') == -1) {
                                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                            Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .setAnchorView(R.id.bottomBar)
+                                            MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
                                                     .show();
                                             return;
                                         }
@@ -643,16 +642,14 @@ public class HomeTabFragment extends Fragment {
                                         // packageName|url
                                         StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                         if (tokens.countTokens() != 2) {
-                                            Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .setAnchorView(R.id.bottomBar)
+                                            MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
                                                     .show();
                                             return;
                                         }
                                     }
                                     WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
                                     AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                                    Snackbar.make(MainActivity.getAppRootView(), "Domain whitelist has been added", Snackbar.LENGTH_SHORT)
-                                            .setAnchorView(R.id.bottomBar)
+                                    MainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
                                             .show();
                                 })
                                 .setNegativeButton(android.R.string.no, null)
@@ -738,8 +735,7 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             Context context = contextReference.get();
             if (context != null) {
-                    Snackbar.make(MainActivity.getAppRootView(), "Blocked domains have been exported!", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar("Blocked domains have been exported!", Snackbar.LENGTH_LONG)
                         .show();
             }
         }

@@ -154,8 +154,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                 if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
                     String message = String.format(Locale.getDefault(), "The total number of unique domains %d exceeds the maximum limit of %d",
                             totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
-                    Snackbar.make(MainActivity.getAppRootView(), message, Snackbar.LENGTH_LONG)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(message, Snackbar.LENGTH_LONG)
                             .show();
                 }
             }

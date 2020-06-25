@@ -58,6 +58,7 @@
 
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/provider_actions"
+        android:tag="fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"

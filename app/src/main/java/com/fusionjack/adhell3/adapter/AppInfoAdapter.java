@@ -157,8 +157,7 @@ public class AppInfoAdapter extends BaseAdapter {
                             .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                 try {
                                     appPolicy.stopApp(appInfo.packageName);
-                                    Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT)
-                                            .setAnchorView(R.id.bottomBar)
+                                    MainActivity.makeSnackbar(String.format(Locale.getDefault(), context.getResources().getString(R.string.stopped_app), finalAppName), Snackbar.LENGTH_SHORT)
                                             .show();
                                     holder.nameH.setTextColor(context.getResources().getColor(R.color.colorText, context.getTheme()));
                                     holder.stopH.setVisibility(View.GONE);

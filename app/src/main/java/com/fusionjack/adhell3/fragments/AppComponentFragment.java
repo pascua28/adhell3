@@ -160,8 +160,7 @@ public class AppComponentFragment extends AppFragment {
             @Override
             public void onSuccess(String s) {
                 progressDialog.dismiss();
-                Snackbar.make(MainActivity.getAppRootView(), s, Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
                         .show();
             }
 
@@ -169,8 +168,7 @@ public class AppComponentFragment extends AppFragment {
             public void onError(Throwable e) {
                 progressDialog.dismiss();
                 if (e.getMessage() != null) {
-                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_LONG)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_LONG)
                             .show();
                 }
             }

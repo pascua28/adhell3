@@ -212,8 +212,7 @@ public class DnsFragment extends AppFragment {
                             Handler handler = new Handler(Looper.getMainLooper()) {
                                 @Override
                                 public void handleMessage(Message msg) {
-                                    Snackbar.make(MainActivity.getAppRootView(), getString(Integer.parseInt(msg.obj.toString())), Snackbar.LENGTH_LONG)
-                                            .setAnchorView(R.id.bottomBar)
+                                    MainActivity.makeSnackbar(getString(Integer.parseInt(msg.obj.toString())), Snackbar.LENGTH_LONG)
                                             .show();
                                 }
                             };

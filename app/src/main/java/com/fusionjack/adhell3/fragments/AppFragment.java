@@ -63,8 +63,7 @@ public class AppFragment extends Fragment {
             @Override
             public void onError(Throwable e) {
                 if (e.getMessage() != null) {
-                    Snackbar.make(MainActivity.getAppRootView(), e.getMessage(), Snackbar.LENGTH_SHORT)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
                             .show();
                 }
             }

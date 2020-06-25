@@ -224,8 +224,7 @@ public class AppTabPageFragment extends AppFragment {
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    Snackbar.make(MainActivity.getAppRootView(), getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
                             .show();
                     AsyncTask.execute(() -> {
                         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();

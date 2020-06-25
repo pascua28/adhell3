@@ -103,8 +103,7 @@ public class BlacklistFragment extends UserListFragment {
                             EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
                             String domainToAdd = domainEditText.getText().toString().trim();
                             if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                        .setAnchorView(R.id.bottomBar)
+                                MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
                                         .show();
                             } else {
                                 viewModel.addItem(domainToAdd, addObserver);
@@ -124,8 +123,7 @@ public class BlacklistFragment extends UserListFragment {
                             String ruleToAdd = ruleEditText.getText().toString().trim();
                             StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
                             if (tokens.countTokens() != 3) {
-                                Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                        .setAnchorView(R.id.bottomBar)
+                                MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
                                         .show();
                             } else {
                                 viewModel.addItem(ruleToAdd, addObserver);

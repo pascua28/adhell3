@@ -215,8 +215,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case RESTORE_WARNING_PREFERENCE: {
                 AppPreferences.getInstance().setWarningDialogAppComponentDontShow(false);
-                Snackbar.make(MainActivity.getAppRootView(), getString(R.string.restore_warning_success), Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                MainActivity.makeSnackbar(getString(R.string.restore_warning_success), Snackbar.LENGTH_LONG)
                         .show();
                 break;
             }
@@ -235,8 +234,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             context.getContentResolver().releasePersistableUriPermission(treePath, intentFlags);
                             context.revokeUriPermission(treePath, intentFlags);
                             AppPreferences.getInstance().setStorageTreePath("");
-                            Snackbar.make(MainActivity.getAppRootView(), getString(R.string.revoke_storage_permission_success), Snackbar.LENGTH_LONG)
-                                    .setAnchorView(R.id.bottomBar)
+                            MainActivity.makeSnackbar(getString(R.string.revoke_storage_permission_success), Snackbar.LENGTH_LONG)
                                     .show();
                         })
                         .setNegativeButton(android.R.string.no, null)
@@ -262,12 +260,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case CREATE_LOGCAT_PREFERENCE: {
                 String filename = LogUtils.createLogcat();
                 if (filename.isEmpty()) {
-                    Snackbar.make(MainActivity.getAppRootView(), getString(R.string.logcat_not_created), Snackbar.LENGTH_LONG)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(getString(R.string.logcat_not_created), Snackbar.LENGTH_LONG)
                             .show();
                 } else {
-                    Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), getString(R.string.logcat_created), filename), Snackbar.LENGTH_LONG)
-                            .setAnchorView(R.id.bottomBar)
+                    MainActivity.makeSnackbar(String.format(Locale.getDefault(), getString(R.string.logcat_created), filename), Snackbar.LENGTH_LONG)
                             .show();
                 }
                 break;

@@ -11,8 +11,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
+    private static final Handler snackbarDelayedHandler = new Handler();
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
     private static int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
@@ -64,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private static AlertDialog permissionDialog;
     private static BottomNavigationView bottomBar;
     private static FilterAppInfo filterAppInfo;
+    private static Snackbar snackbar;
     private ActivationDialogFragment activationDialogFragment;
 
     private static MainActivity mainActivity;
@@ -159,8 +163,7 @@ public class MainActivity extends AppCompatActivity {
             }
             finishOnResume();
         } else if (resultCode == RESULT_OK && requestCode == ADMIN_PERMISSION_REQUEST_CODE) {
-            Snackbar.make(MainActivity.getAppRootView(), "Admin OK!", Snackbar.LENGTH_LONG)
-                    .setAnchorView(R.id.bottomBar)
+            MainActivity.makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
                     .show();
             finishOnResume();
         }
@@ -176,8 +179,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             doubleBackToExitPressedOnce = true;
-            Snackbar.make(MainActivity.getAppRootView(), "Press once again to exit", Snackbar.LENGTH_SHORT)
-                    .setAnchorView(R.id.bottomBar)
+            MainActivity.makeSnackbar("Press once again to exit", Snackbar.LENGTH_SHORT)
                     .show();
 
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
@@ -242,8 +244,46 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 
-    public static View getAppRootView() {
-        return mainActivity.findViewById(android.R.id.content).getRootView();
+    public static Snackbar makeSnackbar(String message, int showDelay) {
+        int duration = showDelay == Snackbar.LENGTH_LONG ? 2750 : 1500;
+        ViewGroup rootView = mainActivity.getWindow().getDecorView().findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(rootView.getRootView(), message, Snackbar.LENGTH_INDEFINITE)
+                .setAnchorView(rootView.findViewById(R.id.bottomBar))
+                .setDuration(duration);
+        MainActivity.snackbar = snackbar;
+
+        snackbarDelayedHandler.removeCallbacksAndMessages(null);
+
+        List<View> fabList = getViewsByTag(rootView, "fab");
+        for (View fab : fabList) {
+            new Handler().postDelayed(() -> {
+                snackbarDelayedHandler.postDelayed(() -> fab.animate().translationY(0).setDuration(75), (duration + 150));
+                if (snackbar.getView().getHeight() > 1) {
+                    fab.animate().translationY(-(snackbar.getView().getHeight() + (18 * ((float) mainActivity.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT)))).setDuration(75);
+                } else {
+                    fab.animate().translationY(-(65 * ((float) mainActivity.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT))).setDuration(100);
+                }
+            }, 30);
+        }
+
+        return snackbar;
+    }
+
+    private static ArrayList<View> getViewsByTag(ViewGroup root, String tag){
+        ArrayList<View> views = new ArrayList<>();
+        final int childCount = root.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final View child = root.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                views.addAll(getViewsByTag((ViewGroup) child, tag));
+            }
+
+            final Object tagObj = child.getTag();
+            if (tagObj != null && tagObj.equals(tag)) {
+                views.add(child);
+            }
+        }
+        return views;
     }
 
     public static FilterAppInfo getFilterAppInfo() {
@@ -373,12 +413,22 @@ public class MainActivity extends AppCompatActivity {
                     replacing = new Fragment();
                     break;
             }
+            // Hide Snackbar if is shown
+            if (MainActivity.snackbar != null && MainActivity.snackbar.isShown()) {
+                MainActivity.snackbar.dismiss();
+            }
+            // Reset double back press to exit
+            doubleBackToExitPressedOnce = false;
+
+            // Set fragments transition animation
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             if (previousSelectedTabId != -1) {
                 fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
             } else {
                 fragmentTransaction.setCustomAnimations(0, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
             }
+
+            // Start fragments transition
             fragmentTransaction
                     .replace(R.id.fragmentContainer, replacing)
                     .addToBackStack(BACK_STACK_TAB_TAG)

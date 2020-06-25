@@ -92,8 +92,7 @@ public class WhitelistFragment extends UserListFragment {
                             String domainToAdd = domainEditText.getText().toString().trim();
                             if (domainToAdd.indexOf('|') == -1) {
                                 if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                    Snackbar.make(MainActivity.getAppRootView(), "Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                            .setAnchorView(R.id.bottomBar)
+                                    MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
                                             .show();
                                     return;
                                 }
@@ -101,8 +100,7 @@ public class WhitelistFragment extends UserListFragment {
                                 // packageName|url
                                 StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                 if (tokens.countTokens() != 2) {
-                                    Snackbar.make(MainActivity.getAppRootView(), "Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                            .setAnchorView(R.id.bottomBar)
+                                    MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
                                             .show();
                                     return;
                                 }

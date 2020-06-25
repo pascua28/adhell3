@@ -122,15 +122,13 @@ public final class AppComponentFactory {
 
             @Override
             public void onSuccess(String s) {
-                Snackbar.make(MainActivity.getAppRootView(), s, Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
                         .show();
             }
 
             @Override
             public void onError(Throwable e) {
-                Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), "Unable to migrate old batch files! %s", e.getMessage()), Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                MainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to migrate old batch files! %s", e.getMessage()), Snackbar.LENGTH_LONG)
                         .show();
             }
         };
@@ -172,8 +170,7 @@ public final class AppComponentFactory {
 
             @Override
             public void onError(Throwable e) {
-                Snackbar.make(MainActivity.getAppRootView(), String.format(Locale.getDefault(), "Unable to check if migrate old batch files is needed! %s", e.getMessage()), Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.bottomBar)
+                MainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to check if migrate old batch files is needed! %s", e.getMessage()), Snackbar.LENGTH_LONG)
                         .show();
             }
         };

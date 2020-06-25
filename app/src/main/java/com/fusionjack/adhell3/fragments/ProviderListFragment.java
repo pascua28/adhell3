@@ -142,8 +142,7 @@ public class ProviderListFragment extends Fragment {
                             if (isValidUri(provider)) {
                                 new AddProviderAsyncTask(provider, context).execute();
                             } else {
-                                Snackbar.make(MainActivity.getAppRootView(), "Url is invalid", Snackbar.LENGTH_LONG)
-                                        .setAnchorView(R.id.bottomBar)
+                                MainActivity.makeSnackbar("Url is invalid", Snackbar.LENGTH_LONG)
                                         .show();
                             }
                         })
