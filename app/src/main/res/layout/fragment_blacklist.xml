@@ -21,7 +21,11 @@
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/noteTextView" />
+        android:layout_below="@+id/noteTextView"
+        android:scrollbarStyle="outsideOverlay"
+        android:smoothScrollbar="true"
+        android:fastScrollEnabled="true"
+        android:fastScrollAlwaysVisible="false" />
 
     <ProgressBar
         android:id="@+id/loadingBar"
@@ -35,6 +39,7 @@
 
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/blacklist_actions"
+        android:tag="fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"

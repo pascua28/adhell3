@@ -19,6 +19,15 @@
         <item name="snackbarStyle">@style/SnackbarStyle</item>
         <item name="textInputStyle">@style/TextInputLayoutStyle</item>
         <item name="snackbarTextViewStyle">@style/SnackbarTextStyle</item>
+        <item name="android:fastScrollStyle">@style/FastScrollStyle</item>
+        <item name="android:fastScrollThumbDrawable">@drawable/scrollbar_thumb_drawable</item>
+        <item name="android:fastScrollTrackDrawable">@drawable/scrollbar_track_drawable</item>
+    </style>
+
+    <style name="FastScrollStyle" parent="android:Widget.Material.FastScroll">
+        <item name="android:minWidth">48dip</item>
+        <item name="android:minHeight">48dip</item>
+        <item name="android:padding">4dip</item>
     </style>
 
     <style name="ActionBarStyle" parent="Widget.MaterialComponents.Light.ActionBar.Solid">

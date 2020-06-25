@@ -220,8 +220,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
         android:animateLayoutChanges="true"
         android:background="@drawable/border">
 
@@ -229,6 +227,8 @@
             android:id="@+id/infoTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/border"
             android:padding="8dp"
             android:text="@string/last_day_blocked"
@@ -245,6 +245,12 @@
                 android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:scrollbarStyle="outsideInset"
+                android:smoothScrollbar="true"
+                android:fastScrollEnabled="true"
+                android:fastScrollAlwaysVisible="false"
                 android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

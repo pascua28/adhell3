@@ -24,7 +24,11 @@
             android:id="@+id/blocked_url_list"
             android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:scrollbarStyle="outsideOverlay"
+            android:smoothScrollbar="true"
+            android:fastScrollEnabled="true"
+            android:fastScrollAlwaysVisible="false" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
