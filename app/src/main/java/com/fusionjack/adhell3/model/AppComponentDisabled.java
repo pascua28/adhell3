@@ -11,7 +11,6 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,8 +51,8 @@ public class AppComponentDisabled {
                 }
             }
 
-            Collections.sort(permissionNameList, (r1, r2) -> r1.permissionName.compareToIgnoreCase(r2.permissionName));
-            Collections.sort(permissionNameList, (r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+            permissionNameList.sort((r1, r2) -> r1.permissionName.compareToIgnoreCase(r2.permissionName));
+            permissionNameList.sort((r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
         } catch (Exception ignored) {
         }
 
@@ -91,8 +90,8 @@ public class AppComponentDisabled {
         }
 
         List<ServicesPair> serviceNameList = new ArrayList<>(serviceNameSet);
-        Collections.sort(serviceNameList, (r1, r2) -> r1.serviceName.compareToIgnoreCase(r2.serviceName));
-        Collections.sort(serviceNameList, (r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+        serviceNameList.sort((r1, r2) -> r1.serviceName.compareToIgnoreCase(r2.serviceName));
+        serviceNameList.sort((r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
         List<IComponentInfo> serviceInfoList = new ArrayList<>();
         for (ServicesPair pair : serviceNameList) {
             if (searchText.length() <= 0
@@ -122,8 +121,8 @@ public class AppComponentDisabled {
         }
 
         List<ReceiversPair> receiverNameList = new ArrayList<>(receiverNameSet);
-        Collections.sort(receiverNameList, (r1, r2) -> r1.receiverName.compareToIgnoreCase(r2.receiverName));
-        Collections.sort(receiverNameList, (r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+        receiverNameList.sort((r1, r2) -> r1.receiverName.compareToIgnoreCase(r2.receiverName));
+        receiverNameList.sort((r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
         List<IComponentInfo> receiverInfoList = new ArrayList<>();
         for (ReceiversPair pair : receiverNameList) {
             if (searchText.length() <= 0
@@ -150,8 +149,8 @@ public class AppComponentDisabled {
         }
 
         List<ActivitiesPair> activityNameList = new ArrayList<>(activityNameSet);
-        Collections.sort(activityNameList, (r1, r2) -> r1.activityName.compareToIgnoreCase(r2.activityName));
-        Collections.sort(activityNameList, (r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+        activityNameList.sort((r1, r2) -> r1.activityName.compareToIgnoreCase(r2.activityName));
+        activityNameList.sort((r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
         List<IComponentInfo> activityInfoList = new ArrayList<>();
         for (ActivitiesPair pair : activityNameList) {
             if (searchText.length() <= 0

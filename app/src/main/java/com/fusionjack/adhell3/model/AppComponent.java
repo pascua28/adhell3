@@ -173,7 +173,7 @@ public class AppComponent {
         }
 
         List<ReceiverPair> receiverNameList = new ArrayList<>(receiverNameSet);
-        Collections.sort(receiverNameList, (r1, r2) -> r1.name.compareToIgnoreCase(r2.name));
+        receiverNameList.sort((r1, r2) -> r1.name.compareToIgnoreCase(r2.name));
         List<IComponentInfo> receiverInfoList = new ArrayList<>();
         for (ReceiverPair pair : receiverNameList) {
             if (searchText.length() <= 0 || pair.getName().toLowerCase().contains(searchText.toLowerCase())) {

@@ -62,7 +62,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -251,8 +250,6 @@ public class HomeTabFragment extends Fragment {
             infoTextView.setVisibility(View.INVISIBLE);
             swipeContainer.setVisibility(View.INVISIBLE);
         }
-
-
         return view;
     }
 
@@ -638,7 +635,7 @@ public class HomeTabFragment extends Fragment {
             // Sort HashMap by 'blockDate'
             LinkedList<HashMap.Entry<String, List<ReportBlockedUrl>>> linkedList = new LinkedList<>(returnHashMap.entrySet());
             LinkedHashMap<String, List<ReportBlockedUrl>> sortedHashMap = new LinkedHashMap<>();
-            Collections.sort(linkedList, (list1, list2) ->
+            linkedList.sort((list1, list2) ->
                     ((Comparable<Long>) list2.getValue().get(0).blockDate).compareTo(list1.getValue().get(0).blockDate));
             for (Map.Entry<String, List<ReportBlockedUrl>> entry : linkedList) {
                 sortedHashMap.put(entry.getKey(), entry.getValue());
