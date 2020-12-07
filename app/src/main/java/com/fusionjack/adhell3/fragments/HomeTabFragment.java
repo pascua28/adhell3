@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -165,7 +166,7 @@ public class HomeTabFragment extends Fragment {
         });
 
         SpeedDialView speedDialView = view.findViewById(R.id.domain_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, getResources().getDrawable(R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
                 .setLabel(getString(R.string.export_domains_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))

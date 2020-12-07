@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.MainActivity;
@@ -75,7 +76,7 @@ public class BlacklistFragment extends UserListFragment {
 
         SpeedDialView speedDialView = view.findViewById(R.id.blacklist_actions);
 
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, getResources().getDrawable(R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_public_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_blacklist_domain_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -85,7 +86,7 @@ public class BlacklistFragment extends UserListFragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_firewall_rule, getResources().getDrawable(R.drawable.ic_whatshot_white_24dp, requireContext().getTheme()))
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_firewall_rule, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_whatshot_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_blacklist_rule_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))

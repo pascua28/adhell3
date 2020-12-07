@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
@@ -105,7 +106,7 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
         TextView countTextView = convertView.findViewById(R.id.blockedDomainCountTextView);
         Drawable icon = appIcons.get(packageName);
         if (icon == null) {
-            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon, context.getTheme());
+            icon = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, context.getTheme());
         }
         blockedDomainIconImageView.setImageDrawable(icon);
         countTextView.setText(String.valueOf(childCount));
@@ -130,7 +131,7 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
         ImageView blockedDomainIconImageView = convertView.findViewById(R.id.blockedDomainIconImageView);
         Drawable icon = appIcons.get(reportBlockedUrlItem.packageName);
         if (icon == null) {
-            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon, context.getTheme());
+            icon = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, context.getTheme());
         }
         blockedDomainIconImageView.setImageDrawable(icon);
         expandedListUrlTextView.setText(reportBlockedUrlItem.url);

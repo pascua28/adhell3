@@ -23,6 +23,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.MenuCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -186,7 +187,7 @@ public class DnsFragment extends AppFragment {
         });
 
         SpeedDialView speedDialView = view.findViewById(R.id.dns_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, getResources().getDrawable(R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_set_dns_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))

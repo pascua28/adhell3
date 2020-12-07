@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
@@ -178,7 +179,7 @@ public class AppInfoAdapter extends BaseAdapter {
 
         Drawable icon = appIcons.get(appInfo.packageName);
         if (icon == null) {
-            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon, context.getTheme());
+            icon = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, context.getTheme());
         }
         holder.imageH.setImageDrawable(icon);
 

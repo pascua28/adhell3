@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.IComponentInfo;
@@ -105,7 +106,7 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
         String appName = getGroup(groupPosition);
         Drawable icon = appIcons.get(packageName);
         if (icon == null) {
-            icon = contextReference.get().getResources().getDrawable(android.R.drawable.sym_def_app_icon, contextReference.get().getTheme());
+            icon = ResourcesCompat.getDrawable(contextReference.get().getResources(), android.R.drawable.sym_def_app_icon, contextReference.get().getTheme());
         }
 
         holder.appIconImageView.setImageDrawable(icon);

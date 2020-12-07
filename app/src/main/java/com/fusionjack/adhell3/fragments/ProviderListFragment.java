@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -122,7 +123,7 @@ public class ProviderListFragment extends Fragment {
         });
 
         SpeedDialView speedDialView = view.findViewById(R.id.provider_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_provider, getResources().getDrawable(R.drawable.ic_event_note_white_24dp, requireContext().getTheme()))
+        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_provider, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_event_note_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_add_provider_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
