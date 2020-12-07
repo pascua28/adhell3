@@ -324,11 +324,7 @@ public class ActivationDialogFragment extends DialogFragment {
         if (adminActive) {
             setAdminState(true);
             boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
-            if (knoxEnabled) {
-                setLicenseState(true);
-            } else {
-                setLicenseState(false);
-            }
+            setLicenseState(knoxEnabled);
         } else {
             setAdminState(false);
             disableActiveButton();

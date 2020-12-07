@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class RulesUpdateWorker extends Worker {
-    private static AppDatabase appDatabase;
-    private static Firewall firewall;
+    private final AppDatabase appDatabase;
+    private final Firewall firewall;
     private int retryCount;
     private Handler handler = null;
 
@@ -49,8 +49,8 @@ public class RulesUpdateWorker extends Worker {
             };
         }
 
-        RulesUpdateWorker.appDatabase = AppDatabase.getAppDatabase(context);
-        RulesUpdateWorker.firewall = AdhellFactory.getInstance().getFirewall();
+        appDatabase = AppDatabase.getAppDatabase(context);
+        firewall = AdhellFactory.getInstance().getFirewall();
     }
 
     @NonNull

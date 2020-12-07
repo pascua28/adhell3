@@ -81,7 +81,7 @@ public class AppTabFragment extends Fragment {
             int tabCount = viewPager.getAdapter().getItemCount();
             for (int i = 0; i < tabCount; i++, imageIndex++) {
                 TabLayout.Tab tab = tabLayout.getTabAt(i);
-                if (tab != null) {
+                if (tab != null && this.getActivity() != null && this.getActivity().getTheme() != null) {
                     tab.setIcon(imageResId[imageIndex]);
                     int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
                     if (tab.getIcon() != null) {

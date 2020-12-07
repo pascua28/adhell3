@@ -80,7 +80,7 @@ public class DomainTabFragment extends Fragment {
 
         for (int i = 0; i < imageResId.length; i++) {
             TabLayout.Tab tab = tabLayout.getTabAt(i);
-            if (tab != null) {
+            if (tab != null && this.getActivity() != null && this.getActivity().getTheme() != null) {
                 tab.setIcon(imageResId[i]);
                 int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
                 if (tab.getIcon() != null) {

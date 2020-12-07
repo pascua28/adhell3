@@ -43,7 +43,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class AutoUpdateDialogFragment extends DialogFragment {
-    public static int MAX_RETRY = 5;
+    public static final int MAX_RETRY = 5;
     public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
     private static WorkManager workManager;

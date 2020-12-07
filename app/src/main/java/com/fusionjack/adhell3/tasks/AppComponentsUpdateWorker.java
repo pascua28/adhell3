@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class AppComponentsUpdateWorker extends Worker {
-    private static AppDatabase appDatabase;
+    private final AppDatabase appDatabase;
     private int retryCount;
     private Handler handler = null;
 
@@ -50,7 +50,7 @@ public class AppComponentsUpdateWorker extends Worker {
                 }
             };
         }
-        AppComponentsUpdateWorker.appDatabase = AppDatabase.getAppDatabase(context);
+        appDatabase = AppDatabase.getAppDatabase(context);
     }
 
     @NonNull
