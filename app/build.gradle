@@ -57,6 +57,7 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "3.2." + buildNumber
+        resConfigs "en"
 
         buildConfigField("int", "DOMAIN_LIMIT", domainLimit)
         buildConfigField("boolean", "DOMAIN_PREFIX", domainPrefix)
@@ -81,22 +82,26 @@ android {
         exclude 'META-INF/androidx.*'
         exclude 'META-INF/com.google.android.material_material.*'
     }
-
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
-
     buildTypes {
         debug {
-            shrinkResources = true
-            minifyEnabled = true
+            shrinkResources false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
         }
         release {
-            shrinkResources = true
-            minifyEnabled = true
+            shrinkResources false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
         }
     }
     buildToolsVersion "30.0.2"
