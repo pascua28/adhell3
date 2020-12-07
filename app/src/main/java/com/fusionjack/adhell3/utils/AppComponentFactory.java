@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -117,11 +118,11 @@ public final class AppComponentFactory {
 
         SingleObserver<String> migrateObserver = new SingleObserver<String>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(String s) {
+            public void onSuccess(@NonNull String s) {
                 MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
                         .show();
             }
@@ -135,7 +136,7 @@ public final class AppComponentFactory {
 
         SingleObserver<Boolean> checkObserver = new SingleObserver<Boolean>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override

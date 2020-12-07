@@ -50,18 +50,18 @@ public class AppFragment extends Fragment {
 
         observer = new SingleObserver<List<AppInfo>>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(List<AppInfo> list) {
+            public void onSuccess(@NonNull List<AppInfo> list) {
                 appList.clear();
                 appList.addAll(list);
                 adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
                     MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
                             .show();

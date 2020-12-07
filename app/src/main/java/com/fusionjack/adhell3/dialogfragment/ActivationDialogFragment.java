@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
@@ -92,7 +93,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
         knoxKeyObserver = new CompletableObserver() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS);
                 filter.addAction(EnterpriseLicenseManager.ACTION_LICENSE_STATUS);
@@ -120,7 +121,7 @@ public class ActivationDialogFragment extends DialogFragment {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 if (getActivity() != null) {
                     getActivity().unregisterReceiver(receiver);
                 }

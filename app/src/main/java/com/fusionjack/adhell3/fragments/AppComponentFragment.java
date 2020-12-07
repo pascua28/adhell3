@@ -154,11 +154,11 @@ public class AppComponentFragment extends AppFragment {
 
         SingleObserver<String> observer = new SingleObserver<String>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(String s) {
+            public void onSuccess(@NonNull String s) {
                 progressDialog.dismiss();
                 MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
                         .show();

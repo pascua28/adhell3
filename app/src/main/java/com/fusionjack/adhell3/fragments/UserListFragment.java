@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.MainActivity;
@@ -24,11 +25,11 @@ public abstract class UserListFragment extends Fragment {
 
         addObserver = new SingleObserver<String>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(String item) {
+            public void onSuccess(@NonNull String item) {
                 if (item.indexOf('|') == -1) {
                     MainActivity.makeSnackbar("Domain has been added", Snackbar.LENGTH_SHORT)
                             .show();
@@ -39,7 +40,7 @@ public abstract class UserListFragment extends Fragment {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
                     MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
                             .show();
@@ -49,11 +50,11 @@ public abstract class UserListFragment extends Fragment {
 
         deleteObserver = new SingleObserver<String>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(String item) {
+            public void onSuccess(@NonNull String item) {
                 if (item.indexOf('|') == -1) {
                     MainActivity.makeSnackbar("Domain has been removed", Snackbar.LENGTH_SHORT)
                             .show();
@@ -64,7 +65,7 @@ public abstract class UserListFragment extends Fragment {
             }
 
             @Override
-            public void onError(Throwable e) {
+            public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
                     MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
                             .show();
