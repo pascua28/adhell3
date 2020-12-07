@@ -289,4 +289,13 @@
     <string name="dialog_appcomponent_batch_migrate_file_title">Migrate old batch files</string>
     <string name="dialog_appcomponent_batch_migrate_file_summary">Adhell has detected that you are using old \'%s\' and \'%s\' batch files.
         \nDo you want to automatically migrate these files to the new \'%s\'?</string>
+    <string name="auto_update_interval_label">Interval: 1 hour</string>
+    <string name="auto_update_settings_label">Settings</string>
+    <string name="auto_update_start_time_label">Job start time:</string>
+    <string name="auto_update_app_components">Auto disable app components from batch file</string>
+    <string name="auto_update_log_file">Create log file</string>
+    <string name="auto_update_constraints_label">Constraints</string>
+    <string name="auto_update_constraint_low_battery">Update when phone as low battery</string>
+    <string name="auto_update_constraint_mobile_data">Update on mobile data connection</string>
+    <string name="auto_update_save_button">Save</string>
 </resources>

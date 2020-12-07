@@ -67,7 +67,7 @@
                 android:layout_marginTop="25dp"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:text="Settings" />
+                android:text="@string/auto_update_settings_label" />
 
             <TextView
                 android:id="@+id/seekLabelTextView"
@@ -78,7 +78,7 @@
                 android:layout_marginTop="15dp"
                 android:layout_alignParentStart="true"
                 android:layout_below="@id/settingsTextView"
-                android:text="Interval: 1 hour" />
+                android:text="@string/auto_update_interval_label" />
 
             <SeekBar
                 android:id="@+id/intervalSeekBar"
@@ -100,7 +100,7 @@
                 android:layout_marginTop="5dp"
                 android:layout_alignParentStart="true"
                 android:layout_below="@id/intervalSeekBar"
-                android:text="Job start time:" />
+                android:text="@string/auto_update_start_time_label" />
 
             <TimePicker
                 android:id="@+id/startTimePicker"
@@ -121,7 +121,8 @@
                 android:layout_marginEnd="15dp"
                 android:layout_below="@id/startTimePicker"
                 android:enabled="true"
-                android:text="Auto disable app components from batch file" />
+                android:text="@string/auto_update_app_components" />
+
 
             <CheckBox
                 android:id="@+id/logCheckBox"
@@ -130,8 +131,8 @@
                 android:layout_marginStart="15dp"
                 android:layout_marginEnd="15dp"
                 android:layout_marginBottom="15dp"
-                android:layout_below="@id/appComponentsCheckBox"
-                android:text="Create log file" />
+                android:layout_below="@id/cleanDBCheckBox"
+                android:text="@string/auto_update_log_file" />
 
             <TextView
                 android:id="@+id/constraintsTextView"
@@ -143,7 +144,7 @@
                 android:layout_below="@id/logCheckBox"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:text="Constraints" />
+                android:text="@string/auto_update_constraints_label" />
 
             <CheckBox
                 android:id="@+id/lowBatteryCheckBox"
@@ -155,7 +156,7 @@
                 android:layout_marginBottom="5dp"
                 android:layout_below="@id/constraintsTextView"
                 android:checked="true"
-                android:text="Update when phone as low battery" />
+                android:text="@string/auto_update_constraint_low_battery" />
 
             <CheckBox
                 android:id="@+id/mobileDataCheckBox"
@@ -166,7 +167,7 @@
                 android:layout_marginBottom="15dp"
                 android:layout_below="@id/lowBatteryCheckBox"
                 android:checked="true"
-                android:text="Update on mobile data connexion" />
+                android:text="@string/auto_update_constraint_mobile_data" />
 
         </RelativeLayout>
 
@@ -180,7 +181,7 @@
         android:layout_centerInParent="true"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
-        android:text="Save" />
+        android:text="@string/auto_update_save_button" />
 
 
 </RelativeLayout>
