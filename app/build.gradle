@@ -1,8 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-
+    compileSdkVersion 30
     defaultConfig {
         def buildPropsFile = file('build.properties')
         def buildNumber
@@ -53,10 +52,9 @@ android {
                 defaultHost = appProps['default.host']
             }
         }
-
         applicationId packageName
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "3.2." + buildNumber
 
@@ -68,7 +66,6 @@ android {
         buildConfigField("boolean", "SHOW_SYSTEM_APP_COMPONENT", showSystemAppComponent)
         buildConfigField("String", "DEFAULT_HOST", '"' + defaultHost + '"')
     }
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES.txt'
         exclude 'META-INF/LICENSE.txt'
@@ -102,7 +99,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
+    buildToolsVersion "30.0.2"
 }
 
 dependencies {
