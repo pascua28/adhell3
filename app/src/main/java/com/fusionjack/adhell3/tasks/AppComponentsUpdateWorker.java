@@ -19,6 +19,7 @@ import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.model.AppComponent;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FileUtils;
@@ -80,6 +81,10 @@ public class AppComponentsUpdateWorker extends Worker {
     }
 
     private void processAppComponentsInAutoUpdate() throws Exception {
+        LogUtils.info("Reloading App Cache...", handler);
+        AppCache.reloadSync(handler);
+        LogUtils.info("Done.", handler);
+
         LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);
         DocumentFile componentsFile = FileUtils.getDocumentFile(AppComponentFactory.STORAGE_FOLDERS, AppComponentFactory.COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
 

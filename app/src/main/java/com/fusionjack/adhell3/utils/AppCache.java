@@ -38,27 +38,47 @@ public class AppCache {
     private final Map<String, String> appsNames;
     private final Map<String, String> versionNames;
 
-    private AppCache(Context context, Handler handler) {
+    private AppCache(Context context, Handler handler, Boolean async) {
         this.appsIcons = new HashMap<>();
         this.appsNames = new HashMap<>();
         this.versionNames = new HashMap<>();
-        loadApps(context, handler);
+        if (async) {
+            loadAppsAsync(context, handler);
+        } else {
+            loadAppsSync(handler);
+        }
     }
 
     public static synchronized AppCache getInstance(Context context, Handler handler) {
         if (instance == null) {
-            instance = new AppCache(context, handler);
+            instance = new AppCache(context, handler, true);
+        }
+        return instance;
+    }
         }
         return instance;
     }
 
     public static synchronized AppCache reload(Context context, Handler handler) {
         instance = null;
-        instance = new AppCache(context, handler);
+        instance = new AppCache(context, handler, true);
         return instance;
     }
 
-    private void loadApps(Context context, Handler handler) {
+    public static synchronized void reloadSync(Handler handler) {
+        instance = null;
+        instance = new AppCache(null, handler, false);
+    }
+
+    private void loadAppsSync(Handler handler) {
+        try {
+            throw new AppCacheAsyncTask(null, handler, appsIcons, appsNames, versionNames).reloadAppCache();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private void loadAppsAsync(Context context, Handler handler) {
         new AppCacheAsyncTask(context, handler, appsIcons, appsNames, versionNames).execute();
     }
 
@@ -105,6 +125,30 @@ public class AppCache {
 
         @Override
         protected Throwable doInBackground(Void... args) {
+            return reloadAppCache();
+        }
+
+        @Override
+        protected void onPostExecute(Throwable th) {
+            if (dialog != null && dialog.isShowing()) {
+                dialog.dismiss();
+            }
+
+            Context context = contextWeakReference.get();
+            if (th != null && context != null) {
+                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setTitle("Error")
+                        .setMessage("Something went wrong when caching apps, please refresh the app list. Error: \n\n" + th.getMessage())
+                        .create();
+
+                alertDialog.show();
+            } else if (th != null && handler != null) {
+                handler.obtainMessage(0, th.getMessage()).sendToTarget();
+            }
+        }
+
+        public Throwable reloadAppCache() {
+
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             List<AppInfo> modifiedApps = null;
 
@@ -112,7 +156,7 @@ public class AppCache {
                 PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
                 List<ApplicationInfo> apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
                 int appCount = apps.size();
-                int cpuCount = Runtime.getRuntime().availableProcessors() / 2;
+                int cpuCount = Runtime.getRuntime().availableProcessors() + 1;
                 ExecutorService executorService = Executors.newFixedThreadPool(cpuCount);
                 List<FutureTask<AppInfoResult>> tasks = new ArrayList<>();
 
@@ -200,28 +244,7 @@ public class AppCache {
                     }
                 }
             }
-
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Throwable th) {
-            if (dialog != null && dialog.isShowing()) {
-                dialog.dismiss();
-            }
-            if (handler != null) {
-                handler.obtainMessage().sendToTarget();
-            }
-
-            Context context = contextWeakReference.get();
-            if (th != null && context != null) {
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setTitle("Error")
-                        .setMessage("Something went wrong when caching apps, please refresh the app list. Error: \n\n" + th.getMessage())
-                        .create();
-
-                alertDialog.show();
-            }
         }
     }
 
