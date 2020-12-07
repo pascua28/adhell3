@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +14,7 @@ import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class ReceiverInfoAdapter extends ComponentAdapter {
             String permission = receiverInfo.getPermission();
             TextView receiverNameTextView = convertView.findViewById(R.id.receiverNameTextView);
             TextView receiverPermissionTextView = convertView.findViewById(R.id.receiverPermissionTextView);
-            Switch permissionSwitch = convertView.findViewById(R.id.switchDisable);
+            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
             receiverNameTextView.setText(receiverName);
             receiverPermissionTextView.setText(permission);
             permissionSwitch.setChecked(AdhellFactory.getInstance().getComponentState(packageName, receiverName));

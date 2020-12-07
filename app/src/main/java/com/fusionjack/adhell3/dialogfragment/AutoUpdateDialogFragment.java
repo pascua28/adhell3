@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -37,6 +36,7 @@ import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -47,7 +47,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
     private static WorkManager workManager;
-    private Switch globalSwitch;
+    private SwitchMaterial globalSwitch;
     private TextView seekLabelTextView;
     private SeekBar intervalSeekBar;
     private CheckBox appComponentsCheckBox;

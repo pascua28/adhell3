@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +14,7 @@ import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ public class ActivityInfoAdapter extends ComponentAdapter {
             String packageName = activityInfo.getPackageName();
             String activityName = activityInfo.getName();
             TextView activityNameTextView = convertView.findViewById(R.id.activityNameTextView);
-            Switch permissionSwitch = convertView.findViewById(R.id.switchDisable);
+            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
             activityNameTextView.setText(activityName);
             permissionSwitch.setChecked(AdhellFactory.getInstance().getComponentState(packageName, activityName));
 

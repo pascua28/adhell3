@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -55,6 +54,7 @@ import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -82,13 +82,13 @@ public class HomeTabFragment extends Fragment {
     private FragmentManager fragmentManager;
     private AppCompatActivity parentActivity;
     private TextView domainStatusTextView;
-    private Switch domainSwitch;
+    private SwitchMaterial domainSwitch;
     private TextView firewallStatusTextView;
-    private Switch firewallSwitch;
+    private SwitchMaterial firewallSwitch;
     private TextView disablerStatusTextView;
-    private Switch disablerSwitch;
+    private SwitchMaterial disablerSwitch;
     private TextView appComponentStatusTextView;
-    private Switch appComponentSwitch;
+    private SwitchMaterial appComponentSwitch;
     private TextView infoTextView;
     private SwipeRefreshLayout swipeContainer;
     private ContentBlocker contentBlocker;
@@ -449,8 +449,8 @@ public class HomeTabFragment extends Fragment {
                     appComponentInfoTextView.setText(info);
                 }
 
-                Switch domainRulesSwitch = ((Activity) context).findViewById(R.id.domainRulesSwitch);
-                Switch firewallRulesSwitch = ((Activity) context).findViewById(R.id.firewallRulesSwitch);
+                SwitchMaterial domainRulesSwitch = ((Activity) context).findViewById(R.id.domainRulesSwitch);
+                SwitchMaterial firewallRulesSwitch = ((Activity) context).findViewById(R.id.firewallRulesSwitch);
                 if (domainRulesSwitch != null && firewallRulesSwitch != null) {
                     if (!isCurrentDomainLimitAboveDefault && ((domainRulesSwitch.isChecked() || firewallRulesSwitch.isChecked()))) {
                         refreshButton.get().setVisibility(View.VISIBLE);

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +15,7 @@ import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class PermissionInfoAdapter extends ComponentAdapter {
             TextView permissionLabelTextView = convertView.findViewById(R.id.permissionLabelTextView);
             TextView permissionNameTextView = convertView.findViewById(R.id.permissionNameTextView);
             TextView protectionLevelTextView = convertView.findViewById(R.id.protectionLevelTextView);
-            Switch permissionSwitch = convertView.findViewById(R.id.switchDisable);
+            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
             permissionLabelTextView.setText(permissionInfo.label);
             permissionNameTextView.setText(permissionInfo.name);
             protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));

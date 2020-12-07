@@ -30,7 +30,7 @@
         android:text="@string/auto_update_summary"
         android:textSize="12sp" />
 
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/globalSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

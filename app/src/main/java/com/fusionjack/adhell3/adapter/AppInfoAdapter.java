@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,6 +25,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
@@ -131,11 +131,7 @@ public class AppInfoAdapter extends BaseAdapter {
                 holder.switchH.setVisibility(View.GONE);
             case DNS:
                 boolean isDnsNotEmpty = AppPreferences.getInstance().isDnsNotEmpty();
-                if (isDnsNotEmpty) {
-                    holder.switchH.setEnabled(true);
-                } else {
-                    holder.switchH.setEnabled(false);
-                }
+                holder.switchH.setEnabled(isDnsNotEmpty);
                 checked = appInfo.hasCustomDns;
                 break;
         }
@@ -190,7 +186,7 @@ public class AppInfoAdapter extends BaseAdapter {
         TextView nameH;
         TextView packageH;
         TextView infoH;
-        Switch switchH;
+        SwitchMaterial switchH;
         ImageView imageH;
         RelativeLayout stopH;
         ImageView stopIvH;
