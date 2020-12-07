@@ -138,22 +138,17 @@ public class AppTabPageFragment extends AppFragment {
                 MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
                 popup.setOnMenuItemClickListener(item -> {
                     item.setChecked(!item.isChecked());
-                    switch (item.getItemId()) {
-                        case R.id.highlightRunningApps:
-                            filterAppInfo.setHighlightRunningApps(item.isChecked());
-                            break;
-                        case R.id.filterSystemApps:
-                            filterAppInfo.setSystemAppsFilter(item.isChecked());
-                            break;
-                        case R.id.filterUserApps:
-                            filterAppInfo.setUserAppsFilter(item.isChecked());
-                            break;
-                        case R.id.filterRunningApps:
-                            filterAppInfo.setRunningAppsFilter(item.isChecked());
-                            break;
-                        case R.id.filterStoppedApps:
-                            filterAppInfo.setStoppedAppsFilter(item.isChecked());
-                            break;
+                    int id = item.getItemId();
+                    if (id == R.id.highlightRunningApps) {
+                        filterAppInfo.setHighlightRunningApps(item.isChecked());
+                    } else if (id == R.id.filterSystemApps) {
+                        filterAppInfo.setSystemAppsFilter(item.isChecked());
+                    } else if (id == R.id.filterUserApps) {
+                        filterAppInfo.setUserAppsFilter(item.isChecked());
+                    } else if (id == R.id.filterRunningApps) {
+                        filterAppInfo.setRunningAppsFilter(item.isChecked());
+                    } else if (id == R.id.filterStoppedApps) {
+                        filterAppInfo.setStoppedAppsFilter(item.isChecked());
                     }
                     if (!filterAppInfo.getHighlightRunningApps() &&
                             filterAppInfo.getSystemAppsFilter() &&

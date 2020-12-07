@@ -79,18 +79,15 @@ public class AppComponentFragment extends AppFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_enable_all:
-                enableAllAppComponents();
-                break;
-            case R.id.action_batch:
-                batchOperation();
-                break;
-            case R.id.action_show_disabled:
-                if (getActivity() != null) {
-                    AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
-                }
-                break;
+        int id = item.getItemId();
+        if (id == R.id.action_enable_all) {
+            enableAllAppComponents();
+        } else if (id == R.id.action_batch) {
+            batchOperation();
+        } else if (id == R.id.action_show_disabled) {
+            if (getActivity() != null) {
+                AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
+            }
         }
         return super.onOptionsItemSelected(item);
     }

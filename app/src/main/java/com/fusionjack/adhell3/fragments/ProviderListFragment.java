@@ -168,19 +168,16 @@ public class ProviderListFragment extends Fragment {
 
                 RadioGroup providerTypeRadioGroup = dialogView.findViewById(R.id.providerTypeRadioGroup);
                 providerTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                    switch (checkedId) {
-                        case R.id.providerTypeRemote:
-                            filePicker.setVisibility(View.GONE);
-                            providerEditText.setEnabled(true);
-                            providerEditText.setHint(R.string.dialog_add_provider_hint);
-                            providerEditText.setText("");
-                            break;
-                        case R.id.providerTypeLocal:
-                            filePicker.setVisibility(View.VISIBLE);
-                            providerEditText.setEnabled(false);
-                            providerEditText.setHint("");
-                            providerEditText.setText("");
-                            break;
+                    if (checkedId == R.id.providerTypeRemote) {
+                        filePicker.setVisibility(View.GONE);
+                        providerEditText.setEnabled(true);
+                        providerEditText.setHint(R.string.dialog_add_provider_hint);
+                        providerEditText.setText("");
+                    } else if (checkedId == R.id.providerTypeLocal) {
+                        filePicker.setVisibility(View.VISIBLE);
+                        providerEditText.setEnabled(false);
+                        providerEditText.setHint("");
+                        providerEditText.setText("");
                     }
                 });
                 return true;

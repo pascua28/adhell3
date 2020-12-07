@@ -392,27 +392,21 @@ public class MainActivity extends AppCompatActivity {
         if (previousSelectedTabId != tabId || fragmentManager.getBackStackEntryCount() > 1 || themeChanged) {
             fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             Fragment replacing;
-            switch (tabId) {
-                case R.id.homeTab:
-                    replacing = new HomeTabFragment();
-                    break;
-                case R.id.appsManagementTab:
-                    replacing = new AppTabFragment();
-                    break;
-                case R.id.domainsTab:
-                    replacing = new DomainTabFragment();
-                    break;
-                case R.id.othersTab:
-                    replacing = new OtherTabFragment();
-                    if (themeChanged) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("viewpager_position", "Settings");
-                        replacing.setArguments(bundle);
-                    }
-                    break;
-                default:
-                    replacing = new Fragment();
-                    break;
+            if (tabId == R.id.homeTab) {
+                replacing = new HomeTabFragment();
+            } else if (tabId == R.id.appsManagementTab) {
+                replacing = new AppTabFragment();
+            } else if (tabId == R.id.domainsTab) {
+                replacing = new DomainTabFragment();
+            } else if (tabId == R.id.othersTab) {
+                replacing = new OtherTabFragment();
+                if (themeChanged) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("viewpager_position", "Settings");
+                    replacing.setArguments(bundle);
+                }
+            } else {
+                replacing = new Fragment();
             }
             // Hide Snackbar if is shown
             if (MainActivity.snackbar != null && MainActivity.snackbar.isShown()) {
