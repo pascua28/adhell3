@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:animateLayoutChanges="true"
     android:background="@color/colorPrimary"
     tools:context="com.fusionjack.adhell3.SplashScreenActivity">
@@ -78,12 +79,12 @@
             android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
             android:elevation="3dp"
-            android:tint="@color/colorPrimary"
             android:tintMode="src_in"
             android:background="@drawable/rounded_red_button"
             android:src="@drawable/ic_submit"
             android:scaleType="fitCenter"
-            android:contentDescription="Ok" />
+            android:contentDescription="Ok"
+            app:tint="@color/colorPrimary" />
 
         <ImageView
             android:id="@+id/biometricButton"
@@ -92,12 +93,12 @@
             android:layout_marginTop="80dp"
             android:padding="15dp"
             android:elevation="3dp"
-            android:tint="@color/colorText"
             android:tintMode="src_in"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_fingerprint"
             android:visibility="invisible"
-            android:contentDescription="Biometric button" />
+            android:contentDescription="Biometric button"
+            app:tint="@color/colorText" />
 
         </LinearLayout>
 
