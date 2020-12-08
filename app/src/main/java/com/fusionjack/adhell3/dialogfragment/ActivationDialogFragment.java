@@ -167,7 +167,7 @@ public class ActivationDialogFragment extends DialogFragment {
         knoxKeyEditText.setText(knoxKey);
 
         turnOnAdminButton.setOnClickListener(v ->
-                deviceAdminInteractor.forceEnableAdmin(this.getActivity())
+                deviceAdminInteractor.forceEnableAdmin()
         );
 
         activateKnoxButton.setOnClickListener(v -> {

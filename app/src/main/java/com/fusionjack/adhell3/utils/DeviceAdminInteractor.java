@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.utils;
 
-import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.MainActivity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.EnterpriseLicenseManager;
@@ -23,8 +23,6 @@ import javax.inject.Inject;
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_6;
 
 public final class DeviceAdminInteractor {
-    private static final int RESULT_ENABLE = 41;
-
     private static DeviceAdminInteractor instance;
 
     private final String KNOX_KEY = "knox_key";
@@ -78,13 +76,13 @@ public final class DeviceAdminInteractor {
     }
 
     /**
-     * Force user to enadle administrator
+     * Force user to enable administrator
      */
-    public void forceEnableAdmin(Context context) {
+    public void forceEnableAdmin() {
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Policy provider");
-        ((Activity) context).startActivityForResult(intent, RESULT_ENABLE);
+        MainActivity.getAdminPermissionLauncher().launch(intent);
     }
 
     public void activateKnoxKey(SharedPreferences sharedPreferences, Context context) {

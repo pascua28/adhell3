@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -18,6 +20,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -53,8 +57,6 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 public class MainActivity extends AppCompatActivity {
     public static boolean themeChanged = false;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
-    private static final int ADMIN_PERMISSION_REQUEST_CODE = 41;
-    private static final int STORAGE_PERMISSION_REQUEST_CODE = 42;
     private static final Handler snackbarDelayedHandler = new Handler();
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
@@ -69,6 +71,23 @@ public class MainActivity extends AppCompatActivity {
     private static FilterAppInfo filterAppInfo;
     private static Snackbar snackbar;
     private ActivationDialogFragment activationDialogFragment;
+    private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
+        AppPreferences.getInstance().setStorageTreePath(result.toString());
+        this.grantUriPermission(this.getPackageName(), result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        this.getContentResolver().takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        if (permissionDialog != null) {
+            permissionDialog.dismiss();
+        }
+        finishOnResume();
+    });
+
+    public final ActivityResultLauncher<Intent> adminPermissionLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            MainActivity.makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
+                    .show();
+            finishOnResume();
+        }
+    });
 
     private static MainActivity mainActivity;
 
@@ -148,28 +167,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
-        super.onActivityResult(requestCode, resultCode, resultData);
-
-        if(resultCode == RESULT_OK && requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
-            Uri treeUri = resultData.getData();
-            if (treeUri != null) {
-                AppPreferences.getInstance().setStorageTreePath(treeUri.toString());
-                this.grantUriPermission(this.getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                this.getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            }
-            if (permissionDialog != null) {
-                permissionDialog.dismiss();
-            }
-            finishOnResume();
-        } else if (resultCode == RESULT_OK && requestCode == ADMIN_PERMISSION_REQUEST_CODE) {
-            MainActivity.makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
-                    .show();
-            finishOnResume();
-        }
-    }
-
-    @Override
     public void onBackPressed() {
         int count = fragmentManager.getBackStackEntryCount();
         if (count <= 1) {
@@ -244,6 +241,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
+
+    public static ActivityResultLauncher<Intent> getAdminPermissionLauncher() {
+        return mainActivity.adminPermissionLauncher;
+    }
 
     public static Snackbar makeSnackbar(String message, int showDelay) {
         int duration = showDelay == Snackbar.LENGTH_LONG ? 2750 : 1500;
@@ -367,15 +368,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
                             setSelectFileActivityLaunched(true);
 
-                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                            intent.addFlags(
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                                            | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
-
-                            startActivityForResult(intent, STORAGE_PERMISSION_REQUEST_CODE);
+                            openDocumentTreeLauncher.launch(Uri.fromFile(Environment.getExternalStorageDirectory()));
                         }
                     )
                     .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> finish())

@@ -2,9 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,6 +20,8 @@ import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
@@ -50,11 +50,9 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.List;
 
-import static android.app.Activity.RESULT_OK;
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
 public class ProviderListFragment extends Fragment {
-    private final int SELECT_FILE_REQUEST_CODE = 42;
     private Context context;
     private FragmentActivity activity;
     private EditText providerEditText;
@@ -66,6 +64,12 @@ public class ProviderListFragment extends Fragment {
         this.activity = getActivity();
         App.setAppContext(context);
     }
+
+    private final ActivityResultLauncher<String[]> openDocumentLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), result -> {
+        if (result != null) {
+            providerEditText.setText(result.toString());
+        }
+    });
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -157,13 +161,8 @@ public class ProviderListFragment extends Fragment {
                 Button filePicker = dialogView.findViewById(R.id.filePicker);
                 filePicker.setOnClickListener(v1 -> {
                     MainActivity.setSelectFileActivityLaunched(true);
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                    intent.setType("*/*");
-
-                    startActivityForResult(intent, SELECT_FILE_REQUEST_CODE);
+                    String[] types = { "*/*" };
+                    openDocumentLauncher.launch(types);
                 });
 
                 RadioGroup providerTypeRadioGroup = dialogView.findViewById(R.id.providerTypeRadioGroup);
@@ -232,17 +231,6 @@ public class ProviderListFragment extends Fragment {
         new SetDomainCountAsyncTask(context, 100).execute();
 
         return view;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        if (requestCode == SELECT_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
-            Uri uri;
-            if (resultData != null) {
-                uri = resultData.getData();
-                providerEditText.setText(uri != null ? uri.toString() : null);
-            }
-        }
     }
 
     private boolean isValidUri(String uri) {
