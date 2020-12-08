@@ -4,18 +4,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.ItemPermissionInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
@@ -31,24 +29,27 @@ public class PermissionInfoAdapter extends ComponentAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        PermissionInfoViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_permission_info, parent, false);
+            ItemPermissionInfoBinding itemBinding = ItemPermissionInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new PermissionInfoViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (PermissionInfoViewHolder) convertView.getTag();
         }
 
         IComponentInfo componentInfo = getItem(position);
         if (componentInfo == null) {
-            return convertView;
+            return holder.view;
         }
 
         if (componentInfo instanceof PermissionInfo) {
             PermissionInfo permissionInfo = (PermissionInfo) componentInfo;
-            TextView permissionLabelTextView = convertView.findViewById(R.id.permissionLabelTextView);
-            TextView permissionNameTextView = convertView.findViewById(R.id.permissionNameTextView);
-            TextView protectionLevelTextView = convertView.findViewById(R.id.protectionLevelTextView);
-            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
-            permissionLabelTextView.setText(permissionInfo.label);
-            permissionNameTextView.setText(permissionInfo.name);
-            protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
+            holder.binding.permissionLabelTextView.setText(permissionInfo.label);
+            holder.binding.permissionNameTextView.setText(permissionInfo.name);
+            holder.binding.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
 
             boolean checked = false;
             ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
@@ -57,13 +58,23 @@ public class PermissionInfoAdapter extends ComponentAdapter {
                 if (!deniedPermissions.contains(permissionInfo.name)) {
                     checked = true;
                 }
-                permissionSwitch.setChecked(checked);
+                holder.binding.switchDisable.setChecked(checked);
 
                 boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                permissionSwitch.setEnabled(enabled);
+                holder.binding.switchDisable.setEnabled(enabled);
             }
         }
 
-        return convertView;
+        return holder.view;
+    }
+
+    private static class PermissionInfoViewHolder {
+        private View view;
+        private final ItemPermissionInfoBinding binding;
+
+        PermissionInfoViewHolder(ItemPermissionInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

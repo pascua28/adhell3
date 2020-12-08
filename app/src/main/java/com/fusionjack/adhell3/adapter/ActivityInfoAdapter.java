@@ -4,17 +4,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.ItemActivityInfoBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
 
@@ -27,28 +25,43 @@ public class ActivityInfoAdapter extends ComponentAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        ActivityInfoViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_activity_info, parent, false);
+            ItemActivityInfoBinding itemBinding = ItemActivityInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new ActivityInfoViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (ActivityInfoViewHolder) convertView.getTag();
         }
 
         IComponentInfo componentInfo = getItem(position);
         if (componentInfo == null) {
-            return convertView;
+            return holder.view;
         }
 
         if (componentInfo instanceof ActivityInfo) {
             ActivityInfo activityInfo = (ActivityInfo) componentInfo;
             String packageName = activityInfo.getPackageName();
             String activityName = activityInfo.getName();
-            TextView activityNameTextView = convertView.findViewById(R.id.activityNameTextView);
-            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
-            activityNameTextView.setText(activityName);
-            permissionSwitch.setChecked(AdhellFactory.getInstance().getComponentState(packageName, activityName));
+            holder.binding.activityNameTextView.setText(activityName);
+            holder.binding.switchDisable.setChecked(AdhellFactory.getInstance().getComponentState(packageName, activityName));
 
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+            holder.binding.switchDisable.setEnabled(enabled);
         }
 
-        return convertView;
+        return holder.view;
+    }
+
+    private static class ActivityInfoViewHolder {
+        private View view;
+        private final ItemActivityInfoBinding binding;
+
+        ActivityInfoViewHolder(ItemActivityInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

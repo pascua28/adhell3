@@ -3,8 +3,6 @@ package com.fusionjack.adhell3.utils;
 import android.content.ComponentName;
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -13,6 +11,7 @@ import androidx.documentfile.provider.DocumentFile;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -112,9 +111,8 @@ public final class AppComponentFactory {
         return lines;
     }
 
-    public void checkMigrateOldBatchFiles(Context context, View view) {
+    public void checkMigrateOldBatchFiles(Context context) {
         WeakReference<Context> contextReference = new WeakReference<>(context);
-        WeakReference<View> viewReference = new WeakReference<>(view);
 
         SingleObserver<String> migrateObserver = new SingleObserver<String>() {
             @Override
@@ -140,13 +138,12 @@ public final class AppComponentFactory {
             }
 
             @Override
-            public void onSuccess(Boolean s) {
-                if (s) {
-                    View dialogView = LayoutInflater.from(contextReference.get()).inflate(R.layout.dialog_question, viewReference.get().findViewById(android.R.id.content), false);
-                    TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                    titleTextView.setText(R.string.dialog_appcomponent_batch_migrate_file_title);
-                    TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                    questionTextView.setText(
+            public void onSuccess(@NonNull Boolean s) {
+                Context context = contextReference.get();
+                if (s && context != null) {
+                    DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(context));
+                    dialogQuestionBinding.titleTextView.setText(R.string.dialog_appcomponent_batch_migrate_file_title);
+                    dialogQuestionBinding.questionTextView.setText(
                             String.format(
                                     Locale.getDefault(),
                                     contextReference.get().getString(R.string.dialog_appcomponent_batch_migrate_file_summary),
@@ -157,7 +154,7 @@ public final class AppComponentFactory {
                     );
 
                     AlertDialog alertDialog = new AlertDialog.Builder(contextReference.get(), R.style.AlertDialogStyle)
-                            .setView(dialogView)
+                            .setView(dialogQuestionBinding.getRoot())
                             .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> migrateOldBatchFilesToNewSingle()
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())

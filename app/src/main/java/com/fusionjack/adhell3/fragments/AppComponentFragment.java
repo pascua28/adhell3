@@ -9,24 +9,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppComponentBinding;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
-import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -39,8 +35,8 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
-    private ListView listView;
-    private ProgressBar loadingBar;
+
+    private FragmentAppComponentBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,17 +46,14 @@ public class AppComponentFragment extends AppFragment {
         initAppModel(type);
 
         if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !AppPreferences.getInstance().getWarningDialogAppComponentDontShow()) {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            CheckBox dontShowAgain = dialogView.findViewById(R.id.questionDontShow);
-            dontShowAgain.setVisibility(View.VISIBLE);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.dialog_system_app_components_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.dialog_system_app_components_info);
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+            dialogQuestionBinding.questionDontShow.setVisibility(View.VISIBLE);
+            dialogQuestionBinding.titleTextView.setText(R.string.dialog_system_app_components_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.dialog_system_app_components_info);
             AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, ((dialog, which) -> {
-                        if (dontShowAgain.isChecked()) {
+                        if (dialogQuestionBinding.questionDontShow.isChecked()) {
                             AppPreferences.getInstance().setWarningDialogAppComponentDontShow(true);
                         }
                     }))
@@ -96,13 +89,10 @@ public class AppComponentFragment extends AppFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        View view = inflater.inflate(R.layout.fragment_app_component, container, false);
-        loadingBar = view.findViewById(R.id.loadingBar);
+        binding = FragmentAppComponentBinding.inflate(inflater);
 
-        AppFlag appFlag = AppFlag.createComponentFlag();
-        listView = view.findViewById(appFlag.getLoadLayout());
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+        binding.componentAppsList.setAdapter(adapter);
+        binding.componentAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
             if (getActivity() != null) {
@@ -123,28 +113,25 @@ public class AppComponentFragment extends AppFragment {
             }
         });
 
-        SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
-        swipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, loadingBar, listView);
-            swipeContainer.setRefreshing(false);
+        binding.componentSwipeContainer.setOnRefreshListener(() -> {
+            loadAppList(type, binding.loadingBar, binding.componentAppsList);
+            binding.componentSwipeContainer.setRefreshing(false);
             resetSearchView();
         });
 
-        return view;
+        return binding.getRoot();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadAppList(type, loadingBar, listView);
+        loadAppList(type, binding.loadingBar, binding.componentAppsList);
     }
 
     private void batchOperation() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_appcomponent_batch_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
+        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+        dialogQuestionBinding.titleTextView.setText(R.string.dialog_appcomponent_batch_title);
+        dialogQuestionBinding.questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
 
         AlertDialog progressDialog = DialogUtils.getProgressDialog("", context);
         progressDialog.setCancelable(false);
@@ -172,7 +159,7 @@ public class AppComponentFragment extends AppFragment {
         };
 
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                .setView(dialogView)
+                .setView(dialogQuestionBinding.getRoot())
                 .setPositiveButton(R.string.button_enable, (dialog, whichButton) -> {
                     progressDialog.show();
                     DialogUtils.setProgressDialogMessage(progressDialog, getString(R.string.dialog_appcomponent_enable_summary));
@@ -195,18 +182,16 @@ public class AppComponentFragment extends AppFragment {
         alertDialog.show();
 
         if (getView() != null) {
-            AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext(), getView());
+            AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext());
         }
     }
 
     private void enableAllAppComponents() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_enable_components_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_enable_components_info);
+        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+        dialogQuestionBinding.titleTextView.setText(R.string.dialog_enable_components_title);
+        dialogQuestionBinding.questionTextView.setText(R.string.dialog_enable_components_info);
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                .setView(dialogView)
+                .setView(dialogQuestionBinding.getRoot())
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                         AsyncTask.execute(() -> {
                             AdhellFactory.getInstance().setAppComponentState(true);

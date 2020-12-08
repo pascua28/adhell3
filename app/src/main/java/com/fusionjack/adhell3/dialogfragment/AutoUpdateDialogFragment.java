@@ -9,11 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +25,7 @@ import androidx.work.WorkManager;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogFragmentAutoUpdateBinding;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.AppComponentsUpdateWorker;
 import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
@@ -37,7 +34,6 @@ import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -48,15 +44,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     public static final int[] intervalArray = new int[] {1,2,3,4,5,6,7,14,21,28};
     private final CustomSwitchPreference customSwitchPreference;
     private static WorkManager workManager;
-    private SwitchMaterial globalSwitch;
-    private TextView seekLabelTextView;
-    private SeekBar intervalSeekBar;
-    private CheckBox appComponentsCheckBox;
-    private CheckBox cleanDBCheckBox;
-    private CheckBox logCheckBox;
-    private CheckBox lowBatteryCheckBox;
-    private CheckBox mobileDataCheckBox;
-    private TimePicker startTimePicker;
+    private DialogFragmentAutoUpdateBinding binding;
 
     public AutoUpdateDialogFragment(Preference preference) {
         this.customSwitchPreference = (CustomSwitchPreference) preference;
@@ -83,46 +71,37 @@ public class AutoUpdateDialogFragment extends DialogFragment {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().getAttributes().windowAnimations = R.style.FragmentDialogAnimation;
         }
-        return inflater.inflate(R.layout.dialog_fragment_auto_update, container);
+        binding = DialogFragmentAutoUpdateBinding.inflate(inflater);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        globalSwitch = view.findViewById(R.id.globalSwitch);
-        globalSwitch.setChecked(customSwitchPreference.isChecked());
-        intervalSeekBar = view.findViewById(R.id.intervalSeekBar);
-        intervalSeekBar.setMax(intervalArray.length-1);
-        intervalSeekBar.setProgress(AppPreferences.getInstance().getAutoUpdateInterval());
-        intervalSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        binding.globalSwitch.setChecked(customSwitchPreference.isChecked());
+        binding.intervalSeekBar.setMax(intervalArray.length-1);
+        binding.intervalSeekBar.setProgress(AppPreferences.getInstance().getAutoUpdateInterval());
+        binding.intervalSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(progress)));
+                binding.seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(progress)));
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar){}
             @Override
             public void onStopTrackingTouch(SeekBar seekBar){}
         });
-        seekLabelTextView = view.findViewById(R.id.seekLabelTextView);
-        seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(intervalSeekBar.getProgress())));
-        appComponentsCheckBox = view.findViewById(R.id.appComponentsCheckBox);
-        appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
-        cleanDBCheckBox = view.findViewById(R.id.cleanDBCheckBox);
-        cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDBOnAutoUpdate());
-        logCheckBox = view.findViewById(R.id.logCheckBox);
-        logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
-        lowBatteryCheckBox = view.findViewById(R.id.lowBatteryCheckBox);
-        lowBatteryCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintLowBattery());
-        mobileDataCheckBox = view.findViewById(R.id.mobileDataCheckBox);
-        mobileDataCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintMobileData());
-        startTimePicker = view.findViewById(R.id.startTimePicker);
-        startTimePicker.setIs24HourView(true);
-        startTimePicker.setHour(AppPreferences.getInstance().getStartHourAutoUpdate());
-        startTimePicker.setMinute(AppPreferences.getInstance().getStartMinuteAutoUpdate());
-        Button saveButton = view.findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(v -> {
+        binding.seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(binding.intervalSeekBar.getProgress())));
+        binding.appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
+        binding.cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDBOnAutoUpdate());
+        binding.logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
+        binding.lowBatteryCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintLowBattery());
+        binding.mobileDataCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintMobileData());
+        binding.startTimePicker.setIs24HourView(true);
+        binding.startTimePicker.setHour(AppPreferences.getInstance().getStartHourAutoUpdate());
+        binding.startTimePicker.setMinute(AppPreferences.getInstance().getStartMinuteAutoUpdate());
+        binding.saveButton.setOnClickListener(v -> {
             saveAutoUpdateSettings();
             dismiss();
         });
@@ -204,23 +183,23 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     }
 
     private void saveAutoUpdateSettings() {
-        if (appComponentsCheckBox.isChecked()) {
+        if (binding.appComponentsCheckBox.isChecked()) {
             if (getView() != null) {
-                AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext(), getView());
+                AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext());
             }
         }
 
-        AppPreferences.getInstance().setAutoUpdateInterval(intervalSeekBar.getProgress());
-        AppPreferences.getInstance().setAppComponentsAutoUpdate(appComponentsCheckBox.isChecked());
-        AppPreferences.getInstance().setCleanDBOnAutoUpdate(cleanDBCheckBox.isChecked());
-        AppPreferences.getInstance().setCreateLogOnAutoUpdate(logCheckBox.isChecked());
-        AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(lowBatteryCheckBox.isChecked());
-        AppPreferences.getInstance().setAutoUpdateConstraintMobileData(mobileDataCheckBox.isChecked());
-        AppPreferences.getInstance().setStartHourAutoUpdate(startTimePicker.getHour());
-        AppPreferences.getInstance().setStartMinuteAutoUpdate(startTimePicker.getMinute());
-        customSwitchPreference.setChecked(globalSwitch.isChecked());
+        AppPreferences.getInstance().setAutoUpdateInterval(binding.intervalSeekBar.getProgress());
+        AppPreferences.getInstance().setAppComponentsAutoUpdate(binding.appComponentsCheckBox.isChecked());
+        AppPreferences.getInstance().setCleanDBOnAutoUpdate(binding.cleanDBCheckBox.isChecked());
+        AppPreferences.getInstance().setCreateLogOnAutoUpdate(binding.logCheckBox.isChecked());
+        AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(binding.lowBatteryCheckBox.isChecked());
+        AppPreferences.getInstance().setAutoUpdateConstraintMobileData(binding.mobileDataCheckBox.isChecked());
+        AppPreferences.getInstance().setStartHourAutoUpdate(binding.startTimePicker.getHour());
+        AppPreferences.getInstance().setStartMinuteAutoUpdate(binding.startTimePicker.getMinute());
+        customSwitchPreference.setChecked(binding.globalSwitch.isChecked());
 
-        if (globalSwitch.isChecked()) {
+        if (binding.globalSwitch.isChecked()) {
             enqueueAutoUpdateWork(workManager);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
                 MainActivity.makeSnackbar("Auto update enabled", Snackbar.LENGTH_LONG)

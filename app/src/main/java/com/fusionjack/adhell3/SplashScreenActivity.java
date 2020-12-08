@@ -10,14 +10,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.fusionjack.adhell3.databinding.ActivitySplashScreenBinding;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BiometricUtils;
@@ -29,11 +25,7 @@ import com.fusionjack.adhell3.utils.PasswordStorage;
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class SplashScreenActivity extends AppCompatActivity {
-    private LinearLayout passwordLayout;
-    private TextView passwordInfoTextView;
-    private EditText passwordEditText;
-    private ImageButton passwordButton;
-    private ImageView biometricButton;
+    private ActivitySplashScreenBinding binding;
     private static boolean biometricSupport;
 
     @Override
@@ -42,6 +34,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             setTheme(android.R.style.Theme_NoDisplay);
         }
         super.onCreate(savedInstanceState);
+        binding = ActivitySplashScreenBinding.inflate(getLayoutInflater());
 
         // Exit if intent extra EXIT exist
         if (getIntent().getBooleanExtra("EXIT", false)) {
@@ -75,13 +68,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         biometricSupport = BiometricUtils.checkBiometricSupport(this);
 
-        setContentView(R.layout.activity_splash_screen);
-
-        passwordLayout = this.findViewById(R.id.passwordLayout);
-        passwordInfoTextView = this.findViewById(R.id.passwordInfoTextView);
-        passwordEditText = this.findViewById(R.id.passwordEditText);
-        passwordButton = this.findViewById(R.id.passwordButton);
-        biometricButton = this.findViewById(R.id.biometricButton);
+        setContentView(binding.getRoot());
     }
 
     @Override
@@ -125,7 +112,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     public void successAuthentication() {
-        passwordLayout.setVisibility(View.GONE);
+        binding.passwordLayout.setVisibility(View.GONE);
         launchMainActivity();
     }
 
@@ -142,7 +129,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     private boolean isPasswordShowing() {
         String passwordHash = AppPreferences.getInstance().getPasswordHash();
         if (!passwordHash.isEmpty()) {
-            if (passwordLayout.getVisibility() != View.VISIBLE) {
+            if (binding.passwordLayout.getVisibility() != View.VISIBLE) {
                 LogUtils.info("Showing password layout");
                 showPasswordPrompt();
             }
@@ -152,19 +139,19 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void showPasswordPrompt() {
-        passwordLayout.setVisibility(View.VISIBLE);
+        binding.passwordLayout.setVisibility(View.VISIBLE);
 
         if (biometricSupport) {
-            biometricButton.setVisibility(View.VISIBLE);
-            biometricButton.setOnClickListener(v -> BiometricUtils.authenticateUser(this));
+            binding.biometricButton.setVisibility(View.VISIBLE);
+            binding.biometricButton.setOnClickListener(v -> BiometricUtils.authenticateUser(this));
             BiometricUtils.authenticateUser(this);
         } else {
-            biometricButton.setVisibility(View.INVISIBLE);
+            binding.biometricButton.setVisibility(View.INVISIBLE);
         }
 
-        passwordButton.setOnClickListener(view -> validatePassword());
+        binding.passwordButton.setOnClickListener(view -> validatePassword());
 
-        passwordEditText.setOnEditorActionListener((textView, id, keyEvent) -> {
+        binding.passwordEditText.setOnEditorActionListener((textView, id, keyEvent) -> {
             if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (id == EditorInfo.IME_ACTION_DONE)) {
                 validatePassword();
             }
@@ -173,16 +160,16 @@ public class SplashScreenActivity extends AppCompatActivity {
     }
 
     private void validatePassword() {
-        String password = passwordEditText.getText().toString();
+        String password = binding.passwordEditText.getText().toString();
         try {
             String passwordHash = AppPreferences.getInstance().getPasswordHash();
             if (PasswordStorage.verifyPassword(password, passwordHash)) {
-                passwordInfoTextView.setText(R.string.dialog_enter_password_summary);
-                passwordEditText.setText("");
+                binding.passwordInfoTextView.setText(R.string.dialog_enter_password_summary);
+                binding.passwordEditText.setText("");
                 successAuthentication();
             } else {
-                passwordInfoTextView.setText(R.string.dialog_wrong_password);
-                passwordInfoTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
+                binding.passwordInfoTextView.setText(R.string.dialog_wrong_password);
+                binding.passwordInfoTextView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
             }
         } catch (PasswordStorage.CannotPerformOperationException | PasswordStorage.InvalidHashException e) {
             e.printStackTrace();

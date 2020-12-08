@@ -6,9 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +14,8 @@ import androidx.appcompat.app.AlertDialog;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.ItemBlockUrlProviderBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
@@ -41,47 +40,49 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        BlockUrlProviderViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_block_url_provider, parent, false);
+            ItemBlockUrlProviderBinding itemBinding = ItemBlockUrlProviderBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new BlockUrlProviderViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (BlockUrlProviderViewHolder) convertView.getTag();
         }
 
         BlockUrlProvider blockUrlProvider = getItem(position);
         if (blockUrlProvider == null) {
-            return convertView;
+            return holder.view;
         }
 
-        TextView blockUrlProviderTextView = convertView.findViewById(R.id.blockUrlProviderTextView);
-        TextView blockUrlCountTextView = convertView.findViewById(R.id.blockUrlCountTextView);
-        CheckBox urlProviderCheckBox = convertView.findViewById(R.id.urlProviderCheckBox);
-        ImageView deleteUrlImageView = convertView.findViewById(R.id.deleteUrlProviderImageView);
-        TextView lastUpdatedTextView = convertView.findViewById(R.id.lastUpdatedTextView);
-        urlProviderCheckBox.setTag(position);
-        deleteUrlImageView.setTag(position);
+        holder.binding.urlProviderCheckBox.setTag(position);
+        holder.binding.deleteUrlProviderImageView.setTag(position);
 
-        blockUrlProviderTextView.setText(blockUrlProvider.url);
-        blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
+        holder.binding.blockUrlProviderTextView.setText(blockUrlProvider.url);
+        holder.binding.blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
 
-        urlProviderCheckBox.setChecked(blockUrlProvider.selected);
-        urlProviderCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        holder.binding.urlProviderCheckBox.setChecked(blockUrlProvider.selected);
+        holder.binding.urlProviderCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             int position2 = (Integer) buttonView.getTag();
             BlockUrlProvider provider = getItem(position2);
             new GetAllBlockedUrlsAsyncTask(provider, isChecked, this, getContext()).execute();
         });
 
         Date lastUpdated = blockUrlProvider.lastUpdated == null ? new Date() : blockUrlProvider.lastUpdated;
-        lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
-        if (!blockUrlProvider.deletable) {
-            deleteUrlImageView.setVisibility(View.INVISIBLE);
+        holder.binding.lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
+        if (blockUrlProvider.deletable) {
+            holder.binding.deleteUrlProviderImageView.setVisibility(View.VISIBLE);
+        } else {
+            holder.binding.deleteUrlProviderImageView.setVisibility(View.INVISIBLE);
         }
-        deleteUrlImageView.setOnClickListener(imageView -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, parent, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.delete_provider_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_provider_dialog_text);
+        holder.binding.deleteUrlProviderImageView.setOnClickListener(imageView -> {
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+            dialogQuestionBinding.titleTextView.setText(R.string.delete_provider_dialog_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.delete_provider_dialog_text);
 
             AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         int position2 = (Integer) imageView.getTag();
                         BlockUrlProvider provider = getItem(position2);
@@ -93,7 +94,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             alertDialog.show();
         });
 
-        return convertView;
+        return holder.view;
     }
 
     private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -158,6 +159,16 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                             .show();
                 }
             }
+        }
+    }
+
+    private static class BlockUrlProviderViewHolder {
+        private View view;
+        private final ItemBlockUrlProviderBinding binding;
+
+        BlockUrlProviderViewHolder(ItemBlockUrlProviderBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
         }
     }
 }

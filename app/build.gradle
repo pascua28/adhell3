@@ -104,6 +104,9 @@ android {
             zipAlignEnabled true
         }
     }
+    buildFeatures {
+        viewBinding = true
+    }
     buildToolsVersion "30.0.2"
 }
 

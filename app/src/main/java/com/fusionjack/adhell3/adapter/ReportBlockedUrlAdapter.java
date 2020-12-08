@@ -7,13 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.GroupBlockedUrlInfoBinding;
+import com.fusionjack.adhell3.databinding.ItemBlockedUrlInfoBinding;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AppCache;
 
@@ -94,53 +93,83 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        ReportBlockedUrlGroupViewHolder holder;
         String packageName = getGroup(groupPosition);
         String appName = appNames.get(packageName);
         int childCount = getChildrenCount(groupPosition);
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.group_blocked_url_info, parent, false);
+            GroupBlockedUrlInfoBinding groupBinding = GroupBlockedUrlInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new ReportBlockedUrlGroupViewHolder(groupBinding);
+            holder.view = groupBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (ReportBlockedUrlGroupViewHolder) convertView.getTag();
         }
-        ImageView blockedDomainIconImageView = convertView.findViewById(R.id.blockedDomainIconImageView);
-        TextView appNameTextView = convertView.findViewById(R.id.blockedDomainAppNameTextView);
-        TextView packageNameTextView = convertView.findViewById(R.id.blockedDomainPackageNameTextView);
-        TextView countTextView = convertView.findViewById(R.id.blockedDomainCountTextView);
+
         Drawable icon = appIcons.get(packageName);
         if (icon == null) {
             icon = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, context.getTheme());
         }
-        blockedDomainIconImageView.setImageDrawable(icon);
-        countTextView.setText(String.valueOf(childCount));
+        holder.binding.blockedDomainIconImageView.setImageDrawable(icon);
+        holder.binding.blockedDomainCountTextView.setText(String.valueOf(childCount));
         if (appName == null) {
-            appNameTextView.setText(packageName);
-            packageNameTextView.setText("");
+            holder.binding.blockedDomainAppNameTextView.setText(packageName);
+            holder.binding.blockedDomainPackageNameTextView.setText("");
         } else {
-            appNameTextView.setText(appName);
-            packageNameTextView.setText(packageName);
+            holder.binding.blockedDomainAppNameTextView.setText(appName);
+            holder.binding.blockedDomainPackageNameTextView.setText(packageName);
         }
-        return convertView;
+        return holder.view;
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        ReportBlockedUrlItemInfoViewHolder holder;
         final ReportBlockedUrl reportBlockedUrlItem = getChild(groupPosition, childPosition);
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_blocked_url_info, parent, false);
+            ItemBlockedUrlInfoBinding itemBinding = ItemBlockedUrlInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new ReportBlockedUrlItemInfoViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (ReportBlockedUrlItemInfoViewHolder) convertView.getTag();
         }
-        TextView expandedListUrlTextView = convertView.findViewById(R.id.blockedDomainUrlTextView);
-        TextView expandedListTimeTextView = convertView.findViewById(R.id.blockedDomainTimeTextView);
-        ImageView blockedDomainIconImageView = convertView.findViewById(R.id.blockedDomainIconImageView);
+
         Drawable icon = appIcons.get(reportBlockedUrlItem.packageName);
         if (icon == null) {
             icon = ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, context.getTheme());
         }
-        blockedDomainIconImageView.setImageDrawable(icon);
-        expandedListUrlTextView.setText(reportBlockedUrlItem.url);
-        expandedListTimeTextView.setText(dateFormatter.format(reportBlockedUrlItem.blockDate));
-        return convertView;
+        holder.binding.blockedDomainIconImageView.setImageDrawable(icon);
+        holder.binding.blockedDomainUrlTextView.setText(reportBlockedUrlItem.url);
+        holder.binding.blockedDomainTimeTextView.setText(dateFormatter.format(reportBlockedUrlItem.blockDate));
+
+        return holder.view;
     }
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
+    }
+
+    private static class ReportBlockedUrlGroupViewHolder {
+        private View view;
+        private final GroupBlockedUrlInfoBinding binding;
+
+        ReportBlockedUrlGroupViewHolder(GroupBlockedUrlInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
+    }
+
+    private static class ReportBlockedUrlItemInfoViewHolder {
+        private View view;
+        private final ItemBlockedUrlInfoBinding binding;
+
+        ReportBlockedUrlItemInfoViewHolder(ItemBlockedUrlInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

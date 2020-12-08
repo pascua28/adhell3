@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -15,11 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.AbsListView;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,7 +27,6 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
@@ -39,6 +34,9 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
+import com.fusionjack.adhell3.databinding.ActivityActionbarBinding;
+import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
+import com.fusionjack.adhell3.databinding.FragmentBlockerBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
@@ -54,9 +52,7 @@ import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
-import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -80,19 +76,9 @@ public class HomeTabFragment extends Fragment {
 
     private FragmentManager fragmentManager;
     private AppCompatActivity parentActivity;
-    private TextView domainStatusTextView;
-    private SwitchMaterial domainSwitch;
-    private TextView firewallStatusTextView;
-    private SwitchMaterial firewallSwitch;
-    private TextView disablerStatusTextView;
-    private SwitchMaterial disablerSwitch;
-    private TextView appComponentStatusTextView;
-    private SwitchMaterial appComponentSwitch;
-    private TextView infoTextView;
-    private SwipeRefreshLayout swipeContainer;
     private ContentBlocker contentBlocker;
-    private ProgressBar loadingBar;
-    private ImageView refreshButton;
+    private FragmentBlockerBinding binding;
+    private ActivityActionbarBinding activityActionbarBinding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,63 +95,47 @@ public class HomeTabFragment extends Fragment {
             actionBar.setDisplayHomeAsUpEnabled(false);
             actionBar.setHomeButtonEnabled(false);
 
-            View view = inflater.inflate(R.layout.activity_actionbar, container, false);
-            TextView subtitleTextView = view.findViewById(R.id.subtitleTextView);
-            if (subtitleTextView != null) {
-                String versionInfo = requireContext().getResources().getString(R.string.version);
-                subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
-            }
-            this.refreshButton = view.findViewById(R.id.refreshButton);
+            activityActionbarBinding = ActivityActionbarBinding.inflate(inflater);
+            String versionInfo = requireContext().getResources().getString(R.string.version);
+            activityActionbarBinding.subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
             int themeColor = getResources().getColor(R.color.colorBottomNavUnselected, requireContext().getTheme());
-            refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-            refreshButton.setOnClickListener(v -> new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute());
-            actionBar.setCustomView(view);
+            activityActionbarBinding.refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+            activityActionbarBinding.refreshButton.setOnClickListener(v -> new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute());
+            actionBar.setCustomView(activityActionbarBinding.getRoot());
             actionBar.setDisplayShowCustomEnabled(true);
         }
 
-        View view = inflater.inflate(R.layout.fragment_blocker, container, false);
-        domainSwitch = view.findViewById(R.id.domainRulesSwitch);
-        domainStatusTextView = view.findViewById(R.id.domainStatusTextView);
-        firewallSwitch = view.findViewById(R.id.firewallRulesSwitch);
-        firewallStatusTextView = view.findViewById(R.id.firewallStatusTextView);
-        disablerSwitch = view.findViewById(R.id.appDisablerSwitch);
-        disablerStatusTextView = view.findViewById(R.id.disablerStatusTextView);
-        appComponentSwitch = view.findViewById(R.id.appComponentSwitch);
-        appComponentStatusTextView = view.findViewById(R.id.appComponentStatusTextView);
-        swipeContainer = view.findViewById(R.id.swipeContainer);
-        infoTextView = view.findViewById(R.id.infoTextView);
-        loadingBar = view.findViewById(R.id.loadingBar);
+        binding = FragmentBlockerBinding.inflate(inflater);
 
-        infoTextView.setVisibility(View.INVISIBLE);
-        swipeContainer.setVisibility(View.INVISIBLE);
-        loadingBar.setVisibility(View.INVISIBLE);
+        binding.infoTextView.setVisibility(View.INVISIBLE);
+        binding.swipeContainer.setVisibility(View.INVISIBLE);
+        binding.loadingBar.setVisibility(View.INVISIBLE);
 
         if (!BuildConfig.DISABLE_APPS) {
-            view.findViewById(R.id.appDisablerLayout).setVisibility(View.GONE);
+            binding.appDisablerLayout.setVisibility(View.GONE);
         }
         if (!BuildConfig.APP_COMPONENT) {
-            view.findViewById(R.id.appComponentLayout).setVisibility(View.GONE);
+            binding.appComponentLayout.setVisibility(View.GONE);
         }
 
-        domainSwitch.setOnClickListener(v -> {
+        binding.domainRulesSwitch.setOnClickListener(v -> {
             LogUtils.info("Domain switch button has been clicked");
             new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), false).execute();
         });
-        firewallSwitch.setOnClickListener(v -> {
+        binding.firewallRulesSwitch.setOnClickListener(v -> {
             LogUtils.info("Firewall switch button has been clicked");
             new SetFirewallAsyncTask(false, this, fragmentManager, getContext(), false).execute();
         });
-        disablerSwitch.setOnClickListener(v -> {
+        binding.appDisablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
             new AppDisablerAsyncTask(this, getContext()).execute();
         });
-        appComponentSwitch.setOnClickListener(v -> {
+        binding.appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info("App component switch button has been clicked");
             new AppComponentAsyncTask(this, getContext()).execute();
         });
 
-        SpeedDialView speedDialView = view.findViewById(R.id.domain_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
+        binding.domainActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
                 .setLabel(getString(R.string.export_domains_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -175,9 +145,9 @@ public class HomeTabFragment extends Fragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.setOnActionSelectedListener(actionItem -> {
+        binding.domainActions.setOnActionSelectedListener(actionItem -> {
             if (actionItem.getId() == R.id.action_export_domains) {
-                speedDialView.close();
+                binding.domainActions.close();
                 new ExportDomainsAsyncTask(getContext()).execute();
                 return true;
             }
@@ -186,13 +156,12 @@ public class HomeTabFragment extends Fragment {
 
         final boolean[] noScroll = { false };
         final int[] previousDistanceFromFirstCellToTop = {0};
-        final ExpandableListView expandableListView = view.findViewById(R.id.blockedDomainsListView);
-        expandableListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
+        binding.blockedDomainsListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && noScroll[0]) {
-                    if (speedDialView.isShown()) speedDialView.hide();
-                    else speedDialView.show();
+                    if (binding.domainActions.isShown()) binding.domainActions.hide();
+                    else binding.domainActions.show();
                 }
             }
 
@@ -202,15 +171,15 @@ public class HomeTabFragment extends Fragment {
                     noScroll[0] = true;
                 } else {
                     noScroll[0] = false;
-                    View firstCell = expandableListView.getChildAt(0);
+                    View firstCell = binding.blockedDomainsListView.getChildAt(0);
                     if (firstCell == null) {
                         return;
                     }
                     int distanceFromFirstCellToTop = firstVisibleItem * firstCell.getHeight() - firstCell.getTop();
                     if (distanceFromFirstCellToTop < previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.show();
+                        binding.domainActions.show();
                     } else if (distanceFromFirstCellToTop > previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.hide();
+                        binding.domainActions.hide();
                     }
                     previousDistanceFromFirstCellToTop[0] = distanceFromFirstCellToTop;
                 }
@@ -228,29 +197,24 @@ public class HomeTabFragment extends Fragment {
             if (getActivity() != null) {
                     AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
             }};
-        appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
-        TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
-        appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
+        binding.appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
+        binding.appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
 
         if (!contentBlocker.isDomainRuleEmpty()) {
-            infoTextView.setVisibility(View.VISIBLE);
-            swipeContainer.setVisibility(View.VISIBLE);
-            swipeContainer.setOnRefreshListener(() -> {
-                if (loadingBar != null) {
-                    loadingBar.setVisibility(View.VISIBLE);
-                }
-                new RefreshAsyncTask(getContext()).execute();
+            binding.infoTextView.setVisibility(View.VISIBLE);
+            binding.swipeContainer.setVisibility(View.VISIBLE);
+            binding.swipeContainer.setOnRefreshListener(() -> {
+                binding.loadingBar.setVisibility(View.VISIBLE);
+                new RefreshAsyncTask(getContext(), binding).execute();
             });
 
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
-            new RefreshAsyncTask(getContext()).execute();
+            binding.loadingBar.setVisibility(View.VISIBLE);
+            new RefreshAsyncTask(getContext(), binding).execute();
         } else {
-            infoTextView.setVisibility(View.INVISIBLE);
-            swipeContainer.setVisibility(View.INVISIBLE);
+            binding.infoTextView.setVisibility(View.INVISIBLE);
+            binding.swipeContainer.setVisibility(View.INVISIBLE);
         }
-        return view;
+        return binding.getRoot();
     }
 
     @Override
@@ -260,68 +224,64 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void updateUserInterface() {
-        new SetInfoAsyncTask(getContext(), refreshButton).execute();
+        new SetInfoAsyncTask(getContext(), activityActionbarBinding.refreshButton, binding).execute();
 
         boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
         boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
 
         if (contentBlocker == null || isDomainRuleEmpty) {
-            domainStatusTextView.setText(R.string.domain_rules_disabled);
-            domainSwitch.setChecked(false);
+            binding.domainStatusTextView.setText(R.string.domain_rules_disabled);
+            binding.domainRulesSwitch.setChecked(false);
         } else {
-            domainStatusTextView.setText(R.string.domain_rules_enabled);
-            domainSwitch.setChecked(true);
+            binding.domainStatusTextView.setText(R.string.domain_rules_enabled);
+            binding.domainRulesSwitch.setChecked(true);
         }
 
         if (contentBlocker == null || isFirewallRuleEmpty) {
-            firewallStatusTextView.setText(R.string.firewall_rules_disabled);
-            firewallSwitch.setChecked(false);
+            binding.firewallStatusTextView.setText(R.string.firewall_rules_disabled);
+            binding.firewallRulesSwitch.setChecked(false);
         } else {
-            firewallStatusTextView.setText(R.string.firewall_rules_enabled);
-            firewallSwitch.setChecked(true);
+            binding.firewallStatusTextView.setText(R.string.firewall_rules_enabled);
+            binding.firewallRulesSwitch.setChecked(true);
         }
 
         if (!isDomainRuleEmpty) {
-            infoTextView.setVisibility(View.VISIBLE);
-            swipeContainer.setVisibility(View.VISIBLE);
-            swipeContainer.setOnRefreshListener(() -> {
-                if (loadingBar != null) {
-                    loadingBar.setVisibility(View.VISIBLE);
-                }
-                new RefreshAsyncTask(getContext()).execute();
+            binding.infoTextView.setVisibility(View.VISIBLE);
+            binding.swipeContainer.setVisibility(View.VISIBLE);
+            binding.swipeContainer.setOnRefreshListener(() -> {
+                binding.loadingBar.setVisibility(View.VISIBLE);
+                new RefreshAsyncTask(getContext(), binding).execute();
             });
 
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
-            new RefreshAsyncTask(getContext()).execute();
+            binding.loadingBar.setVisibility(View.VISIBLE);
+            new RefreshAsyncTask(getContext(), binding).execute();
         } else {
-            infoTextView.setVisibility(View.INVISIBLE);
-            swipeContainer.setVisibility(View.INVISIBLE);
+            binding.infoTextView.setVisibility(View.INVISIBLE);
+            binding.swipeContainer.setVisibility(View.INVISIBLE);
         }
 
         boolean disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
         if (disablerEnabled) {
-            disablerStatusTextView.setText(R.string.app_disabler_enabled);
-            disablerSwitch.setChecked(true);
+            binding.disablerStatusTextView.setText(R.string.app_disabler_enabled);
+            binding.appDisablerSwitch.setChecked(true);
         } else {
-            disablerStatusTextView.setText(R.string.app_disabler_disabled);
-            disablerSwitch.setChecked(false);
+            binding.disablerStatusTextView.setText(R.string.app_disabler_disabled);
+            binding.appDisablerSwitch.setChecked(false);
         }
 
         boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
         if (appComponentEnabled) {
-            appComponentStatusTextView.setText(R.string.app_component_enabled);
-            appComponentSwitch.setChecked(true);
+            binding.appComponentStatusTextView.setText(R.string.app_component_enabled);
+            binding.appComponentSwitch.setChecked(true);
         } else {
-            appComponentStatusTextView.setText(R.string.app_component_disabled);
-            appComponentSwitch.setChecked(false);
+            binding.appComponentStatusTextView.setText(R.string.app_component_disabled);
+            binding.appComponentSwitch.setChecked(false);
         }
 
-        if (((domainSwitch.isChecked() || firewallSwitch.isChecked())))  {
-            refreshButton.setVisibility(View.VISIBLE);
+        if (((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked())))  {
+            activityActionbarBinding.refreshButton.setVisibility(View.VISIBLE);
         } else {
-            refreshButton.setVisibility(View.GONE);
+            activityActionbarBinding.refreshButton.setVisibility(View.GONE);
         }
     }
 
@@ -340,36 +300,29 @@ public class HomeTabFragment extends Fragment {
         private int activitySize;
         private boolean isCurrentDomainLimitAboveDefault;
         private final WeakReference<ImageView> refreshButton;
+        private final FragmentBlockerBinding binding;
 
-        SetInfoAsyncTask(Context context, ImageView refreshButton) {
+        SetInfoAsyncTask(Context context, ImageView refreshButton, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
             this.refreshButton = new WeakReference<>(refreshButton);
+            this.binding = binding;
         }
 
         @Override
         protected void onPreExecute() {
             Context context = contextWeakReference.get();
             if (context != null) {
-                TextView domainInfoTextView = ((Activity) context).findViewById(R.id.domainInfoTextView);
-                if (domainInfoTextView != null) {
-                    String domainInfo = context.getResources().getString(R.string.domain_rules_info);
-                    domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
-                }
-                TextView firewallInfoTextView = ((Activity) context).findViewById(R.id.firewallInfoTextView);
-                if (firewallInfoTextView != null) {
-                    String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
-                    firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
-                }
-                TextView disablerInfoTextView = ((Activity) context).findViewById(R.id.disablerInfoTextView);
-                if (disablerInfoTextView != null) {
-                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                    disablerInfoTextView.setText(String.format(disablerInfo, 0));
-                }
-                TextView appComponentInfoTextView = ((Activity) context).findViewById(R.id.appComponentInfoTextView);
-                if (appComponentInfoTextView != null) {
-                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
-                }
+                String domainInfo = context.getResources().getString(R.string.domain_rules_info);
+                binding.domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
+
+                String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
+                binding.firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
+
+                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
+                binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
+
+                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
+                binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
             }
         }
 
@@ -417,44 +370,30 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             Context context = contextWeakReference.get();
             if (context != null) {
-                TextView domainInfoTextView = ((Activity) context).findViewById(R.id.domainInfoTextView);
-                if (domainInfoTextView != null) {
-                    String domainInfo = context.getResources().getString(R.string.domain_rules_info);
-                    domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
-                }
-                TextView firewallInfoTextView = ((Activity) context).findViewById(R.id.firewallInfoTextView);
-                if (firewallInfoTextView != null) {
-                    String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
-                    firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
-                }
-                TextView disablerInfoTextView = ((Activity) context).findViewById(R.id.disablerInfoTextView);
-                if (disablerInfoTextView != null) {
-                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                    boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-                    disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
-                }
-                TextView appComponentInfoTextView = ((Activity) context).findViewById(R.id.appComponentInfoTextView);
-                if (appComponentInfoTextView != null) {
-                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                    String info;
-                    if (enabled) {
-                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize, activitySize);
-                    } else {
-                        info = String.format(appComponentInfo, 0, 0, 0, 0);
-                    }
-                    appComponentInfoTextView.setText(info);
-                }
+                String domainInfo = context.getResources().getString(R.string.domain_rules_info);
+                binding.domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
 
-                SwitchMaterial domainRulesSwitch = ((Activity) context).findViewById(R.id.domainRulesSwitch);
-                SwitchMaterial firewallRulesSwitch = ((Activity) context).findViewById(R.id.firewallRulesSwitch);
-                if (domainRulesSwitch != null && firewallRulesSwitch != null) {
-                    if (!isCurrentDomainLimitAboveDefault && ((domainRulesSwitch.isChecked() || firewallRulesSwitch.isChecked()))) {
-                        refreshButton.get().setVisibility(View.VISIBLE);
-                    } else {
-                        refreshButton.get().setVisibility(View.GONE);
-                    }
+                String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
+                binding.firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
+
+                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
+                boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                binding.disablerInfoTextView.setText(String.format(disablerInfo, appDisablerEnabled ? disablerSize : 0));
+
+                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
+                boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+                String info;
+                if (appComponentEnabled) {
+                    info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize, activitySize);
+                } else {
+                    info = String.format(appComponentInfo, 0, 0, 0, 0);
                 }
+                binding.appComponentInfoTextView.setText(info);
+            }
+            if (!isCurrentDomainLimitAboveDefault && ((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked()))) {
+                refreshButton.get().setVisibility(View.VISIBLE);
+            } else {
+                refreshButton.get().setVisibility(View.GONE);
             }
         }
     }
@@ -612,9 +551,11 @@ public class HomeTabFragment extends Fragment {
 
     private static class RefreshAsyncTask extends AsyncTask<Void, Void, HashMap<String, List<ReportBlockedUrl>>> {
         private final WeakReference<Context> contextReference;
+        private final FragmentBlockerBinding binding;
 
-        RefreshAsyncTask(Context context) {
+        RefreshAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextReference = new WeakReference<>(context);
+            this.binding = binding;
         }
 
         @Override
@@ -647,23 +588,19 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(HashMap<String, List<ReportBlockedUrl>> reportBlockedUrls) {
             Context context = contextReference.get();
             if (context != null) {
-                ExpandableListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
-                if (listView != null) {
-
                     ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, null);
-                    listView.setAdapter(adapter);
+                    binding.blockedDomainsListView.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
-                    listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
-                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_whitelist_domain, listView, false);
-                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                    binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
+                        DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
                         List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
                         String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
                         String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
-                        domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
+                        dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
                         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                                .setView(dialogView)
+                                .setView(dialogWhitelistDomainBinding.getRoot())
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                    String domainToAdd = domainEditText.getText().toString().trim();
+                                    String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
                                     if (domainToAdd.indexOf('|') == -1) {
                                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                             MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
@@ -691,37 +628,27 @@ public class HomeTabFragment extends Fragment {
 
                         return false;
                     });
-                }
 
-                TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
-                if (infoTextView != null) {
                     int totalCount = 0;
                     for (HashMap.Entry<String, List<ReportBlockedUrl>> entry : reportBlockedUrls.entrySet()) {
                         totalCount += entry.getValue().size();
                     }
-                    infoTextView.setText(String.format("%s%s",
+                    binding.infoTextView.setText(String.format("%s%s",
                             context.getString(R.string.last_day_blocked), totalCount));
-                }
 
-                SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);
-                if (swipeContainer != null) {
-                    swipeContainer.setRefreshing(false);
-                }
+            }
+                binding.swipeContainer.setRefreshing(false);
+                binding.loadingBar.setVisibility(View.GONE);
 
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBar);
-                if (loadingBar != null) {
-                    loadingBar.setVisibility(View.GONE);
-                }
-                if (listView != null && listView.getVisibility() == View.GONE) {
+                if (binding.blockedDomainsListView.getVisibility() == View.GONE) {
                     AlphaAnimation animation = new AlphaAnimation(0f, 1f);
                     animation.setDuration(500);
                     animation.setStartOffset(50);
                     animation.setFillAfter(true);
 
-                    listView.setVisibility(View.VISIBLE);
-                    listView.startAnimation(animation);
+                    binding.blockedDomainsListView.setVisibility(View.VISIBLE);
+                    binding.blockedDomainsListView.startAnimation(animation);
                 }
-            }
         }
     }
 
@@ -774,10 +701,10 @@ public class HomeTabFragment extends Fragment {
     }
 
     public boolean getDomainSwitchState() {
-        return domainSwitch.isChecked();
+        return binding.domainRulesSwitch.isChecked();
     }
 
     public boolean getFirewallSwitchState() {
-        return firewallSwitch.isChecked();
+        return binding.firewallRulesSwitch.isChecked();
     }
 }

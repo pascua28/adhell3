@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,16 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.FragmentShowBlockedUrlsBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
@@ -32,10 +28,11 @@ public class ProviderContentFragment extends Fragment {
 
     private String searchText;
     private Long providerId;
+    private FragmentShowBlockedUrlsBinding binding;
 
     void setProviderId(Long providerId) {
         this.providerId = providerId;
-        new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
+        new LoadBlockedUrlAsyncTask(getContext(), providerId, binding).execute();
     }
 
     @Override
@@ -48,23 +45,17 @@ public class ProviderContentFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_show_blocked_urls, container, false);
-        ProgressBar loadingBar = view.findViewById(R.id.loadingBarContent);
-        if (loadingBar != null) {
-            loadingBar.setVisibility(View.VISIBLE);
-        }
-        new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
+        binding = FragmentShowBlockedUrlsBinding.inflate(inflater);
+        binding.loadingBarContent.setVisibility(View.VISIBLE);
+        new LoadBlockedUrlAsyncTask(getContext(), providerId, binding).execute();
 
-        SwipeRefreshLayout swipeContainer = view.findViewById(R.id.providerListSwipeContainer);
-        swipeContainer.setOnRefreshListener(() -> {
+        binding.providerListSwipeContainer.setOnRefreshListener(() -> {
             providerId = null;
-            if (loadingBar != null) {
-                loadingBar.setVisibility(View.VISIBLE);
-            }
-            new LoadBlockedUrlAsyncTask(getContext(), null).execute();
+            binding.loadingBarContent.setVisibility(View.VISIBLE);
+            new LoadBlockedUrlAsyncTask(getContext(), null, binding).execute();
         });
 
-        return view;
+        return binding.getRoot();
     }
 
     @Override
@@ -88,7 +79,7 @@ public class ProviderContentFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                new FilterUrlAsyncTask(text, providerId, getContext()).execute();
+                new FilterUrlAsyncTask(text, providerId, getContext(), binding).execute();
                 return false;
             }
         });
@@ -98,11 +89,13 @@ public class ProviderContentFragment extends Fragment {
         private final WeakReference<Context> contextReference;
         private final AppDatabase appDatabase;
         private final Long providerId;
+        private final FragmentShowBlockedUrlsBinding binding;
 
-        LoadBlockedUrlAsyncTask(Context context, Long providerId) {
+        LoadBlockedUrlAsyncTask(Context context, Long providerId, FragmentShowBlockedUrlsBinding binding) {
             this.contextReference = new WeakReference<>(context);
             this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
             this.providerId = providerId;
+            this.binding = binding;
         }
 
         @Override
@@ -116,34 +109,23 @@ public class ProviderContentFragment extends Fragment {
         protected void onPostExecute(List<String> blockedUrls) {
             Context context = contextReference.get();
             if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.blocked_url_list);
-                if (listView != null) {
-                    ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, blockedUrls);
-                    listView.setAdapter(itemsAdapter);
-                }
+                ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, blockedUrls);
+                binding.blockedUrlList.setAdapter(itemsAdapter);
 
-                SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.providerListSwipeContainer);
-                if (swipeContainer != null) {
-                    swipeContainer.setRefreshing(false);
-                }
+                binding.providerListSwipeContainer.setRefreshing(false);
 
-                TextView totalBlockedUrls = ((Activity) context).findViewById(R.id.total_blocked_urls);
-                if (totalBlockedUrls != null) {
-                    totalBlockedUrls.setText(String.format("%s%s", context.getString(R.string.total_domains), blockedUrls.size()));
-                }
+                binding.totalBlockedUrls.setText(String.format("%s%s", context.getString(R.string.total_domains), blockedUrls.size()));
 
-                ProgressBar loadingBar = ((Activity) context).findViewById(R.id.loadingBarContent);
-                if (loadingBar != null) {
-                    loadingBar.setVisibility(View.GONE);
-                }
-                if (listView != null && listView.getVisibility() == View.GONE) {
+                binding.loadingBarContent.setVisibility(View.GONE);
+
+                if (binding.blockedUrlList.getVisibility() == View.GONE) {
                     AlphaAnimation animation = new AlphaAnimation(0f, 1f);
                     animation.setDuration(500);
                     animation.setStartOffset(50);
                     animation.setFillAfter(true);
 
-                    listView.setVisibility(View.VISIBLE);
-                    listView.startAnimation(animation);
+                    binding.blockedUrlList.setVisibility(View.VISIBLE);
+                    binding.blockedUrlList.startAnimation(animation);
                 }
             }
         }
@@ -154,12 +136,14 @@ public class ProviderContentFragment extends Fragment {
         private final AppDatabase appDatabase;
         private final String text;
         private final Long providerId;
+        private final FragmentShowBlockedUrlsBinding binding;
 
-        FilterUrlAsyncTask(String text, Long providerId, Context context) {
+        FilterUrlAsyncTask(String text, Long providerId, Context context, FragmentShowBlockedUrlsBinding binding) {
             this.text = text;
             this.providerId = providerId;
             this.contextReference = new WeakReference<>(context);
             this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            this.binding = binding;
         }
 
         @Override
@@ -177,12 +161,9 @@ public class ProviderContentFragment extends Fragment {
         protected void onPostExecute(List<String> list) {
             Context context = contextReference.get();
             if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.blocked_url_list);
-                if (listView != null) {
-                    ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
-                    listView.setAdapter(itemsAdapter);
-                    itemsAdapter.notifyDataSetChanged();
-                }
+                ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
+                binding.blockedUrlList.setAdapter(itemsAdapter);
+                itemsAdapter.notifyDataSetChanged();
             }
         }
     }

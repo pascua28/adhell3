@@ -8,10 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -20,11 +17,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogBlacklistDomainBinding;
+import com.fusionjack.adhell3.databinding.DialogBlacklistRuleBinding;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.FragmentBlacklistBinding;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
-import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,19 +51,16 @@ public class BlacklistFragment extends UserListFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_blacklist, container, false);
+        FragmentBlacklistBinding binding = FragmentBlacklistBinding.inflate(inflater);
 
-        ListView blacklistView = view.findViewById(R.id.blackListView);
-        blacklistView.setAdapter(adapter);
-        blacklistView.setOnItemClickListener((parent, view1, position, id) -> {
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.delete_domain_firewall_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
+        binding.blackListView.setAdapter(adapter);
+        binding.blackListView.setOnItemClickListener((parent, view1, position, id) -> {
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(inflater);
+            dialogQuestionBinding.titleTextView.setText(R.string.delete_domain_firewall_dialog_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
 
             AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String item = (String) parent.getItemAtPosition(position);
                         viewModel.removeItem(item, deleteObserver);
@@ -74,9 +71,7 @@ public class BlacklistFragment extends UserListFragment {
             alertDialog.show();
         });
 
-        SpeedDialView speedDialView = view.findViewById(R.id.blacklist_actions);
-
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+        binding.blacklistActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_public_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_blacklist_domain_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -86,7 +81,7 @@ public class BlacklistFragment extends UserListFragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_firewall_rule, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_whatshot_white_24dp, requireContext().getTheme()))
+        binding.blacklistActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_firewall_rule, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_whatshot_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_blacklist_rule_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -96,15 +91,14 @@ public class BlacklistFragment extends UserListFragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.setOnActionSelectedListener(actionItem -> {
-            speedDialView.close();
+        binding.blacklistActions.setOnActionSelectedListener(actionItem -> {
+            binding.blacklistActions.close();
             if (actionItem.getId() == R.id.action_add_domain) {
-                View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
+                DialogBlacklistDomainBinding dialogBlacklistDomainBinding = DialogBlacklistDomainBinding.inflate(inflater);
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogBlacklistDomainBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                            EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                            String domainToAdd = domainEditText.getText().toString().trim();
+                            String domainToAdd = dialogBlacklistDomainBinding.domainEditText.getText().toString().trim();
                             if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                 MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
                                         .show();
@@ -118,12 +112,11 @@ public class BlacklistFragment extends UserListFragment {
                 alertDialog.show();
                 return true;
             } else if (actionItem.getId() == R.id.action_add_firewall_rule) {
-                View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
+                DialogBlacklistRuleBinding dialogBlacklistRuleBinding = DialogBlacklistRuleBinding.inflate(inflater);
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogBlacklistRuleBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                            EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
-                            String ruleToAdd = ruleEditText.getText().toString().trim();
+                            String ruleToAdd = dialogBlacklistRuleBinding.ruleEditText.getText().toString().trim();
                             StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
                             if (tokens.countTokens() != 3) {
                                 MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
@@ -143,12 +136,12 @@ public class BlacklistFragment extends UserListFragment {
 
         final boolean[] noScroll = { false };
         final int[] previousDistanceFromFirstCellToTop = {0};
-        blacklistView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
+        binding.blackListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && noScroll[0]) {
-                    if (speedDialView.isShown()) speedDialView.hide();
-                    else speedDialView.show();
+                    if (binding.blacklistActions.isShown()) binding.blacklistActions.hide();
+                    else binding.blacklistActions.show();
                 }
             }
 
@@ -158,32 +151,32 @@ public class BlacklistFragment extends UserListFragment {
                     noScroll[0] = true;
                 } else {
                     noScroll[0] = false;
-                    View firstCell = blacklistView.getChildAt(0);
+                    View firstCell = binding.blackListView.getChildAt(0);
                     if (firstCell == null) {
                         return;
                     }
                     int distanceFromFirstCellToTop = firstVisibleItem * firstCell.getHeight() - firstCell.getTop();
                     if (distanceFromFirstCellToTop < previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.show();
+                        binding.blacklistActions.show();
                     } else if (distanceFromFirstCellToTop > previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.hide();
+                        binding.blacklistActions.hide();
                     }
                     previousDistanceFromFirstCellToTop[0] = distanceFromFirstCellToTop;
                 }
             }
         });
 
-        view.findViewById(R.id.loadingBar).setVisibility(View.GONE);
-        if (blacklistView.getVisibility() == View.GONE) {
+        binding.loadingBar.setVisibility(View.GONE);
+        if (binding.blackListView.getVisibility() == View.GONE) {
             AlphaAnimation animation = new AlphaAnimation(0f, 1f);
             animation.setDuration(500);
             animation.setStartOffset(50);
             animation.setFillAfter(true);
 
-            blacklistView.setVisibility(View.VISIBLE);
-            blacklistView.startAnimation(animation);
+            binding.blackListView.setVisibility(View.VISIBLE);
+            binding.blackListView.startAnimation(animation);
         }
 
-        return view;
+        return binding.getRoot();
     }
 }

@@ -7,23 +7,19 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogFragmentFirewallBinding;
 
 import java.util.Objects;
 
 public class FirewallDialogFragment extends DialogFragment {
-    private TextView logTextView;
-    private ScrollView scrollView;
-    private Button closeButton;
     private String text = "";
+    private DialogFragmentFirewallBinding binding;
 
     public static FirewallDialogFragment newInstance(String title) {
         FirewallDialogFragment fragment = new FirewallDialogFragment();
@@ -52,39 +48,36 @@ public class FirewallDialogFragment extends DialogFragment {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().getAttributes().windowAnimations = R.style.FragmentDialogAnimation;
         }
-        return inflater.inflate(R.layout.dialog_fragment_firewall, container);
+        binding = DialogFragmentFirewallBinding.inflate(inflater);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView titleTextView = view.findViewById(R.id.titleTextView);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            titleTextView.setText(bundle.getString("title"));
+            binding.titleTextView.setText(bundle.getString("title"));
         }
 
-        scrollView = view.findViewById(R.id.scrollView);
-        logTextView = view.findViewById(R.id.logTextView);
-        closeButton = view.findViewById(R.id.closeButton);
-        closeButton.setOnClickListener(v -> dismiss());
-        closeButton.setEnabled(false);
+        binding.closeButton.setOnClickListener(v -> dismiss());
+        binding.closeButton.setEnabled(false);
 
-        scrollView.getLayoutParams().height = (int) (getResources().getDisplayMetrics().heightPixels * 0.675);
+        binding.scrollView.getLayoutParams().height = (int) (getResources().getDisplayMetrics().heightPixels * 0.675);
     }
 
     public void appendText(String text) {
         this.text += text + "\n";
-        logTextView.setText(this.text);
+        binding.logTextView.setText(this.text);
         scrollToBottom();
     }
 
     private void scrollToBottom() {
-        scrollView.post(() -> scrollView.smoothScrollTo(0, logTextView.getBottom()));
+        binding.scrollView.post(() -> binding.scrollView.smoothScrollTo(0, binding.logTextView.getBottom()));
     }
 
     public void enableCloseButton() {
-        closeButton.setEnabled(true);
+        binding.closeButton.setEnabled(true);
     }
 }

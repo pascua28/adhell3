@@ -13,23 +13,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.MenuCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.DialogSetDnsBinding;
+import com.fusionjack.adhell3.databinding.FragmentDnsBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
@@ -41,14 +38,12 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
-import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.List;
 
 public class DnsFragment extends AppFragment {
 
-    private ProgressBar loadingBar;
-    private ListView listView;
+    private FragmentDnsBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,13 +62,11 @@ public class DnsFragment extends AppFragment {
     }
 
     private void toggleAllApps() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_toggle_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_toggle_info);
+        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+        dialogQuestionBinding.titleTextView.setText(R.string.dialog_toggle_title);
+        dialogQuestionBinding.questionTextView.setText(R.string.dialog_toggle_info);
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                .setView(dialogView)
+                .setView(dialogQuestionBinding.getRoot())
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                         AsyncTask.execute(() -> {
                             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
@@ -101,7 +94,7 @@ public class DnsFragment extends AppFragment {
 
                             AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
 
-                            loadAppList(type, loadingBar, listView);
+                            loadAppList(type, binding.loadingBar, binding.dnsAppsList);
                         })
                 )
                 .setNegativeButton(android.R.string.no, null)
@@ -114,14 +107,12 @@ public class DnsFragment extends AppFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        View view = inflater.inflate(R.layout.fragment_dns, container, false);
+        binding = FragmentDnsBinding.inflate(inflater);
 
-        loadingBar = view.findViewById(R.id.loadingBar);
         AppFlag appFlag = AppFlag.createDnsFlag();
-        listView = view.findViewById(R.id.dns_apps_list);
-        listView.setAdapter(adapter);
+        binding.dnsAppsList.setAdapter(adapter);
         if (AppPreferences.getInstance().isDnsNotEmpty()) {
-            listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+            binding.dnsAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                 AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
                 new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
             });
@@ -129,10 +120,9 @@ public class DnsFragment extends AppFragment {
 
         int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
 
-        ImageView filterButton = view.findViewById(R.id.filterButton);
-        filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-        filterButton.setOnClickListener(v -> {
-            PopupMenu popup = new PopupMenu(context, filterButton);
+        binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        binding.filterButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(context, binding.filterButton);
             popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
             popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
             popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
@@ -160,29 +150,27 @@ public class DnsFragment extends AppFragment {
                         filterAppInfo.getRunningAppsFilter() &&
                         filterAppInfo.getStoppedAppsFilter()
                 ) {
-                    filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                    binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                 } else {
                     int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-                    filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                    binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
                 }
 
                 MainActivity.setFilterAppInfo(filterAppInfo);
                 resetSearchView();
-                loadAppList(type, loadingBar, listView);
+                loadAppList(type, binding.loadingBar, binding.dnsAppsList);
                 return false;
             });
             popup.show();
         });
 
-        SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.dnsSwipeContainer);
-        dnsSwipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, loadingBar, listView);
-            dnsSwipeContainer.setRefreshing(false);
+        binding.dnsSwipeContainer.setOnRefreshListener(() -> {
+            loadAppList(type, binding.loadingBar, binding.dnsAppsList);
+            binding.dnsSwipeContainer.setRefreshing(false);
             resetSearchView();
         });
 
-        SpeedDialView speedDialView = view.findViewById(R.id.dns_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
+        binding.dnsActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_set_dns_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -192,20 +180,18 @@ public class DnsFragment extends AppFragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.setOnActionSelectedListener(actionItem -> {
-            speedDialView.close();
+        binding.dnsActions.setOnActionSelectedListener(actionItem -> {
+            binding.dnsActions.close();
             if (actionItem.getId() == R.id.action_set_dns) {
-                View dialogView = inflater.inflate(R.layout.dialog_set_dns, container, false);
-                EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
-                EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
+                DialogSetDnsBinding dialogSetDnsBinding = DialogSetDnsBinding.inflate(inflater);
                 if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                    primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
-                    secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
+                    dialogSetDnsBinding.primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
+                    dialogSetDnsBinding.secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
                 }
-                primaryDnsEditText.requestFocus();
+                dialogSetDnsBinding.primaryDnsEditText.requestFocus();
 
                 new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogSetDnsBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             Handler handler = new Handler(Looper.getMainLooper()) {
                                 @Override
@@ -215,22 +201,22 @@ public class DnsFragment extends AppFragment {
                                 }
                             };
 
-                            String primaryDns = primaryDnsEditText.getText().toString();
-                            String secondaryDns = secondaryDnsEditText.getText().toString();
+                            String primaryDns = dialogSetDnsBinding.primaryDnsEditText.getText().toString();
+                            String secondaryDns = dialogSetDnsBinding.secondaryDnsEditText.getText().toString();
                             AdhellFactory.getInstance().setDns(primaryDns, secondaryDns, handler);
 
                             if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                                listView.setEnabled(true);
-                                listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+                                binding.dnsAppsList.setEnabled(true);
+                                binding.dnsAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                                     AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
                                     new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
                                 });
                             } else {
-                                listView.setEnabled(false);
+                                binding.dnsAppsList.setEnabled(false);
                             }
 
-                            if (listView.getAdapter() instanceof AppInfoAdapter) {
-                                ((AppInfoAdapter) listView.getAdapter()).notifyDataSetChanged();
+                            if (binding.dnsAppsList.getAdapter() instanceof AppInfoAdapter) {
+                                ((AppInfoAdapter) binding.dnsAppsList.getAdapter()).notifyDataSetChanged();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)
@@ -243,12 +229,12 @@ public class DnsFragment extends AppFragment {
 
         final boolean[] noScroll = { false };
         final int[] previousDistanceFromFirstCellToTop = {0};
-        listView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
+        binding.dnsAppsList.setOnScrollListener(new ExpandableListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && noScroll[0]) {
-                    if (speedDialView.isShown()) speedDialView.hide();
-                    else speedDialView.show();
+                    if (binding.dnsActions.isShown()) binding.dnsActions.hide();
+                    else binding.dnsActions.show();
                 }
             }
 
@@ -258,22 +244,22 @@ public class DnsFragment extends AppFragment {
                     noScroll[0] = true;
                 } else {
                     noScroll[0] = false;
-                    View firstCell = listView.getChildAt(0);
+                    View firstCell = binding.dnsAppsList.getChildAt(0);
                     if (firstCell == null) {
                         return;
                     }
                     int distanceFromFirstCellToTop = firstVisibleItem * firstCell.getHeight() - firstCell.getTop();
                     if (distanceFromFirstCellToTop < previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.show();
+                        binding.dnsActions.show();
                     } else if (distanceFromFirstCellToTop > previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.hide();
+                        binding.dnsActions.hide();
                     }
                     previousDistanceFromFirstCellToTop[0] = distanceFromFirstCellToTop;
                 }
             }
         });
 
-        return view;
+        return binding.getRoot();
     }
 
     @Override
@@ -281,19 +267,18 @@ public class DnsFragment extends AppFragment {
         super.onResume();
         // Set filter button color
         int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
-        ImageView filterButton = requireView().findViewById(R.id.filterButton);
         if (!filterAppInfo.getHighlightRunningApps() &&
                 filterAppInfo.getSystemAppsFilter() &&
                 filterAppInfo.getUserAppsFilter() &&
                 filterAppInfo.getRunningAppsFilter() &&
                 filterAppInfo.getStoppedAppsFilter()
         ) {
-            filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+            binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
         } else {
             int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-            filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+            binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
 
-        loadAppList(type, loadingBar, listView);
+        loadAppList(type, binding.loadingBar, binding.dnsAppsList);
     }
 }

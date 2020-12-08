@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -28,6 +27,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.fusionjack.adhell3.databinding.ActivityMainBinding;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
@@ -44,7 +45,6 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.lang.ref.WeakReference;
@@ -67,10 +67,11 @@ public class MainActivity extends AppCompatActivity {
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
     private static AlertDialog permissionDialog;
-    private static BottomNavigationView bottomBar;
     private static FilterAppInfo filterAppInfo;
     private static Snackbar snackbar;
     private ActivationDialogFragment activationDialogFragment;
+    private ActivityMainBinding binding;
+
     private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
         AppPreferences.getInstance().setStorageTreePath(result.toString());
         this.grantUriPermission(this.getPackageName(), result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
 
         // Set the crash handler to log crash's stack trace into a file
         if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
@@ -117,13 +119,12 @@ public class MainActivity extends AppCompatActivity {
 
         setTheme();
 
-        setContentView(R.layout.activity_main);
-
-        bottomBar = findViewById(R.id.bottomBar);
-        bottomBar.setOnNavigationItemSelectedListener(item -> {
+        binding.bottomBar.setOnNavigationItemSelectedListener(item -> {
             onTabSelected(item.getItemId());
             return true;
         });
+
+        setContentView(binding.getRoot());
 
         // Migrate auto update job to new class if needed
         AutoUpdateDialogFragment.migrateOldAutoUpdateJob(this);
@@ -248,9 +249,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static Snackbar makeSnackbar(String message, int showDelay) {
         int duration = showDelay == Snackbar.LENGTH_LONG ? 2750 : 1500;
-        ViewGroup rootView = mainActivity.getWindow().getDecorView().findViewById(android.R.id.content);
-        Snackbar snackbar = Snackbar.make(rootView.getRootView(), message, Snackbar.LENGTH_INDEFINITE)
-                .setAnchorView(rootView.findViewById(R.id.bottomBar))
+        ViewGroup rootView = mainActivity.binding.getRoot();
+        Snackbar snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_INDEFINITE)
+                .setAnchorView(mainActivity.binding.bottomBar)
                 .setDuration(duration);
         MainActivity.snackbar = snackbar;
 
@@ -314,14 +315,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Select Other tab if theme has been changed or select Home tab by default
         if (themeChanged) {
-                bottomBar.setSelectedItemId(R.id.othersTab);
+                binding.bottomBar.setSelectedItemId(R.id.othersTab);
         }
 
         if (!themeChanged && !restoreBackStack){
             if (previousSelectedTabId == -1) {
-                bottomBar.setSelectedItemId(R.id.homeTab);
+                binding.bottomBar.setSelectedItemId(R.id.homeTab);
             } else {
-                bottomBar.setSelectedItemId(bottomBar.getSelectedItemId());
+                binding.bottomBar.setSelectedItemId(binding.bottomBar.getSelectedItemId());
             }
         }
     }
@@ -356,15 +357,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         if (AppPreferences.getInstance().getStorageTreePath().equals("") || this.getContentResolver().getPersistedUriPermissions().size() <= 0) {
-            View dialogView = this.getLayoutInflater().inflate(R.layout.dialog_question, findViewById(android.R.id.content), false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.dialog_storage_permission_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.dialog_storage_permission_summary);
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(getLayoutInflater());
+            dialogQuestionBinding.titleTextView.setText(R.string.dialog_storage_permission_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.dialog_storage_permission_summary);
 
             if (permissionDialog == null || !permissionDialog.isShowing()) {
                 permissionDialog = new AlertDialog.Builder(this, R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
                             setSelectFileActivityLaunched(true);
 

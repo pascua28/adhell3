@@ -11,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -22,6 +21,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.FragmentMobileRestricterBinding;
+import com.fusionjack.adhell3.databinding.FragmentPackageDisablerBinding;
+import com.fusionjack.adhell3.databinding.FragmentWhitelistedAppBinding;
+import com.fusionjack.adhell3.databinding.FragmentWifiRestricterBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -93,22 +97,26 @@ public class AppTabPageFragment extends AppFragment {
         View view = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
-                view = inflater.inflate(R.layout.fragment_package_disabler, container, false);
+                FragmentPackageDisablerBinding fragmentPackageDisablerBinding = FragmentPackageDisablerBinding.inflate(inflater);
+                view = fragmentPackageDisablerBinding.getRoot();
                 appFlag = AppFlag.createDisablerFlag();
                 break;
 
             case MOBILE_RESTRICTER_PAGE:
-                view = inflater.inflate(R.layout.fragment_mobile_restricter, container, false);
+                FragmentMobileRestricterBinding fragmentMobileRestricterBinding = FragmentMobileRestricterBinding.inflate(inflater);
+                view = fragmentMobileRestricterBinding.getRoot();
                 appFlag = AppFlag.createMobileRestrictedFlag();
                 break;
 
             case WIFI_RESTRICTER_PAGE:
-                view = inflater.inflate(R.layout.fragment_wifi_restricter, container, false);
+                FragmentWifiRestricterBinding fragmentWifiRestricterBinding = FragmentWifiRestricterBinding.inflate(inflater);
+                view = fragmentWifiRestricterBinding.getRoot();
                 appFlag = AppFlag.createWifiRestrictedFlag();
                 break;
 
             case WHITELIST_PAGE:
-                view = inflater.inflate(R.layout.fragment_whitelisted_app, container, false);
+                FragmentWhitelistedAppBinding fragmentWhitelistedAppBinding = FragmentWhitelistedAppBinding.inflate(inflater);
+                view = fragmentWhitelistedAppBinding.getRoot();
                 appFlag = AppFlag.createWhitelistedFlag();
                 break;
         }
@@ -210,14 +218,12 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     private void enableAllPackages() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.enable_apps_dialog_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.enable_apps_dialog_text);
+        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+        dialogQuestionBinding.titleTextView.setText(R.string.enable_apps_dialog_title);
+        dialogQuestionBinding.questionTextView.setText(R.string.enable_apps_dialog_text);
 
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                .setView(dialogView)
+                .setView(dialogQuestionBinding.getRoot())
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                     MainActivity.makeSnackbar(getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
                             .show();

@@ -11,11 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -30,6 +26,8 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.DialogSetPasswordBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -49,7 +47,6 @@ import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -92,14 +89,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public boolean onPreferenceTreeClick(Preference preference) {
         switch (preference.getKey()) {
             case DELETE_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.delete_app_dialog_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.delete_app_dialog_text);
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.delete_app_dialog_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.delete_app_dialog_text);
 
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
                         .setNegativeButton(android.R.string.no, null)
@@ -109,14 +104,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case BACKUP_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.backup_database_dialog_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.backup_database_dialog_text);
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.backup_database_dialog_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.backup_database_dialog_text);
 
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new BackupDatabaseAsyncTask(context).execute()
                         )
@@ -127,14 +120,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case RESTORE_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.restore_database_dialog_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.restore_database_dialog_text);
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.restore_database_dialog_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.restore_database_dialog_text);
 
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseAsyncTask(context).execute()
                         )
@@ -145,14 +136,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CLEAN_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.clean_database_dialog_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.clean_database_dialog_text);
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.clean_database_dialog_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.clean_database_dialog_text);
 
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new CleanDatabaseAsyncTask(context).execute()
                         )
@@ -166,23 +155,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 PreferenceManager preferenceManager = getPreferenceManager();
                 int themeColor = this.getResources().getColor(R.color.colorBottomNavUnselected, this.requireActivity().getTheme());
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
-                    View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_set_password, (ViewGroup) getView(), false);
+                    DialogSetPasswordBinding dialogSetPasswordBinding = DialogSetPasswordBinding.inflate(LayoutInflater.from(getContext()));
                     AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                            .setView(dialogView)
+                            .setView(dialogSetPasswordBinding.getRoot())
                             .setPositiveButton(android.R.string.yes, null)
                             .setNegativeButton(android.R.string.no, null)
                             .create();
 
-                    ImageView icon = dialogView.findViewById(R.id.passwordIcon);
-                    icon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                    dialogSetPasswordBinding.passwordIcon.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
                     passwordDialog.setOnShowListener(dialogInterface -> {
                         Button positiveButton = passwordDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                         positiveButton.setOnClickListener(view -> {
-                            TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
-                            TextInputEditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
-                            TextInputEditText passwordConfirmEditText = dialogView.findViewById(R.id.passwordConfirmEditText);
-                            String password = (passwordEditText.getText() != null) ? passwordEditText.getText().toString() : "";
-                            String passwordConfirm = (passwordConfirmEditText.getText() != null) ? passwordConfirmEditText.getText().toString() : "";
+                            String password = (dialogSetPasswordBinding.passwordEditText.getText() != null) ? dialogSetPasswordBinding.passwordEditText.getText().toString() : "";
+                            String passwordConfirm = (dialogSetPasswordBinding.passwordConfirmEditText.getText() != null) ? dialogSetPasswordBinding.passwordConfirmEditText.getText().toString() : "";
                             if (!password.isEmpty()) {
                                 if (password.equals(passwordConfirm)) {
                                     try {
@@ -192,10 +177,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                                         e.printStackTrace();
                                     }
                                 } else {
-                                    infoTextView.setText(R.string.dialog_mismatch_password);
+                                    dialogSetPasswordBinding.infoTextView.setText(R.string.dialog_mismatch_password);
                                 }
                             } else {
-                                infoTextView.setText(R.string.dialog_empty_password);
+                                dialogSetPasswordBinding.infoTextView.setText(R.string.dialog_empty_password);
                             }
                         });
 
@@ -220,14 +205,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case REVOKE_STORAGE_PERMISSION: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.revoke_storage_permission_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.revoke_storage_permission_question);
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.revoke_storage_permission_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.revoke_storage_permission_question);
 
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             int intentFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
                             Uri treePath = Uri.parse(AppPreferences.getInstance().getStorageTreePath());
@@ -278,14 +261,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
 
             case ABOUT_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                titleTextView.setText(R.string.about_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.about_content);
-                questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+                dialogQuestionBinding.titleTextView.setText(R.string.about_title);
+                dialogQuestionBinding.questionTextView.setText(R.string.about_content);
+                dialogQuestionBinding.questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, null)
                         .create();
 

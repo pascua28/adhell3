@@ -14,6 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentDisabledPagerAdapter;
+import com.fusionjack.adhell3.databinding.FragmentAppComponentTabsBinding;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -38,34 +39,32 @@ public class ComponentDisabledTabFragment extends Fragment {
             }
         }
 
-        View view = inflater.inflate(R.layout.fragment_app_component_tabs, container, false);
+        FragmentAppComponentTabsBinding binding = FragmentAppComponentTabsBinding.inflate(inflater);
 
-        TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
-        ViewPager2 viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager.setOffscreenPageLimit(4);
-        viewPager.setAdapter(new ComponentDisabledPagerAdapter(this));
+        binding.appsViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        binding.appsViewpager.setOffscreenPageLimit(4);
+        binding.appsViewpager.setAdapter(new ComponentDisabledPagerAdapter(this));
 
-        new TabLayoutMediator(tabLayout, viewPager,
+        new TabLayoutMediator(binding.appsSlidingTabs, binding.appsViewpager,
                 (tab, position) -> tab.setText(getTabTitle(position))
         ).attach();
 
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        binding.appsViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
-                TabLayout.Tab currentTab = tabLayout.getTabAt(position);
+                TabLayout.Tab currentTab = binding.appsSlidingTabs.getTabAt(position);
                 if (currentTab != null) {
                     int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
                     if (currentTab.getIcon() != null) {
                         currentTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
                 }
-                for (int i = 0; i < tabLayout.getTabCount(); i++) {
+                for (int i = 0; i < binding.appsSlidingTabs.getTabCount(); i++) {
                     if (i != position) {
                         int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
-                        TabLayout.Tab otherTab = tabLayout.getTabAt(i);
+                        TabLayout.Tab otherTab = binding.appsSlidingTabs.getTabAt(i);
                         if (otherTab!= null && otherTab.getIcon() != null) {
                             otherTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                         }
@@ -74,10 +73,10 @@ public class ComponentDisabledTabFragment extends Fragment {
             }
         });
 
-        if (viewPager.getAdapter() != null) {
-            int tabCount = viewPager.getAdapter().getItemCount();
+        if (binding.appsViewpager.getAdapter() != null) {
+            int tabCount = binding.appsViewpager.getAdapter().getItemCount();
             for (int i = 0; i < tabCount; i++) {
-                TabLayout.Tab tab = tabLayout.getTabAt(i);
+                TabLayout.Tab tab = binding.appsSlidingTabs.getTabAt(i);
                 if (tab != null && this.getActivity() != null && this.getActivity().getTheme() != null) {
                     tab.setIcon(imageResId[i]);
                     int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
@@ -88,9 +87,9 @@ public class ComponentDisabledTabFragment extends Fragment {
             }
         }
 
-        viewPager.setCurrentItem(0, false);
+        binding.appsViewpager.setCurrentItem(0, false);
 
-        return view;
+        return binding.getRoot();
     }
 
     private String getTabTitle(int position) {

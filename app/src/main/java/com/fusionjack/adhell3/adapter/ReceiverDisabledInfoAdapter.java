@@ -5,13 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.GroupAppComponentInfoBinding;
+import com.fusionjack.adhell3.databinding.ItemReceiverDisabledInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
 
@@ -87,18 +86,15 @@ public class ReceiverDisabledInfoAdapter extends ComponentDisabledAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        ViewHolderGroup holder;
+        ReceiverDisabledInfoGroupViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(contextReference.get()).inflate(R.layout.group_app_component_info, parent, false);
-            holder = new ViewHolderGroup();
+            GroupAppComponentInfoBinding groupBinding = GroupAppComponentInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-            holder.appIconImageView = convertView.findViewById(R.id.appIconImageView);
-            holder.appNameTextView = convertView.findViewById(R.id.AppNameTextView);
-            holder.packageNameTextView = convertView.findViewById(R.id.PackageNameTextView);
-            holder.countTextView = convertView.findViewById(R.id.countTextView);
-            convertView.setTag(holder);
+            holder = new ReceiverDisabledInfoGroupViewHolder(groupBinding);
+            holder.view = groupBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderGroup) convertView.getTag();
+            holder = (ReceiverDisabledInfoGroupViewHolder) convertView.getTag();
         }
 
         String packageName = getChild(groupPosition, 0).getPackageName();
@@ -108,46 +104,44 @@ public class ReceiverDisabledInfoAdapter extends ComponentDisabledAdapter {
             icon = ResourcesCompat.getDrawable(contextReference.get().getResources(), android.R.drawable.sym_def_app_icon, contextReference.get().getTheme());
         }
 
-        holder.appIconImageView.setImageDrawable(icon);
+        holder.binding.appIconImageView.setImageDrawable(icon);
         if (appName.equals(packageName)) {
-            holder.appNameTextView.setText(packageName);
-            holder.packageNameTextView.setText("");
+            holder.binding.AppNameTextView.setText(packageName);
+            holder.binding.PackageNameTextView.setText("");
         } else {
-            holder.appNameTextView.setText(appName);
-            holder.packageNameTextView.setText(packageName);
+            holder.binding.AppNameTextView.setText(appName);
+            holder.binding.PackageNameTextView.setText(packageName);
         }
-        holder.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
+        holder.binding.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        ViewHolderChild holder;
-        Context context = contextReference.get();
+        ReceiverDisabledInfoItemViewHolder holder;
         IComponentInfo componentInfo = getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_receiver_disabled_info, parent, false);
-            holder = new ViewHolderChild();
+            ItemReceiverDisabledInfoBinding itemBinding = ItemReceiverDisabledInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-            holder.receiverNameTextView = convertView.findViewById(R.id.receiverNameTextView);
-            holder.receiverPermissionTextView = convertView.findViewById(R.id.receiverPermissionTextView);
-            convertView.setTag(holder);
+            holder = new ReceiverDisabledInfoItemViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderChild) convertView.getTag();
+            holder = (ReceiverDisabledInfoItemViewHolder) convertView.getTag();
         }
 
         if (componentInfo != null) {
             if (componentInfo instanceof ReceiverInfo) {
                 ReceiverInfo receiverInfo = (ReceiverInfo) componentInfo;
 
-                holder.receiverNameTextView.setText(receiverInfo.getName());
-                holder.receiverPermissionTextView.setText(receiverInfo.getPermission());
+                holder.binding.receiverNameTextView.setText(receiverInfo.getName());
+                holder.binding.receiverPermissionTextView.setText(receiverInfo.getPermission());
             }
         }
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
@@ -155,15 +149,23 @@ public class ReceiverDisabledInfoAdapter extends ComponentDisabledAdapter {
         return true;
     }
 
-    private static class ViewHolderGroup {
-        ImageView appIconImageView;
-        TextView appNameTextView;
-        TextView packageNameTextView;
-        TextView countTextView;
+    private static class ReceiverDisabledInfoGroupViewHolder {
+        private View view;
+        private final GroupAppComponentInfoBinding binding;
+
+        ReceiverDisabledInfoGroupViewHolder(GroupAppComponentInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 
-    private static class ViewHolderChild {
-        TextView receiverNameTextView;
-        TextView receiverPermissionTextView;
+    private static class ReceiverDisabledInfoItemViewHolder {
+        private View view;
+        private final ItemReceiverDisabledInfoBinding binding;
+
+        ReceiverDisabledInfoItemViewHolder(ItemReceiverDisabledInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

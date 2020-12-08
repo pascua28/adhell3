@@ -13,9 +13,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +24,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogFragmentActivationBinding;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
@@ -50,10 +49,8 @@ public class ActivationDialogFragment extends DialogFragment {
     private final Completable knoxKeyObservable;
     private final CompletableObserver knoxKeyObserver;
     private final BroadcastReceiver receiver;
-    private Button turnOnAdminButton;
-    private Button activateKnoxButton;
     private SharedPreferences sharedPreferences;
-    private EditText knoxKeyEditText;
+    private DialogFragmentActivationBinding binding;
 
     public ActivationDialogFragment() {
         deviceAdminInteractor = DeviceAdminInteractor.getInstance();
@@ -156,29 +153,24 @@ public class ActivationDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@androidx.annotation.NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.dialog_fragment_activation, container);
-
-        turnOnAdminButton = view.findViewById(R.id.turnOnAdminButton);
-        activateKnoxButton = view.findViewById(R.id.activateKnoxButton);
-        knoxKeyEditText = view.findViewById(R.id.knoxKeyEditText);
+        binding = DialogFragmentActivationBinding.inflate(inflater);
 
         String knoxKey = deviceAdminInteractor.getKnoxKey(sharedPreferences);
-        knoxKeyEditText.setText(knoxKey);
+        binding.knoxKeyEditText.setText(knoxKey);
 
-        turnOnAdminButton.setOnClickListener(v ->
+        binding.turnOnAdminButton.setOnClickListener(v ->
                 deviceAdminInteractor.forceEnableAdmin()
         );
 
-        activateKnoxButton.setOnClickListener(v -> {
-            deviceAdminInteractor.setKnoxKey(sharedPreferences, knoxKeyEditText.getText().toString());
+        binding.activateKnoxButton.setOnClickListener(v -> {
+            deviceAdminInteractor.setKnoxKey(sharedPreferences, binding.knoxKeyEditText.getText().toString());
 
             disableActiveButton();
             boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
             if (knoxEnabled) {
-                activateKnoxButton.setText(R.string.deactivating_knox_license);
+                binding.activateKnoxButton.setText(R.string.deactivating_knox_license);
             } else {
-                activateKnoxButton.setText(R.string.activating_knox_license);
+                binding.activateKnoxButton.setText(R.string.activating_knox_license);
             }
 
             knoxKeyObservable
@@ -187,16 +179,13 @@ public class ActivationDialogFragment extends DialogFragment {
                     .subscribe(knoxKeyObserver);
         });
 
-        Button backupButton = view.findViewById(R.id.backupButton);
-        backupButton.setOnClickListener(v -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.backup_database_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.backup_database_dialog_text);
+        binding.backupButton.setOnClickListener(v -> {
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+            dialogQuestionBinding.titleTextView.setText(R.string.backup_database_dialog_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.backup_database_dialog_text);
 
             AlertDialog alertDialog = new AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                             new BackupDatabaseAsyncTask(getActivity()).execute()
                     )
@@ -206,18 +195,15 @@ public class ActivationDialogFragment extends DialogFragment {
             alertDialog.show();
         });
 
-        Button deleteButton = view.findViewById(R.id.deleteButton);
-        deleteButton.setOnClickListener(v -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.delete_app_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_app_dialog_text);
+        binding.deleteButton.setOnClickListener(v -> {
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
+            dialogQuestionBinding.titleTextView.setText(R.string.delete_app_dialog_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.delete_app_dialog_text);
 
             Context context = getContext();
             if (context != null) {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 AdhellFactory.uninstall(context, this))
                         .setNegativeButton(android.R.string.no, null)
@@ -232,7 +218,7 @@ public class ActivationDialogFragment extends DialogFragment {
             getDialog().getWindow().getAttributes().windowAnimations = R.style.FragmentDialogAnimation;
         }
 
-        return view;
+        return binding.getRoot();
     }
 
     private void handleResult(Intent intent, Context context) {
@@ -333,28 +319,28 @@ public class ActivationDialogFragment extends DialogFragment {
 
     private void setAdminState(boolean enabled) {
         if (enabled) {
-            turnOnAdminButton.setText(R.string.admin_enabled);
+            binding.turnOnAdminButton.setText(R.string.admin_enabled);
         } else {
-            turnOnAdminButton.setText(R.string.enable_admin);
+            binding.turnOnAdminButton.setText(R.string.enable_admin);
         }
-        turnOnAdminButton.setClickable(!enabled);
-        turnOnAdminButton.setEnabled(!enabled);
+        binding.turnOnAdminButton.setClickable(!enabled);
+        binding.turnOnAdminButton.setEnabled(!enabled);
     }
 
     private void setLicenseState(boolean isActivated) {
         if (isActivated) {
-            activateKnoxButton.setText(R.string.deactivate_license);
+            binding.activateKnoxButton.setText(R.string.deactivate_license);
         } else {
-            activateKnoxButton.setText(R.string.activate_license);
+            binding.activateKnoxButton.setText(R.string.activate_license);
         }
-        activateKnoxButton.setEnabled(true);
-        activateKnoxButton.setClickable(true);
-        knoxKeyEditText.setEnabled(!isActivated);
+        binding.activateKnoxButton.setEnabled(true);
+        binding.activateKnoxButton.setClickable(true);
+        binding.knoxKeyEditText.setEnabled(!isActivated);
     }
 
     private void disableActiveButton() {
-        activateKnoxButton.setEnabled(false);
-        activateKnoxButton.setClickable(false);
-        knoxKeyEditText.setEnabled(false);
+        binding.activateKnoxButton.setEnabled(false);
+        binding.activateKnoxButton.setClickable(false);
+        binding.knoxKeyEditText.setEnabled(false);
     }
 }

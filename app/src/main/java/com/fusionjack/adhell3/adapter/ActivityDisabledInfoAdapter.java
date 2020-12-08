@@ -5,13 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.GroupAppComponentInfoBinding;
+import com.fusionjack.adhell3.databinding.ItemActivityDisabledInfoBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 
@@ -87,18 +86,15 @@ public class ActivityDisabledInfoAdapter extends ComponentDisabledAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        ViewHolderGroup holder;
+        ActivityDisabledInfoGroupViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(contextReference.get()).inflate(R.layout.group_app_component_info, parent, false);
-            holder = new ViewHolderGroup();
+            GroupAppComponentInfoBinding groupBinding = GroupAppComponentInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-            holder.appIconImageView = convertView.findViewById(R.id.appIconImageView);
-            holder.appNameTextView = convertView.findViewById(R.id.AppNameTextView);
-            holder.packageNameTextView = convertView.findViewById(R.id.PackageNameTextView);
-            holder.countTextView = convertView.findViewById(R.id.countTextView);
-            convertView.setTag(holder);
+            holder = new ActivityDisabledInfoGroupViewHolder(groupBinding);
+            holder.view = groupBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderGroup) convertView.getTag();
+            holder = (ActivityDisabledInfoGroupViewHolder) convertView.getTag();
         }
 
         String packageName = getChild(groupPosition, 0).getPackageName();
@@ -108,43 +104,41 @@ public class ActivityDisabledInfoAdapter extends ComponentDisabledAdapter {
             icon = ResourcesCompat.getDrawable(contextReference.get().getResources(), android.R.drawable.sym_def_app_icon, contextReference.get().getTheme());
         }
 
-        holder.appIconImageView.setImageDrawable(icon);
+        holder.binding.appIconImageView.setImageDrawable(icon);
         if (appName.equals(packageName)) {
-            holder.appNameTextView.setText(packageName);
-            holder.packageNameTextView.setText("");
+            holder.binding.AppNameTextView.setText(packageName);
+            holder.binding.PackageNameTextView.setText("");
         } else {
-            holder.appNameTextView.setText(appName);
-            holder.packageNameTextView.setText(packageName);
+            holder.binding.AppNameTextView.setText(appName);
+            holder.binding.PackageNameTextView.setText(packageName);
         }
-        holder.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
+        holder.binding.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        ViewHolderChild holder;
-        Context context = contextReference.get();
+        ActivityDisabledInfoItemViewHolder holder;
         IComponentInfo componentInfo = getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_activity_disabled_info, parent, false);
-            holder = new ViewHolderChild();
+            ItemActivityDisabledInfoBinding itemBinding = ItemActivityDisabledInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-
-            holder.activityNameTextView = convertView.findViewById(R.id.activityNameTextView);
-            convertView.setTag(holder);
+            holder = new ActivityDisabledInfoItemViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderChild) convertView.getTag();
+            holder = (ActivityDisabledInfoItemViewHolder) convertView.getTag();
         }
 
         if (componentInfo instanceof ActivityInfo) {
             ActivityInfo activityInfo = (ActivityInfo) componentInfo;
 
-            holder.activityNameTextView.setText(activityInfo.getName());
+            holder.binding.activityNameTextView.setText(activityInfo.getName());
         }
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
@@ -152,14 +146,23 @@ public class ActivityDisabledInfoAdapter extends ComponentDisabledAdapter {
         return true;
     }
 
-    private static class ViewHolderGroup {
-        ImageView appIconImageView;
-        TextView appNameTextView;
-        TextView packageNameTextView;
-        TextView countTextView;
+    private static class ActivityDisabledInfoGroupViewHolder {
+        private View view;
+        private final GroupAppComponentInfoBinding binding;
+
+        ActivityDisabledInfoGroupViewHolder(GroupAppComponentInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 
-    private static class ViewHolderChild {
-        TextView activityNameTextView;
+    private static class ActivityDisabledInfoItemViewHolder {
+        private View view;
+        private final ItemActivityDisabledInfoBinding binding;
+
+        ActivityDisabledInfoItemViewHolder(ItemActivityDisabledInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

@@ -16,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.DomainPagerAdapter;
+import com.fusionjack.adhell3.databinding.FragmentDomainsBinding;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -41,34 +42,32 @@ public class DomainTabFragment extends Fragment {
         }
         setHasOptionsMenu(true);
 
-        View view = inflater.inflate(R.layout.fragment_domains, container, false);
+        FragmentDomainsBinding binding = FragmentDomainsBinding.inflate(inflater);
 
-        TabLayout tabLayout = view.findViewById(R.id.domains_sliding_tabs);
-        ViewPager2 viewPager = view.findViewById(R.id.domains_viewpager);
-        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager.setOffscreenPageLimit(4);
-        viewPager.setAdapter(new DomainPagerAdapter(this));
+        binding.domainsViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        binding.domainsViewpager.setOffscreenPageLimit(4);
+        binding.domainsViewpager.setAdapter(new DomainPagerAdapter(this));
 
-        new TabLayoutMediator(tabLayout, viewPager,
+        new TabLayoutMediator(binding.domainsSlidingTabs, binding.domainsViewpager,
                 (tab, position) -> tab.setText(getTabTitle(position))
         ).attach();
 
-        viewPager.registerOnPageChangeCallback(new OnPageChangeCallback() {
+        binding.domainsViewpager.registerOnPageChangeCallback(new OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
-                TabLayout.Tab currentTab = tabLayout.getTabAt(position);
+                TabLayout.Tab currentTab = binding.domainsSlidingTabs.getTabAt(position);
                 if (currentTab != null) {
                     int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorAccent);
                     if (currentTab.getIcon() != null) {
                         currentTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                     }
                 }
-                for (int i = 0; i < tabLayout.getTabCount(); i++) {
+                for (int i = 0; i < binding.domainsSlidingTabs.getTabCount(); i++) {
                     if (i != position) {
                         int tabIconColor = ContextCompat.getColor(requireContext(), R.color.colorText);
-                        TabLayout.Tab otherTab = tabLayout.getTabAt(i);
+                        TabLayout.Tab otherTab = binding.domainsSlidingTabs.getTabAt(i);
                         if (otherTab!= null && otherTab.getIcon() != null) {
                             otherTab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
                         }
@@ -79,7 +78,7 @@ public class DomainTabFragment extends Fragment {
         });
 
         for (int i = 0; i < imageResId.length; i++) {
-            TabLayout.Tab tab = tabLayout.getTabAt(i);
+            TabLayout.Tab tab = binding.domainsSlidingTabs.getTabAt(i);
             if (tab != null && this.getActivity() != null && this.getActivity().getTheme() != null) {
                 tab.setIcon(imageResId[i]);
                 int tabIconColor = getResources().getColor(R.color.colorBottomNavUnselected, this.getActivity().getTheme());
@@ -89,9 +88,9 @@ public class DomainTabFragment extends Fragment {
             }
         }
 
-        viewPager.setCurrentItem(MainActivity.getSelectedDomainTab(), false);
+        binding.domainsViewpager.setCurrentItem(MainActivity.getSelectedDomainTab(), false);
 
-        return view;
+        return binding.getRoot();
     }
 
     private String getTabTitle(int position) {

@@ -8,10 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -20,11 +17,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
+import com.fusionjack.adhell3.databinding.FragmentWhitelistBinding;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
-import com.leinardi.android.speeddial.SpeedDialView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,19 +49,16 @@ public class WhitelistFragment extends UserListFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_whitelist, container, false);
+        FragmentWhitelistBinding binding = FragmentWhitelistBinding.inflate(inflater);
 
-        ListView whiteListView = view.findViewById(R.id.whiteListView);
-        whiteListView.setAdapter(adapter);
-        whiteListView.setOnItemClickListener((parent, view1, position, id) -> {
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.delete_domain_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_domain_dialog_text);
+        binding.whiteListView.setAdapter(adapter);
+        binding.whiteListView.setOnItemClickListener((parent, view1, position, id) -> {
+            DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(inflater);
+            dialogQuestionBinding.titleTextView.setText(R.string.delete_domain_dialog_title);
+            dialogQuestionBinding.questionTextView.setText(R.string.delete_domain_dialog_text);
 
             AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                    .setView(dialogView)
+                    .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String item = (String) parent.getItemAtPosition(position);
                         viewModel.removeItem(item, deleteObserver);
@@ -73,8 +69,7 @@ public class WhitelistFragment extends UserListFragment {
             alertDialog.show();
         });
 
-        SpeedDialView speedDialView = view.findViewById(R.id.whitelist_actions);
-        speedDialView.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_public_white_24dp, requireContext().getTheme()))
+        binding.whitelistActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_domain, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_public_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_whitelist_domain_title))
                 .setFabBackgroundColor(getResources().getColor(R.color.colorFab, requireContext().getTheme()))
                 .setLabelColor(getResources().getColor(R.color.colorText, requireContext().getTheme()))
@@ -84,15 +79,14 @@ public class WhitelistFragment extends UserListFragment {
                 .setLabelClickable(false)
                 .create());
 
-        speedDialView.setOnActionSelectedListener(actionItem -> {
-            speedDialView.close();
+        binding.whitelistActions.setOnActionSelectedListener(actionItem -> {
+            binding.whitelistActions.close();
             if (actionItem.getId() == R.id.action_add_domain) {
-                View dialogView = inflater.inflate(R.layout.dialog_whitelist_domain, container, false);
+                DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(inflater);
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogView)
+                        .setView(dialogWhitelistDomainBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                            EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                            String domainToAdd = domainEditText.getText().toString().trim();
+                            String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
                             if (domainToAdd.indexOf('|') == -1) {
                                 if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                     MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
@@ -121,12 +115,12 @@ public class WhitelistFragment extends UserListFragment {
 
         final boolean[] noScroll = { false };
         final int[] previousDistanceFromFirstCellToTop = {0};
-        whiteListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
+        binding.whiteListView.setOnScrollListener(new ExpandableListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL && noScroll[0]) {
-                    if (speedDialView.isShown()) speedDialView.hide();
-                    else speedDialView.show();
+                    if (binding.whitelistActions.isShown()) binding.whitelistActions.hide();
+                    else binding.whitelistActions.show();
                 }
             }
 
@@ -136,15 +130,15 @@ public class WhitelistFragment extends UserListFragment {
                     noScroll[0] = true;
                 } else {
                     noScroll[0] = false;
-                    View firstCell = whiteListView.getChildAt(0);
+                    View firstCell = binding.whiteListView.getChildAt(0);
                     if (firstCell == null) {
                         return;
                     }
                     int distanceFromFirstCellToTop = firstVisibleItem * firstCell.getHeight() - firstCell.getTop();
                     if (distanceFromFirstCellToTop < previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.show();
+                        binding.whitelistActions.show();
                     } else if (distanceFromFirstCellToTop > previousDistanceFromFirstCellToTop[0]) {
-                        speedDialView.hide();
+                        binding.whitelistActions.hide();
                     }
                     previousDistanceFromFirstCellToTop[0] = distanceFromFirstCellToTop;
                 }
@@ -152,17 +146,17 @@ public class WhitelistFragment extends UserListFragment {
             }
         });
 
-        view.findViewById(R.id.loadingBar).setVisibility(View.GONE);
-        if (whiteListView.getVisibility() == View.GONE) {
+        binding.loadingBar.setVisibility(View.GONE);
+        if (binding.whiteListView.getVisibility() == View.GONE) {
             AlphaAnimation animation = new AlphaAnimation(0f, 1f);
             animation.setDuration(500);
             animation.setStartOffset(50);
             animation.setFillAfter(true);
 
-            whiteListView.setVisibility(View.VISIBLE);
-            whiteListView.startAnimation(animation);
+            binding.whiteListView.setVisibility(View.VISIBLE);
+            binding.whiteListView.startAnimation(animation);
         }
 
-        return view;
+        return binding.getRoot();
     }
 }

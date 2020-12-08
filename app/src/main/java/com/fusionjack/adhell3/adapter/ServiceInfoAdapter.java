@@ -4,17 +4,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.ItemServiceInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ServiceInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
 
@@ -27,28 +25,43 @@ public class ServiceInfoAdapter extends ComponentAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        ServiceInfoViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_service_info, parent, false);
+            ItemServiceInfoBinding itemBinding = ItemServiceInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
+
+            holder = new ServiceInfoViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
+        } else {
+            holder = (ServiceInfoViewHolder) convertView.getTag();
         }
 
         IComponentInfo componentInfo = getItem(position);
         if (componentInfo == null) {
-            return convertView;
+            return holder.view;
         }
 
         if (componentInfo instanceof ServiceInfo) {
             ServiceInfo serviceInfo = (ServiceInfo) componentInfo;
             String packageName = serviceInfo.getPackageName();
             String serviceName = serviceInfo.getName();
-            TextView serviceNameTextView = convertView.findViewById(R.id.serviceNameTextView);
-            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
-            serviceNameTextView.setText(serviceName);
-            permissionSwitch.setChecked(AdhellFactory.getInstance().getComponentState(packageName, serviceName));
+            holder.binding.serviceNameTextView.setText(serviceName);
+            holder.binding.switchDisable.setChecked(AdhellFactory.getInstance().getComponentState(packageName, serviceName));
 
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+            holder.binding.switchDisable.setEnabled(enabled);
         }
 
-        return convertView;
+        return holder.view;
+    }
+
+    private static class ServiceInfoViewHolder {
+        private View view;
+        private final ItemServiceInfoBinding binding;
+
+        ServiceInfoViewHolder(ItemServiceInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

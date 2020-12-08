@@ -5,13 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.databinding.GroupAppComponentInfoBinding;
+import com.fusionjack.adhell3.databinding.ItemPermissionDisabledInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
@@ -88,18 +87,15 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-        ViewHolderGroup holder;
+        PermissionDisabledInfoGroupViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(contextReference.get()).inflate(R.layout.group_app_component_info, parent, false);
-            holder = new ViewHolderGroup();
+            GroupAppComponentInfoBinding groupBinding = GroupAppComponentInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-            holder.appIconImageView = convertView.findViewById(R.id.appIconImageView);
-            holder.appNameTextView = convertView.findViewById(R.id.AppNameTextView);
-            holder.packageNameTextView = convertView.findViewById(R.id.PackageNameTextView);
-            holder.countTextView = convertView.findViewById(R.id.countTextView);
-            convertView.setTag(holder);
+            holder = new PermissionDisabledInfoGroupViewHolder(groupBinding);
+            holder.view = groupBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderGroup) convertView.getTag();
+            holder = (PermissionDisabledInfoGroupViewHolder) convertView.getTag();
         }
 
         String packageName = getChild(groupPosition, 0).getPackageName();
@@ -109,48 +105,45 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
             icon = ResourcesCompat.getDrawable(contextReference.get().getResources(), android.R.drawable.sym_def_app_icon, contextReference.get().getTheme());
         }
 
-        holder.appIconImageView.setImageDrawable(icon);
+        holder.binding.appIconImageView.setImageDrawable(icon);
         if (appName.equals(packageName)) {
-            holder.appNameTextView.setText(packageName);
-            holder.packageNameTextView.setText("");
+            holder.binding.AppNameTextView.setText(packageName);
+            holder.binding.PackageNameTextView.setText("");
         } else {
-            holder.appNameTextView.setText(appName);
-            holder.packageNameTextView.setText(packageName);
+            holder.binding.AppNameTextView.setText(appName);
+            holder.binding.PackageNameTextView.setText(packageName);
         }
-        holder.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
+        holder.binding.countTextView.setText(String.valueOf(getChildrenCount(groupPosition)));
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-        ViewHolderChild holder;
-        Context context = contextReference.get();
+        PermissionDisabledInfoItemViewHolder holder;
         IComponentInfo componentInfo = getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_permission_disabled_info, parent, false);
-            holder = new ViewHolderChild();
+            ItemPermissionDisabledInfoBinding itemBinding = ItemPermissionDisabledInfoBinding.inflate(LayoutInflater.from(parent.getContext()));
 
-            holder.permissionNameTextView = convertView.findViewById(R.id.permissionNameTextView);
-            holder.protectionLevelTextView = convertView.findViewById(R.id.protectionLevelTextView);
-            holder.permissionLabelTextView = convertView.findViewById(R.id.permissionLabelTextView);
-            convertView.setTag(holder);
+            holder = new PermissionDisabledInfoItemViewHolder(itemBinding);
+            holder.view = itemBinding.getRoot();
+            holder.view.setTag(holder);
         } else {
-            holder = (ViewHolderChild) convertView.getTag();
+            holder = (PermissionDisabledInfoItemViewHolder) convertView.getTag();
         }
 
         if (componentInfo != null) {
             if (componentInfo instanceof PermissionInfo) {
                 PermissionInfo permissionInfo = (PermissionInfo) componentInfo;
 
-                holder.permissionNameTextView.setText(permissionInfo.name);
-                holder.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
-                holder.permissionLabelTextView.setText(permissionInfo.label);
+                holder.binding.permissionNameTextView.setText(permissionInfo.name);
+                holder.binding.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
+                holder.binding.permissionLabelTextView.setText(permissionInfo.label);
             }
         }
 
-        return convertView;
+        return holder.view;
     }
 
     @Override
@@ -158,16 +151,23 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
         return true;
     }
 
-    private static class ViewHolderGroup {
-        ImageView appIconImageView;
-        TextView appNameTextView;
-        TextView packageNameTextView;
-        TextView countTextView;
+    private static class PermissionDisabledInfoGroupViewHolder {
+        private View view;
+        private final GroupAppComponentInfoBinding binding;
+
+        PermissionDisabledInfoGroupViewHolder(GroupAppComponentInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 
-    private static class ViewHolderChild {
-        TextView permissionNameTextView;
-        TextView protectionLevelTextView;
-        TextView permissionLabelTextView;
+    private static class PermissionDisabledInfoItemViewHolder {
+        private View view;
+        private final ItemPermissionDisabledInfoBinding binding;
+
+        PermissionDisabledInfoItemViewHolder(ItemPermissionDisabledInfoBinding binding) {
+            this.view = binding.getRoot();
+            this.binding = binding;
+        }
     }
 }

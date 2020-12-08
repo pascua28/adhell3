@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -27,6 +26,11 @@ import com.fusionjack.adhell3.adapter.ComponentDisabledAdapter;
 import com.fusionjack.adhell3.adapter.PermissionDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceDisabledInfoAdapter;
+import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppActivityDisabledBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppPermissionDisabledBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppReceiverDisabledBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppServiceDisabledBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponentDisabled;
 import com.fusionjack.adhell3.model.IComponentInfo;
@@ -118,23 +122,27 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         View view = null;
         switch (page) {
             case PERMISSIONS_PAGE:
-                view = inflater.inflate(R.layout.fragment_app_permission_disabled, container, false);
-                listViewID = R.id.permissionExpandableListView;
+                FragmentAppPermissionDisabledBinding fragmentAppPermissionDisabledBinding = FragmentAppPermissionDisabledBinding.inflate(inflater);
+                view = fragmentAppPermissionDisabledBinding.getRoot();
+                listViewID = fragmentAppPermissionDisabledBinding.permissionExpandableListView.getId();
                 break;
 
             case SERVICES_PAGE:
-                view = inflater.inflate(R.layout.fragment_app_service_disabled, container, false);
-                listViewID = R.id.serviceExpandableListView;
+                FragmentAppServiceDisabledBinding fragmentAppServiceDisabledBinding = FragmentAppServiceDisabledBinding.inflate(inflater);
+                view = fragmentAppServiceDisabledBinding.getRoot();
+                listViewID = fragmentAppServiceDisabledBinding.serviceExpandableListView.getId();
                 break;
 
             case RECEIVERS_PAGE:
-                view = inflater.inflate(R.layout.fragment_app_receiver_disabled, container, false);
-                listViewID = R.id.receiverExpandableListView;
+                FragmentAppReceiverDisabledBinding fragmentAppReceiverDisabledBinding = FragmentAppReceiverDisabledBinding.inflate(inflater);
+                view = fragmentAppReceiverDisabledBinding.getRoot();
+                listViewID = fragmentAppReceiverDisabledBinding.receiverExpandableListView.getId();
                 break;
 
             case ACTIVITIES_PAGE:
-                view = inflater.inflate(R.layout.fragment_app_activity_disabled, container, false);
-                listViewID = R.id.activityExpandableListView;
+                FragmentAppActivityDisabledBinding fragmentAppActivityDisabledBinding = FragmentAppActivityDisabledBinding.inflate(inflater);
+                view = fragmentAppActivityDisabledBinding.getRoot();
+                listViewID = fragmentAppActivityDisabledBinding.activityExpandableListView.getId();
                 break;
         }
         new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
@@ -243,11 +251,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 if (listView != null && adapter != null) {
                     listView.setAdapter(adapter);
                     listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
-                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-                        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-                        titleTextView.setText(R.string.enable_app_component_dialog_title);
-                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                        questionTextView.setText(R.string.enable_app_component_dialog_text);
+                        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(context));
+                        dialogQuestionBinding.titleTextView.setText(R.string.enable_app_component_dialog_title);
+                        dialogQuestionBinding.questionTextView.setText(R.string.enable_app_component_dialog_text);
                         List<String> groupList = new ArrayList<>(componentInfos.keySet());
 
                         final String packageName;
@@ -283,7 +289,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                         compName = compNameTmp;
 
                         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                                .setView(dialogView)
+                                .setView(dialogQuestionBinding.getRoot())
                                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                                     ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
                                     if (appPolicy != null) {
