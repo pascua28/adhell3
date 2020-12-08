@@ -31,6 +31,7 @@ import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.AppComponentsUpdateWorker;
+import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.tasks.ReScheduleUpdateWorker;
 import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
@@ -51,6 +52,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     private TextView seekLabelTextView;
     private SeekBar intervalSeekBar;
     private CheckBox appComponentsCheckBox;
+    private CheckBox cleanDBCheckBox;
     private CheckBox logCheckBox;
     private CheckBox lowBatteryCheckBox;
     private CheckBox mobileDataCheckBox;
@@ -107,6 +109,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(intervalSeekBar.getProgress())));
         appComponentsCheckBox = view.findViewById(R.id.appComponentsCheckBox);
         appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
+        cleanDBCheckBox = view.findViewById(R.id.cleanDBCheckBox);
+        cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDBOnAutoUpdate());
         logCheckBox = view.findViewById(R.id.logCheckBox);
         logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
         lowBatteryCheckBox = view.findViewById(R.id.lowBatteryCheckBox);
@@ -174,6 +178,11 @@ public class AutoUpdateDialogFragment extends DialogFragment {
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build();
 
+        OneTimeWorkRequest cleanDBWorkRequest = new OneTimeWorkRequest.Builder(CleanDBUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
         OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
@@ -185,6 +194,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         // Enqueue new job with readjusting initial delay
         workManager.beginWith(rulesWorkRequest)
                 .then(appComponentsWorkRequest)
+                .then(cleanDBWorkRequest)
                 .then(reScheduleWorkRequest)
                 .enqueue();
     }
@@ -202,6 +212,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         AppPreferences.getInstance().setAutoUpdateInterval(intervalSeekBar.getProgress());
         AppPreferences.getInstance().setAppComponentsAutoUpdate(appComponentsCheckBox.isChecked());
+        AppPreferences.getInstance().setCleanDBOnAutoUpdate(cleanDBCheckBox.isChecked());
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(lowBatteryCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintMobileData(mobileDataCheckBox.isChecked());

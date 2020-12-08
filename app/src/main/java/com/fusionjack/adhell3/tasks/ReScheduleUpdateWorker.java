@@ -87,6 +87,11 @@ public class ReScheduleUpdateWorker extends Worker {
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build();
 
+        OneTimeWorkRequest cleanDBWorkRequest = new OneTimeWorkRequest.Builder(CleanDBUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
         OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
@@ -98,6 +103,7 @@ public class ReScheduleUpdateWorker extends Worker {
         // Enqueue new job with readjusting initial delay
         workManager.beginWith(rulesWorkRequest)
                 .then(appComponentsWorkRequest)
+                .then(cleanDBWorkRequest)
                 .then(reScheduleWorkRequest)
                 .enqueue();
     }

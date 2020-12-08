@@ -55,6 +55,10 @@ public class AppCache {
         }
         return instance;
     }
+
+    public static synchronized AppCache getInstanceSync(Handler handler) {
+        if (instance == null) {
+            instance = new AppCache(null, handler, false);
         }
         return instance;
     }

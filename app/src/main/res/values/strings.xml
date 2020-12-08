@@ -293,6 +293,7 @@
     <string name="auto_update_settings_label">Settings</string>
     <string name="auto_update_start_time_label">Job start time:</string>
     <string name="auto_update_app_components">Auto disable app components from batch file</string>
+    <string name="auto_update_clean_database">Auto clean database</string>
     <string name="auto_update_log_file">Create log file</string>
     <string name="auto_update_constraints_label">Constraints</string>
     <string name="auto_update_constraint_low_battery">Update when phone as low battery</string>
