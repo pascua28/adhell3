@@ -22,7 +22,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
@@ -56,7 +55,6 @@ public class ProviderListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         this.context = getContext();
         this.activity = getActivity();
-        App.setAppContext(context);
     }
 
     private final ActivityResultLauncher<String[]> openDocumentLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), result -> {

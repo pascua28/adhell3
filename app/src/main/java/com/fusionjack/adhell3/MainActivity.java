@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private static int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
     private static int SELECTED_DOMAIN_TAB = DomainTabPageFragment.PROVIDER_LIST_PAGE;
     private static int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
-    private static FragmentManager fragmentManager;
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
     private static AlertDialog permissionDialog;
@@ -71,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     private static Snackbar snackbar;
     private ActivationDialogFragment activationDialogFragment;
     private ActivityMainBinding binding;
+
+    private static FragmentManager fragmentManager;
+    private static MainActivity mainActivity;
 
     private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
         AppPreferences.getInstance().setStorageTreePath(result.toString());
@@ -89,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
             finishOnResume();
         }
     });
-
-    private static MainActivity mainActivity;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -164,6 +164,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         LogUtils.info("Destroying activity");
         closeActivity(false);
+
+        // Clear resources to prevent memory leak
+        snackbar.dismiss();
+        snackbar = null;
+        activationDialogFragment = null;
+        permissionDialog = null;
+        fragmentManager = null;
+        mainActivity = null;
+
         super.onDestroy();
     }
 

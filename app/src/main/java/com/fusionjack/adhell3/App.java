@@ -5,7 +5,11 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.preference.PreferenceManager;
 
 import com.fusionjack.adhell3.dagger.component.AppComponent;
@@ -14,10 +18,10 @@ import com.fusionjack.adhell3.dagger.module.AppModule;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
-public class App extends Application {
+public class App extends Application implements DefaultLifecycleObserver {
     private static App instance;
-    private AppComponent appComponent;
     private static Context appContext;
+    private AppComponent appComponent;
 
     public static App get() {
         return instance;
@@ -35,9 +39,19 @@ public class App extends Application {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
 
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+
         instance = this;
         appComponent = initDagger(instance);
         appContext = getApplicationContext();
+    }
+
+    @Override
+    public void onDestroy(@NonNull LifecycleOwner owner) {
+        // Clear resources to prevent memory leak
+        instance = null;
+        appContext = null;
+        appComponent = null;
     }
 
     private AppComponent initDagger(App application) {
@@ -48,10 +62,6 @@ public class App extends Application {
 
     public static Context getAppContext() {
         return appContext;
-    }
-
-    public static void setAppContext(Context context) {
-        App.appContext = context;
     }
 
 

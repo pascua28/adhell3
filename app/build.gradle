@@ -139,6 +139,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
     implementation "androidx.biometric:biometric:$biometric_version"
     implementation "androidx.work:work-runtime:$work_version"
     implementation "androidx.viewpager2:viewpager2:$viewpager2_version"
@@ -153,5 +154,6 @@ dependencies {
     implementation "io.reactivex.rxjava3:rxandroid:$rxandroid_version"
     implementation "io.reactivex.rxjava3:rxjava:$rxjava_version"
     implementation "com.leinardi.android:speed-dial:$speeddial_version"
+
     debugImplementation  "com.squareup.leakcanary:leakcanary-android:$leakCanary_version"
 }
