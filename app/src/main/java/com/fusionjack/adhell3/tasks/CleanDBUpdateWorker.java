@@ -25,6 +25,7 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 public class CleanDBUpdateWorker extends Worker {
     private final AppDatabase appDatabase;
@@ -61,7 +62,9 @@ public class CleanDBUpdateWorker extends Worker {
         if (AppPreferences.getInstance().getCleanDBOnAutoUpdate()) {
             LogUtils.info("------Start auto clean database------", handler);
             try {
-                cleanDatabase();
+                LogUtils.info("Getting app cache instance...", handler);
+                AppCache appCache = AppCache.getInstanceSync(handler);
+                cleanDatabase(appDatabase, appCache, handler);
             } catch (Exception e) {
                 LogUtils.error("Failed auto clean database! Will be retried.", e, handler);
                 LogUtils.info("------Failed auto clean database------", handler);
@@ -75,11 +78,8 @@ public class CleanDBUpdateWorker extends Worker {
         return Result.success();
     }
 
-    private void cleanDatabase() {
+    public static void cleanDatabase(AppDatabase appDatabase, AppCache appCache, Handler handler) {
         int count = 0;
-
-        LogUtils.info("Getting app cache instance...", handler);
-        AppCache appCache = AppCache.getInstanceSync(handler);
 
         // Disabled packages rules
         LogUtils.info("Cleaning disabled packages rules...", handler);
@@ -136,6 +136,58 @@ public class CleanDBUpdateWorker extends Worker {
                     LogUtils.error("    Error deleting rule.", e, handler);
                 }
                 count++;
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // Domain whitelist packages rules
+        count = 0;
+        LogUtils.info("Cleaning Domain whitelist packages rules...", handler);
+        List<String> whiteUrls = appDatabase.whiteUrlDao().getAll3();
+        for (String whiteUrl : whiteUrls) {
+            if (whiteUrl.indexOf('|') != -1) {
+                StringTokenizer tokens = new StringTokenizer(whiteUrl, "|");
+                if (tokens.countTokens() == 2) {
+                    final String packageName = tokens.nextToken();
+                    if (!appCache.getNames().containsKey(packageName)) {
+                        try {
+                            LogUtils.info(String.format("    Deleting rule for package: %s.", packageName), handler);
+                            appDatabase.whiteUrlDao().deleteByUrl(whiteUrl);
+                        } catch (Exception e) {
+                            LogUtils.error("    Error deleting rule.", e, handler);
+                        }
+                        count++;
+                    }
+                }
+            }
+        }
+        if (count > 0)
+            LogUtils.info("  Done.", handler);
+        else
+            LogUtils.info("  Nothing to clean up.", handler);
+
+        // Domain blacklist packages rules
+        count = 0;
+        LogUtils.info("Cleaning Domain blacklist packages rules...", handler);
+        List<String> blockUrls = appDatabase.userBlockUrlDao().getAll3();
+        for (String blockUrl : blockUrls) {
+            if (blockUrl.indexOf('|') != -1) {
+                StringTokenizer tokens = new StringTokenizer(blockUrl, "|");
+                if (tokens.countTokens() == 2) {
+                    final String packageName = tokens.nextToken();
+                    if (!appCache.getNames().containsKey(packageName)) {
+                        try {
+                            LogUtils.info(String.format("    Deleting rule for package: %s.", packageName), handler);
+                            appDatabase.userBlockUrlDao().deleteByUrl(blockUrl);
+                        } catch (Exception e) {
+                            LogUtils.error("    Error deleting rule.", e, handler);
+                        }
+                        count++;
+                    }
+                }
             }
         }
         if (count > 0)
