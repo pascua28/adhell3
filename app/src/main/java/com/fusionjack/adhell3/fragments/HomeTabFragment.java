@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
@@ -209,7 +210,9 @@ public class HomeTabFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.home_menu, menu);
+        if (binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked()) {
+            inflater.inflate(R.menu.home_menu, menu);
+        }
     }
 
     @Override
@@ -279,6 +282,11 @@ public class HomeTabFragment extends Fragment {
         } else {
             binding.appComponentStatusTextView.setText(R.string.app_component_disabled);
             binding.appComponentSwitch.setChecked(false);
+        }
+
+        FragmentActivity parentActivity = getActivity();
+        if (parentActivity != null) {
+            parentActivity.invalidateOptionsMenu();
         }
     }
 

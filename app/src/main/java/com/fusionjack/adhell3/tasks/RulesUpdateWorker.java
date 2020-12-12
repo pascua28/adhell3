@@ -107,22 +107,26 @@ public class RulesUpdateWorker extends Worker {
             contentBlocker.processMobileRestrictedApps(handler);
             contentBlocker.processWifiRestrictedApps(handler);
         }
-        List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
-        List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
-        denyList.addAll(userList);
-        AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
 
-        if (!firewall.isFirewallEnabled()) {
-            LogUtils.info("\nEnabling Knox firewall...", handler);
-            firewall.enableFirewall(true);
-            LogUtils.info("Knox firewall is enabled.", handler);
-        }
-        if (!firewall.isDomainFilterReportEnabled()) {
-            LogUtils.info("\nEnabling firewall report...", handler);
-            firewall.enableDomainFilterReport(true);
-            LogUtils.info("Firewall report is enabled.", handler);
-        }
+        if (domainRulesNeedUpdate || firewallRulesNeedUpdate) {
+            List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
+            List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
+            denyList.addAll(userList);
+            AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
 
-        LogUtils.info("\nRules auto update completed.", handler);
+            if (!firewall.isFirewallEnabled()) {
+                LogUtils.info("\nEnabling Knox firewall...", handler);
+                firewall.enableFirewall(true);
+                LogUtils.info("Knox firewall is enabled.", handler);
+            }
+            if (!firewall.isDomainFilterReportEnabled()) {
+                LogUtils.info("\nEnabling firewall report...", handler);
+                firewall.enableDomainFilterReport(true);
+                LogUtils.info("Firewall report is enabled.", handler);
+            }
+            LogUtils.info("\nRules auto update completed.", handler);
+        } else {
+            LogUtils.info("Domain and firewall rules are disabled. Nothing to update.", handler);
+        }
     }
 }
