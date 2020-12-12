@@ -16,6 +16,8 @@ import com.fusionjack.adhell3.dagger.component.AppComponent;
 import com.fusionjack.adhell3.dagger.component.DaggerAppComponent;
 import com.fusionjack.adhell3.dagger.module.AppModule;
 
+import timber.log.Timber;
+
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class App extends Application implements DefaultLifecycleObserver {
@@ -30,6 +32,10 @@ public class App extends Application implements DefaultLifecycleObserver {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
 
         // Set the Night Mode according to saved preferences
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);

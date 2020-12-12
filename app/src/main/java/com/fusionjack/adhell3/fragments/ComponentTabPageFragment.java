@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,6 +41,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
@@ -353,7 +353,7 @@ public class ComponentTabPageFragment extends Fragment {
                             }
                         }
                     } catch (SecurityException e) {
-                        Log.w("", "Failed talking with application policy", e);
+                        LogUtils.warning("Failed talking with application policy", e);
                     }
                     break;
 
@@ -382,7 +382,7 @@ public class ComponentTabPageFragment extends Fragment {
                             }
                         }
                     } catch (SecurityException e) {
-                        Log.w("", "Failed talking with application policy", e);
+                        LogUtils.warning("Failed talking with application policy", e);
                     }
                     break;
 
@@ -409,7 +409,7 @@ public class ComponentTabPageFragment extends Fragment {
                             }
                         }
                     } catch (SecurityException e) {
-                        Log.w("", "Failed talking with application policy", e);
+                        LogUtils.warning("Failed talking with application policy", e);
                     }
                     break;
             }

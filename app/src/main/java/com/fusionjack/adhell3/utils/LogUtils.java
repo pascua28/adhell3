@@ -2,7 +2,6 @@ package com.fusionjack.adhell3.utils;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import androidx.documentfile.provider.DocumentFile;
 
@@ -16,14 +15,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public final class LogUtils {
 
     private static final String STORAGE_FOLDERS = "Adhell3/Logs";
     private static final String ERROR_LOG_BASE_FILENAME = "adhell_logcat_%s.txt";
     private static final String AUTO_UPDATE_LOG_FILENAME = "adhell_auto_update_log.txt";
-
-    private LogUtils() {
-    }
 
     public static String createLogcat() {
         String filename = String.format(ERROR_LOG_BASE_FILENAME, System.currentTimeMillis());
@@ -70,7 +68,7 @@ public final class LogUtils {
     }
 
     public static void info(String text) {
-        Log.i(getCallerInfo(), text);
+        Timber.i(text);
     }
 
     public static void info(String text, Handler handler) {
@@ -78,15 +76,19 @@ public final class LogUtils {
             Message message = handler.obtainMessage(0, text);
             message.sendToTarget();
         }
-        Log.i(getCallerInfo(), text);
+        Timber.i(text);
+    }
+
+    public static void warning(String text, Throwable e) {
+        Timber.w(e, text);
     }
 
     public static void error(String text) {
-        Log.e(getCallerInfo(), text);
+        Timber.e(text);
     }
 
     public static void error(String text, Throwable e) {
-        Log.e(getCallerInfo(), text, e);
+        Timber.e(e, text);
     }
 
     public static void error(String text, Throwable e, Handler handler) {
@@ -94,15 +96,7 @@ public final class LogUtils {
             Message message = handler.obtainMessage(0, text);
             message.sendToTarget();
         }
-        Log.e(getCallerInfo(), text, e);
-    }
-
-    private static String getCallerInfo() {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        if (stackTraceElements.length > 4) {
-            return stackTraceElements[4].getClassName() + "(" + stackTraceElements[4].getMethodName() + ")";
-        }
-        return "Empty class name";
+        Timber.e(e, text);
     }
 
     private static void shrinkLogFile(DocumentFile logFile, int maxFileSizeInBytes, int nbLinesToKeep) throws IOException {
