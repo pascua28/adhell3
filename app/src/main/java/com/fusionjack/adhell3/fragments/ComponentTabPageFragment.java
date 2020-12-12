@@ -87,7 +87,6 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-
         inflater.inflate(R.menu.appcomponent_menu, menu);
 
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();

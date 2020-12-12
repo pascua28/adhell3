@@ -80,7 +80,6 @@ public class AppFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-
         inflater.inflate(R.menu.app_menu, menu);
 
         initSearchView(menu);
