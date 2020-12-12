@@ -207,13 +207,6 @@ public class HomeTabFragment extends Fragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        MenuItem refreshItem = menu.findItem(R.id.refresh);
-        refreshItem.setVisible(binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked());
-    }
-
-    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.home_menu, menu);
@@ -302,13 +295,10 @@ public class HomeTabFragment extends Fragment {
         private int serviceSize;
         private int receiverSize;
         private int activitySize;
-        /*private boolean isCurrentDomainLimitAboveDefault;
-        private final WeakReference<ImageView> refreshButton;*/
         private final FragmentBlockerBinding binding;
 
         SetInfoAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
-            //this.refreshButton = new WeakReference<>(refreshButton);
             this.binding = binding;
         }
 
@@ -365,8 +355,6 @@ public class HomeTabFragment extends Fragment {
             mobileSize = stat.mobileDataSize / 2;
             wifiSize = stat.wifiDataSize / 2;
 
-            //isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
-
             return null;
         }
 
@@ -394,11 +382,6 @@ public class HomeTabFragment extends Fragment {
                 }
                 binding.appComponentInfoTextView.setText(info);
             }
-            /*if (!isCurrentDomainLimitAboveDefault && ((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked()))) {
-                refreshButton.get().setVisibility(View.VISIBLE);
-            } else {
-                refreshButton.get().setVisibility(View.GONE);
-            }*/
         }
     }
 
@@ -524,9 +507,7 @@ public class HomeTabFragment extends Fragment {
                 updateProviders = false;
             }
 
-            boolean isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
-
-            if (doRefresh && !isCurrentDomainLimitAboveDefault)
+            if (doRefresh)
                 contentBlocker.updateAllRules(updateProviders, parentFragment);
             else {
                 if (isDomain) {

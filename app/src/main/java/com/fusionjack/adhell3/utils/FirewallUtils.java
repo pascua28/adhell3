@@ -115,7 +115,7 @@ public final class FirewallUtils {
         if (BlockUrlUtils.isDomainLimitAboveDefault()) {
             // If the domain count more than 15k, calling firewall.getDomainFilterRules() might crash the firewall
             stat.blackListSize = AppPreferences.getInstance().getBlockedDomainsCount();
-            stat.whiteListSize = appDatabase.whiteUrlDao().getAll3().size();
+            stat.whiteListSize = AppPreferences.getInstance().getWhitelistedDomainsCount();
         } else {
             List<String> packageNameList = new ArrayList<>();
             packageNameList.add(Firewall.FIREWALL_ALL_PACKAGES);
@@ -130,9 +130,8 @@ public final class FirewallUtils {
     }
 
     public boolean isCurrentDomainLimitAboveDefault() {
-        int defaultDomainLimit = 15000;
-        int domainLimit = (getDomainStatFromKnox().blackListSize + getDomainStatFromKnox().whiteListSize);
-        return domainLimit > defaultDomainLimit;
+        int domainLimit = getDomainStatFromKnox().blackListSize + getDomainStatFromKnox().whiteListSize;
+        return domainLimit > BlockUrlUtils.MAX_DOMAIN_KNOX_LIMIT;
     }
 
     public List<String> getActiveDenyDomainsFromKnox() {

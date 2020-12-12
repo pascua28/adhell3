@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 
 public class BlockUrlUtils {
 
+    public static final int MAX_DOMAIN_KNOX_LIMIT = 15000 ;
+
     // Pattern to detect lines that do not start with a word or wildcard
     private static final Pattern linePattern = Pattern.compile("(?im)^(?![a-z0-9*]|\\|{2}).+$");
 
@@ -172,10 +174,8 @@ public class BlockUrlUtils {
     }
 
     public static boolean isDomainLimitAboveDefault() {
-        int defaultDomainLimit = 15000;
-        int domainLimit = AdhellAppIntegrity.BLOCK_URL_LIMIT;
-        //noinspection ConstantConditions
-        return domainLimit > defaultDomainLimit;
+        int domainLimit = AppPreferences.getInstance().getBlockedDomainsCount() + AppPreferences.getInstance().getWhitelistedDomainsCount();
+        return domainLimit > BlockUrlUtils.MAX_DOMAIN_KNOX_LIMIT;
     }
 
 }

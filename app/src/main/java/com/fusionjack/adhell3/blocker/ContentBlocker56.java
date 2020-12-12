@@ -159,52 +159,58 @@ public class ContentBlocker56 implements ContentBlocker {
         if (firewall == null) {
             return;
         }
-
-         if ((parentFragment.getDomainSwitchState() || parentFragment.getFirewallSwitchState()) && !firewallUtils.isCurrentDomainLimitAboveDefault()) {
-             LogUtils.info("Updating domain rules...", handler);
-
+         try {
              if (updateProviders) {
                  LogUtils.info("Updating providers...", handler);
                  AdhellFactory.getInstance().updateAllProviders();
              }
 
-             try {
+             if (firewallUtils.isCurrentDomainLimitAboveDefault()) {
                  if (parentFragment.getDomainSwitchState()) {
-                     processWhitelistedApps(handler);
-                     processWhitelistedDomains(handler);
-                     processBlockedDomains(handler);
-                     AdhellFactory.getInstance().applyDns(handler);
+                     disableDomainRules();
                  }
                  if (parentFragment.getFirewallSwitchState()) {
-                     processCustomRules(handler);
-                     processMobileRestrictedApps(handler);
-                     processWifiRestrictedApps(handler);
+                     disableFirewallRules();
                  }
-
-                 List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
-                 List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
-                 denyList.addAll(userList);
-                 AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
-
-                 LogUtils.info("\nDomain rules are Updating.", handler);
-
-                 if (!firewall.isFirewallEnabled()) {
-                     LogUtils.info("\nEnabling Knox firewall...", handler);
-                     firewall.enableFirewall(true);
-                     LogUtils.info("Knox firewall is enabled.", handler);
-                 }
-                 if (!firewall.isDomainFilterReportEnabled()) {
-                     LogUtils.info("\nEnabling firewall report...", handler);
-                     firewall.enableDomainFilterReport(true);
-                     LogUtils.info("Firewall report is enabled.", handler);
-                 }
-             } catch (Exception e) {
-                 disableDomainRules();
-                 disableFirewallRules();
-                 e.printStackTrace();
+                 LogUtils.info("Enabling domain/firewall rules...", handler);
+             } else {
+                 LogUtils.info("Updating domain/firewall rules...", handler);
              }
-         } else {
-             LogUtils.info("Update not possible.", handler);
+
+             if (parentFragment.getDomainSwitchState()) {
+                 processWhitelistedApps(handler);
+                 processWhitelistedDomains(handler);
+                 processBlockedDomains(handler);
+                 AdhellFactory.getInstance().applyDns(handler);
+             }
+             if (parentFragment.getFirewallSwitchState()) {
+                 processCustomRules(handler);
+                 processMobileRestrictedApps(handler);
+                 processWifiRestrictedApps(handler);
+             }
+
+             List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
+             List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
+             denyList.addAll(userList);
+             AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
+
+             LogUtils.info("\nDomain/firewall rules are Updating.", handler);
+
+             if (!firewall.isFirewallEnabled()) {
+                 LogUtils.info("\nEnabling Knox firewall...", handler);
+                 firewall.enableFirewall(true);
+                 LogUtils.info("Knox firewall is enabled.", handler);
+             }
+             if (!firewall.isDomainFilterReportEnabled()) {
+                 LogUtils.info("\nEnabling firewall report...", handler);
+                 firewall.enableDomainFilterReport(true);
+                 LogUtils.info("Firewall report is enabled.", handler);
+             }
+         } catch (Exception e) {
+             LogUtils.error("Error during update! Disabling domain/firewall rules...", e, handler);
+             disableDomainRules();
+             disableFirewallRules();
+             e.printStackTrace();
          }
     }
 
@@ -233,6 +239,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         AppPreferences.getInstance().resetBlockedDomainsCount();
+        AppPreferences.getInstance().resetWhitelistedDomainsCount();
     }
 
     public void processCustomRules(Handler handler) throws Exception {
@@ -520,6 +527,7 @@ public class ContentBlocker56 implements ContentBlocker {
     public void processWhitelistedDomains(Handler handler) throws Exception {
         LogUtils.info("\nProcessing whitelist domain...", handler);
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
+        int whitelistDomainsCount = 0;
 
         // Process user-defined white list
         // 1. URL for individual package: packageName|url
@@ -562,6 +570,7 @@ public class ContentBlocker56 implements ContentBlocker {
             List<DomainFilterRule> appsToUpdate = new ArrayList<>();
             List<DomainFilterRule> appsToRemove = new ArrayList<>(currentWhiteUrlIndividualAppsList);
 
+            int maxWhitelistCount = 0;
             for (Map.Entry<String, List<String>> whiteUrl : urlsIndividualApp.entrySet()) {
                 for (DomainFilterRule whitePackage : currentWhiteUrlIndividualAppsList) {
                     if (whitePackage.getApplication().getPackageName().equals(whiteUrl.getKey())) {
@@ -570,7 +579,11 @@ public class ContentBlocker56 implements ContentBlocker {
                         appsToRemove.remove(whitePackage);
                     }
                 }
+                if (maxWhitelistCount < whiteUrl.getValue().size()) {
+                    maxWhitelistCount = whiteUrl.getValue().size();
+                }
             }
+            whitelistDomainsCount += maxWhitelistCount;
             if (appsToAdd.size() > 0) {
                 LogUtils.info("     Adding rules for specific package:", handler);
                 for (Map.Entry<String, List<String>> appToAdd : appsToAdd.entrySet()) {
@@ -634,6 +647,7 @@ public class ContentBlocker56 implements ContentBlocker {
                     LogUtils.info("     Domain: " + whiteUrl, handler);
                 }
             }
+            whitelistDomainsCount += allowList.size();
 
             final AppIdentity appIdentity = new AppIdentity("*", null);
             List<String> domainsToAdd = new ArrayList<>(allowList);
@@ -679,6 +693,7 @@ public class ContentBlocker56 implements ContentBlocker {
                             List<String> allowList = new ArrayList<>();
                             allowList.add(url);
                             processDomains(appIdentity, denyList, allowList);
+                            whitelistDomainsCount++;
                         }
                     }
                 }
@@ -691,6 +706,7 @@ public class ContentBlocker56 implements ContentBlocker {
                 if (whiteUrl.indexOf('|') == -1) {
                     allowList.add(whiteUrl);
                     LogUtils.info("Domain: " + whiteUrl, handler);
+                    whitelistDomainsCount++;
                 }
             }
             if (allowList.size() > 0) {
@@ -704,6 +720,7 @@ public class ContentBlocker56 implements ContentBlocker {
                 }
             }
         }
+        AppPreferences.getInstance().setWhitelistedDomainsCount(whitelistDomainsCount);
     }
 
     public void processBlockedDomains(Handler handler) throws Exception {
@@ -817,7 +834,7 @@ public class ContentBlocker56 implements ContentBlocker {
         if (isEnabled()) {
             if (BlockUrlUtils.isDomainLimitAboveDefault()) {
                 // If the domain count more than 15k, calling firewall.getDomainFilterRules() might crash the firewall
-                int domainCount = AppPreferences.getInstance().getBlockedDomainsCount();
+                int domainCount = AppPreferences.getInstance().getBlockedDomainsCount() + AppPreferences.getInstance().getWhitelistedDomainsCount();
                 return domainCount == 0;
             }
 

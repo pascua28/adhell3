@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 
 public final class AppPreferences {
     private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
+    private static final String WHITELISTED_DOMAINS_COUNT = "whitelistedDomainsCount";
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
     private static final String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
@@ -104,6 +105,22 @@ public final class AppPreferences {
     public void resetBlockedDomainsCount() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(BLOCKED_DOMAINS_COUNT);
+        editor.apply();
+    }
+
+    public int getWhitelistedDomainsCount() {
+        return sharedPreferences.getInt(WHITELISTED_DOMAINS_COUNT, 0);
+    }
+
+    public void setWhitelistedDomainsCount(int count) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(WHITELISTED_DOMAINS_COUNT, count);
+        editor.apply();
+    }
+
+    public void resetWhitelistedDomainsCount() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(WHITELISTED_DOMAINS_COUNT);
         editor.apply();
     }
 

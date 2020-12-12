@@ -31,8 +31,6 @@ public class RulesUpdateWorker extends Worker {
     private int retryCount;
     private Handler handler = null;
 
-    private static class ExceededLimitException extends Exception{}
-
     public RulesUpdateWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
 
@@ -65,8 +63,6 @@ public class RulesUpdateWorker extends Worker {
         LogUtils.info("------Start Rules auto update------", handler);
         try {
             autoUpdateRules();
-        } catch (ExceededLimitException e) {
-            LogUtils.info("------Failed Rules auto update. Domains limit exceeded------", handler);
         } catch (Exception e) {
             LogUtils.error("Failed Rules auto update! Will be retried.", e, handler);
             LogUtils.info("------Failed Rules auto update------", handler);
@@ -79,33 +75,54 @@ public class RulesUpdateWorker extends Worker {
 
     private void autoUpdateRules() throws Exception {
         ContentBlocker56 contentBlocker = ContentBlocker56.getInstance();
+        contentBlocker.setHandler(handler);
         if (firewall == null) {
             throw new Exception();
         }
-        if (!FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault()) {
-            AdhellFactory.getInstance().updateAllProviders();
-            if (!contentBlocker.isDomainRuleEmpty()) {
-                LogUtils.info("Updating domain rules...", handler);
-                contentBlocker.processWhitelistedApps(handler);
-                contentBlocker.processWhitelistedDomains(handler);
-                contentBlocker.processBlockedDomains(handler);
-                AdhellFactory.getInstance().applyDns(handler);
+        AdhellFactory.getInstance().updateAllProviders();
+        String domainRulesText = "Updating domain rules...";
+        String firewallRulesText = "Updating firewall rules...";
+        boolean domainRulesNeedUpdate = !contentBlocker.isDomainRuleEmpty();
+        boolean firewallRulesNeedUpdate = !contentBlocker.isFirewallRuleEmpty();
+        if (FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault()) {
+            if (domainRulesNeedUpdate) {
+                contentBlocker.disableDomainRules();
+                domainRulesText = "Enabling domain rules...";
             }
-            if (!contentBlocker.isFirewallRuleEmpty()) {
-                LogUtils.info("Updating firewall rules...", handler);
-                contentBlocker.processCustomRules(handler);
-                contentBlocker.processMobileRestrictedApps(handler);
-                contentBlocker.processWifiRestrictedApps(handler);
+            if (firewallRulesNeedUpdate) {
+                contentBlocker.disableFirewallRules();
+                firewallRulesText = "Enabling firewall rules...";
             }
-            List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
-            List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
-            denyList.addAll(userList);
-            AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
-
-            LogUtils.info("\nRules auto update completed.", handler);
-        } else {
-            LogUtils.info("Update not possible, the limit of the number of domains is exceeded!", handler);
-            throw new ExceededLimitException();
         }
+        if (domainRulesNeedUpdate) {
+            LogUtils.info(domainRulesText, handler);
+            contentBlocker.processWhitelistedApps(handler);
+            contentBlocker.processWhitelistedDomains(handler);
+            contentBlocker.processBlockedDomains(handler);
+            AdhellFactory.getInstance().applyDns(handler);
+        }
+        if (firewallRulesNeedUpdate) {
+            LogUtils.info(firewallRulesText, handler);
+            contentBlocker.processCustomRules(handler);
+            contentBlocker.processMobileRestrictedApps(handler);
+            contentBlocker.processWifiRestrictedApps(handler);
+        }
+        List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
+        List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
+        denyList.addAll(userList);
+        AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
+
+        if (!firewall.isFirewallEnabled()) {
+            LogUtils.info("\nEnabling Knox firewall...", handler);
+            firewall.enableFirewall(true);
+            LogUtils.info("Knox firewall is enabled.", handler);
+        }
+        if (!firewall.isDomainFilterReportEnabled()) {
+            LogUtils.info("\nEnabling firewall report...", handler);
+            firewall.enableDomainFilterReport(true);
+            LogUtils.info("Firewall report is enabled.", handler);
+        }
+
+        LogUtils.info("\nRules auto update completed.", handler);
     }
 }
