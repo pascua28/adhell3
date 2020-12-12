@@ -46,37 +46,42 @@
             <TextView
                 android:id="@+id/domainStatusTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentTop="true"
-                android:gravity="center_horizontal"
+                android:layout_toStartOf="@id/domainRulesSwitch"
+                android:gravity="center"
                 android:text="@string/domain_rules_enabled"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="15sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <TextView
                 android:id="@+id/domainInfoTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/domainStatusTextView"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
-                android:layout_toStartOf="@id/domainRulesSwitch"
                 android:text="@string/domain_rules_info"
-                android:textSize="11sp" />
+                app:autoSizeMaxTextSize="13sp"
+                app:autoSizeMinTextSize="8sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/domainRulesSwitch"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
+                android:gravity="top|end"
                 android:clickable="false"
                 android:focusable="false"
                 android:focusableInTouchMode="false" />
-
         </RelativeLayout>
 
         <RelativeLayout
@@ -90,39 +95,43 @@
             <TextView
                 android:id="@+id/firewallStatusTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentTop="true"
-                android:gravity="center_horizontal"
+                android:layout_toStartOf="@id/firewallRulesSwitch"
+                android:gravity="center"
                 android:text="@string/firewall_rules_enabled"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="15sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <TextView
                 android:id="@+id/firewallInfoTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/firewallStatusTextView"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
-                android:layout_toStartOf="@id/firewallRulesSwitch"
                 android:text="@string/firewall_rules_info"
-                android:textSize="11sp" />
+                app:autoSizeMaxTextSize="13sp"
+                app:autoSizeMinTextSize="8sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/firewallRulesSwitch"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
+                android:gravity="top|end"
                 android:clickable="false"
                 android:focusable="false"
                 android:focusableInTouchMode="false" />
-
         </RelativeLayout>
-
     </LinearLayout>
 
     <LinearLayout
@@ -152,37 +161,42 @@
             <TextView
                 android:id="@+id/disablerStatusTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentTop="true"
-                android:gravity="center_horizontal"
+                android:layout_toStartOf="@id/appDisablerSwitch"
+                android:gravity="center"
                 android:text="@string/app_disabler_enabled"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="15sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <TextView
                 android:id="@+id/disablerInfoTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/disablerStatusTextView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 android:layout_marginStart="2dp"
-                android:paddingBottom="18dp"
-                android:layout_toStartOf="@id/appDisablerSwitch"
-                android:text="@string/app_disabler_info"
                 android:gravity="center_vertical"
-                android:textSize="11sp" />
+                android:text="@string/app_disabler_info"
+                app:autoSizeMaxTextSize="13sp"
+                app:autoSizeMinTextSize="8sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/appDisablerSwitch"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
+                android:gravity="top|end"
                 android:clickable="false"
                 android:focusable="false"
                 android:focusableInTouchMode="false" />
-
         </RelativeLayout>
 
         <RelativeLayout
@@ -197,36 +211,42 @@
             <TextView
                 android:id="@+id/appComponentStatusTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentTop="true"
-                android:gravity="center_horizontal"
+                android:layout_toStartOf="@id/appComponentSwitch"
+                android:gravity="center"
                 android:text="@string/app_component_enabled"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:autoSizeMaxTextSize="15sp"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <TextView
                 android:id="@+id/appComponentInfoTextView"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/appComponentStatusTextView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 android:layout_marginStart="2dp"
                 android:gravity="center_vertical"
-                android:layout_toStartOf="@id/appComponentSwitch"
                 android:text="@string/app_component_toggle_info"
-                android:textSize="11sp" />
+                app:autoSizeMaxTextSize="13sp"
+                app:autoSizeMinTextSize="8sp"
+                app:autoSizeStepGranularity="1sp"
+                app:autoSizeTextType="uniform" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/appComponentSwitch"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="27dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
+                android:gravity="top|end"
                 android:clickable="false"
                 android:focusable="false"
                 android:focusableInTouchMode="false" />
-
         </RelativeLayout>
     </LinearLayout>
 
