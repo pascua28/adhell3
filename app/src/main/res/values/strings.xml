@@ -239,10 +239,8 @@
     <string name="about_summary">About adhell3</string>
     <string name="about_content">Adhell3 is merely an app that is using the Samsung Knox SDK APIs.
         \n
-        \nScript to build apk:
-        \n<a href="https://gitlab.com/fusionjack/adhell3-scripts">https://gitlab.com/fusionjack/adhell3-scripts</a>
         \nSource code:
-        \n<a href="https://gitlab.com/fusionjack/adhell3">https://gitlab.com/fusionjack/adhell3</a>
+        \n<a href="https://gitlab.com/TwentyNine78/adhell3">https://gitlab.com/TwentyNine78/adhell3</a>
         \n
         \nAdhell3 is licensed under a <a href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License.</a>
     </string>
