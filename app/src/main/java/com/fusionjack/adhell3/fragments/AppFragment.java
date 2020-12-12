@@ -74,7 +74,11 @@ public class AppFragment extends Fragment {
         if (loadingBar != null) {
             loadingBar.setVisibility(View.VISIBLE);
         }
-        viewModel.loadAppList(type, observer, filterAppInfo, loadingBar, listView);
+        if (searchText.isEmpty()) {
+            viewModel.loadAppList(type, observer, filterAppInfo, loadingBar, listView);
+        } else {
+            viewModel.loadAppList(searchText, type, observer, filterAppInfo, loadingBar, listView);
+        }
     }
 
     @Override
