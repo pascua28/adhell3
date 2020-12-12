@@ -85,6 +85,12 @@ public class ProviderContentFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     private static class LoadBlockedUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
         private final WeakReference<Context> contextReference;
         private final AppDatabase appDatabase;

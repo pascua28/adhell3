@@ -317,6 +317,12 @@ public class ActivationDialogFragment extends DialogFragment {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     private void setAdminState(boolean enabled) {
         if (enabled) {
             binding.turnOnAdminButton.setText(R.string.admin_enabled);

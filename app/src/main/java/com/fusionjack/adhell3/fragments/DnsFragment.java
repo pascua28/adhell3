@@ -281,4 +281,10 @@ public class DnsFragment extends AppFragment {
 
         loadAppList(type, binding.loadingBar, binding.dnsAppsList);
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }

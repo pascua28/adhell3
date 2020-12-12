@@ -67,6 +67,12 @@ public class FirewallDialogFragment extends DialogFragment {
         binding.scrollView.getLayoutParams().height = (int) (getResources().getDisplayMetrics().heightPixels * 0.675);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     public void appendText(String text) {
         this.text += text + "\n";
         binding.logTextView.setText(this.text);

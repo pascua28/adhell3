@@ -216,6 +216,12 @@ public class ProviderListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        dialogAddProviderBinding = null;
+    }
+
     private boolean isValidUri(String uri) {
         return URLUtil.isHttpUrl(uri) || URLUtil.isHttpsUrl(uri) || URLUtil.isContentUrl(uri) || URLUtil.isFileUrl(uri);
     }

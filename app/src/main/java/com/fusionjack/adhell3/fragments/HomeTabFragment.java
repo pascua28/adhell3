@@ -226,6 +226,12 @@ public class HomeTabFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     private void updateUserInterface() {
         new SetInfoAsyncTask(getContext(), binding).execute();
 

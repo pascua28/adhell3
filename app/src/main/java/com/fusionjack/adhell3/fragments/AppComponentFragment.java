@@ -128,6 +128,12 @@ public class AppComponentFragment extends AppFragment {
         loadAppList(type, binding.loadingBar, binding.componentAppsList);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     private void batchOperation() {
         DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
         dialogQuestionBinding.titleTextView.setText(R.string.dialog_appcomponent_batch_title);

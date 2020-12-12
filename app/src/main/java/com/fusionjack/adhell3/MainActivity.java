@@ -172,12 +172,12 @@ public class MainActivity extends AppCompatActivity {
         closeActivity(false);
 
         // Clear resources to prevent memory leak
-        snackbar.dismiss();
         snackbar = null;
         activationDialogFragment = null;
         permissionDialog = null;
         fragmentManager = null;
         mainActivity = null;
+        binding = null;
 
         super.onDestroy();
     }

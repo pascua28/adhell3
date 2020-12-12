@@ -107,6 +107,12 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     public static void migrateOldAutoUpdateJob(Activity activity) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
         boolean autoUpdateEnabled = sharedPref.getBoolean("auto_update_preference", false);
