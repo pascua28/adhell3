@@ -161,11 +161,12 @@
 
             <TextView
                 android:id="@+id/disablerInfoTextView"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/disablerStatusTextView"
                 android:layout_alignParentBottom="true"
                 android:layout_marginStart="2dp"
+                android:paddingBottom="18dp"
                 android:layout_toStartOf="@id/appDisablerSwitch"
                 android:text="@string/app_disabler_info"
                 android:gravity="center_vertical"
