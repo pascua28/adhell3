@@ -22,7 +22,6 @@
             android:layout_height="?attr/actionBarSize"
             app:layout_scrollFlags="scroll|enterAlways"
             app:elevation="0dp"
-            app:contentInsetStart="35dp"
             tools:title="Title"
             tools:subtitle="SubTitle">
         </com.google.android.material.appbar.MaterialToolbar>
