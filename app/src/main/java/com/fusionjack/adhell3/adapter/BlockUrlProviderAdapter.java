@@ -1,7 +1,11 @@
 package com.fusionjack.adhell3.adapter;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +36,11 @@ import java.util.Locale;
 public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
 
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+    private final WeakReference<ContentResolver> contentResolverWeakReference;
 
     public BlockUrlProviderAdapter(Context context, List<BlockUrlProvider> blockUrlProviders) {
         super(context, 0, blockUrlProviders);
+        this.contentResolverWeakReference = new WeakReference<>(context.getContentResolver());
     }
 
     @NonNull
@@ -59,7 +65,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         holder.binding.urlProviderCheckBox.setTag(position);
         holder.binding.deleteUrlProviderImageView.setTag(position);
 
-        holder.binding.blockUrlProviderTextView.setText(blockUrlProvider.url);
+        holder.binding.blockUrlProviderTextView.setText(getFileName(blockUrlProvider.url));
         holder.binding.blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
 
         holder.binding.urlProviderCheckBox.setChecked(blockUrlProvider.selected);
@@ -95,6 +101,26 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         });
 
         return holder.view;
+    }
+
+    private String getFileName(String url) {
+        String result = url;
+        Uri uri = Uri.parse(url);
+        if (uri != null && uri.getScheme() != null && uri.getScheme().equals("content")) {
+            ContentResolver contentResolver = contentResolverWeakReference.get();
+            if (contentResolver != null) {
+                try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    }
+                }
+            }
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
