@@ -65,6 +65,8 @@ public class AppComponentFragment extends AppFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
         inflater.inflate(R.menu.appcomponent_tab_menu, menu);
 
         initSearchView(menu);
