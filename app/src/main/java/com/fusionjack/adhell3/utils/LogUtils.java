@@ -99,7 +99,7 @@ public final class LogUtils {
         Timber.e(e, text);
     }
 
-    private static void shrinkLogFile(DocumentFile logFile, int maxFileSizeInBytes, int nbLinesToKeep) throws IOException {
+    private static void shrinkLogFile(DocumentFile logFile, @SuppressWarnings("SameParameterValue") int maxFileSizeInBytes, @SuppressWarnings("SameParameterValue") int nbLinesToKeep) throws IOException {
         if(logFile.length() > maxFileSizeInBytes){
             InputStream input = App.getAppContext().getContentResolver().openInputStream(logFile.getUri());
             OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri());

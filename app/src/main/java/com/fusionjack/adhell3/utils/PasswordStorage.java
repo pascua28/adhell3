@@ -151,7 +151,7 @@ public class PasswordStorage {
     }
 
     static public class CannotPerformOperationException extends Exception {
-        CannotPerformOperationException(String message) {
+        CannotPerformOperationException(@SuppressWarnings("SameParameterValue") String message) {
             super(message);
         }
 

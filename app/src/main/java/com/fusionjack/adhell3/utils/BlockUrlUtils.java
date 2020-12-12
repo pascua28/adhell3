@@ -174,6 +174,7 @@ public class BlockUrlUtils {
     public static boolean isDomainLimitAboveDefault() {
         int defaultDomainLimit = 15000;
         int domainLimit = AdhellAppIntegrity.BLOCK_URL_LIMIT;
+        //noinspection ConstantConditions
         return domainLimit > defaultDomainLimit;
     }
 
