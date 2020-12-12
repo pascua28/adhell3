@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
@@ -37,12 +36,8 @@ public class OtherTabFragment extends Fragment {
         if (bundle != null) {
             viewpagerPosition = getArguments().getString("viewpager_position");
         }
-        requireActivity().setTitle("Others");
-        AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
-        if (parentActivity != null && parentActivity.getSupportActionBar() != null) {
-            parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
-            parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+        if (getActivity() != null) {
+            getActivity().setTitle("Others");
         }
         setHasOptionsMenu(true);
 

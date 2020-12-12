@@ -3,25 +3,24 @@ package com.fusionjack.adhell3.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.AbsListView;
 import android.widget.ExpandableListView;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -34,7 +33,6 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
-import com.fusionjack.adhell3.databinding.ActivityActionbarBinding;
 import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
 import com.fusionjack.adhell3.databinding.FragmentBlockerBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -75,35 +73,20 @@ public class HomeTabFragment extends Fragment {
     private static final String EXPORTED_DOMAINS_FILENAME = "adhell_exported_domains.txt";
 
     private FragmentManager fragmentManager;
-    private AppCompatActivity parentActivity;
     private ContentBlocker contentBlocker;
     private FragmentBlockerBinding binding;
-    private ActivityActionbarBinding activityActionbarBinding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fragmentManager = requireActivity().getSupportFragmentManager();
-        parentActivity = (AppCompatActivity) getActivity();
         contentBlocker = ContentBlocker56.getInstance();
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ActionBar actionBar = parentActivity.getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(false);
-            actionBar.setHomeButtonEnabled(false);
-
-            activityActionbarBinding = ActivityActionbarBinding.inflate(inflater);
-            String versionInfo = requireContext().getResources().getString(R.string.version);
-            activityActionbarBinding.subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
-            int themeColor = getResources().getColor(R.color.colorBottomNavUnselected, requireContext().getTheme());
-            activityActionbarBinding.refreshButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-            activityActionbarBinding.refreshButton.setOnClickListener(v -> new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute());
-            actionBar.setCustomView(activityActionbarBinding.getRoot());
-            actionBar.setDisplayShowCustomEnabled(true);
-        }
+        requireActivity().setTitle(R.string.app_name);
+        setHasOptionsMenu(true);
 
         binding = FragmentBlockerBinding.inflate(inflater);
 
@@ -223,8 +206,28 @@ public class HomeTabFragment extends Fragment {
         updateUserInterface();
     }
 
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem refreshItem = menu.findItem(R.id.refresh);
+        refreshItem.setVisible(binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked());
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.home_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.refresh) {
+            new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void updateUserInterface() {
-        new SetInfoAsyncTask(getContext(), activityActionbarBinding.refreshButton, binding).execute();
+        new SetInfoAsyncTask(getContext(), binding).execute();
 
         boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
         boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
@@ -277,12 +280,6 @@ public class HomeTabFragment extends Fragment {
             binding.appComponentStatusTextView.setText(R.string.app_component_disabled);
             binding.appComponentSwitch.setChecked(false);
         }
-
-        if (((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked())))  {
-            activityActionbarBinding.refreshButton.setVisibility(View.VISIBLE);
-        } else {
-            activityActionbarBinding.refreshButton.setVisibility(View.GONE);
-        }
     }
 
     private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -298,13 +295,13 @@ public class HomeTabFragment extends Fragment {
         private int serviceSize;
         private int receiverSize;
         private int activitySize;
-        private boolean isCurrentDomainLimitAboveDefault;
-        private final WeakReference<ImageView> refreshButton;
+        /*private boolean isCurrentDomainLimitAboveDefault;
+        private final WeakReference<ImageView> refreshButton;*/
         private final FragmentBlockerBinding binding;
 
-        SetInfoAsyncTask(Context context, ImageView refreshButton, FragmentBlockerBinding binding) {
+        SetInfoAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
-            this.refreshButton = new WeakReference<>(refreshButton);
+            //this.refreshButton = new WeakReference<>(refreshButton);
             this.binding = binding;
         }
 
@@ -361,7 +358,7 @@ public class HomeTabFragment extends Fragment {
             mobileSize = stat.mobileDataSize / 2;
             wifiSize = stat.wifiDataSize / 2;
 
-            isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
+            //isCurrentDomainLimitAboveDefault = FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault();
 
             return null;
         }
@@ -390,11 +387,11 @@ public class HomeTabFragment extends Fragment {
                 }
                 binding.appComponentInfoTextView.setText(info);
             }
-            if (!isCurrentDomainLimitAboveDefault && ((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked()))) {
+            /*if (!isCurrentDomainLimitAboveDefault && ((binding.domainRulesSwitch.isChecked() || binding.firewallRulesSwitch.isChecked()))) {
                 refreshButton.get().setVisibility(View.VISIBLE);
             } else {
                 refreshButton.get().setVisibility(View.GONE);
-            }
+            }*/
         }
     }
 

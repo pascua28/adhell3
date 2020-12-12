@@ -21,6 +21,7 @@ import android.view.Window;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -108,9 +109,14 @@ public class MainActivity extends AppCompatActivity {
             Thread.setDefaultUncaughtExceptionHandler(CrashHandler.getInstance());
         }
 
-        // Remove elevation shadow of ActionBar
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setElevation(0);
+        setSupportActionBar(binding.toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.setHomeButtonEnabled(false);
+            actionBar.setElevation(0);
+            String versionInfo = getResources().getString(R.string.version);
+            actionBar.setSubtitle(String.format(versionInfo, BuildConfig.VERSION_NAME));
         }
 
         fragmentManager = getSupportFragmentManager();
