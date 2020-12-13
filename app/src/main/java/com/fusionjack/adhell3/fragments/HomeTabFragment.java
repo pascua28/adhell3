@@ -106,17 +106,45 @@ public class HomeTabFragment extends Fragment {
             LogUtils.info("Domain switch button has been clicked");
             new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), false).execute();
         });
+        binding.domainRulesSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                binding.domainInfoTextView.setVisibility(View.VISIBLE);
+            } else {
+                binding.domainInfoTextView.setVisibility(View.GONE);
+            }
+        });
         binding.firewallRulesSwitch.setOnClickListener(v -> {
             LogUtils.info("Firewall switch button has been clicked");
             new SetFirewallAsyncTask(false, this, fragmentManager, getContext(), false).execute();
+        });
+        binding.firewallRulesSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                binding.firewallInfoTextView.setVisibility(View.VISIBLE);
+            } else {
+                binding.firewallInfoTextView.setVisibility(View.GONE);
+            }
         });
         binding.appDisablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
             new AppDisablerAsyncTask(this, getContext()).execute();
         });
+        binding.appDisablerSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                binding.disablerInfoTextView.setVisibility(View.VISIBLE);
+            } else {
+                binding.disablerInfoTextView.setVisibility(View.GONE);
+            }
+        });
         binding.appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info("App component switch button has been clicked");
             new AppComponentAsyncTask(this, getContext()).execute();
+        });
+        binding.appComponentSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                binding.appComponentInfoTextView.setVisibility(View.VISIBLE);
+            } else {
+                binding.appComponentInfoTextView.setVisibility(View.GONE);
+            }
         });
 
         binding.domainActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
@@ -230,26 +258,12 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void updateUserInterface() {
-        new SetInfoAsyncTask(getContext(), binding).execute();
-
         boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
         boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
 
-        if (contentBlocker == null || isDomainRuleEmpty) {
-            binding.domainStatusTextView.setText(R.string.domain_rules_disabled);
-            binding.domainRulesSwitch.setChecked(false);
-        } else {
-            binding.domainStatusTextView.setText(R.string.domain_rules_enabled);
-            binding.domainRulesSwitch.setChecked(true);
-        }
+        binding.domainRulesSwitch.setChecked(contentBlocker != null && !isDomainRuleEmpty);
 
-        if (contentBlocker == null || isFirewallRuleEmpty) {
-            binding.firewallStatusTextView.setText(R.string.firewall_rules_disabled);
-            binding.firewallRulesSwitch.setChecked(false);
-        } else {
-            binding.firewallStatusTextView.setText(R.string.firewall_rules_enabled);
-            binding.firewallRulesSwitch.setChecked(true);
-        }
+        binding.firewallRulesSwitch.setChecked(contentBlocker != null && !isFirewallRuleEmpty);
 
         if (!isDomainRuleEmpty) {
             binding.infoTextView.setVisibility(View.VISIBLE);
@@ -267,27 +281,17 @@ public class HomeTabFragment extends Fragment {
         }
 
         boolean disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-        if (disablerEnabled) {
-            binding.disablerStatusTextView.setText(R.string.app_disabler_enabled);
-            binding.appDisablerSwitch.setChecked(true);
-        } else {
-            binding.disablerStatusTextView.setText(R.string.app_disabler_disabled);
-            binding.appDisablerSwitch.setChecked(false);
-        }
+        binding.appDisablerSwitch.setChecked(disablerEnabled);
 
         boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-        if (appComponentEnabled) {
-            binding.appComponentStatusTextView.setText(R.string.app_component_enabled);
-            binding.appComponentSwitch.setChecked(true);
-        } else {
-            binding.appComponentStatusTextView.setText(R.string.app_component_disabled);
-            binding.appComponentSwitch.setChecked(false);
-        }
+        binding.appComponentSwitch.setChecked(appComponentEnabled);
 
         FragmentActivity parentActivity = getActivity();
         if (parentActivity != null) {
             parentActivity.invalidateOptionsMenu();
         }
+
+        new SetInfoAsyncTask(getContext(), binding).execute();
     }
 
     private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -304,6 +308,8 @@ public class HomeTabFragment extends Fragment {
         private int receiverSize;
         private int activitySize;
         private final FragmentBlockerBinding binding;
+        private final boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+        private final boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
 
         SetInfoAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
@@ -320,41 +326,49 @@ public class HomeTabFragment extends Fragment {
                 String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
                 binding.firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
 
-                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
+                if (appDisablerEnabled) {
+                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
+                    binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
+                }
 
-                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
+                if (appComponentEnabled) {
+                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
+                    binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
+                }
             }
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            disablerSize = appDatabase.disabledPackageDao().getAll().size();
+            if (appDisablerEnabled) {
+                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                disablerSize = appDatabase.disabledPackageDao().getAll().size();
+            }
 
-            List<AppPermission> appPermissions = appDatabase.appPermissionDao().getAll();
-            for (AppPermission appPermission : appPermissions) {
-                switch (appPermission.permissionStatus) {
-                    case AppPermission.STATUS_PERMISSION:
-                        permissionSize++;
-                        break;
-                    case AppPermission.STATUS_SERVICE:
-                        serviceSize++;
-                        break;
-                    case AppPermission.STATUS_RECEIVER:
-                        receiverSize++;
-                        break;
-                    case AppPermission.STATUS_ACTIVITY:
-                        activitySize++;
-                        break;
+            if (appComponentEnabled) {
+                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                List<AppPermission> appPermissions = appDatabase.appPermissionDao().getAll();
+                for (AppPermission appPermission : appPermissions) {
+                    switch (appPermission.permissionStatus) {
+                        case AppPermission.STATUS_PERMISSION:
+                            permissionSize++;
+                            break;
+                        case AppPermission.STATUS_SERVICE:
+                            serviceSize++;
+                            break;
+                        case AppPermission.STATUS_RECEIVER:
+                            receiverSize++;
+                            break;
+                        case AppPermission.STATUS_ACTIVITY:
+                            activitySize++;
+                            break;
+                    }
                 }
             }
 
             FirewallUtils.DomainStat domainStat = FirewallUtils.getInstance().getDomainStatFromKnox();
             blackListSize = domainStat.blackListSize;
             whiteListSize = domainStat.whiteListSize;
-
             whitelistAppSize = FirewallUtils.getInstance().getWhitelistAppCountFromKnox();
 
             // Dirty solution: Every deny firewall is created for IPv4 and IPv6.
@@ -376,19 +390,15 @@ public class HomeTabFragment extends Fragment {
                 String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
                 binding.firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
 
-                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-                binding.disablerInfoTextView.setText(String.format(disablerInfo, appDisablerEnabled ? disablerSize : 0));
-
-                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                String info;
-                if (appComponentEnabled) {
-                    info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize, activitySize);
-                } else {
-                    info = String.format(appComponentInfo, 0, 0, 0, 0);
+                if (appDisablerEnabled) {
+                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
+                    binding.disablerInfoTextView.setText(String.format(disablerInfo, disablerSize));
                 }
-                binding.appComponentInfoTextView.setText(info);
+
+                if (appComponentEnabled) {
+                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
+                    binding.appComponentInfoTextView.setText(String.format(appComponentInfo, permissionSize, serviceSize, receiverSize, activitySize));
+                }
             }
         }
     }
