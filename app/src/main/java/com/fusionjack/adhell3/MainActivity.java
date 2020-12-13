@@ -66,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
     private static FilterAppInfo filterAppInfo;
-    private final Handler snackbarDelayedHandler = new Handler();
+    private static WeakReference<ActivationDialogFragment> activationDialogFragmentWeakReference;
+    private Handler snackbarDelayedHandler = new Handler();
     private AlertDialog permissionDialog;
     private Snackbar snackbar;
     private FragmentManager fragmentManager;
@@ -118,6 +119,10 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManager = getSupportFragmentManager();
 
+        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
+        activationDialogFragment.setCancelable(false);
+        activationDialogFragmentWeakReference = new WeakReference<>(activationDialogFragment);
+
         setTheme();
 
         binding.bottomBar.setOnNavigationItemSelectedListener(item -> {
@@ -162,12 +167,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LogUtils.info("Destroying activity");
-        closeActivity(false);
 
         // Clear resources to prevent memory leak
-        permissionDialog = null;
-        fragmentManager = null;
-        binding = null;
+        this.snackbarDelayedHandler = null;
+        this.permissionDialog = null;
+        this.fragmentManager = null;
+        this.binding = null;
+
+        closeActivity(false);
 
         super.onDestroy();
     }
@@ -332,12 +339,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isKnoxValid() {
-        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
-        activationDialogFragment.setCancelable(false);
-
+        ActivationDialogFragment activationDialogFragment = activationDialogFragmentWeakReference.get();
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
-            if (isActivationDialogNotVisible()) {
+            if (activationDialogFragment != null && !activationDialogFragment.isVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -350,13 +355,13 @@ public class MainActivity extends AppCompatActivity {
             if (!hasInternetAccess) {
                 AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
             }
-            if (isActivationDialogNotVisible()) {
+            if (activationDialogFragment != null && !activationDialogFragment.isVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
         }
 
-        if (!isActivationDialogNotVisible()) {
+        if (activationDialogFragment != null && activationDialogFragment.isVisible()) {
             activationDialogFragment.dismiss();
         }
         return true;
@@ -430,11 +435,6 @@ public class MainActivity extends AppCompatActivity {
         }
         previousSelectedTabId = tabId;
         themeChanged = false;
-    }
-
-    private boolean isActivationDialogNotVisible() {
-        Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
-        return activationDialog == null;
     }
 
     private void setTheme() {

@@ -46,10 +46,10 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ActivationDialogFragment extends DialogFragment {
     public static final String DIALOG_TAG = "activation_dialog";
-    private final DeviceAdminInteractor deviceAdminInteractor;
-    private final Completable knoxKeyObservable;
-    private final CompletableObserver knoxKeyObserver;
-    private final BroadcastReceiver receiver;
+    private DeviceAdminInteractor deviceAdminInteractor;
+    private Completable knoxKeyObservable;
+    private CompletableObserver knoxKeyObserver;
+    private BroadcastReceiver receiver;
     private SharedPreferences sharedPreferences;
     private DialogFragmentActivationBinding binding;
 
@@ -228,6 +228,19 @@ public class ActivationDialogFragment extends DialogFragment {
         return binding.getRoot();
     }
 
+    @Override
+    public void onDestroy() {
+        // Clean resource to prevent memory leak
+        this.deviceAdminInteractor = null;
+        this.knoxKeyObservable = null;
+        this.knoxKeyObserver = null;
+        this.receiver = null;
+        this.sharedPreferences = null;
+        this.binding = null;
+
+        super.onDestroy();
+    }
+
     private void handleResult(Intent intent, Context context) {
         if (getActivity() != null) {
             getActivity().unregisterReceiver(receiver);
@@ -245,13 +258,13 @@ public class ActivationDialogFragment extends DialogFragment {
                                 .show();
                     }
                 }
-                dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
                 fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
+                dismiss();
             } else if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_DEACTIVATION) {
                 setLicenseState(false);
                 LogUtils.info("License deactivated");
@@ -262,7 +275,6 @@ public class ActivationDialogFragment extends DialogFragment {
                                 .show();
                     }
                 }
-                setCancelable(false);
             }
         }
 
