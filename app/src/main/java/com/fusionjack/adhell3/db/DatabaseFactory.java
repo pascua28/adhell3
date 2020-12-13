@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db;
 
+import android.net.Uri;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -438,12 +439,16 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            BlockUrlProvider provider = new BlockUrlProvider();
-            provider.url = url;
-            provider.deletable = deletable;
-            provider.selected = selected;
-            provider.policyPackageId = policyPackageId;
-            provider.id = appDatabase.blockUrlProviderDao().insertAll(provider)[0];
+            // Do not restore the content provider's local file since the permission cannot be restored
+            Uri uri = Uri.parse(url);
+            if (uri == null || uri.getScheme() == null || !uri.getScheme().equals("content")) {
+                BlockUrlProvider provider = new BlockUrlProvider();
+                provider.url = url;
+                provider.deletable = deletable;
+                provider.selected = selected;
+                provider.policyPackageId = policyPackageId;
+                provider.id = appDatabase.blockUrlProviderDao().insertAll(provider)[0];
+            }
         }
         reader.endArray();
     }

@@ -113,11 +113,12 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     if (cursor != null && cursor.moveToFirst()) {
                         result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
                     }
+                } catch(Exception e) {
+                    int cut = result.lastIndexOf('/');
+                    if (cut != -1) {
+                        result = result.substring(cut + 1);
+                    }
                 }
-            }
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
             }
         }
         return result;

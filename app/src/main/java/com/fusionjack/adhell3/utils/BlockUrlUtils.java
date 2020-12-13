@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.webkit.URLUtil;
@@ -66,7 +65,6 @@ public class BlockUrlUtils {
             }
         } else if (URLUtil.isContentUrl(blockUrlProvider.url)) {
             Uri contentUri = Uri.parse(blockUrlProvider.url);
-            context.getContentResolver().takePersistableUriPermission(contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             InputStream inputStream = context.getContentResolver().openInputStream(contentUri);
             if (inputStream != null) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

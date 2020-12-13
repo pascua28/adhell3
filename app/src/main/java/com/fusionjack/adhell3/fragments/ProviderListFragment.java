@@ -1,7 +1,9 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -132,6 +134,19 @@ public class ProviderListFragment extends Fragment {
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             String provider = dialogAddProviderBinding.providerEditText.getText().toString();
                             if (isValidUri(provider)) {
+                                Uri uri = Uri.parse(provider);
+                                if (uri != null && uri.getScheme() != null && uri.getScheme().equals("content")) {
+                                    try {
+                                        context.grantUriPermission(context.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                                        context.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                    } catch (Exception e) {
+                                        if (getActivity() instanceof MainActivity) {
+                                            MainActivity mainActivity = (MainActivity) getActivity();
+                                            mainActivity.makeSnackbar("Unable to get read permission", Snackbar.LENGTH_LONG)
+                                                    .show();
+                                        }
+                                    }
+                                }
                                 new AddProviderAsyncTask(provider, binding).execute();
                             } else {
                                 if (getActivity() instanceof MainActivity) {

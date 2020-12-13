@@ -331,7 +331,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
 
             if (message == null) {
-                builder.setMessage("Restore database is finished. Turn on Adhell.");
+                builder.setMessage("Restore database is finished. Turn on Adhell.\n\nIf needed, re-add local host sources file since permissions cannot be restored.");
                 builder.setTitle("Info");
             } else {
                 builder.setMessage(message);
