@@ -107,8 +107,12 @@ public class AppInfoAdapter extends BaseAdapter {
         boolean checked = false;
         switch (appType) {
             case DISABLER:
-                checked = !appInfo.disabled;
                 boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                if (enabled) {
+                    checked = !appInfo.disabled;
+                } else {
+                    checked = true;
+                }
                 holder.binding.switchDisable.setEnabled(enabled);
                 break;
             case MOBILE_RESTRICTED:
