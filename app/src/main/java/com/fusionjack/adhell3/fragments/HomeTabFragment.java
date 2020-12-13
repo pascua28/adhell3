@@ -96,10 +96,10 @@ public class HomeTabFragment extends Fragment {
         binding.loadingBar.setVisibility(View.INVISIBLE);
 
         if (!BuildConfig.DISABLE_APPS) {
-            binding.appDisablerLayout.setVisibility(View.GONE);
+            binding.appDisablerSwitch.setEnabled(false);
         }
         if (!BuildConfig.APP_COMPONENT) {
-            binding.appComponentLayout.setVisibility(View.GONE);
+            binding.appComponentSwitch.setEnabled(false);
         }
 
         binding.domainRulesSwitch.setOnClickListener(v -> {

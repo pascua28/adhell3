@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/border"
     android:animateLayoutChanges="true"
     android:orientation="vertical"
@@ -60,10 +60,12 @@
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
             android:text="@string/domain_rules_info"
+            android:visibility="gone"
             app:autoSizeMaxTextSize="13sp"
             app:autoSizeMinTextSize="8sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"
+            tools:visibility="visible"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/domainRulesSwitch"
@@ -104,7 +106,7 @@
             app:autoSizeMaxTextSize="15sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"/>
 
         <TextView
             android:id="@+id/firewallInfoTextView"
@@ -117,10 +119,12 @@
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
             android:text="@string/firewall_rules_info"
+            android:visibility="gone"
             app:autoSizeMaxTextSize="13sp"
             app:autoSizeMinTextSize="8sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"
+            tools:visibility="visible"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/firewallRulesSwitch"
@@ -132,7 +136,7 @@
             android:gravity="top|end"
             android:clickable="false"
             android:focusable="false"
-            android:focusableInTouchMode="false" />
+            android:focusableInTouchMode="false"/>
     </RelativeLayout>
 
     <androidx.constraintlayout.widget.Barrier
@@ -169,7 +173,7 @@
             app:autoSizeMaxTextSize="15sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"/>
 
         <TextView
             android:id="@+id/disablerInfoTextView"
@@ -182,10 +186,12 @@
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
             android:text="@string/app_disabler_info"
+            android:visibility="gone"
             app:autoSizeMaxTextSize="13sp"
             app:autoSizeMinTextSize="8sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"
+            tools:visibility="visible"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/appDisablerSwitch"
@@ -197,7 +203,7 @@
             android:gravity="top|end"
             android:clickable="false"
             android:focusable="false"
-            android:focusableInTouchMode="false" />
+            android:focusableInTouchMode="false"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -227,7 +233,7 @@
             app:autoSizeMaxTextSize="15sp"
             app:autoSizeMinTextSize="10sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"/>
 
         <TextView
             android:id="@+id/appComponentInfoTextView"
@@ -240,10 +246,12 @@
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
             android:text="@string/app_component_toggle_info"
+            android:visibility="gone"
             app:autoSizeMaxTextSize="13sp"
             app:autoSizeMinTextSize="8sp"
             app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform" />
+            app:autoSizeTextType="uniform"
+            tools:visibility="visible"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/appComponentSwitch"
@@ -255,7 +263,7 @@
             android:gravity="top|end"
             android:clickable="false"
             android:focusable="false"
-            android:focusableInTouchMode="false" />
+            android:focusableInTouchMode="false"/>
     </RelativeLayout>
 
     <androidx.constraintlayout.widget.Barrier
@@ -263,7 +271,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="appDisablerLayout,appComponentLayout" />
+        app:constraint_referenced_ids="appDisablerLayout,appComponentLayout"/>
 
     <TextView
         android:id="@+id/infoTextView"
@@ -279,7 +287,7 @@
         android:background="@drawable/border"
         android:text="@string/last_day_blocked"
         android:textStyle="bold"
-        android:textAlignment="center" />
+        android:textAlignment="center"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeContainer"
@@ -301,7 +309,7 @@
             android:smoothScrollbar="true"
             android:fastScrollEnabled="true"
             android:fastScrollAlwaysVisible="false"
-            android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />
+            android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft"/>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar
@@ -314,7 +322,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/loading_animated"
-        android:visibility="visible" />
+        android:visibility="visible"/>
 
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/domain_actions"
@@ -326,5 +334,5 @@
         android:paddingBottom="5dp"
         app:sdMainFabClosedSrc="@drawable/ic_add"
         app:sdMainFabClosedIconColor="@android:color/white"
-        app:sdMainFabOpenedIconColor="@android:color/white" />
+        app:sdMainFabOpenedIconColor="@android:color/white"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
