@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
         def buildPropsFile = file('build.properties')
@@ -56,7 +56,7 @@ android {
 
         applicationId packageName
         minSdkVersion 23
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "3.2." + buildNumber
 
@@ -109,10 +109,10 @@ dependencies {
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     implementation 'android.arch.persistence.room:rxjava2:1.1.1'
 
-    implementation 'com.google.dagger:dagger:2.17'
-    annotationProcessor "com.google.dagger:dagger-compiler:2.17"
+    implementation 'com.google.dagger:dagger:2.30.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.30.1'
 
-    implementation 'com.google.guava:guava:26.0-android'
+    implementation 'com.google.guava:guava:30.0-jre'
 
     implementation 'com.getbase:floatingactionbutton:1.10.1'
 }
