@@ -16,6 +16,7 @@ public final class AppPreferences {
     private static final String AUTO_UPDATE_START_HOUR = "autoUpdateStartHour";
     private static final String AUTO_UPDATE_START_MINUTE = "autoUpdateStartMinute";
     private static final String AUTO_UPDATE_APP_COMPONENTS_UPDATE = "autoUpdateAppComponentsUpdate";
+    private static final String AUTO_UPDATE_BLOCKED_URL_REPORT = "autoUpdateBlockedUrlReport";
     private static final String AUTO_UPDATE_CLEAN_DATABASE = "autoUpdateCleanDatabase";
     private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
     private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
@@ -177,6 +178,16 @@ public final class AppPreferences {
     public void setCleanDBOnAutoUpdate(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(AUTO_UPDATE_CLEAN_DATABASE, enabled);
+        editor.apply();
+    }
+
+    public boolean getBlockedUrlReportAutoUpdate() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_BLOCKED_URL_REPORT, true);
+    }
+
+    public void setBlockedUrlReportAutoUpdate(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(AUTO_UPDATE_BLOCKED_URL_REPORT, enabled);
         editor.apply();
     }
 

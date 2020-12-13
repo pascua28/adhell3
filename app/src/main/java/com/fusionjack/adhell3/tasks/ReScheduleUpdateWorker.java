@@ -92,6 +92,11 @@ public class ReScheduleUpdateWorker extends Worker {
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build();
 
+        OneTimeWorkRequest blockedURLReportWorkRequest = new OneTimeWorkRequest.Builder(BlockedURLReportUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
         OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
@@ -104,6 +109,7 @@ public class ReScheduleUpdateWorker extends Worker {
         workManager.beginWith(rulesWorkRequest)
                 .then(appComponentsWorkRequest)
                 .then(cleanDBWorkRequest)
+                .then(blockedURLReportWorkRequest)
                 .then(reScheduleWorkRequest)
                 .enqueue();
     }

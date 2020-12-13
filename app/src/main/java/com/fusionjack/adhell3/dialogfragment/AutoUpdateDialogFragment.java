@@ -28,6 +28,7 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.databinding.DialogFragmentAutoUpdateBinding;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.AppComponentsUpdateWorker;
+import com.fusionjack.adhell3.tasks.BlockedURLReportUpdateWorker;
 import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.tasks.ReScheduleUpdateWorker;
 import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
@@ -94,6 +95,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         });
         binding.seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(binding.intervalSeekBar.getProgress())));
         binding.appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
+        binding.blockedUrlReportCheckBox.setChecked(AppPreferences.getInstance().getBlockedUrlReportAutoUpdate());
         binding.cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDBOnAutoUpdate());
         binding.logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
         binding.lowBatteryCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintLowBattery());
@@ -168,6 +170,11 @@ public class AutoUpdateDialogFragment extends DialogFragment {
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build();
 
+        OneTimeWorkRequest blockedURLReportWorkRequest = new OneTimeWorkRequest.Builder(BlockedURLReportUpdateWorker.class)
+                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build();
+
         OneTimeWorkRequest reScheduleWorkRequest = new OneTimeWorkRequest.Builder(ReScheduleUpdateWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
@@ -180,6 +187,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         workManager.beginWith(rulesWorkRequest)
                 .then(appComponentsWorkRequest)
                 .then(cleanDBWorkRequest)
+                .then(blockedURLReportWorkRequest)
                 .then(reScheduleWorkRequest)
                 .enqueue();
     }
@@ -197,6 +205,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         AppPreferences.getInstance().setAutoUpdateInterval(binding.intervalSeekBar.getProgress());
         AppPreferences.getInstance().setAppComponentsAutoUpdate(binding.appComponentsCheckBox.isChecked());
+        AppPreferences.getInstance().setBlockedUrlReportAutoUpdate(binding.blockedUrlReportCheckBox.isChecked());
         AppPreferences.getInstance().setCleanDBOnAutoUpdate(binding.cleanDBCheckBox.isChecked());
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(binding.logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(binding.lowBatteryCheckBox.isChecked());
