@@ -406,11 +406,12 @@ public class HomeTabFragment extends Fragment {
     private static class AppDisablerAsyncTask extends AsyncTask<Void, Void, Void> {
         private final HomeTabFragment parentFragment;
         private final AlertDialog dialog;
+        private final boolean enabled;
 
         AppDisablerAsyncTask(HomeTabFragment parentFragment, Context context) {
             this.parentFragment = parentFragment;
 
-            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+            this.enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
             String message = enabled ? "Enabling apps..." : "Disabling apps...";
             this.dialog = DialogUtils.getProgressDialog(message, context);
         }
@@ -422,7 +423,6 @@ public class HomeTabFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
             AdhellFactory.getInstance().setAppDisablerToggle(!enabled); // toggle the switch
             return null;
         }
