@@ -58,7 +58,6 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 public class MainActivity extends AppCompatActivity {
     public static boolean themeChanged = false;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
-    private static final Handler snackbarDelayedHandler = new Handler();
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
     private static int SELECTED_APP_TAB = AppTabPageFragment.PACKAGE_DISABLER_PAGE;
@@ -66,14 +65,13 @@ public class MainActivity extends AppCompatActivity {
     private static int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
-    private static AlertDialog permissionDialog;
     private static FilterAppInfo filterAppInfo;
-    private static Snackbar snackbar;
+    private final Handler snackbarDelayedHandler = new Handler();
+    private AlertDialog permissionDialog;
+    private Snackbar snackbar;
+    private FragmentManager fragmentManager;
     private ActivationDialogFragment activationDialogFragment;
     private ActivityMainBinding binding;
-
-    private static FragmentManager fragmentManager;
-    private static MainActivity mainActivity;
 
     private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
         AppPreferences.getInstance().setStorageTreePath(result.toString());
@@ -87,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
     public final ActivityResultLauncher<Intent> adminPermissionLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
-            MainActivity.makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
+            makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
                     .show();
             finishOnResume();
         }
@@ -134,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Migrate auto update job to new class if needed
         AutoUpdateDialogFragment.migrateOldAutoUpdateJob(this);
-
-        mainActivity = this;
     }
 
     @Override
@@ -172,11 +168,9 @@ public class MainActivity extends AppCompatActivity {
         closeActivity(false);
 
         // Clear resources to prevent memory leak
-        snackbar = null;
         activationDialogFragment = null;
         permissionDialog = null;
         fragmentManager = null;
-        mainActivity = null;
         binding = null;
 
         super.onDestroy();
@@ -192,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             doubleBackToExitPressedOnce = true;
-            MainActivity.makeSnackbar("Press once again to exit", Snackbar.LENGTH_SHORT)
+            makeSnackbar("Press once again to exit", Snackbar.LENGTH_SHORT)
                     .show();
 
             new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
@@ -258,17 +252,16 @@ public class MainActivity extends AppCompatActivity {
 
     public static void setSelectFileActivityLaunched(boolean isLaunched) { selectFileActivityLaunched = isLaunched; }
 
-    public static ActivityResultLauncher<Intent> getAdminPermissionLauncher() {
-        return mainActivity.adminPermissionLauncher;
+    public ActivityResultLauncher<Intent> getAdminPermissionLauncher() {
+        return adminPermissionLauncher;
     }
 
-    public static Snackbar makeSnackbar(String message, int showDelay) {
+    public Snackbar makeSnackbar(String message, int showDelay) {
         int duration = showDelay == Snackbar.LENGTH_LONG ? 2750 : 1500;
-        ViewGroup rootView = mainActivity.binding.getRoot();
-        Snackbar snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_INDEFINITE)
-                .setAnchorView(mainActivity.binding.bottomBar)
+        ViewGroup rootView = binding.getRoot();
+        this.snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_INDEFINITE)
+                .setAnchorView(binding.bottomBar)
                 .setDuration(duration);
-        MainActivity.snackbar = snackbar;
 
         snackbarDelayedHandler.removeCallbacksAndMessages(null);
 
@@ -277,9 +270,9 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> {
                 snackbarDelayedHandler.postDelayed(() -> fab.animate().translationY(0).setDuration(75), (duration + 150));
                 if (snackbar.getView().getHeight() > 1) {
-                    fab.animate().translationY(-(snackbar.getView().getHeight() + (18 * ((float) mainActivity.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT)))).setDuration(75);
+                    fab.animate().translationY(-(snackbar.getView().getHeight() + (18 * ((float) getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT)))).setDuration(75);
                 } else {
-                    fab.animate().translationY(-(65 * ((float) mainActivity.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT))).setDuration(100);
+                    fab.animate().translationY(-(65 * ((float) getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT))).setDuration(100);
                 }
             }, 30);
         }
@@ -416,8 +409,8 @@ public class MainActivity extends AppCompatActivity {
                 replacing = new Fragment();
             }
             // Hide Snackbar if is shown
-            if (MainActivity.snackbar != null && MainActivity.snackbar.isShown()) {
-                MainActivity.snackbar.dismiss();
+            if (snackbar != null && snackbar.isShown()) {
+                snackbar.dismiss();
             }
             // Reset double back press to exit
             doubleBackToExitPressedOnce = false;

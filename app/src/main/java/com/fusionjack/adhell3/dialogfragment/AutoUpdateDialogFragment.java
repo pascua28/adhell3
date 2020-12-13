@@ -217,14 +217,20 @@ public class AutoUpdateDialogFragment extends DialogFragment {
         if (binding.globalSwitch.isChecked()) {
             enqueueAutoUpdateWork(workManager);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                MainActivity.makeSnackbar("Auto update enabled", Snackbar.LENGTH_LONG)
-                        .show();
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    mainActivity.makeSnackbar("Auto update enabled", Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         } else {
             cancelAllWork(workManager);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                MainActivity.makeSnackbar("Auto update disabled", Snackbar.LENGTH_LONG)
-                        .show();
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    mainActivity.makeSnackbar("Auto update disabled", Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         }
         AppPreferences.getInstance().setAutoUpdateMigrated(true);

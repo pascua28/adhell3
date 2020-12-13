@@ -100,8 +100,11 @@ public class BlacklistFragment extends UserListFragment {
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             String domainToAdd = dialogBlacklistDomainBinding.domainEditText.getText().toString().trim();
                             if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                        .show();
+                                if (getActivity() instanceof MainActivity) {
+                                    MainActivity mainActivity = (MainActivity) getActivity();
+                                    mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                            .show();
+                                }
                             } else {
                                 viewModel.addItem(domainToAdd, addObserver);
                             }
@@ -119,8 +122,11 @@ public class BlacklistFragment extends UserListFragment {
                             String ruleToAdd = dialogBlacklistRuleBinding.ruleEditText.getText().toString().trim();
                             StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
                             if (tokens.countTokens() != 3) {
-                                MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                        .show();
+                                if (getActivity() instanceof MainActivity) {
+                                    MainActivity mainActivity = (MainActivity) getActivity();
+                                    mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                            .show();
+                                }
                             } else {
                                 viewModel.addItem(ruleToAdd, addObserver);
                             }

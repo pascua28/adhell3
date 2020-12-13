@@ -78,11 +78,11 @@ public final class DeviceAdminInteractor {
     /**
      * Force user to enable administrator
      */
-    public void forceEnableAdmin() {
+    public void forceEnableAdmin(MainActivity mainActivity) {
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Policy provider");
-        MainActivity.getAdminPermissionLauncher().launch(intent);
+        mainActivity.getAdminPermissionLauncher().launch(intent);
     }
 
     public void activateKnoxKey(SharedPreferences sharedPreferences, Context context) {

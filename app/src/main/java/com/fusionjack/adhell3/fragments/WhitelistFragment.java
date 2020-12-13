@@ -89,16 +89,22 @@ public class WhitelistFragment extends UserListFragment {
                             String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
                             if (domainToAdd.indexOf('|') == -1) {
                                 if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                    MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                            .show();
+                                    if (getActivity() instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) getActivity();
+                                        mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                .show();
+                                    }
                                     return;
                                 }
                             } else {
                                 // packageName|url
                                 StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                 if (tokens.countTokens() != 2) {
-                                    MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                            .show();
+                                    if (getActivity() instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) getActivity();
+                                        mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                .show();
+                                    }
                                     return;
                                 }
                             }

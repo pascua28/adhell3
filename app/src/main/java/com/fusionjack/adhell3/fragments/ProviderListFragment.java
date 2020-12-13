@@ -134,8 +134,11 @@ public class ProviderListFragment extends Fragment {
                             if (isValidUri(provider)) {
                                 new AddProviderAsyncTask(provider, binding).execute();
                             } else {
-                                MainActivity.makeSnackbar("Url is invalid", Snackbar.LENGTH_LONG)
-                                        .show();
+                                if (getActivity() instanceof MainActivity) {
+                                    MainActivity mainActivity = (MainActivity) getActivity();
+                                    mainActivity.makeSnackbar("Url is invalid", Snackbar.LENGTH_LONG)
+                                            .show();
+                                }
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)

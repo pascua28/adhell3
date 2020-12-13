@@ -63,8 +63,11 @@ public class AppFragment extends Fragment {
             @Override
             public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
-                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
         };

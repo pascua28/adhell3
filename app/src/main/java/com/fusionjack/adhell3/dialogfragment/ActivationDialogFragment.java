@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -107,8 +108,11 @@ public class ActivationDialogFragment extends DialogFragment {
                         deviceAdminInteractor.deactivateKnoxKey(sharedPreferences, getContext());
                     } catch (Exception ex) {
                         if (ex.getMessage() != null && getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                            MainActivity.makeSnackbar(ex.getMessage(), Snackbar.LENGTH_LONG)
-                                    .show();
+                            if (getActivity() instanceof MainActivity) {
+                                MainActivity mainActivity = (MainActivity) getActivity();
+                                mainActivity.makeSnackbar(ex.getMessage(), Snackbar.LENGTH_LONG)
+                                        .show();
+                            }
                         }
                         setLicenseState(true);
                     }
@@ -158,9 +162,12 @@ public class ActivationDialogFragment extends DialogFragment {
         String knoxKey = deviceAdminInteractor.getKnoxKey(sharedPreferences);
         binding.knoxKeyEditText.setText(knoxKey);
 
-        binding.turnOnAdminButton.setOnClickListener(v ->
-                deviceAdminInteractor.forceEnableAdmin()
-        );
+        binding.turnOnAdminButton.setOnClickListener(v -> {
+            FragmentActivity fragmentActivity = getActivity();
+            if (fragmentActivity instanceof MainActivity) {
+                deviceAdminInteractor.forceEnableAdmin((MainActivity) fragmentActivity);
+            }
+        });
 
         binding.activateKnoxButton.setOnClickListener(v -> {
             deviceAdminInteractor.setKnoxKey(sharedPreferences, binding.knoxKeyEditText.getText().toString());
@@ -232,8 +239,11 @@ public class ActivationDialogFragment extends DialogFragment {
                 setLicenseState(true);
                 LogUtils.info("License activated");
                 if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                    MainActivity.makeSnackbar("License activated", Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("License activated", Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 }
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -246,8 +256,11 @@ public class ActivationDialogFragment extends DialogFragment {
                 setLicenseState(false);
                 LogUtils.info("License deactivated");
                 if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                    MainActivity.makeSnackbar("License deactivated", Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("License deactivated", Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 }
                 setCancelable(false);
             }
@@ -259,8 +272,11 @@ public class ActivationDialogFragment extends DialogFragment {
                 setLicenseState(true);
                 LogUtils.info("License activated");
                 if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                    MainActivity.makeSnackbar("License activated", Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("License activated", Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 }
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -291,10 +307,13 @@ public class ActivationDialogFragment extends DialogFragment {
             }
             LogUtils.error("Status: " + status + ". Error code: " + errorCode);
             if (getActivity() != null && getActivity().findViewById(R.id.bottomBar) != null) {
-                MainActivity.makeSnackbar(
-                        String.format(Locale.getDefault(), "Status: %s. Error code: %d", status, errorCode),
-                        Snackbar.LENGTH_LONG)
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    mainActivity.makeSnackbar(
+                            String.format(Locale.getDefault(), "Status: %s. Error code: %d", status, errorCode),
+                            Snackbar.LENGTH_LONG)
                             .show();
+                }
             }
         }
 

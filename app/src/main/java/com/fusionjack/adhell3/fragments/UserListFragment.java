@@ -31,19 +31,28 @@ public abstract class UserListFragment extends Fragment {
             @Override
             public void onSuccess(@NonNull String item) {
                 if (item.indexOf('|') == -1) {
-                    MainActivity.makeSnackbar("Domain has been added", Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("Domain has been added", Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 } else {
-                    MainActivity.makeSnackbar("Rule has been added", Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("Rule has been added", Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
 
             @Override
             public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
-                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
         };
@@ -56,19 +65,28 @@ public abstract class UserListFragment extends Fragment {
             @Override
             public void onSuccess(@NonNull String item) {
                 if (item.indexOf('|') == -1) {
-                    MainActivity.makeSnackbar("Domain has been removed", Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("Domain has been removed", Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 } else {
-                    MainActivity.makeSnackbar("Rule has been removed", Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar("Rule has been removed", Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
 
             @Override
             public void onError(@NonNull Throwable e) {
                 if (e.getMessage() != null) {
-                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                 }
             }
         };

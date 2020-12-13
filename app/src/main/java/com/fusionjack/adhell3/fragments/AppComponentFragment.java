@@ -152,16 +152,22 @@ public class AppComponentFragment extends AppFragment {
             @Override
             public void onSuccess(@NonNull String s) {
                 progressDialog.dismiss();
-                MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
-                        .show();
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    mainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
 
             @Override
             public void onError(Throwable e) {
                 progressDialog.dismiss();
                 if (e.getMessage() != null) {
-                    MainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(e.getMessage(), Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 }
             }
         };

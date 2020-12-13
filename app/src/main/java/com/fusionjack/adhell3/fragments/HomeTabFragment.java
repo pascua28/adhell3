@@ -606,23 +606,32 @@ public class HomeTabFragment extends Fragment {
                                     String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
                                     if (domainToAdd.indexOf('|') == -1) {
                                         if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                            MainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
                                             return;
                                         }
                                     } else {
                                         // packageName|url
                                         StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
                                         if (tokens.countTokens() != 2) {
-                                            MainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
                                             return;
                                         }
                                     }
                                     WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
                                     AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                                    MainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
-                                            .show();
+                                    if (context instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) context;
+                                        mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
+                                                .show();
+                                    }
                                 })
                                 .setNegativeButton(android.R.string.no, null)
                                 .create();
@@ -697,8 +706,11 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             Context context = contextReference.get();
             if (context != null) {
-                    MainActivity.makeSnackbar("Blocked domains have been exported!", Snackbar.LENGTH_LONG)
-                        .show();
+                if (context instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) context;
+                    mainActivity.makeSnackbar("Blocked domains have been exported!", Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         }
     }

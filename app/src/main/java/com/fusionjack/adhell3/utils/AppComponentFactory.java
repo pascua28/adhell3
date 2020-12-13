@@ -121,14 +121,20 @@ public final class AppComponentFactory {
 
             @Override
             public void onSuccess(@NonNull String s) {
-                MainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
-                        .show();
+                if (context instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) context;
+                    mainActivity.makeSnackbar(s, Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
 
             @Override
             public void onError(Throwable e) {
-                MainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to migrate old batch files! %s", e.getMessage()), Snackbar.LENGTH_LONG)
-                        .show();
+                if (context instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) context;
+                    mainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to migrate old batch files! %s", e.getMessage()), Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         };
 
@@ -168,8 +174,11 @@ public final class AppComponentFactory {
 
             @Override
             public void onError(Throwable e) {
-                MainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to check if migrate old batch files is needed! %s", e.getMessage()), Snackbar.LENGTH_LONG)
-                        .show();
+                if (context instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) context;
+                    mainActivity.makeSnackbar(String.format(Locale.getDefault(), "Unable to check if migrate old batch files is needed! %s", e.getMessage()), Snackbar.LENGTH_LONG)
+                            .show();
+                }
             }
         };
 

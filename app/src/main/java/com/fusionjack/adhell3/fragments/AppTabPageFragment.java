@@ -225,8 +225,11 @@ public class AppTabPageFragment extends AppFragment {
         AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setView(dialogQuestionBinding.getRoot())
                 .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    MainActivity.makeSnackbar(getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(getString(R.string.enabled_all_apps), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
                     AsyncTask.execute(() -> {
                         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
                         switch (page) {

@@ -195,8 +195,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             case RESTORE_WARNING_PREFERENCE: {
                 AppPreferences.getInstance().setWarningDialogAppComponentDontShow(false);
-                MainActivity.makeSnackbar(getString(R.string.restore_warning_success), Snackbar.LENGTH_LONG)
-                        .show();
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    mainActivity.makeSnackbar(getString(R.string.restore_warning_success), Snackbar.LENGTH_LONG)
+                            .show();
+                }
                 break;
             }
             case REVOKE_STORAGE_PERMISSION: {
@@ -212,8 +215,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             context.getContentResolver().releasePersistableUriPermission(treePath, intentFlags);
                             context.revokeUriPermission(treePath, intentFlags);
                             AppPreferences.getInstance().setStorageTreePath("");
-                            MainActivity.makeSnackbar(getString(R.string.revoke_storage_permission_success), Snackbar.LENGTH_LONG)
-                                    .show();
+                            if (getActivity() instanceof MainActivity) {
+                                MainActivity mainActivity = (MainActivity) getActivity();
+                                mainActivity.makeSnackbar(getString(R.string.revoke_storage_permission_success), Snackbar.LENGTH_LONG)
+                                        .show();
+                            }
                         })
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -237,11 +243,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case CREATE_LOGCAT_PREFERENCE: {
                 String filename = LogUtils.createLogcat();
                 if (filename.isEmpty()) {
-                    MainActivity.makeSnackbar(getString(R.string.logcat_not_created), Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(getString(R.string.logcat_not_created), Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 } else {
-                    MainActivity.makeSnackbar(String.format(Locale.getDefault(), getString(R.string.logcat_created), filename), Snackbar.LENGTH_LONG)
-                            .show();
+                    if (getActivity() instanceof MainActivity) {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        mainActivity.makeSnackbar(String.format(Locale.getDefault(), getString(R.string.logcat_created), filename), Snackbar.LENGTH_LONG)
+                                .show();
+                    }
                 }
                 break;
             }

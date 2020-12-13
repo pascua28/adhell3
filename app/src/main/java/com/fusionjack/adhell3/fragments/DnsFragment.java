@@ -195,9 +195,12 @@ public class DnsFragment extends AppFragment {
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                             Handler handler = new Handler(Looper.getMainLooper()) {
                                 @Override
-                                public void handleMessage(Message msg) {
-                                    MainActivity.makeSnackbar(getString(Integer.parseInt(msg.obj.toString())), Snackbar.LENGTH_LONG)
-                                            .show();
+                                public void handleMessage(@NonNull Message msg) {
+                                    if (getActivity() instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) getActivity();
+                                        mainActivity.makeSnackbar(getString(Integer.parseInt(msg.obj.toString())), Snackbar.LENGTH_LONG)
+                                                .show();
+                                    }
                                 }
                             };
 
