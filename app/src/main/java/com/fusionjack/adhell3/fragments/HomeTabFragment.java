@@ -327,15 +327,11 @@ public class HomeTabFragment extends Fragment {
                 String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
                 binding.firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
 
-                if (appDisablerEnabled) {
-                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                    binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
-                }
+                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
+                binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
 
-                if (appComponentEnabled) {
-                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
-                }
+                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
+                binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
             }
         }
 
