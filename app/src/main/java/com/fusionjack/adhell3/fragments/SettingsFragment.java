@@ -285,9 +285,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private static class RestoreDatabaseAsyncTask extends AsyncTask<Void, String, String> {
-        private final AlertDialog dialog;
-        private final AlertDialog.Builder builder;
         private final WeakReference<Context> contextWeakReference;
+        private final AlertDialog dialog;
+        private AlertDialog.Builder builder;
 
         RestoreDatabaseAsyncTask(Context context) {
             this.builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
@@ -340,13 +340,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             AlertDialog dialog = builder.create();
 
             dialog.show();
+
+            // Clean resource to prevent memory leak
+            this.builder = null;
         }
     }
 
     private static class CleanDatabaseAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final FragmentManager fragmentManager;
-        private final Handler handler;
         private final WeakReference<Context> contextReference;
+        private FragmentManager fragmentManager;
+        private Handler handler;
         private FirewallDialogFragment fragment;
         private AppCache appCache;
         private AppDatabase appDatabase;
@@ -382,6 +385,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         protected void onPostExecute(Void aVoid) {
             fragment.enableCloseButton();
+
+            // Clean resource to prevent memory leak
+            this.fragmentManager = null;
+            this.handler = null;
+            this.fragment = null;
+            this.appCache = null;
+            this.appDatabase = null;
         }
     }
 }

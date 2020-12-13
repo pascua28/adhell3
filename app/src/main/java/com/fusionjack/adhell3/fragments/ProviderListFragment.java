@@ -232,7 +232,7 @@ public class ProviderListFragment extends Fragment {
     private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
         private final String provider;
         private BlockUrlProvider blockUrlProvider;
-        private final FragmentProviderBinding binding;
+        private FragmentProviderBinding binding;
 
         AddProviderAsyncTask(String provider, FragmentProviderBinding binding) {
             this.provider = provider;
@@ -266,12 +266,16 @@ public class ProviderListFragment extends Fragment {
                 new LoadProviderAsyncTask(blockUrlProvider, binding).execute();
             }
             binding.loadingBarProvider.setVisibility(View.GONE);
+
+            // Clean resource to prevent memory leak
+            this.blockUrlProvider = null;
+            this.binding = null;
         }
     }
 
     private static class LoadProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final BlockUrlProvider provider;
-        private final FragmentProviderBinding binding;
+        private BlockUrlProvider provider;
+        private FragmentProviderBinding binding;
 
         LoadProviderAsyncTask(BlockUrlProvider provider, FragmentProviderBinding binding) {
             this.provider = provider;
@@ -307,13 +311,17 @@ public class ProviderListFragment extends Fragment {
                 binding.providerListView.startAnimation(animation);
             }
             binding.loadingBarProvider.setVisibility(View.GONE);
+
+            // Clean resource to prevent memory leak
+            this.provider = null;
+            this.binding = null;
         }
     }
 
     private static class UpdateProviderAsyncTask extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> contextWeakReference;
         private final boolean updateProviders;
-        private final FragmentProviderBinding binding;
+        private FragmentProviderBinding binding;
 
         UpdateProviderAsyncTask(Context context, boolean updateProviders, FragmentProviderBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
@@ -341,11 +349,14 @@ public class ProviderListFragment extends Fragment {
             binding.providerSwipeContainer.setRefreshing(false);
 
             new SetDomainCountAsyncTask(0, binding).execute();
+
+            // Clean resource to prevent memory leak
+            this.binding = null;
         }
     }
 
     private static class SetProviderAsyncTask extends AsyncTask<Void, Void, List<BlockUrlProvider>> {
-        private final FragmentProviderBinding binding;
+        private FragmentProviderBinding binding;
 
         SetProviderAsyncTask(FragmentProviderBinding binding) {
             this.binding = binding;
@@ -385,6 +396,8 @@ public class ProviderListFragment extends Fragment {
                     binding.providerListView.startAnimation(animation);
                 }
             }
+            // Clean resource to prevent memory leak
+            this.binding = null;
         }
 
         private BlockUrlProvider getProvider(long id, List<BlockUrlProvider> providers) {
@@ -399,7 +412,7 @@ public class ProviderListFragment extends Fragment {
 
     private static class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
         private final int delay;
-        private final FragmentProviderBinding binding;
+        private FragmentProviderBinding binding;
 
         SetDomainCountAsyncTask(int delay, FragmentProviderBinding binding) {
             this.delay = delay;
@@ -421,6 +434,9 @@ public class ProviderListFragment extends Fragment {
         protected void onPostExecute(Integer count) {
             binding.infoTextView.setText(String.format(strTotalUniqueDomains, count));
             binding.loadingBarProvider.setVisibility(View.GONE);
+
+            // Clean resource to prevent memory leak
+            this.binding = null;
         }
     }
 }

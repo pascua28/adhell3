@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog permissionDialog;
     private Snackbar snackbar;
     private FragmentManager fragmentManager;
-    private ActivationDialogFragment activationDialogFragment;
     private ActivityMainBinding binding;
 
     private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
@@ -118,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fragmentManager = getSupportFragmentManager();
-        activationDialogFragment = new ActivationDialogFragment();
-        activationDialogFragment.setCancelable(false);
 
         setTheme();
 
@@ -168,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         closeActivity(false);
 
         // Clear resources to prevent memory leak
-        activationDialogFragment = null;
         permissionDialog = null;
         fragmentManager = null;
         binding = null;
@@ -336,6 +332,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isKnoxValid() {
+        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
+        activationDialogFragment.setCancelable(false);
+
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
             if (isActivationDialogNotVisible()) {
@@ -469,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
         private final WeakReference<Context> applicationContextReference;
-        private final FragmentManager fragmentManager;
+        private FragmentManager fragmentManager;
         private Fragment visibleFragment;
         private Set<String> appCachePackageNames;
         private List<ApplicationInfo> installedPackages;
@@ -516,6 +515,9 @@ public class MainActivity extends AppCompatActivity {
                     visibleFragment.onResume();
                 }
             }
+            // Clean resources to prevent memory leak
+            this.fragmentManager = null;
+            this.visibleFragment = null;
         }
     }
 }

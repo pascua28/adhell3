@@ -11,7 +11,7 @@ import com.fusionjack.adhell3.utils.DialogUtils;
 
 public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
     private final AlertDialog dialog;
-    private final AlertDialog.Builder builder;
+    private AlertDialog.Builder builder;
 
     public BackupDatabaseAsyncTask(Context context) {
         dialog = DialogUtils.getProgressDialog("Backup database is running...", context);
@@ -50,5 +50,8 @@ public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
         AlertDialog dialog = builder.create();
 
         dialog.show();
+
+        // Clean resource to prevent memory leak
+        this.builder = null;
     }
 }

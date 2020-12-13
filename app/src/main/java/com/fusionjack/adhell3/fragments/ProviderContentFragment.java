@@ -93,9 +93,9 @@ public class ProviderContentFragment extends Fragment {
 
     private static class LoadBlockedUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
         private final WeakReference<Context> contextReference;
-        private final AppDatabase appDatabase;
         private final Long providerId;
-        private final FragmentShowBlockedUrlsBinding binding;
+        private AppDatabase appDatabase;
+        private FragmentShowBlockedUrlsBinding binding;
 
         LoadBlockedUrlAsyncTask(Context context, Long providerId, FragmentShowBlockedUrlsBinding binding) {
             this.contextReference = new WeakReference<>(context);
@@ -134,15 +134,18 @@ public class ProviderContentFragment extends Fragment {
                     binding.blockedUrlList.startAnimation(animation);
                 }
             }
+            // Clean resource to prevent memory leak
+            this.appDatabase = null;
+            this.binding = null;
         }
     }
 
     private static class FilterUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
         private final WeakReference<Context> contextReference;
-        private final AppDatabase appDatabase;
         private final String text;
         private final Long providerId;
-        private final FragmentShowBlockedUrlsBinding binding;
+        private AppDatabase appDatabase;
+        private FragmentShowBlockedUrlsBinding binding;
 
         FilterUrlAsyncTask(String text, Long providerId, Context context, FragmentShowBlockedUrlsBinding binding) {
             this.text = text;
@@ -171,6 +174,9 @@ public class ProviderContentFragment extends Fragment {
                 binding.blockedUrlList.setAdapter(itemsAdapter);
                 itemsAdapter.notifyDataSetChanged();
             }
+            // Clean resource to prevent memory leak
+            this.appDatabase = null;
+            this.binding = null;
         }
     }
 }

@@ -296,6 +296,7 @@ public class HomeTabFragment extends Fragment {
 
     private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> contextWeakReference;
+        private final WeakReference<FragmentBlockerBinding> bindingWeakReference;
         private int mobileSize;
         private int wifiSize;
         private int customSize;
@@ -307,19 +308,19 @@ public class HomeTabFragment extends Fragment {
         private int serviceSize;
         private int receiverSize;
         private int activitySize;
-        private final FragmentBlockerBinding binding;
         private final boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
         private final boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
 
         SetInfoAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
-            this.binding = binding;
+            this.bindingWeakReference = new WeakReference<>(binding);
         }
 
         @Override
         protected void onPreExecute() {
             Context context = contextWeakReference.get();
-            if (context != null) {
+            FragmentBlockerBinding binding = bindingWeakReference.get();
+            if (context != null && binding != null) {
                 String domainInfo = context.getResources().getString(R.string.domain_rules_info);
                 binding.domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
 
@@ -383,7 +384,8 @@ public class HomeTabFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             Context context = contextWeakReference.get();
-            if (context != null) {
+            FragmentBlockerBinding binding = bindingWeakReference.get();
+            if (context != null && binding != null) {
                 String domainInfo = context.getResources().getString(R.string.domain_rules_info);
                 binding.domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
 
@@ -404,8 +406,8 @@ public class HomeTabFragment extends Fragment {
     }
 
     private static class AppDisablerAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final HomeTabFragment parentFragment;
-        private final AlertDialog dialog;
+        private HomeTabFragment parentFragment;
+        private AlertDialog dialog;
         private final boolean enabled;
 
         AppDisablerAsyncTask(HomeTabFragment parentFragment, Context context) {
@@ -433,12 +435,16 @@ public class HomeTabFragment extends Fragment {
                 dialog.dismiss();
             }
             parentFragment.updateUserInterface();
+
+            // Clean resources to prevent memory leak
+            this.parentFragment = null;
+            this.dialog = null;
         }
     }
 
     private static class AppComponentAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final HomeTabFragment parentFragment;
-        private final AlertDialog dialog;
+        private HomeTabFragment parentFragment;
+        private AlertDialog dialog;
 
         AppComponentAsyncTask(HomeTabFragment parentFragment, Context context) {
             this.parentFragment = parentFragment;
@@ -466,15 +472,19 @@ public class HomeTabFragment extends Fragment {
                 dialog.dismiss();
             }
             parentFragment.updateUserInterface();
+
+            // Clean resources to prevent memory leak
+            this.parentFragment = null;
+            this.dialog = null;
         }
     }
 
     private static class SetFirewallAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final FragmentManager fragmentManager;
+        private FragmentManager fragmentManager;
         private FirewallDialogFragment fragment;
-        private final HomeTabFragment parentFragment;
-        private final ContentBlocker contentBlocker;
-        private final Handler handler;
+        private HomeTabFragment parentFragment;
+        private ContentBlocker contentBlocker;
+        private Handler handler;
         private final boolean isDomain;
         private final boolean isDomainRuleEmpty;
         private final boolean isFirewallRuleEmpty;
@@ -549,12 +559,21 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             fragment.enableCloseButton();
             parentFragment.updateUserInterface();
+
+            // Clean resources to prevent memory leak
+            this.contentBlocker = null;
+            this.handler.removeCallbacksAndMessages(null);
+            this.handler = null;
+            this.fragmentManager = null;
+            this.fragment = null;
+            this.parentFragment = null;
+
         }
     }
 
     private static class RefreshAsyncTask extends AsyncTask<Void, Void, HashMap<String, List<ReportBlockedUrl>>> {
         private final WeakReference<Context> contextReference;
-        private final FragmentBlockerBinding binding;
+        private FragmentBlockerBinding binding;
 
         RefreshAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextReference = new WeakReference<>(context);
@@ -661,11 +680,13 @@ public class HomeTabFragment extends Fragment {
                     binding.blockedDomainsListView.setVisibility(View.VISIBLE);
                     binding.blockedDomainsListView.startAnimation(animation);
                 }
+
+            // Clean resource to prevent memory leak
+            this.binding = null;
         }
     }
 
     private static class ExportDomainsAsyncTask extends AsyncTask<Void, Void, Void> {
-
         private final WeakReference<Context> contextReference;
 
         ExportDomainsAsyncTask(Context context) {

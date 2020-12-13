@@ -283,7 +283,7 @@ public class ComponentTabPageFragment extends Fragment {
         private final String packageName;
         private final IComponentInfo componentInfo;
         private final WeakReference<Context> contextWeakReference;
-        private final ApplicationPolicy appPolicy;
+        private ApplicationPolicy appPolicy;
 
         SetComponentAsyncTask(int page, String packageName, IComponentInfo componentInfo, Context context) {
             this.page = page;
@@ -443,6 +443,8 @@ public class ComponentTabPageFragment extends Fragment {
                     }
                 }
             }
+            // Clean resource to prevent memory leak
+            this.appPolicy = null;
         }
     }
 

@@ -100,10 +100,10 @@ public class AppCache {
 
     private static class AppCacheAsyncTask extends AsyncTask<Void, Void, Throwable> {
         private AlertDialog dialog;
+        private Handler handler;
         private final Map<String, Drawable> appsIcons;
         private final Map<String, String> appsNames;
         private final Map<String, String> versionNames;
-        private final Handler handler;
         private final WeakReference<Context> contextWeakReference;
 
         AppCacheAsyncTask(Context context, Handler handler, Map<String, Drawable> appsIcons,
@@ -149,6 +149,8 @@ public class AppCache {
             } else if (th != null && handler != null) {
                 handler.obtainMessage(0, th.getMessage()).sendToTarget();
             }
+            this.dialog = null;
+            this.handler = null;
         }
 
         public Throwable reloadAppCache() {

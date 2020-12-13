@@ -124,8 +124,8 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
     }
 
     private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final BlockUrlProvider provider;
-        private final BlockUrlProviderAdapter adapter;
+        private BlockUrlProvider provider;
+        private BlockUrlProviderAdapter adapter;
 
         DeleteProviderAsyncTask(BlockUrlProvider provider, BlockUrlProviderAdapter adapter) {
             this.provider = provider;
@@ -143,14 +143,18 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         protected void onPostExecute(Void aVoid) {
             adapter.remove(provider);
             adapter.notifyDataSetChanged();
+
+            // Clean resource to prevent memory leak
+            this.provider = null;
+            this.adapter = null;
         }
     }
 
     private static class GetAllBlockedUrlsAsyncTask extends AsyncTask<Void, Void, Integer> {
-        private final BlockUrlProvider provider;
-        private final boolean isChecked;
-        private final BlockUrlProviderAdapter adapter;
         private final WeakReference<Context> contextReference;
+        private final boolean isChecked;
+        private BlockUrlProvider provider;
+        private BlockUrlProviderAdapter adapter;
 
         GetAllBlockedUrlsAsyncTask(BlockUrlProvider provider, boolean isChecked, BlockUrlProviderAdapter adapter, Context context) {
             this.provider = provider;
@@ -188,6 +192,9 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     }
                 }
             }
+            // Clean resource to prevent memory leak
+            this.provider = null;
+            this.adapter = null;
         }
     }
 
