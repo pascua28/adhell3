@@ -26,6 +26,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import com.fusionjack.adhell3.BuildConfig;
@@ -49,6 +50,7 @@ import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.viewmodel.HomeTabViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
@@ -69,7 +71,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 public class HomeTabFragment extends Fragment {
-
     private static final String STORAGE_FOLDERS = "Adhell3/Exports";
     private static final String EXPORTED_DOMAINS_FILENAME = "adhell_exported_domains.txt";
 
@@ -113,6 +114,9 @@ public class HomeTabFragment extends Fragment {
                 binding.domainInfoTextView.setVisibility(View.GONE);
             }
         });
+        String domainInfo = getResources().getString(R.string.domain_rules_info);
+        binding.domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
+
         binding.firewallRulesSwitch.setOnClickListener(v -> {
             LogUtils.info("Firewall switch button has been clicked");
             new SetFirewallAsyncTask(false, this, fragmentManager, getContext(), false).execute();
@@ -124,6 +128,9 @@ public class HomeTabFragment extends Fragment {
                 binding.firewallInfoTextView.setVisibility(View.GONE);
             }
         });
+        String firewallInfo = getResources().getString(R.string.firewall_rules_info);
+        binding.firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
+
         binding.appDisablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
             new AppDisablerAsyncTask(this, getContext()).execute();
@@ -135,6 +142,9 @@ public class HomeTabFragment extends Fragment {
                 binding.disablerInfoTextView.setVisibility(View.GONE);
             }
         });
+        String disablerInfo = getResources().getString(R.string.app_disabler_info);
+        binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
+
         binding.appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info("App component switch button has been clicked");
             new AppComponentAsyncTask(this, getContext()).execute();
@@ -146,6 +156,8 @@ public class HomeTabFragment extends Fragment {
                 binding.appComponentInfoTextView.setVisibility(View.GONE);
             }
         });
+        String appComponentInfo = getResources().getString(R.string.app_component_toggle_info);
+        binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
 
         binding.domainActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
                 .setLabel(getString(R.string.export_domains_title))
@@ -314,25 +326,6 @@ public class HomeTabFragment extends Fragment {
         SetInfoAsyncTask(Context context, FragmentBlockerBinding binding) {
             this.contextWeakReference = new WeakReference<>(context);
             this.bindingWeakReference = new WeakReference<>(binding);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Context context = contextWeakReference.get();
-            FragmentBlockerBinding binding = bindingWeakReference.get();
-            if (context != null && binding != null) {
-                String domainInfo = context.getResources().getString(R.string.domain_rules_info);
-                binding.domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
-
-                String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
-                binding.firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
-
-                String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                binding.disablerInfoTextView.setText(String.format(disablerInfo, 0));
-
-                String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                binding.appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0, 0));
-            }
         }
 
         @Override

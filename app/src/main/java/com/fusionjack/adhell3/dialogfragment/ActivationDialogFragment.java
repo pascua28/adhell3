@@ -46,10 +46,10 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ActivationDialogFragment extends DialogFragment {
     public static final String DIALOG_TAG = "activation_dialog";
-    private DeviceAdminInteractor deviceAdminInteractor;
-    private Completable knoxKeyObservable;
-    private CompletableObserver knoxKeyObserver;
-    private BroadcastReceiver receiver;
+    private final DeviceAdminInteractor deviceAdminInteractor;
+    private final Completable knoxKeyObservable;
+    private final CompletableObserver knoxKeyObserver;
+    private final BroadcastReceiver receiver;
     private SharedPreferences sharedPreferences;
     private DialogFragmentActivationBinding binding;
 
@@ -231,10 +231,6 @@ public class ActivationDialogFragment extends DialogFragment {
     @Override
     public void onDestroy() {
         // Clean resource to prevent memory leak
-        this.deviceAdminInteractor = null;
-        this.knoxKeyObservable = null;
-        this.knoxKeyObserver = null;
-        this.receiver = null;
         this.sharedPreferences = null;
         this.binding = null;
 
