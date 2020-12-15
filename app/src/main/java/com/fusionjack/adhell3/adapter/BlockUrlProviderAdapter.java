@@ -76,7 +76,11 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         });
 
         Date lastUpdated = blockUrlProvider.lastUpdated == null ? new Date() : blockUrlProvider.lastUpdated;
-        holder.binding.lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
+        if (blockUrlProvider.lastUpdated != null) {
+            holder.binding.lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
+        } else {
+            holder.binding.lastUpdatedTextView.setText("N/A");
+        }
         if (blockUrlProvider.deletable) {
             holder.binding.deleteUrlProviderImageView.setVisibility(View.VISIBLE);
         } else {

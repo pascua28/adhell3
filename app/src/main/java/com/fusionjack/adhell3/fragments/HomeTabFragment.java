@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.AbsListView;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
@@ -99,85 +98,84 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                 getViewLifecycleOwner(),
                 isVisible -> {
                     if (isVisible) {
-                        if (!binding.swipeContainer.isRefreshing() && binding.blockedDomainsListView.getVisibility() == View.GONE) {
+                        if (!binding.swipeContainer.isRefreshing()) {
                             binding.loadingBar.setVisibility(View.VISIBLE);
+                        }
+
+                        if (binding.blockedDomainsListView.getVisibility() == View.VISIBLE) {
+                            binding.blockedDomainsListView.setVisibility(View.GONE);
                         }
                     } else {
                         binding.loadingBar.setVisibility(View.GONE);
                         binding.swipeContainer.setRefreshing(false);
+
+                        if (binding.blockedDomainsListView.getVisibility() == View.GONE) {
+                            binding.blockedDomainsListView.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
         );
 
         homeTabViewModel.getReportBlockedUrls().observe(getViewLifecycleOwner(), reportBlockedUrls -> {
-            ExpandableListAdapter adapter = binding.blockedDomainsListView.getExpandableListAdapter();
-            Context context = getContext();
-            boolean ready = MainActivity.appCacheReady;
-            if (adapter == null && context != null && reportBlockedUrls.size() > 0 && ready) {
-                ReportBlockedUrlAdapter arrayAdapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, null);
-                binding.blockedDomainsListView.setAdapter(arrayAdapter);
-                arrayAdapter.notifyDataSetChanged();
+            if (MainActivity.appCacheReady.get()) {
+                ExpandableListAdapter adapter = binding.blockedDomainsListView.getExpandableListAdapter();
+                Context context = getContext();
+                if (adapter == null && context != null) {
+                    ReportBlockedUrlAdapter arrayAdapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, null);
+                    binding.blockedDomainsListView.setAdapter(arrayAdapter);
+                    arrayAdapter.notifyDataSetChanged();
 
-                binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
-                    DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
-                    List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
-                    String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
-                    String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
-                    dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
-                    AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                            .setView(dialogWhitelistDomainBinding.getRoot())
-                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
-                                if (domainToAdd.indexOf('|') == -1) {
-                                    if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                        if (context instanceof MainActivity) {
-                                            MainActivity mainActivity = (MainActivity) context;
-                                            mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                    binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
+                        DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
+                        List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
+                        String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
+                        String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
+                        dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                                .setView(dialogWhitelistDomainBinding.getRoot())
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                    String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
+                                    if (domainToAdd.indexOf('|') == -1) {
+                                        if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
+                                            return;
                                         }
-                                        return;
-                                    }
-                                } else {
-                                    // packageName|url
-                                    StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                                    if (tokens.countTokens() != 2) {
-                                        if (context instanceof MainActivity) {
-                                            MainActivity mainActivity = (MainActivity) context;
-                                            mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                                    } else {
+                                        // packageName|url
+                                        StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+                                        if (tokens.countTokens() != 2) {
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
+                                            return;
                                         }
-                                        return;
                                     }
-                                }
-                                WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
-                                AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                                if (context instanceof MainActivity) {
-                                    MainActivity mainActivity = (MainActivity) context;
-                                    mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
-                                            .show();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, null)
-                            .create();
+                                    WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
+                                    AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
+                                    if (context instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) context;
+                                        mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
+                                                .show();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, null)
+                                .create();
 
-                    alertDialog.show();
+                        alertDialog.show();
 
-                    return false;
-                });
-
-                if (binding.blockedDomainsListView.getVisibility() == View.GONE) {
-                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                    animation.setDuration(500);
-                    animation.setStartOffset(50);
-                    animation.setFillAfter(true);
-
-                    binding.blockedDomainsListView.setVisibility(View.VISIBLE);
-                    binding.blockedDomainsListView.startAnimation(animation);
+                        return false;
+                    });
+                } else if (binding.blockedDomainsListView.getExpandableListAdapter() != null && binding.blockedDomainsListView.getExpandableListAdapter() instanceof ReportBlockedUrlAdapter) {
+                    ReportBlockedUrlAdapter reportBlockedUrlAdapter = ((ReportBlockedUrlAdapter) binding.blockedDomainsListView.getExpandableListAdapter());
+                    reportBlockedUrlAdapter.updateReportBlockedUrlMap(reportBlockedUrls);
+                    reportBlockedUrlAdapter.notifyDataSetChanged();
                 }
-            } else if (binding.blockedDomainsListView.getExpandableListAdapter() != null && binding.blockedDomainsListView.getExpandableListAdapter() instanceof ReportBlockedUrlAdapter) {
-                ReportBlockedUrlAdapter reportBlockedUrlAdapter = ((ReportBlockedUrlAdapter) binding.blockedDomainsListView.getExpandableListAdapter());
-                reportBlockedUrlAdapter.updateReportBlockedUrlMap(reportBlockedUrls);
-                reportBlockedUrlAdapter.notifyDataSetChanged();
             }
         });
 
@@ -191,7 +189,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                         binding.infoTextView.setText(blockedDomainInfo);
                         binding.infoTextView.setVisibility(View.VISIBLE);
                         binding.swipeContainer.setVisibility(View.VISIBLE);
-
                     }
                 }
         );

@@ -1,12 +1,5 @@
 package com.fusionjack.adhell3.db.repository;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -15,7 +8,6 @@ import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,18 +15,11 @@ import io.reactivex.rxjava3.core.Single;
 
 public class AppRepository {
 
-    private ProgressBar loadingBar;
-    private ListView listView;
-
-
-    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo, ProgressBar loadingBar, ListView listView) {
+    public Single<List<AppInfo>> loadAppList(String text, Type type, FilterAppInfo filterAppInfo) {
         return Single.create(emitter -> {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String filterText = '%' + text + '%';
             List<AppInfo> list = new ArrayList<>();
-            if (loadingBar != null) this.loadingBar = new WeakReference<>(loadingBar).get();
-            if (listView != null) this.listView = new WeakReference<>(listView).get();
-            //showProgressBar();
             switch (type) {
                 case DISABLER:
                     if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
@@ -179,26 +164,8 @@ public class AppRepository {
                 list.addAll(tempList);
                 tempList.clear();
             }
-            hideProgressBar();
             emitter.onSuccess(list);
         });
-    }
-
-    private void hideProgressBar() {
-        if (loadingBar != null && listView != null) {
-            new Handler(Looper.getMainLooper()).post(() -> {
-                loadingBar.setVisibility(View.GONE);
-                if (listView.getVisibility() == View.GONE) {
-                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                    animation.setDuration(500);
-                    animation.setStartOffset(50);
-                    animation.setFillAfter(true);
-
-                    listView.setVisibility(View.VISIBLE);
-                    listView.startAnimation(animation);
-                }
-            });
-        }
     }
 
     public enum Type {

@@ -94,7 +94,7 @@ public class DnsFragment extends AppFragment {
 
                             AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
 
-                            loadAppList(type, binding.loadingBar, binding.dnsAppsList);
+                            loadAppList(type);
                         })
                 )
                 .setNegativeButton(android.R.string.no, null)
@@ -108,9 +108,10 @@ public class DnsFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         binding = FragmentDnsBinding.inflate(inflater);
+        appFlag = AppFlag.createDnsFlag();
 
-        AppFlag appFlag = AppFlag.createDnsFlag();
         binding.dnsAppsList.setAdapter(adapter);
+
         if (AppPreferences.getInstance().isDnsNotEmpty()) {
             binding.dnsAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                 AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
@@ -158,15 +159,14 @@ public class DnsFragment extends AppFragment {
 
                 MainActivity.setFilterAppInfo(filterAppInfo);
                 resetSearchView();
-                loadAppList(type, binding.loadingBar, binding.dnsAppsList);
+                loadAppList(type);
                 return false;
             });
             popup.show();
         });
 
         binding.dnsSwipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, binding.loadingBar, binding.dnsAppsList);
-            binding.dnsSwipeContainer.setRefreshing(false);
+            loadAppList(type);
             resetSearchView();
         });
 
@@ -262,6 +262,9 @@ public class DnsFragment extends AppFragment {
             }
         });
 
+        rootView = binding.getRoot();
+        super.onCreateView(inflater, container, savedInstanceState);
+
         return binding.getRoot();
     }
 
@@ -282,7 +285,7 @@ public class DnsFragment extends AppFragment {
             binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
 
-        loadAppList(type, binding.loadingBar, binding.dnsAppsList);
+        loadAppList(type);
     }
 
     @Override

@@ -1,9 +1,12 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -11,12 +14,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -27,18 +32,21 @@ import io.reactivex.rxjava3.core.SingleObserver;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 public class AppFragment extends Fragment {
-
     Context context;
     AppRepository.Type type;
     AppInfoAdapter adapter;
-    static FilterAppInfo filterAppInfo;
+    AppFlag appFlag;
+    View rootView;
     private AppViewModel viewModel;
     private String searchText;
     private SearchView searchView;
     private SingleObserver<List<AppInfo>> observer;
     private List<AppInfo> appList;
 
-    void initAppModel(AppRepository.Type type) {
+    static FilterAppInfo filterAppInfo;
+
+
+    public void initAppModel(AppRepository.Type type) {
         filterAppInfo = MainActivity.getFilterAppInfo();
         this.context = getContext();
         this.type = type;
@@ -51,6 +59,7 @@ public class AppFragment extends Fragment {
         observer = new SingleObserver<List<AppInfo>>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
+                viewModel.updateLoadingBarVisibility(true);
             }
 
             @Override
@@ -58,6 +67,7 @@ public class AppFragment extends Fragment {
                 appList.clear();
                 appList.addAll(list);
                 adapter.notifyDataSetChanged();
+                viewModel.updateLoadingBarVisibility(false);
             }
 
             @Override
@@ -69,19 +79,55 @@ public class AppFragment extends Fragment {
                                 .show();
                     }
                 }
+                viewModel.updateLoadingBarVisibility(false);
             }
         };
     }
 
-    void loadAppList(AppRepository.Type type, ProgressBar loadingBar, ListView listView) {
-        if (loadingBar != null) {
-            loadingBar.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        viewModel.getLoadingBarVisibility().observe(
+                getViewLifecycleOwner(),
+                isVisible -> {
+                    if (rootView != null && appFlag != null) {
+                        ProgressBar loadingBar = rootView.findViewById(R.id.loadingBar);
+                        ListView listView = rootView.findViewById(appFlag.getLoadLayout());
+                        SwipeRefreshLayout swipeContainer = rootView.findViewById(appFlag.getRefreshLayout());
+
+                        if (isVisible) {
+                            if (!swipeContainer.isRefreshing()) {
+                                loadingBar.setVisibility(View.VISIBLE);
+                            }
+
+                            if (listView.getVisibility() == View.VISIBLE) {
+                                listView.setVisibility(View.GONE);
+                            }
+                        } else {
+                            loadingBar.setVisibility(View.GONE);
+                            swipeContainer.setRefreshing(false);
+
+                            if (listView.getVisibility() == View.GONE) {
+                                listView.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+                }
+        );
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    public void loadAppList(AppRepository.Type type) {
         if (searchText.isEmpty()) {
-            viewModel.loadAppList(type, observer, filterAppInfo, loadingBar, listView);
+            viewModel.loadAppList(type, observer, filterAppInfo);
         } else {
-            viewModel.loadAppList(searchText, type, observer, filterAppInfo, loadingBar, listView);
+            viewModel.loadAppList(searchText, type, observer, filterAppInfo);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        viewModel.updateLoadingBarVisibility(true);
     }
 
     @Override
@@ -92,7 +138,7 @@ public class AppFragment extends Fragment {
         initSearchView(menu);
     }
 
-    void initSearchView(Menu menu) {
+    public void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
@@ -110,13 +156,13 @@ public class AppFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                viewModel.loadAppList(text, type, observer, filterAppInfo, null, null);
+                viewModel.loadAppList(text, type, observer, filterAppInfo);
                 return false;
             }
         });
     }
 
-    void resetSearchView() {
+    public void resetSearchView() {
         if (searchView != null) {
             searchText = "";
             searchView.setQuery(searchText, false);

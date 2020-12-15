@@ -52,12 +52,13 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
     public static boolean themeChanged = false;
-    public static boolean appCacheReady = false;
+    public static AtomicBoolean appCacheReady = new AtomicBoolean(false);
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
     private static int previousSelectedTabId = -1;
     private static FilterAppInfo filterAppInfo;
     private static WeakReference<ActivationDialogFragment> activationDialogFragmentWeakReference;
-    private Handler snackbarDelayedHandler = new Handler();
+    private final Handler snackbarDelayedHandler = new Handler();
     private AlertDialog permissionDialog;
     private Snackbar snackbar;
     private FragmentManager fragmentManager;
@@ -168,13 +169,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LogUtils.info("Destroying activity");
-
-        // Clear resources to prevent memory leak
-        this.snackbarDelayedHandler = null;
-        this.permissionDialog = null;
-        this.fragmentManager = null;
         this.binding = null;
-
         closeActivity(false);
 
         super.onDestroy();
@@ -467,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
+    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> applicationContextReference;
         private FragmentManager fragmentManager;
         private Fragment visibleFragment;
@@ -486,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        protected Void doInBackground(Void... voids) {
             // Get visible fragment
             if (fragmentManager != null) {
                 for (Fragment fragment: fragmentManager.getFragments()) {
@@ -502,23 +497,22 @@ public class MainActivity extends AppCompatActivity {
             cp.add(applicationContextReference.get().getPackageName());
             for ( ApplicationInfo ai : installedPackages ) {
                 if ( !cp.remove( ai.packageName ) ) {
-                    return true;
+                    return null;
                 }
             }
             if (!cp.isEmpty()) {
                 AppCache.reload(applicationContextReference.get(), null);
             }
-            return !cp.isEmpty();
+            return null;
         }
 
         @Override
-        protected void onPostExecute(Boolean needReload) {
-            if (needReload) {
-                if (visibleFragment != null) {
-                    visibleFragment.onResume();
-                }
+        protected void onPostExecute(Void aVoid) {
+            appCacheReady.set(true);
+
+            if (visibleFragment != null) {
+                visibleFragment.onResume();
             }
-            appCacheReady = true;
 
             // Clean resources to prevent memory leak
             this.fragmentManager = null;

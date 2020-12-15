@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.webkit.URLUtil;
 import android.widget.AbsListView;
 import android.widget.ExpandableListView;
@@ -81,15 +80,22 @@ public class ProviderListFragment extends Fragment {
                         if (!binding.providerSwipeContainer.isRefreshing() && binding.providerListView.getVisibility() == View.GONE) {
                             binding.loadingBarProvider.setVisibility(View.VISIBLE);
                         }
+
+                        if (binding.providerListView.getVisibility() == View.VISIBLE) {
+                            binding.providerListView.setVisibility(View.GONE);
+                        }
                     } else {
                         binding.loadingBarProvider.setVisibility(View.GONE);
                         binding.providerSwipeContainer.setRefreshing(false);
+
+                        if (binding.providerListView.getVisibility() == View.GONE) {
+                            binding.providerListView.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
         );
 
         // Provider list
-        if (binding.providerListView.getVisibility() == View.VISIBLE) providersViewModel.updateLoadingBarVisibility(true);
         providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
             ListAdapter adapter = binding.providerListView.getAdapter();
             if (adapter == null) {
@@ -107,16 +113,6 @@ public class ProviderListFragment extends Fragment {
                     }
                 }
                 arrayAdapter.notifyDataSetChanged();
-
-                if (binding.providerListView.getVisibility() == View.GONE) {
-                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                    animation.setDuration(500);
-                    animation.setStartOffset(50);
-                    animation.setFillAfter(true);
-
-                    binding.providerListView.setVisibility(View.VISIBLE);
-                    binding.providerListView.startAnimation(animation);
-                }
             } else if (binding.providerListView.getAdapter() != null && binding.providerListView.getAdapter() instanceof BlockUrlProviderAdapter) {
                 BlockUrlProviderAdapter blockUrlProviderAdapter = ((BlockUrlProviderAdapter) binding.providerListView.getAdapter());
                 blockUrlProviderAdapter.updatedBlockUrlProviderList(blockUrlProviders);
@@ -178,7 +174,7 @@ public class ProviderListFragment extends Fragment {
                                         }
                                     }
                                 }
-                                providersViewModel.addProvider(provider);
+                                providersViewModel.addProvider(provider, getContext());
                             } else {
                                 if (getActivity() instanceof MainActivity) {
                                     MainActivity mainActivity = (MainActivity) getActivity();
@@ -248,19 +244,7 @@ public class ProviderListFragment extends Fragment {
             }
         });
 
-        if (binding.providerListView.getVisibility() == View.GONE) {
-            AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-            animation.setDuration(500);
-            animation.setStartOffset(50);
-            animation.setFillAfter(true);
-
-            binding.providerListView.setVisibility(View.VISIBLE);
-            binding.providerListView.startAnimation(animation);
-        } else {
-            providersViewModel.updateLoadingBarVisibility(false);
-        }
-
-        providersViewModel.setDomainCount(100);
+        providersViewModel.setDomainCount();
 
         return binding.getRoot();
     }

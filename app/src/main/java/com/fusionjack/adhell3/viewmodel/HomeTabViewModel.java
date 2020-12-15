@@ -26,8 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class HomeTabViewModel extends ViewModel {
-    private MediatorLiveData<HashMap<String, List<ReportBlockedUrl>>> _reportBlockedUrls;
     private LiveData<List<ReportBlockedUrl>> reportBlockedUrlsDb;
+    private MediatorLiveData<HashMap<String, List<ReportBlockedUrl>>> _reportBlockedUrls;
     private MutableLiveData<String> _domainInfo;
     private String domainInfoBase;
     private MutableLiveData<String> _firewallInfo;
@@ -120,13 +120,15 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     private void updateBlockedDomainInfo() {
-        HashMap<String, List<ReportBlockedUrl>> list = _reportBlockedUrls.getValue();
-        if (list != null && list.size() > 0 && reportBlockedUrlsDb.getValue() != null) {
-            _blockedDomainInfo.setValue(
-                    String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, reportBlockedUrlsDb.getValue().size())
-            );
-        } else {
-            _blockedDomainInfo.setValue("");
+        if (_reportBlockedUrls != null) {
+            HashMap<String, List<ReportBlockedUrl>> list = _reportBlockedUrls.getValue();
+            if (list != null && list.size() > 0 && reportBlockedUrlsDb.getValue() != null) {
+                _blockedDomainInfo.setValue(
+                        String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, reportBlockedUrlsDb.getValue().size())
+                );
+            } else {
+                _blockedDomainInfo.setValue("");
+            }
         }
     }
 
@@ -150,18 +152,13 @@ public class HomeTabViewModel extends ViewModel {
     public LiveData<HashMap<String, List<ReportBlockedUrl>>> getReportBlockedUrls() {
         if (_reportBlockedUrls == null) {
             _reportBlockedUrls = new MediatorLiveData<>();
-            loadReportBlockedUrls();
+            reportBlockedUrlsDb = AdhellFactory.getInstance().getAppDatabase().reportBlockedUrlDao().getLiveReportBlockUrl();
+            _reportBlockedUrls.addSource(
+                    reportBlockedUrlsDb,
+                    reportBlockedUrls -> _reportBlockedUrls.setValue(convertBlockedUrls(reportBlockedUrls))
+            );
         }
         return _reportBlockedUrls;
-    }
-
-    private void loadReportBlockedUrls() {
-        reportBlockedUrlsDb = AdhellFactory.getInstance().getAppDatabase().reportBlockedUrlDao().getLiveReportBlockUrl();
-        _reportBlockedUrls.addSource(
-                reportBlockedUrlsDb,
-                reportBlockedUrls -> _reportBlockedUrls.setValue(convertBlockedUrls(reportBlockedUrls))
-        );
-        refreshBlockedUrls();
     }
 
     public HashMap<String, List<ReportBlockedUrl>> convertBlockedUrls(List<ReportBlockedUrl> reportBlockedUrls) {
@@ -190,6 +187,9 @@ public class HomeTabViewModel extends ViewModel {
 
     public void refreshBlockedUrls() {
         updateLoadingBarVisibility(true);
+        if (reportBlockedUrlsDb.getValue() != null) {
+            _reportBlockedUrls.setValue(convertBlockedUrls(reportBlockedUrlsDb.getValue()));
+        }
         new RefreshBlockedUrlAsyncTask(this).execute();
     }
 

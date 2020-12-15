@@ -1,7 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/border">
+    android:background="@drawable/border"
+    android:animateLayoutChanges="true">
 
     <TextView
         android:id="@+id/infoTextView"
@@ -18,7 +19,8 @@
         android:id="@+id/componentSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/infoTextView">
+        android:layout_below="@id/headerLayout"
+        android:animateLayoutChanges="true">
 
         <ListView
             android:id="@+id/component_apps_list"

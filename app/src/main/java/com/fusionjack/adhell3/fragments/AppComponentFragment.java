@@ -23,6 +23,7 @@ import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppComponentBinding;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -92,8 +93,10 @@ public class AppComponentFragment extends AppFragment {
         setHasOptionsMenu(true);
 
         binding = FragmentAppComponentBinding.inflate(inflater);
+        appFlag = AppFlag.createComponentFlag();
 
         binding.componentAppsList.setAdapter(adapter);
+
         binding.componentAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
@@ -116,10 +119,12 @@ public class AppComponentFragment extends AppFragment {
         });
 
         binding.componentSwipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type, binding.loadingBar, binding.componentAppsList);
-            binding.componentSwipeContainer.setRefreshing(false);
+            loadAppList(type);
             resetSearchView();
         });
+
+        rootView = binding.getRoot();
+        super.onCreateView(inflater, container, savedInstanceState);
 
         return binding.getRoot();
     }
@@ -127,7 +132,7 @@ public class AppComponentFragment extends AppFragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadAppList(type, binding.loadingBar, binding.componentAppsList);
+        loadAppList(type);
     }
 
     @Override

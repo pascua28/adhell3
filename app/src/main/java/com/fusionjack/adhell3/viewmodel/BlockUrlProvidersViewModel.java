@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
@@ -14,6 +15,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -46,15 +48,17 @@ public class BlockUrlProvidersViewModel extends ViewModel {
             domainCountInfoBase = context.getResources().getString(R.string.total_unique_domains);
             _domainCountInfo = new MutableLiveData<>();
             // Set initial value as 0
-            updateDomainCountInfo(0);
+            updateDomainCountInfo(-1);
         }
         return _domainCountInfo;
     }
 
     public void updateDomainCountInfo(int domainCount) {
-        _domainCountInfo.setValue(
-                String.format(domainCountInfoBase, domainCount)
-        );
+        String result = "";
+        if (domainCount > 0) {
+            result = String.format(domainCountInfoBase, domainCount);
+        }
+        _domainCountInfo.setValue(result);
     }
 
     public LiveData<Boolean> getLoadingBarVisibility() {
@@ -70,16 +74,13 @@ public class BlockUrlProvidersViewModel extends ViewModel {
         _loadingVisibility.setValue(isVisible);
     }
 
-    public void setProvider() {
-        new SetProviderAsyncTask(this).execute();
+    public void addProvider(String strProvider, Context context) {
+        new AddProviderAsyncTask(strProvider, context).execute();
     }
 
-    public void addProvider(String strProvider) {
-        new AddProviderAsyncTask(strProvider).execute();
-    }
-
-    public void setDomainCount(int delay) {
-        new SetDomainCountAsyncTask(delay, this).execute();
+    public void setDomainCount() {
+        updateLoadingBarVisibility(true);
+        new SetDomainCountAsyncTask(this).execute();
     }
 
     public void updateProvider(Context context, boolean updateProviders) {
@@ -113,32 +114,21 @@ public class BlockUrlProvidersViewModel extends ViewModel {
         protected void onPostExecute(Void aVoid) {
             BlockUrlProvidersViewModel providersViewModel = providersViewModelWeakReference.get();
             if (providersViewModel != null) {
-                providersViewModel.updateLoadingBarVisibility(false);
-
-                providersViewModel.setProvider();
-
-                providersViewModel.setDomainCount(0);
+                providersViewModel.setDomainCount();
             }
         }
     }
 
     private static class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
-        private final int delay;
         private final WeakReference<BlockUrlProvidersViewModel> providersViewModelWeakReference;
 
-        SetDomainCountAsyncTask(int delay, BlockUrlProvidersViewModel providersViewModel) {
-            this.delay = delay;
+        SetDomainCountAsyncTask(BlockUrlProvidersViewModel providersViewModel) {
             this.providersViewModelWeakReference = new WeakReference<>(providersViewModel);
         }
 
         @Override
         protected Integer doInBackground(Void... voids) {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             return BlockUrlUtils.getAllBlockedUrlsCount(appDatabase);
         }
 
@@ -152,37 +142,18 @@ public class BlockUrlProvidersViewModel extends ViewModel {
         }
     }
 
-    private static class SetProviderAsyncTask extends AsyncTask<Void, Void, List<BlockUrlProvider>> {
-        private final WeakReference<BlockUrlProvidersViewModel> providersViewModelWeakReference;
-
-        SetProviderAsyncTask(BlockUrlProvidersViewModel providersViewModel) {
-            this.providersViewModelWeakReference = new WeakReference<>(providersViewModel);
-        }
-
-        @Override
-        protected List<BlockUrlProvider> doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            return appDatabase.blockUrlProviderDao().getAll2();
-        }
-
-        @Override
-        protected void onPostExecute(List<BlockUrlProvider> providers) {
-            BlockUrlProvidersViewModel providersViewModel = providersViewModelWeakReference.get();
-            if (providersViewModel != null) {
-                providersViewModel.updateLoadingBarVisibility(false);
-            }
-        }
-    }
-
-    private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
+    private static class AddProviderAsyncTask extends AsyncTask<Void, Void, String> {
+        private final WeakReference<Context> contextReference;
         private final String provider;
 
-        AddProviderAsyncTask(String provider) {
+        AddProviderAsyncTask(String provider, Context context) {
             this.provider = provider;
+            this.contextReference = new WeakReference<>(context);
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected String doInBackground(Void... voids) {
+            String result = "";
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
 
             BlockUrlProvider blockUrlProvider = new BlockUrlProvider();
@@ -205,8 +176,22 @@ public class BlockUrlProvidersViewModel extends ViewModel {
             } catch (Exception e) {
                 appDatabase.blockUrlProviderDao().delete(blockUrlProvider);
                 e.printStackTrace();
+                result = e.getMessage();
             }
-            return null;
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (!result.isEmpty()) {
+                Context context = contextReference.get();
+                if (context instanceof MainActivity) {
+                    String message = "Error! " + result;
+                    MainActivity mainActivity = (MainActivity) context;
+                    mainActivity.makeSnackbar(message, Snackbar.LENGTH_LONG)
+                            .show();
+                }
+            }
         }
     }
 }

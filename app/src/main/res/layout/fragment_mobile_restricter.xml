@@ -1,11 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true">
 
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true">
 
     <TextView
         android:id="@+id/infoTextView"
@@ -39,7 +41,8 @@
         android:id="@+id/mobileSwipeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/headerLayout">
+        android:layout_below="@id/headerLayout"
+        android:animateLayoutChanges="true">
 
         <ListView
             android:id="@+id/mobile_apps_list"

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -47,10 +46,6 @@ public class AppTabPageFragment extends AppFragment {
     private static final int WHITELIST_PAGE = 3;
     private static final String ARG_PAGE = "page";
     private int page;
-    private AppFlag appFlag;
-
-    private ProgressBar loadingBar;
-    private ListView listView;
 
     public static AppTabPageFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -122,8 +117,7 @@ public class AppTabPageFragment extends AppFragment {
         }
 
         if (view != null) {
-            loadingBar = view.findViewById(R.id.loadingBar);
-            listView = view.findViewById(appFlag.getLoadLayout());
+            ListView listView = view.findViewById(appFlag.getLoadLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
@@ -172,7 +166,7 @@ public class AppTabPageFragment extends AppFragment {
 
                     MainActivity.setFilterAppInfo(filterAppInfo);
                     resetSearchView();
-                    loadAppList(type, loadingBar, listView);
+                    loadAppList(type);
                     return false;
                 });
                 popup.show();
@@ -180,11 +174,13 @@ public class AppTabPageFragment extends AppFragment {
 
             SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
             swipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type, loadingBar, listView);
-                swipeContainer.setRefreshing(false);
+                loadAppList(type);
                 resetSearchView();
             });
         }
+        rootView = view;
+        super.onCreateView(inflater, container, savedInstanceState);
+
         return view;
     }
 
@@ -206,7 +202,7 @@ public class AppTabPageFragment extends AppFragment {
             filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
 
-        loadAppList(type, loadingBar, listView);
+        loadAppList(type);
     }
 
     @Override
@@ -273,7 +269,7 @@ public class AppTabPageFragment extends AppFragment {
                                 appDatabase.firewallWhitelistedPackageDao().deleteAll();
                                 break;
                         }
-                        loadAppList(type, loadingBar, listView);
+                        loadAppList(type);
                     });
                 })
                 .setNegativeButton(android.R.string.no, null)
