@@ -28,8 +28,8 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
     private static Map<String, Drawable> appIcons;
     private static Map<String, String> appNames;
     private final Context context;
-    private final List<String> expandableListTitle;
-    private final HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
+    private List<String> expandableListTitle;
+    private HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects, Handler handler) {
         AppCache appCache = AppCache.getInstance(context, handler);
@@ -161,6 +161,11 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
             this.view = binding.getRoot();
             this.binding = binding;
         }
+    }
+
+    public void updateReportBlockedUrlMap(HashMap<String, List<ReportBlockedUrl>> reportBlockedUrlMap) {
+        this.expandableListTitle = new ArrayList<>(reportBlockedUrlMap.keySet());
+        this.expandableListDetail = reportBlockedUrlMap;
     }
 
     private static class ReportBlockedUrlItemInfoViewHolder {

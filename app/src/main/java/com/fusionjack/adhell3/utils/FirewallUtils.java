@@ -259,14 +259,19 @@ public final class FirewallUtils {
     }
 
     public List<ReportBlockedUrl> getReportBlockedUrl() {
+        updateReportBlockedUrl();
+        return appDatabase.reportBlockedUrlDao().getReportBlockUrlBetween(tree_days(), System.currentTimeMillis());
+    }
+
+    public void updateReportBlockedUrl() {
         List<ReportBlockedUrl> reportBlockedUrls = new ArrayList<>();
         if (firewall == null) {
-            return reportBlockedUrls;
+            return;
         }
 
         List<DomainFilterReport> reports = firewall.getDomainFilterReport(null);
         if (reports == null) {
-            return reportBlockedUrls;
+            return;
         }
 
         long time = tree_days();
@@ -287,11 +292,9 @@ public final class FirewallUtils {
             }
         }
         appDatabase.reportBlockedUrlDao().insertAll(reportBlockedUrls);
-
-        return appDatabase.reportBlockedUrlDao().getReportBlockUrlBetween(time, System.currentTimeMillis());
     }
 
-    private long tree_days() {
+    public static long tree_days() {
         final Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -3);
         return cal.getTimeInMillis();

@@ -57,6 +57,7 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 
 public class MainActivity extends AppCompatActivity {
     public static boolean themeChanged = false;
+    public static boolean appCacheReady = false;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static boolean selectFileActivityLaunched = false;
     private static boolean restoreBackStack = false;
@@ -504,17 +505,21 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
             }
+            if (!cp.isEmpty()) {
+                AppCache.reload(applicationContextReference.get(), null);
+            }
             return !cp.isEmpty();
         }
 
         @Override
         protected void onPostExecute(Boolean needReload) {
             if (needReload) {
-                AppCache.reload(applicationContextReference.get(), null);
                 if (visibleFragment != null) {
                     visibleFragment.onResume();
                 }
             }
+            appCacheReady = true;
+
             // Clean resources to prevent memory leak
             this.fragmentManager = null;
             this.visibleFragment = null;
