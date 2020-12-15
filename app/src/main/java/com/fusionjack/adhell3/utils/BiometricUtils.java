@@ -5,13 +5,13 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.SplashScreenActivity;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 
 public class BiometricUtils {
@@ -22,7 +22,7 @@ public class BiometricUtils {
 
     public static void authenticateUser(Context context) {
         FragmentActivity fragmentActivity = (FragmentActivity) context;
-        Executor executor = Executors.newSingleThreadExecutor();
+        Executor executor = ContextCompat.getMainExecutor(context.getApplicationContext());
 
         final BiometricPrompt biometricPrompt = new BiometricPrompt(fragmentActivity, executor, getAuthenticationCallback(context));
 
