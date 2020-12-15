@@ -72,7 +72,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         holder.binding.urlProviderCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             int position2 = (Integer) buttonView.getTag();
             BlockUrlProvider provider = getItem(position2);
-            new GetAllBlockedUrlsAsyncTask(provider, isChecked, this, getContext()).execute();
+            new GetAllBlockedUrlsAsyncTask(provider, isChecked, getContext()).execute();
         });
 
         Date lastUpdated = blockUrlProvider.lastUpdated == null ? new Date() : blockUrlProvider.lastUpdated;
@@ -92,7 +92,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         int position2 = (Integer) imageView.getTag();
                         BlockUrlProvider provider = getItem(position2);
-                        new DeleteProviderAsyncTask(provider, this).execute();
+                        new DeleteProviderAsyncTask(provider).execute();
                     })
                     .setNegativeButton(android.R.string.no, null)
                     .create();
@@ -101,6 +101,15 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         });
 
         return holder.view;
+    }
+
+    public void updatedBlockUrlProviderList(List<BlockUrlProvider> itemsArrayList) {
+        this.clear();
+        if (itemsArrayList != null){
+            for (BlockUrlProvider blockUrlProvider : itemsArrayList) {
+                this.insert(blockUrlProvider, this.getCount());
+            }
+        }
     }
 
     private String getFileName(String url) {
@@ -125,12 +134,10 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
     }
 
     private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private BlockUrlProviderAdapter adapter;
+        private final BlockUrlProvider provider;
 
-        DeleteProviderAsyncTask(BlockUrlProvider provider, BlockUrlProviderAdapter adapter) {
+        DeleteProviderAsyncTask(BlockUrlProvider provider) {
             this.provider = provider;
-            this.adapter = adapter;
         }
 
         @Override
@@ -139,28 +146,16 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             appDatabase.blockUrlProviderDao().delete(provider);
             return null;
         }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            adapter.remove(provider);
-            adapter.notifyDataSetChanged();
-
-            // Clean resource to prevent memory leak
-            this.provider = null;
-            this.adapter = null;
-        }
     }
 
     private static class GetAllBlockedUrlsAsyncTask extends AsyncTask<Void, Void, Integer> {
         private final WeakReference<Context> contextReference;
         private final boolean isChecked;
-        private BlockUrlProvider provider;
-        private BlockUrlProviderAdapter adapter;
+        private final BlockUrlProvider provider;
 
-        GetAllBlockedUrlsAsyncTask(BlockUrlProvider provider, boolean isChecked, BlockUrlProviderAdapter adapter, Context context) {
+        GetAllBlockedUrlsAsyncTask(BlockUrlProvider provider, boolean isChecked, Context context) {
             this.provider = provider;
             this.isChecked = isChecked;
-            this.adapter = adapter;
             this.contextReference = new WeakReference<>(context);
         }
 
@@ -181,8 +176,6 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         protected void onPostExecute(Integer totalUrls) {
             Context context = contextReference.get();
             if (context != null) {
-                adapter.notifyDataSetChanged();
-
                 if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
                     String message = String.format(Locale.getDefault(), "The total number of unique domains %d exceeds the maximum limit of %d",
                             totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
@@ -193,9 +186,6 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     }
                 }
             }
-            // Clean resource to prevent memory leak
-            this.provider = null;
-            this.adapter = null;
         }
     }
 

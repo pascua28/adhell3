@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,19 +28,13 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
 import com.fusionjack.adhell3.databinding.DialogAddProviderBinding;
 import com.fusionjack.adhell3.databinding.FragmentProviderBinding;
-import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
-import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 
-import java.lang.ref.WeakReference;
-import java.util.Date;
 import java.util.List;
 
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
@@ -50,7 +43,6 @@ public class ProviderListFragment extends Fragment {
     private Context context;
     private FragmentActivity activity;
     private DialogAddProviderBinding dialogAddProviderBinding;
-    private static String strTotalUniqueDomains;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,24 +61,66 @@ public class ProviderListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FragmentProviderBinding binding = FragmentProviderBinding.inflate(inflater);
 
-        strTotalUniqueDomains = context.getResources().getString(R.string.total_unique_domains);
+        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
 
         // Set URL limit
         String strFormat = getResources().getString(R.string.provider_info);
         binding.providerInfoTextView.setText(String.format(strFormat, AdhellAppIntegrity.BLOCK_URL_LIMIT));
 
-        // Set domain count to 0
-        strFormat = getResources().getString(R.string.total_unique_domains);
-        binding.infoTextView.setText(String.format(strFormat, 0));
+        // Set observer for domain count
+        providersViewModel.getDomainCountInfo(getContext()).observe(
+                getViewLifecycleOwner(),
+                binding.infoTextView::setText
+        );
+
+        // Set observer for loading bar
+        providersViewModel.getLoadingBarVisibility().observe(
+                getViewLifecycleOwner(),
+                isVisible -> {
+                    if (isVisible) {
+                        if (!binding.providerSwipeContainer.isRefreshing() && binding.providerListView.getVisibility() == View.GONE) {
+                            binding.loadingBarProvider.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        binding.loadingBarProvider.setVisibility(View.GONE);
+                        binding.providerSwipeContainer.setRefreshing(false);
+                    }
+                }
+        );
 
         // Provider list
-        if (binding.providerListView.getVisibility() == View.VISIBLE) binding.loadingBarProvider.setVisibility(View.VISIBLE);
-        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
+        if (binding.providerListView.getVisibility() == View.VISIBLE) providersViewModel.updateLoadingBarVisibility(true);
         providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
             ListAdapter adapter = binding.providerListView.getAdapter();
             if (adapter == null) {
                 BlockUrlProviderAdapter arrayAdapter = new BlockUrlProviderAdapter(context, blockUrlProviders);
                 binding.providerListView.setAdapter(arrayAdapter);
+
+                for (int i = 0; i < arrayAdapter.getCount(); i++) {
+                    BlockUrlProvider provider = arrayAdapter.getItem(i);
+                    if (provider != null) {
+                        BlockUrlProvider dbProvider = getProvider(provider.id, blockUrlProviders);
+                        if (dbProvider != null) {
+                            provider.count = dbProvider.count;
+                            provider.lastUpdated = dbProvider.lastUpdated;
+                        }
+                    }
+                }
+                arrayAdapter.notifyDataSetChanged();
+
+                if (binding.providerListView.getVisibility() == View.GONE) {
+                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
+                    animation.setDuration(500);
+                    animation.setStartOffset(50);
+                    animation.setFillAfter(true);
+
+                    binding.providerListView.setVisibility(View.VISIBLE);
+                    binding.providerListView.startAnimation(animation);
+                }
+            } else if (binding.providerListView.getAdapter() != null && binding.providerListView.getAdapter() instanceof BlockUrlProviderAdapter) {
+                BlockUrlProviderAdapter blockUrlProviderAdapter = ((BlockUrlProviderAdapter) binding.providerListView.getAdapter());
+                blockUrlProviderAdapter.updatedBlockUrlProviderList(blockUrlProviders);
+                blockUrlProviderAdapter.notifyDataSetChanged();
             }
         });
 
@@ -110,10 +144,7 @@ public class ProviderListFragment extends Fragment {
             }
         });
 
-        binding.providerSwipeContainer.setOnRefreshListener(() -> {
-            binding.loadingBarProvider.setVisibility(View.VISIBLE);
-            new UpdateProviderAsyncTask(context, true, binding).execute();
-        });
+        binding.providerSwipeContainer.setOnRefreshListener(() -> providersViewModel.updateProvider(context, true));
 
         binding.providerActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_provider, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_event_note_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_add_provider_title))
@@ -147,7 +178,7 @@ public class ProviderListFragment extends Fragment {
                                         }
                                     }
                                 }
-                                new AddProviderAsyncTask(provider, binding).execute();
+                                providersViewModel.addProvider(provider);
                             } else {
                                 if (getActivity() instanceof MainActivity) {
                                     MainActivity mainActivity = (MainActivity) getActivity();
@@ -226,10 +257,10 @@ public class ProviderListFragment extends Fragment {
             binding.providerListView.setVisibility(View.VISIBLE);
             binding.providerListView.startAnimation(animation);
         } else {
-            binding.loadingBarProvider.setVisibility(View.GONE);
+            providersViewModel.updateLoadingBarVisibility(false);
         }
 
-        new SetDomainCountAsyncTask(100, binding).execute();
+        providersViewModel.setDomainCount(100);
 
         return binding.getRoot();
     }
@@ -244,214 +275,12 @@ public class ProviderListFragment extends Fragment {
         return URLUtil.isHttpUrl(uri) || URLUtil.isHttpsUrl(uri) || URLUtil.isContentUrl(uri) || URLUtil.isFileUrl(uri);
     }
 
-    private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final String provider;
-        private BlockUrlProvider blockUrlProvider;
-        private FragmentProviderBinding binding;
-
-        AddProviderAsyncTask(String provider, FragmentProviderBinding binding) {
-            this.provider = provider;
-            this.binding = binding;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-
-            blockUrlProvider = new BlockUrlProvider();
-            blockUrlProvider.url = provider;
-            blockUrlProvider.count = 0;
-            blockUrlProvider.deletable = true;
-            blockUrlProvider.lastUpdated = new Date();
-            blockUrlProvider.selected = false;
-            blockUrlProvider.id = appDatabase.blockUrlProviderDao().insertAll(blockUrlProvider)[0];
-            blockUrlProvider.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-            appDatabase.blockUrlProviderDao().updateBlockUrlProviders(blockUrlProvider);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (binding.providerListView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) binding.providerListView.getAdapter();
-                adapter.add(blockUrlProvider);
-                adapter.notifyDataSetChanged();
-
-                new LoadProviderAsyncTask(blockUrlProvider, binding).execute();
+    private BlockUrlProvider getProvider(long id, List<BlockUrlProvider> providers) {
+        for (BlockUrlProvider provider : providers) {
+            if (provider.id == id) {
+                return provider;
             }
-            binding.loadingBarProvider.setVisibility(View.GONE);
-
-            // Clean resource to prevent memory leak
-            this.blockUrlProvider = null;
-            this.binding = null;
         }
-    }
-
-    private static class LoadProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private FragmentProviderBinding binding;
-
-        LoadProviderAsyncTask(BlockUrlProvider provider, FragmentProviderBinding binding) {
-            this.provider = provider;
-            this.binding = binding;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            try {
-                List<BlockUrl> blockUrls = BlockUrlUtils.loadBlockUrls(provider);
-                provider.count = blockUrls.size();
-                provider.lastUpdated = new Date();
-                appDatabase.blockUrlProviderDao().updateBlockUrlProviders(provider);
-                appDatabase.blockUrlDao().insertAll(blockUrls);
-            } catch (Exception e) {
-                appDatabase.blockUrlProviderDao().delete(provider);
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (binding.providerListView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) binding.providerListView.getAdapter();
-                adapter.notifyDataSetChanged();
-                AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                animation.setDuration(500);
-                animation.setStartOffset(50);
-                animation.setFillAfter(true);
-                binding.providerListView.setVisibility(View.VISIBLE);
-                binding.providerListView.startAnimation(animation);
-            }
-            binding.loadingBarProvider.setVisibility(View.GONE);
-
-            // Clean resource to prevent memory leak
-            this.provider = null;
-            this.binding = null;
-        }
-    }
-
-    private static class UpdateProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final WeakReference<Context> contextWeakReference;
-        private final boolean updateProviders;
-        private FragmentProviderBinding binding;
-
-        UpdateProviderAsyncTask(Context context, boolean updateProviders, FragmentProviderBinding binding) {
-            this.contextWeakReference = new WeakReference<>(context);
-            this.updateProviders = updateProviders;
-            this.binding = binding;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                if (AdhellFactory.getInstance().hasInternetAccess(context) && updateProviders) {
-                    AdhellFactory.getInstance().updateAllProviders();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            binding.loadingBarProvider.setVisibility(View.GONE);
-
-            new SetProviderAsyncTask(binding).execute();
-
-            binding.providerSwipeContainer.setRefreshing(false);
-
-            new SetDomainCountAsyncTask(0, binding).execute();
-
-            // Clean resource to prevent memory leak
-            this.binding = null;
-        }
-    }
-
-    private static class SetProviderAsyncTask extends AsyncTask<Void, Void, List<BlockUrlProvider>> {
-        private FragmentProviderBinding binding;
-
-        SetProviderAsyncTask(FragmentProviderBinding binding) {
-            this.binding = binding;
-        }
-
-        @Override
-        protected List<BlockUrlProvider> doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            return appDatabase.blockUrlProviderDao().getAll2();
-        }
-
-        @Override
-        protected void onPostExecute(List<BlockUrlProvider> providers) {
-            if (binding.providerListView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) binding.providerListView.getAdapter();
-                for (int i = 0; i < adapter.getCount(); i++) {
-                    BlockUrlProvider provider = adapter.getItem(i);
-                    if (provider != null) {
-                        BlockUrlProvider dbProvider = getProvider(provider.id, providers);
-                        if (dbProvider != null) {
-                            provider.count = dbProvider.count;
-                            provider.lastUpdated = dbProvider.lastUpdated;
-                        }
-                    }
-                }
-                adapter.notifyDataSetChanged();
-
-                binding.loadingBarProvider.setVisibility(View.GONE);
-
-                if (binding.providerListView.getVisibility() == View.GONE) {
-                    AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                    animation.setDuration(500);
-                    animation.setStartOffset(50);
-                    animation.setFillAfter(true);
-
-                    binding.providerListView.setVisibility(View.VISIBLE);
-                    binding.providerListView.startAnimation(animation);
-                }
-            }
-            // Clean resource to prevent memory leak
-            this.binding = null;
-        }
-
-        private BlockUrlProvider getProvider(long id, List<BlockUrlProvider> providers) {
-            for (BlockUrlProvider provider : providers) {
-                if (provider.id == id) {
-                    return provider;
-                }
-            }
-            return null;
-        }
-    }
-
-    private static class SetDomainCountAsyncTask extends AsyncTask<Void, Integer, Integer> {
-        private final int delay;
-        private FragmentProviderBinding binding;
-
-        SetDomainCountAsyncTask(int delay, FragmentProviderBinding binding) {
-            this.delay = delay;
-            this.binding = binding;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return BlockUrlUtils.getAllBlockedUrlsCount(appDatabase);
-        }
-
-        @Override
-        protected void onPostExecute(Integer count) {
-            binding.infoTextView.setText(String.format(strTotalUniqueDomains, count));
-            binding.loadingBarProvider.setVisibility(View.GONE);
-
-            // Clean resource to prevent memory leak
-            this.binding = null;
-        }
+        return null;
     }
 }
