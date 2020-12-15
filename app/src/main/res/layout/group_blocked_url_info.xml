@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
         android:id="@+id/blockedDomainIconImageView"
@@ -15,36 +16,34 @@
         android:layout_marginBottom="5dp"
         android:contentDescription="@string/app_name"
         android:scaleType="centerCrop"
-        android:src="@mipmap/ic_launcher" />
+        tools:src="@mipmap/ic_launcher" />
 
     <TextView
         android:id="@+id/blockedDomainAppNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-        android:layout_alignParentEnd="true"
         android:layout_marginTop="5dp"
+        android:layout_toStartOf="@id/blockedDomainCountTextView"
         android:layout_toEndOf="@+id/blockedDomainIconImageView"
-        android:paddingEnd="40dp"
-        android:text="Adhell"
         android:textAlignment="gravity"
         android:gravity="center"
         android:textStyle="bold"
         app:autoSizeTextType="uniform"
         app:autoSizeMinTextSize="12sp"
         app:autoSizeMaxTextSize="18sp"
-        app:autoSizeStepGranularity="1sp" />
+        app:autoSizeStepGranularity="1sp"
+        tools:text="Adhell"/>
 
     <TextView
         android:id="@+id/blockedDomainPackageNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@id/blockedDomainCountTextView"
         android:layout_marginTop="30dp"
         android:layout_toEndOf="@+id/blockedDomainIconImageView"
-        android:paddingEnd="40dp"
-        android:text="Adhell"
         android:textAlignment="center"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:text="Adhell"/>
 
     <TextView
         android:id="@+id/blockedDomainCountTextView"
@@ -53,8 +52,8 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="20dp"
         android:textStyle="bold"
-        android:text="30" />
+        tools:text="30"/>
 
 </RelativeLayout>

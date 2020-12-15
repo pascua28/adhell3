@@ -42,7 +42,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="25dp"
         android:text="12:05:12" />
 
 </RelativeLayout>

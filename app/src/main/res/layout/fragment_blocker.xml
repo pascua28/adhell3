@@ -287,7 +287,9 @@
         android:background="@drawable/border"
         android:text="@string/last_day_blocked"
         android:textStyle="bold"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:visibility="invisible"
+        tools:visibility="visible"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeContainer"
@@ -305,7 +307,7 @@
             android:layout_height="match_parent"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
-            android:scrollbarStyle="outsideInset"
+            android:scrollbarStyle="insideOverlay"
             android:smoothScrollbar="true"
             android:fastScrollEnabled="true"
             android:fastScrollAlwaysVisible="false"
