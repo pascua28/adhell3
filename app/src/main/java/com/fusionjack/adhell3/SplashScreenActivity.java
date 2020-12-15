@@ -107,8 +107,18 @@ public class SplashScreenActivity extends AppCompatActivity {
         intent.putExtra("EXIT", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
-        finish();
         finishAffinity();
+        if (isTaskRoot() && getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            supportFinishAfterTransition();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        binding = null;
+        super.onDestroy();
     }
 
     public void successAuthentication() {
