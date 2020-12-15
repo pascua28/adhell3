@@ -88,6 +88,14 @@ public interface AppInfoDao {
     List<AppInfo> getUserAndDisabledApps();
 
 
+    // System apps
+    @Query("SELECT * FROM AppInfo WHERE system = 1 AND disabled = 0 ORDER BY appName ASC")
+    List<AppInfo> getSystemApps();
+
+    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 AND disabled = 0 ORDER BY appName ASC")
+    List<AppInfo> getSystemApps(String str);
+
+
     // Enabled apps
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY appName ASC")
     List<AppInfo> getEnabledAppsAlphabetically();

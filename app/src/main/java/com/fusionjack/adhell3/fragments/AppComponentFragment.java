@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.view.MenuCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -36,7 +39,7 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
-
+    private final boolean showSystemApps = BuildConfig.SHOW_SYSTEM_APP_COMPONENT;
     private FragmentAppComponentBinding binding;
 
     @Override
@@ -118,6 +121,60 @@ public class AppComponentFragment extends AppFragment {
             }
         });
 
+        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+
+        binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        binding.filterButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(context, binding.filterButton);
+            popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+            popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
+            if (showSystemApps) {
+                popup.getMenu().findItem(R.id.filterSystemApps).setEnabled(true);
+                popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
+            } else {
+                popup.getMenu().findItem(R.id.filterSystemApps).setEnabled(false);
+                popup.getMenu().findItem(R.id.filterSystemApps).setChecked(false);
+            }
+            popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
+            popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
+            popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
+            MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
+            popup.setOnMenuItemClickListener(item -> {
+                item.setChecked(!item.isChecked());
+                int id = item.getItemId();
+                if (id == R.id.highlightRunningApps) {
+                    filterAppInfo.setHighlightRunningApps(item.isChecked());
+                } else if (id == R.id.filterSystemApps) {
+                    if (showSystemApps) {
+                        filterAppInfo.setSystemAppsFilter(item.isChecked());
+                    }
+                } else if (id == R.id.filterUserApps) {
+                    filterAppInfo.setUserAppsFilter(item.isChecked());
+                } else if (id == R.id.filterRunningApps) {
+                    filterAppInfo.setRunningAppsFilter(item.isChecked());
+                } else if (id == R.id.filterStoppedApps) {
+                    filterAppInfo.setStoppedAppsFilter(item.isChecked());
+                }
+                if (!filterAppInfo.getHighlightRunningApps() &&
+                        (filterAppInfo.getSystemAppsFilter() || !showSystemApps) &&
+                        filterAppInfo.getUserAppsFilter() &&
+                        filterAppInfo.getRunningAppsFilter() &&
+                        filterAppInfo.getStoppedAppsFilter()
+                ) {
+                    binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+                } else {
+                    int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+                    binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                }
+
+                MainActivity.setFilterAppInfo(filterAppInfo);
+                resetSearchView();
+                loadAppList(type);
+                return false;
+            });
+            popup.show();
+        });
+
         binding.componentSwipeContainer.setOnRefreshListener(() -> {
             loadAppList(type);
             resetSearchView();
@@ -132,6 +189,20 @@ public class AppComponentFragment extends AppFragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Set filter button color
+        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
+        if (!filterAppInfo.getHighlightRunningApps() &&
+                (filterAppInfo.getSystemAppsFilter() || !showSystemApps) &&
+                filterAppInfo.getUserAppsFilter() &&
+                filterAppInfo.getRunningAppsFilter() &&
+                filterAppInfo.getStoppedAppsFilter()
+        ) {
+            binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
+        } else {
+            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
+            binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+        }
+
         loadAppList(type);
     }
 

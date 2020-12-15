@@ -107,14 +107,24 @@ public class AppRepository {
                     break;
                 case COMPONENT:
                     boolean showSystemApps = BuildConfig.SHOW_SYSTEM_APP_COMPONENT;
-                    if (text.length() == 0) {
-                        list = showSystemApps ?
-                                appDatabase.applicationInfoDao().getEnabledAppsAlphabetically() :
-                                appDatabase.applicationInfoDao().getUserApps();
-                    } else {
-                        list = showSystemApps ?
-                                appDatabase.applicationInfoDao().getEnabledAppsAlphabetically(filterText) :
-                                appDatabase.applicationInfoDao().getUserApps(filterText);
+                    if ((filterAppInfo.getSystemAppsFilter() && showSystemApps) && filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getEnabledAppsAlphabetically();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getEnabledAppsAlphabetically(filterText);
+                        }
+                    } else if ((filterAppInfo.getSystemAppsFilter() && showSystemApps)) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getSystemApps();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getSystemApps(filterText);
+                        }
+                    } else if (filterAppInfo.getUserAppsFilter()) {
+                        if (text.length() == 0) {
+                            list = appDatabase.applicationInfoDao().getUserApps();
+                        } else {
+                            list = appDatabase.applicationInfoDao().getUserApps(filterText);
+                        }
                     }
                     break;
                 case DNS:
@@ -140,7 +150,7 @@ public class AppRepository {
                     break;
             }
 
-            if (type != Type.COMPONENT && (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter())) {
+            if (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter()) {
                 List<AppInfo> tempList = new ArrayList<>();
                 ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
                 for (AppInfo item : list) {
