@@ -30,7 +30,6 @@
         android:layout_marginEnd="2dp"
         android:background="@drawable/border_home"
         android:padding="4dp"
-        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@id/statusTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/firewallRulesLayout">
@@ -90,7 +89,6 @@
         android:layout_weight="1"
         android:background="@drawable/border_home"
         android:padding="4dp"
-        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@id/statusTextView"
         app:layout_constraintStart_toEndOf="@id/domainRulesLayout"
         app:layout_constraintEnd_toEndOf="parent">
@@ -158,7 +156,6 @@
         android:layout_weight="1"
         android:background="@drawable/border_home"
         android:padding="4dp"
-        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@id/barrier1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/appComponentLayout">
@@ -219,7 +216,6 @@
         android:layout_weight="1"
         android:background="@drawable/border_home"
         android:padding="4dp"
-        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@id/barrier1"
         app:layout_constraintStart_toEndOf="@id/appDisablerLayout"
         app:layout_constraintEnd_toEndOf="parent">
