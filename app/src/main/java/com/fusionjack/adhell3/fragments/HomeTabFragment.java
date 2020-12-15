@@ -371,10 +371,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
         binding.firewallRulesSwitch.setChecked(contentBlocker != null && !isFirewallRuleEmpty);
 
-        if (!isDomainRuleEmpty) {
-            homeTabViewModel.refreshBlockedUrls();
-        }
-
         boolean disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
         binding.appDisablerSwitch.setChecked(disablerEnabled);
 

@@ -140,22 +140,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();
-
-        setTheme();
-
         if (!selectFileActivityLaunched) {
-            if (!getIntent().getBooleanExtra("START", false) && !themeChanged) {
+            if (!getIntent().getBooleanExtra("START", false) && !themeChanged && !AppPreferences.getInstance().getPasswordHash().isEmpty()) {
                 Intent splashIntent = new Intent(this, SplashScreenActivity.class);
                 splashIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(splashIntent);
+                super.onResume();
+                return;
             }
-
             finishOnResume();
         } else {
             selectFileActivityLaunched = false;
         }
-
+        super.onResume();
+        setTheme();
         LogUtils.info("Everything is okay");
     }
 
@@ -508,10 +506,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            appCacheReady.set(true);
-
-            if (visibleFragment != null) {
-                visibleFragment.onResume();
+            if (appCacheReady.compareAndSet(false, true)) {
+                if (visibleFragment != null) {
+                    visibleFragment.onResume();
+                }
             }
 
             // Clean resources to prevent memory leak

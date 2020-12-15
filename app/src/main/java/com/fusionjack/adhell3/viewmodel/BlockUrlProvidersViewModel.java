@@ -64,8 +64,8 @@ public class BlockUrlProvidersViewModel extends ViewModel {
     public LiveData<Boolean> getLoadingBarVisibility() {
         if (_loadingVisibility == null) {
             _loadingVisibility = new MutableLiveData<>();
-            // Set initial value as false
-            updateLoadingBarVisibility(false);
+            // Set initial value as true
+            updateLoadingBarVisibility(true);
         }
         return _loadingVisibility;
     }

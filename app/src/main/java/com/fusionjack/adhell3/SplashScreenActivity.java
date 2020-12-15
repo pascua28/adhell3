@@ -43,16 +43,16 @@ public class SplashScreenActivity extends AppCompatActivity {
             return;
         }
 
-        // Launch main activity if no password set
-        if (AppPreferences.getInstance().getPasswordHash().isEmpty()) {
-            launchMainActivity();
-            return;
-        }
-
         // Early exit if the device doesn't support Knox
         if (!DeviceAdminInteractor.getInstance().isSupported()) {
             LogUtils.info("Device not supported");
             AdhellFactory.getInstance().createNotSupportedDialog(this);
+            return;
+        }
+
+        // Launch main activity if no password set
+        if (AppPreferences.getInstance().getPasswordHash().isEmpty()) {
+            launchMainActivity();
             return;
         }
 

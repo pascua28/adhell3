@@ -139,13 +139,13 @@ public class HomeTabViewModel extends ViewModel {
     public LiveData<Boolean> getLoadingBarVisibility() {
         if (_loadingVisibility == null) {
             _loadingVisibility = new MutableLiveData<>();
-            // Set initial value as false
-            updateLoadingBarVisibility(false);
+            // Set initial value as true
+            updateLoadingBarVisibility(true);
         }
         return _loadingVisibility;
     }
 
-    private void updateLoadingBarVisibility(boolean isVisible) {
+    public void updateLoadingBarVisibility(boolean isVisible) {
         _loadingVisibility.setValue(isVisible);
     }
 
@@ -185,11 +185,14 @@ public class HomeTabViewModel extends ViewModel {
         return sortedHashMap;
     }
 
-    public void refreshBlockedUrls() {
-        updateLoadingBarVisibility(true);
+    public void setReportBlockedUrls() {
         if (reportBlockedUrlsDb.getValue() != null) {
             _reportBlockedUrls.setValue(convertBlockedUrls(reportBlockedUrlsDb.getValue()));
         }
+    }
+
+    public void refreshBlockedUrls() {
+        updateLoadingBarVisibility(true);
         new RefreshBlockedUrlAsyncTask(this).execute();
     }
 
@@ -291,6 +294,7 @@ public class HomeTabViewModel extends ViewModel {
         protected void onPostExecute(Void aVoid) {
             HomeTabViewModel homeTabViewModel = homeTabViewModelWeakReference.get();
             if (homeTabViewModel != null) {
+                homeTabViewModel.setReportBlockedUrls();
                 homeTabViewModel.updateBlockedDomainInfo();
                 homeTabViewModel.updateLoadingBarVisibility(false);
             }
