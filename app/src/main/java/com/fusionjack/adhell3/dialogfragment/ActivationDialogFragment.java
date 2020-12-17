@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -128,7 +128,7 @@ public class ActivationDialogFragment extends DialogFragment {
         }
     }
 
-    @android.support.annotation.NonNull
+    @androidx.annotation.NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -138,7 +138,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
     @Nullable
     @Override
-    public View onCreateView(@android.support.annotation.NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@androidx.annotation.NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.dialog_fragment_activation, container);
 

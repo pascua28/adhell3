@@ -1,7 +1,7 @@
 package com.fusionjack.adhell3.utils;
 
 import android.os.Handler;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.webkit.URLUtil;
 
 import com.fusionjack.adhell3.db.AppDatabase;

@@ -193,7 +193,7 @@
             android:text="@string/last_day_blocked"
             android:background="@drawable/border"/>
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/swipeContainer"
             android:layout_width="match_parent"
@@ -205,7 +205,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <com.getbase.floatingactionbutton.FloatingActionsMenu
             android:id="@+id/domain_actions"

@@ -1,7 +1,7 @@
 package com.fusionjack.adhell3.dagger.module;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.dagger.scope.AdhellApplicationScope;
 import com.fusionjack.adhell3.utils.LogUtils;

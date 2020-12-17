@@ -1,7 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 public class DomainTabPageFragment extends Fragment {
     private static final String ARG_PAGE = "page";
