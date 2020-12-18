@@ -21,6 +21,9 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DomainTabFragment extends Fragment {
 
+    private TabLayoutMediator tabLayoutMediator;
+    FragmentDomainsBinding binding;
+
     private final int[] imageResId = {
             R.drawable.ic_event_busy_black_24dp,
             R.drawable.ic_event_available_black_24dp,
@@ -35,15 +38,16 @@ public class DomainTabFragment extends Fragment {
         }
         setHasOptionsMenu(true);
 
-        FragmentDomainsBinding binding = FragmentDomainsBinding.inflate(inflater);
+        binding = FragmentDomainsBinding.inflate(inflater);
 
         binding.domainsViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.domainsViewpager.setOffscreenPageLimit(4);
         binding.domainsViewpager.setAdapter(new DomainPagerAdapter(this));
 
-        new TabLayoutMediator(binding.domainsSlidingTabs, binding.domainsViewpager,
+        tabLayoutMediator = new TabLayoutMediator(binding.domainsSlidingTabs, binding.domainsViewpager,
                 (tab, position) -> tab.setText(getTabTitle(position))
-        ).attach();
+        );
+        tabLayoutMediator.attach();
 
         binding.domainsViewpager.registerOnPageChangeCallback(new OnPageChangeCallback() {
             @Override
@@ -84,6 +88,15 @@ public class DomainTabFragment extends Fragment {
         binding.domainsViewpager.setCurrentItem(MainActivity.getSelectedDomainTab(), false);
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        tabLayoutMediator.detach();
+        tabLayoutMediator = null;
+        binding.domainsViewpager.setAdapter(null);
+        binding = null;
+        super.onDestroyView();
     }
 
     private String getTabTitle(int position) {

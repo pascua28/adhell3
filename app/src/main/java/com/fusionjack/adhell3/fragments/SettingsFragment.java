@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -73,8 +72,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             switchPreference.setOnPreferenceClickListener(switchPref -> {
                 AutoUpdateDialogFragment autoUpdateDialogFragment = new AutoUpdateDialogFragment(switchPref);
                 autoUpdateDialogFragment.setCancelable(true);
-                if (getActivity() != null)
-                    autoUpdateDialogFragment.show(getActivity().getSupportFragmentManager(), "dialog_auto_update");
+                autoUpdateDialogFragment.show(getChildFragmentManager(), "dialog_auto_update");
                 return false;
             });
         }
@@ -138,7 +136,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new CleanDatabaseAsyncTask(context).execute()
+                                new CleanDatabaseAsyncTask(context, getChildFragmentManager()).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -258,7 +256,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CHANGE_KEY_PREFERENCE: {
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                FragmentManager fragmentManager = getChildFragmentManager();
                 Fragment activationDialog = fragmentManager.findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
                 if (activationDialog == null) {
                     ActivationDialogFragment fragment = new ActivationDialogFragment();
@@ -354,9 +352,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         private AppCache appCache;
         private AppDatabase appDatabase;
 
-        CleanDatabaseAsyncTask(Context context) {
-            FragmentActivity fragmentActivity = (FragmentActivity) context;
-            this.fragmentManager = fragmentActivity.getSupportFragmentManager();
+        CleanDatabaseAsyncTask(Context context, FragmentManager fragmentManager) {
+            this.fragmentManager = fragmentManager;
             this.contextReference = new WeakReference<>(context);
             this.handler = new Handler(Looper.getMainLooper()) {
                 @Override

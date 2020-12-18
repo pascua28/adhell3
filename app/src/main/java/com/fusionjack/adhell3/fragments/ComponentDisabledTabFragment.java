@@ -18,6 +18,10 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 public class ComponentDisabledTabFragment extends Fragment {
+
+    private TabLayoutMediator tabLayoutMediator;
+    FragmentAppComponentTabsBinding binding;
+
     private final int[] imageResId = {
             R.drawable.ic_permission,
             R.drawable.ic_service,
@@ -31,15 +35,16 @@ public class ComponentDisabledTabFragment extends Fragment {
             getActivity().setTitle("Disabled app component");
         }
 
-        FragmentAppComponentTabsBinding binding = FragmentAppComponentTabsBinding.inflate(inflater);
+        binding = FragmentAppComponentTabsBinding.inflate(inflater);
 
         binding.appsViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.appsViewpager.setOffscreenPageLimit(4);
         binding.appsViewpager.setAdapter(new ComponentDisabledPagerAdapter(this));
 
-        new TabLayoutMediator(binding.appsSlidingTabs, binding.appsViewpager,
+        tabLayoutMediator = new TabLayoutMediator(binding.appsSlidingTabs, binding.appsViewpager,
                 (tab, position) -> tab.setText(getTabTitle(position))
-        ).attach();
+        );
+        tabLayoutMediator.attach();
 
         binding.appsViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -82,6 +87,15 @@ public class ComponentDisabledTabFragment extends Fragment {
         binding.appsViewpager.setCurrentItem(0, false);
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        tabLayoutMediator.detach();
+        tabLayoutMediator = null;
+        binding.appsViewpager.setAdapter(null);
+        binding = null;
+        super.onDestroyView();
     }
 
     private String getTabTitle(int position) {

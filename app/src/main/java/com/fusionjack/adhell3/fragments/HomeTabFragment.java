@@ -80,7 +80,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fragmentManager = requireActivity().getSupportFragmentManager();
+        fragmentManager = getChildFragmentManager();
     }
 
     @Override

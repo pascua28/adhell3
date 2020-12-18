@@ -213,6 +213,12 @@ public class AppTabPageFragment extends AppFragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        rootView = null;
+    }
+
     private void enableAllPackages() {
         DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
         dialogQuestionBinding.titleTextView.setText(R.string.enable_apps_dialog_title);

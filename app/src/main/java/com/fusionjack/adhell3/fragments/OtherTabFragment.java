@@ -23,6 +23,9 @@ import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAG
 
 public class OtherTabFragment extends Fragment {
 
+    private TabLayoutMediator tabLayoutMediator;
+    private FragmentOthersBinding binding;
+
     private final int[] imageResId = {
             R.drawable.ic_security_black_24dp,
             R.drawable.ic_dns_black_24dp,
@@ -41,15 +44,16 @@ public class OtherTabFragment extends Fragment {
         }
         setHasOptionsMenu(true);
 
-        FragmentOthersBinding binding = FragmentOthersBinding.inflate(inflater);
+        binding = FragmentOthersBinding.inflate(inflater);
 
         binding.othersViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         binding.othersViewpager.setOffscreenPageLimit(BuildConfig.APP_COMPONENT ? 3 : 2);
         binding.othersViewpager.setAdapter(new OtherPagerAdapter(this));
 
-        new TabLayoutMediator(binding.othersSlidingTabs, binding.othersViewpager,
+        tabLayoutMediator = new TabLayoutMediator(binding.othersSlidingTabs, binding.othersViewpager,
                 (tab, position) -> tab.setText(getTabTitle(position))
-        ).attach();
+        );
+        tabLayoutMediator.attach();
 
         binding.othersViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -99,6 +103,15 @@ public class OtherTabFragment extends Fragment {
         binding.othersViewpager.setCurrentItem(MainActivity.getSelectedOtherTab(), false);
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        tabLayoutMediator.detach();
+        tabLayoutMediator = null;
+        binding.othersViewpager.setAdapter(null);
+        binding = null;
+        super.onDestroyView();
     }
 
     private String getTabTitle(int position) {

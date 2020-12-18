@@ -256,7 +256,7 @@ public class ActivationDialogFragment extends DialogFragment {
                                 .show();
                     }
                 }
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentManager fragmentManager = getParentFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setCustomAnimations(R.anim.dialog_pop_in, R.anim.dialog_pop_out, R.anim.dialog_pop_in, R.anim.dialog_pop_out);
                 fragmentTransaction
@@ -289,7 +289,7 @@ public class ActivationDialogFragment extends DialogFragment {
                     }
                 }
                 dismiss();
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentManager fragmentManager = getParentFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())

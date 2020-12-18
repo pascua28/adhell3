@@ -292,5 +292,6 @@ public class DnsFragment extends AppFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        rootView = null;
     }
 }

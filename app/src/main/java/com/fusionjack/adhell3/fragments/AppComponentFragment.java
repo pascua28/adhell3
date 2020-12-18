@@ -84,9 +84,7 @@ public class AppComponentFragment extends AppFragment {
         } else if (id == R.id.action_batch) {
             batchOperation();
         } else if (id == R.id.action_show_disabled) {
-            if (getActivity() != null) {
-                AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
-            }
+            AdhellFactory.getInstance().showAppComponentDisabledFragment(getParentFragment().getParentFragmentManager());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -102,22 +100,19 @@ public class AppComponentFragment extends AppFragment {
 
         binding.componentAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
+            FragmentManager fragmentManager = getParentFragment().getParentFragmentManager();
 
-            if (getActivity() != null) {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            Bundle bundle = new Bundle();
+            AppInfo appInfo = adapter.getItem(position);
+            bundle.putString("packageName", appInfo.packageName);
+            bundle.putString("appName", appInfo.appName);
+            ComponentTabFragment fragment = new ComponentTabFragment();
+            fragment.setArguments(bundle);
 
-                Bundle bundle = new Bundle();
-                AppInfo appInfo = adapter.getItem(position);
-                bundle.putString("packageName", appInfo.packageName);
-                bundle.putString("appName", appInfo.appName);
-                ComponentTabFragment fragment = new ComponentTabFragment();
-                fragment.setArguments(bundle);
-
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-                fragmentTransaction.addToBackStack("appComponents");
-                fragmentTransaction.commit();
-            }
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+            fragmentTransaction.addToBackStack("appComponents");
+            fragmentTransaction.commit();
         });
 
         int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
@@ -209,6 +204,7 @@ public class AppComponentFragment extends AppFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        rootView = null;
     }
 
     private void batchOperation() {
