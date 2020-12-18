@@ -411,15 +411,8 @@ public class MainActivity extends AppCompatActivity {
             // Reset double back press to exit
             doubleBackToExitPressedOnce = false;
 
-            // Set fragments transition animation
+            // Set fragment
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            if (previousSelectedTabId != -1) {
-                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
-            } else {
-                fragmentTransaction.setCustomAnimations(0, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
-            }
-
-            // Start fragments transition
             fragmentTransaction
                     .replace(R.id.fragmentContainer, replacing)
                     .addToBackStack(BACK_STACK_TAB_TAG)

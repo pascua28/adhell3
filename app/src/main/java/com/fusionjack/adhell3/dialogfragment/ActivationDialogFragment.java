@@ -258,7 +258,7 @@ public class ActivationDialogFragment extends DialogFragment {
                 }
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
+                fragmentTransaction.setCustomAnimations(R.anim.dialog_pop_in, R.anim.dialog_pop_out, R.anim.dialog_pop_in, R.anim.dialog_pop_out);
                 fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
@@ -291,7 +291,6 @@ public class ActivationDialogFragment extends DialogFragment {
                 dismiss();
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
                 fragmentTransaction
                         .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
                         .commit();
