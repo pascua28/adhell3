@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
     private static FilterAppInfo filterAppInfo;
-    private static WeakReference<ActivationDialogFragment> activationDialogFragmentWeakReference;
     private final Handler snackbarDelayedHandler = new Handler();
     private AlertDialog permissionDialog;
     private Snackbar snackbar;
@@ -120,10 +119,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fragmentManager = getSupportFragmentManager();
-
-        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
-        activationDialogFragment.setCancelable(false);
-        activationDialogFragmentWeakReference = new WeakReference<>(activationDialogFragment);
 
         setTheme();
 
@@ -320,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Select Other tab if theme has been changed or select Home tab by default
         if (themeChanged) {
-                binding.bottomBar.setSelectedItemId(R.id.othersTab);
+            binding.bottomBar.setSelectedItemId(R.id.othersTab);
         }
 
         if (!themeChanged && !restoreBackStack){
@@ -333,7 +328,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isKnoxValid() {
-        ActivationDialogFragment activationDialogFragment = activationDialogFragmentWeakReference.get();
+        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
+        activationDialogFragment.setCancelable(false);
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
             if (activationDialogFragment != null && !activationDialogFragment.isVisible()) {
@@ -353,6 +349,8 @@ public class MainActivity extends AppCompatActivity {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
+        } else {
+            activationDialogFragment.setCancelable(true);
         }
 
         if (activationDialogFragment != null && activationDialogFragment.isVisible()) {
@@ -460,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Void> {
+    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
         private final WeakReference<Context> applicationContextReference;
         private FragmentManager fragmentManager;
         private Fragment visibleFragment;
@@ -479,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Boolean doInBackground(Void... voids) {
             // Get visible fragment
             if (fragmentManager != null) {
                 for (Fragment fragment: fragmentManager.getFragments()) {
@@ -495,17 +493,17 @@ public class MainActivity extends AppCompatActivity {
             cp.add(applicationContextReference.get().getPackageName());
             for ( ApplicationInfo ai : installedPackages ) {
                 if ( !cp.remove( ai.packageName ) ) {
-                    return null;
+                    return true;
                 }
             }
-            if (!cp.isEmpty()) {
-                AppCache.reload(applicationContextReference.get(), null);
-            }
-            return null;
+            return !cp.isEmpty();
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(Boolean needReload) {
+            if (needReload) {
+                AppCache.reload(applicationContextReference.get(), null);
+            }
             if (appCacheReady.compareAndSet(false, true)) {
                 if (visibleFragment != null) {
                     visibleFragment.onResume();

@@ -88,6 +88,8 @@ public class ContentBlocker56 implements ContentBlocker {
             disableFirewallRules();
             e.printStackTrace();
         }
+
+        AppPreferences.getInstance().setFirewallRulesToggle(true);
     }
 
     @Override
@@ -110,6 +112,8 @@ public class ContentBlocker56 implements ContentBlocker {
             firewall.enableFirewall(false);
             LogUtils.info("\nKnox firewall is disabled.", handler);
         }
+
+        AppPreferences.getInstance().setFirewallRulesToggle(false);
     }
 
     @Override
@@ -152,6 +156,8 @@ public class ContentBlocker56 implements ContentBlocker {
             disableDomainRules();
             e.printStackTrace();
         }
+
+        AppPreferences.getInstance().setDomainRulesToggle(true);
     }
 
     @Override
@@ -240,6 +246,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
         AppPreferences.getInstance().resetBlockedDomainsCount();
         AppPreferences.getInstance().resetWhitelistedDomainsCount();
+        AppPreferences.getInstance().setDomainRulesToggle(false);
     }
 
     public void processCustomRules(Handler handler) throws Exception {

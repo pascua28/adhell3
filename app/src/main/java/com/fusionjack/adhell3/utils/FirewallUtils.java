@@ -123,9 +123,11 @@ public final class FirewallUtils {
             if (domainRules != null && domainRules.size() > 0) {
                 stat.blackListSize = domainRules.get(0).getDenyDomains().size();
                 stat.whiteListSize = domainRules.get(0).getAllowDomains().size();
+            } else {
+                stat.blackListSize = AppPreferences.getInstance().getBlockedDomainsCount();
+                stat.whiteListSize = AppPreferences.getInstance().getWhitelistedDomainsCount();
             }
         }
-
         return stat;
     }
 

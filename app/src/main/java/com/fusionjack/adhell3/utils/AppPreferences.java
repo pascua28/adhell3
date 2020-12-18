@@ -2,9 +2,13 @@ package com.fusionjack.adhell3.utils;
 
 import android.content.SharedPreferences;
 
+import com.fusionjack.adhell3.blocker.ContentBlocker56;
+
 public final class AppPreferences {
     private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
     private static final String WHITELISTED_DOMAINS_COUNT = "whitelistedDomainsCount";
+    private static final String DOMAIN_RULES_TOGGLE = "domainRulesToggle";
+    private static final String FIREWALL_RULES_TOGGLE = "firewallRulesToggle";
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
     private static final String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
@@ -37,11 +41,31 @@ public final class AppPreferences {
         return instance;
     }
 
+    public boolean isDomainRulesToggleEnabled() {
+        return sharedPreferences.getBoolean(DOMAIN_RULES_TOGGLE, !ContentBlocker56.getInstance().isDomainRuleEmpty());
+    }
+
+    public void setDomainRulesToggle(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(DOMAIN_RULES_TOGGLE, enabled);
+        editor.apply();
+    }
+
+    public boolean isFirewallRulesToggleEnabled() {
+        return sharedPreferences.getBoolean(FIREWALL_RULES_TOGGLE, !ContentBlocker56.getInstance().isFirewallRuleEmpty());
+    }
+
+    public void setFirewallRulesToggle(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(FIREWALL_RULES_TOGGLE, enabled);
+        editor.apply();
+    }
+
     public boolean isAppDisablerToggleEnabled() {
         return sharedPreferences.getBoolean(DISABLER_TOGGLE, true);
     }
 
-    void setAppDisablerToggle(boolean enabled) {
+    public void setAppDisablerToggle(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(DISABLER_TOGGLE, enabled);
         editor.apply();
@@ -51,7 +75,7 @@ public final class AppPreferences {
         return sharedPreferences.getBoolean(APP_COMPONENT_TOGGLE, true);
     }
 
-    void setAppComponentToggle(boolean enabled) {
+    public void setAppComponentToggle(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(APP_COMPONENT_TOGGLE, enabled);
         editor.apply();

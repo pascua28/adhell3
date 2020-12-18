@@ -232,7 +232,9 @@ public class ActivationDialogFragment extends DialogFragment {
     public void onDestroy() {
         // Clean resource to prevent memory leak
         this.sharedPreferences = null;
-        this.binding = null;
+        if (getActivity() != null) {
+            getActivity().unregisterReceiver(receiver);
+        }
 
         super.onDestroy();
     }
@@ -347,6 +349,7 @@ public class ActivationDialogFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        this.dismiss();
         binding = null;
     }
 

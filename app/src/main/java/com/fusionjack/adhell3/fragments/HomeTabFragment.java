@@ -70,14 +70,17 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     private static final String EXPORTED_DOMAINS_FILENAME = "adhell_exported_domains.txt";
     private HomeTabViewModel homeTabViewModel;
     private FragmentManager fragmentManager;
-    private ContentBlocker contentBlocker;
     private FragmentBlockerBinding binding;
+
+    private boolean domainRulesEnabled;
+    private boolean firewallRulesEnabled;
+    private boolean disablerEnabled;
+    private boolean appComponentEnabled;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fragmentManager = requireActivity().getSupportFragmentManager();
-        contentBlocker = ContentBlocker56.getInstance();
     }
 
     @Override
@@ -94,12 +97,38 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
         binding = FragmentBlockerBinding.inflate(inflater);
 
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        homeTabViewModel.getBlockedDomainInfo(getContext()).observe(
+                getViewLifecycleOwner(),
+                blockedDomainInfo -> {
+                    if (blockedDomainInfo.isEmpty()) {
+                        binding.infoTextView.setVisibility(View.INVISIBLE);
+                        binding.swipeContainer.setVisibility(View.INVISIBLE);
+                    } else {
+                        if (domainRulesEnabled) {
+                            binding.infoTextView.setText(blockedDomainInfo);
+                            binding.infoTextView.setVisibility(View.VISIBLE);
+                            binding.swipeContainer.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+        );
+        binding.swipeContainer.setOnRefreshListener(() -> homeTabViewModel.refreshBlockedUrls());
+
         homeTabViewModel.getLoadingBarVisibility().observe(
                 getViewLifecycleOwner(),
                 isVisible -> {
                     if (isVisible) {
-                        if (!binding.swipeContainer.isRefreshing()) {
+                        if (!binding.swipeContainer.isRefreshing() && domainRulesEnabled)  {
                             binding.loadingBar.setVisibility(View.VISIBLE);
+                        } else if (!domainRulesEnabled) {
+                            binding.loadingBar.setVisibility(View.GONE);
                         }
 
                         if (binding.blockedDomainsListView.getVisibility() == View.VISIBLE) {
@@ -115,6 +144,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     }
                 }
         );
+        homeTabViewModel.updateLoadingBarVisibility(true);
 
         homeTabViewModel.getReportBlockedUrls().observe(getViewLifecycleOwner(), reportBlockedUrls -> {
             if (MainActivity.appCacheReady.get()) {
@@ -125,7 +155,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     binding.blockedDomainsListView.setAdapter(arrayAdapter);
                     arrayAdapter.notifyDataSetChanged();
 
-                    binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
+                    binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View childView, int groupPosition, int childPosition, long id) -> {
                         DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
                         List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
                         String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
@@ -176,23 +206,9 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     reportBlockedUrlAdapter.updateReportBlockedUrlMap(reportBlockedUrls);
                     reportBlockedUrlAdapter.notifyDataSetChanged();
                 }
+                homeTabViewModel.updateBlockedDomainInfo();
             }
         });
-
-        homeTabViewModel.getBlockedDomainInfo(getContext()).observe(
-                getViewLifecycleOwner(),
-                blockedDomainInfo -> {
-                    if (blockedDomainInfo.isEmpty()) {
-                        binding.infoTextView.setVisibility(View.INVISIBLE);
-                        binding.swipeContainer.setVisibility(View.INVISIBLE);
-                    } else {
-                        binding.infoTextView.setText(blockedDomainInfo);
-                        binding.infoTextView.setVisibility(View.VISIBLE);
-                        binding.swipeContainer.setVisibility(View.VISIBLE);
-                    }
-                }
-        );
-        binding.swipeContainer.setOnRefreshListener(() -> homeTabViewModel.refreshBlockedUrls());
 
         if (!BuildConfig.DISABLE_APPS) {
             binding.appDisablerSwitch.setEnabled(false);
@@ -206,13 +222,15 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), false).execute();
         });
         binding.domainRulesSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            domainRulesEnabled = isChecked;
             if (isChecked) {
                 binding.domainInfoTextView.setVisibility(View.VISIBLE);
             } else {
                 binding.domainInfoTextView.setVisibility(View.GONE);
             }
+            invalidateOptionsMenu();
         });
-        homeTabViewModel.getDomainInfo(getContext()).observe(
+        homeTabViewModel.getDomainInfo(getResources().getString(R.string.domain_rules_info)).observe(
                 getViewLifecycleOwner(),
                 binding.domainInfoTextView::setText
         );
@@ -222,50 +240,52 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             new SetFirewallAsyncTask(false, this, fragmentManager, getContext(), false).execute();
         });
         binding.firewallRulesSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            firewallRulesEnabled = isChecked;
             if (isChecked) {
                 binding.firewallInfoTextView.setVisibility(View.VISIBLE);
             } else {
                 binding.firewallInfoTextView.setVisibility(View.GONE);
             }
+            invalidateOptionsMenu();
         });
-        homeTabViewModel.getFirewallInfo(getContext()).observe(
+        homeTabViewModel.getFirewallInfo(getResources().getString(R.string.firewall_rules_info)).observe(
                 getViewLifecycleOwner(),
                 binding.firewallInfoTextView::setText
         );
 
         binding.appDisablerSwitch.setOnClickListener(v -> {
             LogUtils.info("App disabler switch button has been clicked");
-            new AppDisablerAsyncTask(this, getContext()).execute();
+            new AppDisablerAsyncTask(disablerEnabled, this, getContext()).execute();
         });
         binding.appDisablerSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            disablerEnabled = isChecked;
             if (isChecked) {
                 binding.disablerInfoTextView.setVisibility(View.VISIBLE);
             } else {
                 binding.disablerInfoTextView.setVisibility(View.GONE);
             }
         });
-        homeTabViewModel.getDisablerInfo(getContext()).observe(
+        homeTabViewModel.getDisablerInfo(getResources().getString(R.string.app_disabler_info)).observe(
                 getViewLifecycleOwner(),
                 binding.disablerInfoTextView::setText
         );
 
         binding.appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info("App component switch button has been clicked");
-            new AppComponentAsyncTask(this, getContext()).execute();
+            new AppComponentAsyncTask(appComponentEnabled, this, getContext()).execute();
         });
         binding.appComponentSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            appComponentEnabled = isChecked;
             if (isChecked) {
                 binding.appComponentInfoTextView.setVisibility(View.VISIBLE);
             } else {
                 binding.appComponentInfoTextView.setVisibility(View.GONE);
             }
         });
-        homeTabViewModel.getAppComponentInfo(getContext()).observe(
+        homeTabViewModel.getAppComponentInfo(getResources().getString(R.string.app_component_toggle_info)).observe(
                 getViewLifecycleOwner(),
                 binding.appComponentInfoTextView::setText
         );
-
-        homeTabViewModel.refreshBlockedUrls();
 
         binding.domainActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_export_domains, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_export, requireContext().getTheme()))
                 .setLabel(getString(R.string.export_domains_title))
@@ -325,14 +345,9 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             adhellAppIntegrity.fillPackageDb();
         });
 
-        View.OnClickListener appComponentDisabledOnClickListener = v -> {
-            if (getActivity() != null) {
-                    AdhellFactory.getInstance().showAppComponentDisabledFragment(getActivity().getSupportFragmentManager());
-            }};
+        View.OnClickListener appComponentDisabledOnClickListener = v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getParentFragmentManager());
         binding.appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
         binding.appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
-
-        return binding.getRoot();
     }
 
     @Override
@@ -364,28 +379,24 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     }
 
     private void updateUserInterface() {
-        boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
-        boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+        domainRulesEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
+        firewallRulesEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
+        disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+        appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
 
-        binding.domainRulesSwitch.setChecked(contentBlocker != null && !isDomainRuleEmpty);
-
-        binding.firewallRulesSwitch.setChecked(contentBlocker != null && !isFirewallRuleEmpty);
-
-        boolean disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+        binding.domainRulesSwitch.setChecked(domainRulesEnabled);
+        binding.firewallRulesSwitch.setChecked(firewallRulesEnabled);
         binding.appDisablerSwitch.setChecked(disablerEnabled);
-
-        boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
         binding.appComponentSwitch.setChecked(appComponentEnabled);
 
+        homeTabViewModel.setInfo();
+        homeTabViewModel.refreshBlockedUrls();
+    }
+
+    private void invalidateOptionsMenu() {
         FragmentActivity parentActivity = getActivity();
         if (parentActivity != null) {
             parentActivity.invalidateOptionsMenu();
-        }
-
-        homeTabViewModel.setInfo();
-
-        if (!contentBlocker.isDomainRuleEmpty()) {
-            homeTabViewModel.refreshBlockedUrls();
         }
     }
 
@@ -394,12 +405,14 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         private AlertDialog dialog;
         private final boolean enabled;
 
-        AppDisablerAsyncTask(HomeTabFragment parentFragment, Context context) {
+        AppDisablerAsyncTask(boolean enabled, HomeTabFragment parentFragment, Context context) {
+            LogUtils.info("AppDisabler enabled: "+enabled);
             this.parentFragment = parentFragment;
 
-            this.enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-            String message = enabled ? "Enabling apps..." : "Disabling apps...";
+            this.enabled = enabled;
+            String message = this.enabled ? "Disabling apps..." : "Enabling apps...";
             this.dialog = DialogUtils.getProgressDialog(message, context);
+            this.dialog.setCancelable(false);
         }
 
         @Override
@@ -409,7 +422,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
         @Override
         protected Void doInBackground(Void... voids) {
-            AdhellFactory.getInstance().setAppDisablerToggle(!enabled); // toggle the switch
+            AdhellFactory.getInstance().setAppDisablerToggle(enabled); // toggle the switch
             return null;
         }
 
@@ -429,13 +442,15 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     private static class AppComponentAsyncTask extends AsyncTask<Void, Void, Void> {
         private HomeTabFragment parentFragment;
         private AlertDialog dialog;
+        private final boolean enabled;
 
-        AppComponentAsyncTask(HomeTabFragment parentFragment, Context context) {
+        AppComponentAsyncTask(boolean enabled, HomeTabFragment parentFragment, Context context) {
             this.parentFragment = parentFragment;
 
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            String message = enabled ? "Enabling app component..." : "Disabling app component...";
+            this.enabled = enabled;
+            String message = this.enabled ? "Disabling app component..." : "Enabling app component...";
             this.dialog = DialogUtils.getProgressDialog(message, context);
+            this.dialog.setCancelable(false);
         }
 
         @Override
@@ -445,8 +460,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
         @Override
         protected Void doInBackground(Void... voids) {
-            boolean toggleEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            AdhellFactory.getInstance().setAppComponentToggle(!toggleEnabled); // toggle the switch
+            AdhellFactory.getInstance().setAppComponentToggle(enabled); // toggle the switch
             return null;
         }
 

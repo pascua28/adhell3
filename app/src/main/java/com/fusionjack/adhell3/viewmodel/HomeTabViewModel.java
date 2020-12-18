@@ -15,6 +15,7 @@ import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
+import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -45,9 +46,9 @@ public class HomeTabViewModel extends ViewModel {
     public HomeTabViewModel() {
     }
 
-    public LiveData<String> getDomainInfo(Context context) {
+    public LiveData<String> getDomainInfo(String strBase) {
         if (_domainInfo == null) {
-            domainInfoBase = context.getResources().getString(R.string.domain_rules_info);
+            domainInfoBase = strBase;
             _domainInfo = new MutableLiveData<>();
             // Set loading string as initial value
             _domainInfo.setValue(loadingString);
@@ -56,14 +57,14 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     private void updateDomainInfo(int blacklistDomain, int whitelistDomain, int whitelistApp) {
-        _domainInfo.setValue(
+        _domainInfo.postValue(
                 String.format(domainInfoBase, blacklistDomain, whitelistDomain, whitelistApp)
         );
     }
 
-    public LiveData<String> getFirewallInfo(Context context) {
+    public LiveData<String> getFirewallInfo(String strBase) {
         if (_firewallInfo == null) {
-            firewallInfoBase = context.getResources().getString(R.string.firewall_rules_info);
+            firewallInfoBase = strBase;
             _firewallInfo = new MutableLiveData<>();
             // Set loading string as initial value
             _firewallInfo.setValue(loadingString);
@@ -72,14 +73,14 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     private void updateFirewallInfo(int mobileData, int wifiData, int custom) {
-        _firewallInfo.setValue(
+        _firewallInfo.postValue(
                 String.format(firewallInfoBase, mobileData, wifiData, custom)
         );
     }
 
-    public LiveData<String> getDisablerInfo(Context context) {
+    public LiveData<String> getDisablerInfo(String strBase) {
         if (_disablerInfo == null) {
-            disablerInfoBase = context.getResources().getString(R.string.app_disabler_info);
+            disablerInfoBase = strBase;
             _disablerInfo = new MutableLiveData<>();
             // Set loading string as initial value
             _disablerInfo.setValue(loadingString);
@@ -88,14 +89,14 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     private void updateDisablerInfo(int disabledApp) {
-        _disablerInfo.setValue(
+        _disablerInfo.postValue(
                 String.format(disablerInfoBase, disabledApp)
         );
     }
 
-    public LiveData<String> getAppComponentInfo(Context context) {
+    public LiveData<String> getAppComponentInfo(String strBase) {
         if (_appComponentInfo == null) {
-            appComponentInfoBase = context.getResources().getString(R.string.app_component_toggle_info);
+            appComponentInfoBase = strBase;
             _appComponentInfo = new MutableLiveData<>();
             // Set loading string as initial value
             _appComponentInfo.setValue(loadingString);
@@ -104,7 +105,7 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     private void updateAppComponentInfo(int permission,int service, int receiver, int activity) {
-        _appComponentInfo.setValue(
+        _appComponentInfo.postValue(
                 String.format(appComponentInfoBase, permission, service, receiver, activity)
         );
     }
@@ -119,16 +120,18 @@ public class HomeTabViewModel extends ViewModel {
         return _blockedDomainInfo;
     }
 
-    private void updateBlockedDomainInfo() {
+    public void updateBlockedDomainInfo() {
         if (_reportBlockedUrls != null) {
-            HashMap<String, List<ReportBlockedUrl>> list = _reportBlockedUrls.getValue();
-            if (list != null && list.size() > 0 && reportBlockedUrlsDb.getValue() != null) {
-                _blockedDomainInfo.setValue(
-                        String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, reportBlockedUrlsDb.getValue().size())
-                );
-            } else {
-                _blockedDomainInfo.setValue("");
+            int total = 0;
+            for (List<ReportBlockedUrl> list : _reportBlockedUrls.getValue().values()) {
+                total += list.size();
             }
+            _blockedDomainInfo.postValue(
+                    String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, total)
+            );
+            LogUtils.info("HomeTabViewModel - UpdateBlockedDomainInfo, total: "+total);
+        } else {
+            _blockedDomainInfo.postValue("");
         }
     }
 
@@ -181,7 +184,6 @@ public class HomeTabViewModel extends ViewModel {
         for (Map.Entry<String, List<ReportBlockedUrl>> entry : linkedList) {
             sortedHashMap.put(entry.getKey(), entry.getValue());
         }
-
         return sortedHashMap;
     }
 
@@ -208,6 +210,8 @@ public class HomeTabViewModel extends ViewModel {
         private int serviceSize;
         private int receiverSize;
         private int activitySize;
+        private final boolean domainRulesEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
+        private final boolean firewallRulesEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
         private final boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
         private final boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
         private final WeakReference<HomeTabViewModel> homeTabViewModelWeakReference;
@@ -243,7 +247,6 @@ public class HomeTabViewModel extends ViewModel {
                     }
                 }
             }
-
             FirewallUtils.DomainStat domainStat = FirewallUtils.getInstance().getDomainStatFromKnox();
             blackListSize = domainStat.blackListSize;
             whiteListSize = domainStat.whiteListSize;
@@ -262,9 +265,13 @@ public class HomeTabViewModel extends ViewModel {
         protected void onPostExecute(Void aVoid) {
             HomeTabViewModel homeTabViewModel = homeTabViewModelWeakReference.get();
             if (homeTabViewModel != null) {
-                homeTabViewModel.updateDomainInfo(blackListSize, whiteListSize, whitelistAppSize);
+                if (domainRulesEnabled) {
+                    homeTabViewModel.updateDomainInfo(blackListSize, whiteListSize, whitelistAppSize);
+                }
 
-                homeTabViewModel.updateFirewallInfo(mobileSize, wifiSize, customSize);
+                if (firewallRulesEnabled) {
+                    homeTabViewModel.updateFirewallInfo(mobileSize, wifiSize, customSize);
+                }
 
                 if (appDisablerEnabled) {
                     homeTabViewModel.updateDisablerInfo(disablerSize);
@@ -295,7 +302,7 @@ public class HomeTabViewModel extends ViewModel {
             HomeTabViewModel homeTabViewModel = homeTabViewModelWeakReference.get();
             if (homeTabViewModel != null) {
                 homeTabViewModel.setReportBlockedUrls();
-                homeTabViewModel.updateBlockedDomainInfo();
+                //homeTabViewModel.updateBlockedDomainInfo();
                 homeTabViewModel.updateLoadingBarVisibility(false);
             }
         }
