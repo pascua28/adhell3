@@ -144,7 +144,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     }
                 }
         );
-        homeTabViewModel.updateLoadingBarVisibility(true);
 
         homeTabViewModel.getReportBlockedUrls().observe(getViewLifecycleOwner(), reportBlockedUrls -> {
             if (MainActivity.appCacheReady.get()) {
@@ -354,6 +353,14 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     public void onResume() {
         super.onResume();
         updateUserInterface();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (!MainActivity.finishActivity.compareAndSet(true, false)) {
+            homeTabViewModel.updateLoadingBarVisibility(true);
+        }
     }
 
     @Override

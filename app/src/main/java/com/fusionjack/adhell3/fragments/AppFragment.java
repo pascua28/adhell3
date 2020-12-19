@@ -127,7 +127,9 @@ public class AppFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        viewModel.updateLoadingBarVisibility(true);
+        if (!MainActivity.finishActivity.compareAndSet(true, false)) {
+            viewModel.updateLoadingBarVisibility(true);
+        }
     }
 
     @Override
