@@ -562,7 +562,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             this.contentBlocker = null;
             this.handler.removeCallbacksAndMessages(null);
             this.handler = null;
-            this.fragmentManager = null;
             this.fragment = null;
             this.parentFragment = null;
 

@@ -384,7 +384,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             fragment.enableCloseButton();
 
             // Clean resource to prevent memory leak
-            this.fragmentManager = null;
             this.handler = null;
             this.fragment = null;
             this.appCache = null;

@@ -504,7 +504,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Clean resources to prevent memory leak
-            this.fragmentManager = null;
             this.visibleFragment = null;
         }
     }
