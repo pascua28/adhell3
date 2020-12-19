@@ -230,12 +230,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 int nightMode = (preferenceManager.getSharedPreferences().getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) ?
                         AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
 
+                MainActivity.themeChanged = 2;
                 AppCompatDelegate.setDefaultNightMode(nightMode);
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                intent.putExtra("settingsFragment", SET_NIGHT_MODE_PREFERENCE);
-                startActivity(intent);
-                requireActivity().overridePendingTransition(0, 0);
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {
@@ -290,6 +286,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         RestoreDatabaseAsyncTask(Context context) {
             this.builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
             this.dialog = DialogUtils.getProgressDialog("Restore database is running...", context);
+            this.dialog.setCancelable(false);
             this.contextWeakReference = new WeakReference<>(context);
         }
 
@@ -346,7 +343,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     private static class CleanDatabaseAsyncTask extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Context> contextReference;
-        private FragmentManager fragmentManager;
+        private final FragmentManager fragmentManager;
         private Handler handler;
         private FirewallDialogFragment fragment;
         private AppCache appCache;

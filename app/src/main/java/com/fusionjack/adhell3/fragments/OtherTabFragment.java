@@ -97,7 +97,7 @@ public class OtherTabFragment extends Fragment {
 
         if (viewpagerPosition != null && viewpagerPosition.equals("Settings")) {
             MainActivity.setSelectedOtherTab(SETTINGS_PAGE);
-            MainActivity.themeChanged = false;
+            //MainActivity.themeChanged = false;
         }
 
         binding.othersViewpager.setCurrentItem(MainActivity.getSelectedOtherTab(), false);

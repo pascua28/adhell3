@@ -80,7 +80,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fragmentManager = getChildFragmentManager();
+        fragmentManager = getParentFragmentManager();
     }
 
     @Override
@@ -111,11 +111,9 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                         binding.infoTextView.setVisibility(View.INVISIBLE);
                         binding.swipeContainer.setVisibility(View.INVISIBLE);
                     } else {
-                        if (domainRulesEnabled) {
-                            binding.infoTextView.setText(blockedDomainInfo);
-                            binding.infoTextView.setVisibility(View.VISIBLE);
-                            binding.swipeContainer.setVisibility(View.VISIBLE);
-                        }
+                        binding.infoTextView.setText(blockedDomainInfo);
+                        binding.infoTextView.setVisibility(View.VISIBLE);
+                        binding.swipeContainer.setVisibility(View.VISIBLE);
                     }
                 }
         );
@@ -125,9 +123,10 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                 getViewLifecycleOwner(),
                 isVisible -> {
                     if (isVisible) {
-                        if (!binding.swipeContainer.isRefreshing() && domainRulesEnabled)  {
+                        boolean swipeContainerIsVisible = binding.swipeContainer.getVisibility() == View.VISIBLE;
+                        if (!binding.swipeContainer.isRefreshing() && swipeContainerIsVisible)  {
                             binding.loadingBar.setVisibility(View.VISIBLE);
-                        } else if (!domainRulesEnabled) {
+                        } else if (!swipeContainerIsVisible) {
                             binding.loadingBar.setVisibility(View.GONE);
                         }
 
@@ -566,6 +565,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             parentFragment.updateUserInterface();
 
             // Clean resources to prevent memory leak
+            this.fragmentManager = null;
             this.contentBlocker = null;
             this.handler.removeCallbacksAndMessages(null);
             this.handler = null;

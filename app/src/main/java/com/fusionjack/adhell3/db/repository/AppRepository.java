@@ -6,6 +6,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppPreferences;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
@@ -22,23 +23,48 @@ public class AppRepository {
             List<AppInfo> list = new ArrayList<>();
             switch (type) {
                 case DISABLER:
+                    boolean appComponentsEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                     if (filterAppInfo.getSystemAppsFilter() && filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
-                            list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+                            } else {
+                                list = appDatabase.applicationInfoDao().getApps();
+                            }
                         } else {
-                            list = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
+                            } else {
+                                list = appDatabase.applicationInfoDao().getApps(filterText);
+                            }
                         }
                     } else if (filterAppInfo.getSystemAppsFilter()) {
                         if (text.length() == 0) {
-                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder();
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder();
+                            } else {
+                                list = appDatabase.applicationInfoDao().getSystemApps();
+                            }
                         } else {
-                            list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder(filterText);
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAllSystemAppsInDisabledOrder(filterText);
+                            } else {
+                                list = appDatabase.applicationInfoDao().getSystemApps(filterText);
+                            }
                         }
                     } else if (filterAppInfo.getUserAppsFilter()) {
                         if (text.length() == 0) {
-                            list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder();
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder();
+                            } else {
+                                list = appDatabase.applicationInfoDao().getUserApps();
+                            }
                         } else {
-                            list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder(filterText);
+                            if (appComponentsEnabled) {
+                                list = appDatabase.applicationInfoDao().getAllUserAppsInDisabledOrder(filterText);
+                            } else {
+                                list = appDatabase.applicationInfoDao().getUserApps(filterText);
+                            }
                         }
                     }
                     break;

@@ -232,9 +232,6 @@ public class ActivationDialogFragment extends DialogFragment {
     public void onDestroy() {
         // Clean resource to prevent memory leak
         this.sharedPreferences = null;
-        if (getActivity() != null) {
-            getActivity().unregisterReceiver(receiver);
-        }
 
         super.onDestroy();
     }

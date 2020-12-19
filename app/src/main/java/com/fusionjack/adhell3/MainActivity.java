@@ -21,6 +21,7 @@ import android.view.Window;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,7 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
-    public static boolean themeChanged = false;
+    public static int themeChanged = 0;
     public static AtomicBoolean appCacheReady = new AtomicBoolean(false);
     public static AtomicBoolean finishActivity = new AtomicBoolean(false);
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
     private static FilterAppInfo filterAppInfo;
+    private static WeakReference<ActivationDialogFragment> activationDialogFragmentWeakReference;
     private final Handler snackbarDelayedHandler = new Handler();
     private AlertDialog permissionDialog;
     private Snackbar snackbar;
@@ -102,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            themeChanged = savedInstanceState.getInt("themeChanged", 0);
+        }
+        setTheme();
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
 
         // Set the crash handler to log crash's stack trace into a file
@@ -121,8 +128,6 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManager = getSupportFragmentManager();
 
-        setTheme();
-
         binding.bottomBar.setOnNavigationItemSelectedListener(item -> {
             onTabSelected(item.getItemId());
             return true;
@@ -136,20 +141,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
         if (!selectFileActivityLaunched) {
-            if (!getIntent().getBooleanExtra("START", false) && !themeChanged && !AppPreferences.getInstance().getPasswordHash().isEmpty()) {
+            if (!getIntent().getBooleanExtra("START", false) && themeChanged == 0 && !AppPreferences.getInstance().getPasswordHash().isEmpty()) {
                 Intent splashIntent = new Intent(this, SplashScreenActivity.class);
-                splashIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(splashIntent);
-                super.onResume();
                 return;
+            }
+            if (themeChanged > 0) {
+                themeChanged--;
             }
             finishOnResume();
         } else {
             selectFileActivityLaunched = false;
         }
-        super.onResume();
-        setTheme();
         LogUtils.info("Everything is okay");
     }
 
@@ -164,9 +169,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         LogUtils.info("Destroying activity");
         this.binding = null;
+        finishActivity.compareAndSet(true, false);
         closeActivity(false);
 
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("themeChanged", themeChanged);
     }
 
     @Override
@@ -191,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void closeActivity(boolean finish) {
         previousSelectedTabId = -1;
-        themeChanged = false;
         restoreBackStack = false;
 
         setFilterAppInfo(new FilterAppInfo());
@@ -203,7 +214,6 @@ public class MainActivity extends AppCompatActivity {
         onNewIntent(new Intent());
 
         Intent intent = new Intent(this, SplashScreenActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("EXIT", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
@@ -316,11 +326,11 @@ public class MainActivity extends AppCompatActivity {
         requestStoragePermission();
 
         // Select Other tab if theme has been changed or select Home tab by default
-        if (themeChanged) {
+        if (themeChanged != 0) {
             binding.bottomBar.setSelectedItemId(R.id.othersTab);
         }
 
-        if (!themeChanged && !restoreBackStack){
+        if (themeChanged == 0 && !restoreBackStack){
             if (previousSelectedTabId == -1) {
                 binding.bottomBar.setSelectedItemId(R.id.homeTab);
             } else {
@@ -330,7 +340,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isKnoxValid() {
-        ActivationDialogFragment activationDialogFragment = new ActivationDialogFragment();
+        if (activationDialogFragmentWeakReference == null || activationDialogFragmentWeakReference.get() == null ) {
+            activationDialogFragmentWeakReference = new WeakReference<>(new ActivationDialogFragment());
+        }
+        ActivationDialogFragment activationDialogFragment = activationDialogFragmentWeakReference.get();
         activationDialogFragment.setCancelable(false);
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
@@ -387,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void onTabSelected(int tabId) {
         LogUtils.info("Tab '" + tabId + "' is selected");
-        if (previousSelectedTabId != tabId || fragmentManager.getBackStackEntryCount() > 1 || themeChanged) {
+        if (previousSelectedTabId != tabId || fragmentManager.getBackStackEntryCount() > 1 || themeChanged != 0) {
             fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             Fragment replacing;
             if (tabId == R.id.homeTab) {
@@ -398,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
                 replacing = new DomainTabFragment();
             } else if (tabId == R.id.othersTab) {
                 replacing = new OtherTabFragment();
-                if (themeChanged) {
+                if (themeChanged != 0) {
                     Bundle bundle = new Bundle();
                     bundle.putString("viewpager_position", "Settings");
                     replacing.setArguments(bundle);
@@ -421,20 +434,12 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
         previousSelectedTabId = tabId;
-        themeChanged = false;
     }
 
     private void setTheme() {
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         Window window = getWindow();
         View decor = window.getDecorView();
-
-        String extraStringSetting = getIntent().getStringExtra("settingsFragment");
-        if (extraStringSetting != null) {
-            themeChanged = extraStringSetting.contains(SET_NIGHT_MODE_PREFERENCE);
-        } else {
-            themeChanged = false;
-        }
 
         // Change status bar icon and navigation bar tint based on theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -455,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
         private final WeakReference<Context> applicationContextReference;
-        private FragmentManager fragmentManager;
+        private final FragmentManager fragmentManager;
         private Fragment visibleFragment;
         private Set<String> appCachePackageNames;
         private List<ApplicationInfo> installedPackages;

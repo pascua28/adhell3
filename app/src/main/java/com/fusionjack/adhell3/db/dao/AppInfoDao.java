@@ -33,6 +33,14 @@ public interface AppInfoDao {
     AppInfo getAppByPackageName(String packageName);
 
 
+    // Get apps
+    @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
+    List<AppInfo> getApps();
+
+    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY appName ASC")
+    List<AppInfo> getApps(String str);
+
+
     // Disabled apps
     @Query("SELECT * FROM AppInfo WHERE disabled = 1 ORDER BY appName ASC")
     List<AppInfo> getDisabledApps();

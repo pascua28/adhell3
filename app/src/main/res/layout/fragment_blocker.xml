@@ -325,7 +325,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/loading_animated"
-        android:visibility="visible"/>
+        android:visibility="gone"/>
 
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/domain_actions"

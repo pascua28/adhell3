@@ -14,9 +14,9 @@ public class BackupDatabaseAsyncTask extends AsyncTask<Void, Void, String> {
     private AlertDialog.Builder builder;
 
     public BackupDatabaseAsyncTask(Context context) {
-        dialog = DialogUtils.getProgressDialog("Backup database is running...", context);
-
-        builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
+        this.dialog = DialogUtils.getProgressDialog("Backup database is running...", context);
+        this.dialog.setCancelable(false);
+        this.builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
     }
 
     @Override

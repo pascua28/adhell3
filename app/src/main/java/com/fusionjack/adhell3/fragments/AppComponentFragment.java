@@ -74,6 +74,7 @@ public class AppComponentFragment extends AppFragment {
         inflater.inflate(R.menu.appcomponent_tab_menu, menu);
 
         boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+        menu.findItem(R.id.action_enable_all).setEnabled(appComponentEnabled);
         menu.findItem(R.id.action_batch).setEnabled(appComponentEnabled);
         menu.findItem(R.id.action_show_disabled).setEnabled(appComponentEnabled);
 

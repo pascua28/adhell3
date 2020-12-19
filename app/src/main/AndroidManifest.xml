@@ -38,6 +38,7 @@
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan">
         </activity>
 

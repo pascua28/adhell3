@@ -15,7 +15,6 @@ import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
-import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -62,6 +61,10 @@ public class HomeTabViewModel extends ViewModel {
         );
     }
 
+    private void resetDomainInfo() {
+        _domainInfo.postValue(loadingString);
+    }
+
     public LiveData<String> getFirewallInfo(String strBase) {
         if (_firewallInfo == null) {
             firewallInfoBase = strBase;
@@ -76,6 +79,10 @@ public class HomeTabViewModel extends ViewModel {
         _firewallInfo.postValue(
                 String.format(firewallInfoBase, mobileData, wifiData, custom)
         );
+    }
+
+    private void resetFirewallInfo() {
+        _firewallInfo.postValue(loadingString);
     }
 
     public LiveData<String> getDisablerInfo(String strBase) {
@@ -94,6 +101,10 @@ public class HomeTabViewModel extends ViewModel {
         );
     }
 
+    private void resetDisablerInfo() {
+        _disablerInfo.postValue(loadingString);
+    }
+
     public LiveData<String> getAppComponentInfo(String strBase) {
         if (_appComponentInfo == null) {
             appComponentInfoBase = strBase;
@@ -108,6 +119,10 @@ public class HomeTabViewModel extends ViewModel {
         _appComponentInfo.postValue(
                 String.format(appComponentInfoBase, permission, service, receiver, activity)
         );
+    }
+
+    private void resetAppComponentInfo() {
+        _appComponentInfo.postValue(loadingString);
     }
 
     public LiveData<String> getBlockedDomainInfo(Context context) {
@@ -126,13 +141,14 @@ public class HomeTabViewModel extends ViewModel {
             for (List<ReportBlockedUrl> list : _reportBlockedUrls.getValue().values()) {
                 total += list.size();
             }
-            _blockedDomainInfo.postValue(
-                    String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, total)
-            );
-            LogUtils.info("HomeTabViewModel - UpdateBlockedDomainInfo, total: "+total);
-        } else {
-            _blockedDomainInfo.postValue("");
+            if (total > 0 || AppPreferences.getInstance().isDomainRulesToggleEnabled()) {
+                _blockedDomainInfo.postValue(
+                        String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, total)
+                );
+                return;
+            }
         }
+        _blockedDomainInfo.postValue("");
     }
 
     public void setInfo() {
@@ -267,18 +283,26 @@ public class HomeTabViewModel extends ViewModel {
             if (homeTabViewModel != null) {
                 if (domainRulesEnabled) {
                     homeTabViewModel.updateDomainInfo(blackListSize, whiteListSize, whitelistAppSize);
+                } else {
+                    homeTabViewModel.resetDomainInfo();
                 }
 
                 if (firewallRulesEnabled) {
                     homeTabViewModel.updateFirewallInfo(mobileSize, wifiSize, customSize);
+                } else {
+                    homeTabViewModel.resetFirewallInfo();
                 }
 
                 if (appDisablerEnabled) {
                     homeTabViewModel.updateDisablerInfo(disablerSize);
+                } else {
+                    homeTabViewModel.resetDisablerInfo();
                 }
 
                 if (appComponentEnabled) {
                     homeTabViewModel.updateAppComponentInfo(permissionSize, serviceSize, receiverSize, activitySize);
+                } else {
+                    homeTabViewModel.resetAppComponentInfo();
                 }
             }
         }

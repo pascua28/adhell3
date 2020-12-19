@@ -103,7 +103,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(this, SplashScreenActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("EXIT", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
@@ -128,7 +127,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private void launchMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("START", true);
         startActivity(intent);
         overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
