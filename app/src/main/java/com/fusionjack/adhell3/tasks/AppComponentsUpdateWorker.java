@@ -66,7 +66,11 @@ public class AppComponentsUpdateWorker extends Worker {
         if (AppPreferences.getInstance().getAppComponentsAutoUpdate()) {
             LogUtils.info("------Start App components auto update------", handler);
             try {
-                processAppComponentsInAutoUpdate();
+                if (AppPreferences.getInstance().isAppComponentToggleEnabled()) {
+                    processAppComponentsInAutoUpdate();
+                } else {
+                    LogUtils.info("The management of app components is disabled, nothing to do.", handler);
+                }
             } catch (Exception e) {
                 LogUtils.error("Failed App components auto update! Will be retried.", e, handler);
                 LogUtils.info("------Failed App components auto update------", handler);

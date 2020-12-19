@@ -63,7 +63,7 @@ public class CleanDBUpdateWorker extends Worker {
             LogUtils.info("------Start auto clean database------", handler);
             try {
                 LogUtils.info("Getting app cache instance...", handler);
-                AppCache appCache = AppCache.getInstanceSync(handler);
+                AppCache appCache = AppCache.reloadSync(handler);
                 cleanDatabase(appDatabase, appCache, handler);
             } catch (Exception e) {
                 LogUtils.error("Failed auto clean database! Will be retried.", e, handler);

@@ -56,22 +56,16 @@ public class AppCache {
         return instance;
     }
 
-    public static synchronized AppCache getInstanceSync(Handler handler) {
-        if (instance == null) {
-            instance = new AppCache(null, handler, false);
-        }
-        return instance;
-    }
-
     public static synchronized AppCache reload(Context context, Handler handler) {
         instance = null;
         instance = new AppCache(context, handler, true);
         return instance;
     }
 
-    public static synchronized void reloadSync(Handler handler) {
+    public static synchronized AppCache reloadSync(Handler handler) {
         instance = null;
         instance = new AppCache(null, handler, false);
+        return instance;
     }
 
     private void loadAppsSync(Handler handler) {
