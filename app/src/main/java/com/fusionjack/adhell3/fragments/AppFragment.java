@@ -12,6 +12,8 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -130,6 +132,8 @@ public class AppFragment extends Fragment {
         if (!MainActivity.finishActivity.compareAndSet(true, false)) {
             viewModel.updateLoadingBarVisibility(true);
         }
+        // Close keyboard
+        ViewCompat.getWindowInsetsController(rootView).hide(WindowInsetsCompat.Type.ime());
     }
 
     @Override

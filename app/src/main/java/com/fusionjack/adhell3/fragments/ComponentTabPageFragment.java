@@ -17,6 +17,8 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.R;
@@ -63,6 +65,7 @@ public class ComponentTabPageFragment extends Fragment {
     private String packageName;
     private Context context;
     private String searchText;
+    private View view;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -128,7 +131,7 @@ public class ComponentTabPageFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        View view = null;
+        view = null;
         boolean toggleEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
         switch (page) {
             case PERMISSIONS_PAGE:
@@ -182,6 +185,19 @@ public class ComponentTabPageFragment extends Fragment {
         }
 
         return view;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Close keyboard
+        ViewCompat.getWindowInsetsController(view).hide(WindowInsetsCompat.Type.ime());
+    }
+
+    @Override
+    public void onDestroyView() {
+        view = null;
+        super.onDestroyView();
     }
 
     private static class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {

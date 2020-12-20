@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.R;
@@ -86,9 +88,16 @@ public class ProviderContentFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        // Close keyboard
+        ViewCompat.getWindowInsetsController(binding.getRoot()).hide(WindowInsetsCompat.Type.ime());
+    }
+
+    @Override
     public void onDestroyView() {
-        super.onDestroyView();
         binding = null;
+        super.onDestroyView();
     }
 
     private static class LoadBlockedUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {

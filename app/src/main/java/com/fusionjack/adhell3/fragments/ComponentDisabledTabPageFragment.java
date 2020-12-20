@@ -18,6 +18,8 @@ import android.widget.ExpandableListView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.R;
@@ -60,6 +62,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private Map<String, Drawable> appIcons;
     private Map<String, String> appNames;
     private Parcelable state;
+    private View view;
     private int listViewID;
 
     public static ComponentDisabledTabPageFragment newInstance(int page) {
@@ -118,7 +121,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        View view = null;
+        view = null;
         switch (page) {
             case PERMISSIONS_PAGE:
                 FragmentAppPermissionDisabledBinding fragmentAppPermissionDisabledBinding = FragmentAppPermissionDisabledBinding.inflate(inflater);
@@ -156,9 +159,17 @@ public class ComponentDisabledTabPageFragment extends Fragment {
 
     @Override
     public void onPause() {
+        super.onPause();
         ExpandableListView listView = ((Activity) context).findViewById(listViewID);
         state = listView.onSaveInstanceState();
-        super.onPause();
+        // Close keyboard
+        ViewCompat.getWindowInsetsController(view).hide(WindowInsetsCompat.Type.ime());
+    }
+
+    @Override
+    public void onDestroyView() {
+        view = null;
+        super.onDestroyView();
     }
 
     private static class CreateComponentAsyncTask extends AsyncTask<Void, Void, Map<String, List<IComponentInfo>>> {
