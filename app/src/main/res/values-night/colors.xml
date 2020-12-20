@@ -13,5 +13,6 @@
     <color name="colorSnackbarText">@color/colorPrimary</color>
     <color name="colorBottomNavSelected">@color/colorAccent</color>
     <color name="colorBottomNavUnselected">@android:color/white</color>
+    <color name="colorMenu">#FF2C2C2C</color>
     <color name="colorRed">#fe4445</color>
 </resources>

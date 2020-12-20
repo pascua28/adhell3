@@ -126,6 +126,7 @@ public class AppComponentFragment extends AppFragment {
         binding.filterButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(context, binding.filterButton);
             popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
+
             popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
             if (showSystemApps) {
                 popup.getMenu().findItem(R.id.filterSystemApps).setEnabled(true);
@@ -146,13 +147,37 @@ public class AppComponentFragment extends AppFragment {
                 } else if (id == R.id.filterSystemApps) {
                     if (showSystemApps) {
                         filterAppInfo.setSystemAppsFilter(item.isChecked());
+                        if (!item.isChecked()) {
+                            if (!popup.getMenu().findItem(R.id.filterUserApps).isChecked()) {
+                                popup.getMenu().findItem(R.id.filterUserApps).setChecked(true);
+                                filterAppInfo.setUserAppsFilter(true);
+                            }
+                        }
                     }
                 } else if (id == R.id.filterUserApps) {
                     filterAppInfo.setUserAppsFilter(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterSystemApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterSystemApps).setChecked(true);
+                            filterAppInfo.setSystemAppsFilter(true);
+                        }
+                    }
                 } else if (id == R.id.filterRunningApps) {
                     filterAppInfo.setRunningAppsFilter(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterStoppedApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(true);
+                            filterAppInfo.setStoppedAppsFilter(true);
+                        }
+                    }
                 } else if (id == R.id.filterStoppedApps) {
                     filterAppInfo.setStoppedAppsFilter(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterRunningApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterRunningApps).setChecked(true);
+                            filterAppInfo.setRunningAppsFilter(true);
+                        }
+                    }
                 }
                 if (!filterAppInfo.getHighlightRunningApps() &&
                         (filterAppInfo.getSystemAppsFilter() || !showSystemApps) &&

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/highlightRunningApps"
-        android:checkable="true"
-        android:title="@string/menu_item_highlight_running_apps" />
+    <group android:id="@+id/appsHighlight">
+        <item android:id="@+id/highlightRunningApps"
+            android:checkable="true"
+            android:title="@string/menu_item_highlight_running_apps" />
+    </group>
 
-    <group>
+    <group android:id="@+id/appsType">
         <item
             android:id="@+id/filterSystemApps"
             android:checkable="true"
@@ -15,7 +17,7 @@
             android:title="@string/menu_item_show_user_apps" />
     </group>
 
-    <group>
+    <group android:id="@+id/appsRunning">
         <item
             android:id="@+id/filterRunningApps"
             android:checkable="true"
