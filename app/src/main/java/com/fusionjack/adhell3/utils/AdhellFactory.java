@@ -276,14 +276,16 @@ public final class AdhellFactory {
         List<DisabledPackage> disabledPackages = appDatabase.disabledPackageDao().getAll();
         for (DisabledPackage disabledPackage : disabledPackages) {
             AppInfo currentAppInfo = appDatabase.applicationInfoDao().getAppByPackageName(disabledPackage.packageName);
-            if (state) {
-                currentAppInfo.disabled = true;
-                appPolicy.setDisableApplication(disabledPackage.packageName);
-            } else {
-                currentAppInfo.disabled = false;
-                appPolicy.setEnableApplication(disabledPackage.packageName);
+            if (currentAppInfo != null) {
+                if (state) {
+                    currentAppInfo.disabled = true;
+                    appPolicy.setDisableApplication(disabledPackage.packageName);
+                } else {
+                    currentAppInfo.disabled = false;
+                    appPolicy.setEnableApplication(disabledPackage.packageName);
+                }
+                appDatabase.applicationInfoDao().update(currentAppInfo);
             }
-            appDatabase.applicationInfoDao().update(currentAppInfo);
         }
     }
 
