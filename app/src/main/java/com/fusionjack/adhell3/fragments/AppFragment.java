@@ -1,12 +1,13 @@
 package com.fusionjack.adhell3.fragments;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
+
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -39,7 +40,7 @@ public class AppFragment extends Fragment {
         this.searchText = "";
 
         appList = new ArrayList<>();
-        adapter = new AppInfoAdapter(appList, type, false, context);
+        adapter = new AppInfoAdapter(appList, type, context);
         viewModel = ViewModelProviders.of(this).get(AppViewModel.class);
 
         observer = new SingleObserver<List<AppInfo>>() {
@@ -60,7 +61,7 @@ public class AppFragment extends Fragment {
             }
         };
 
-        AppCache.getInstance(context, null);
+        AppCache.load();
 
         loadAppList(type);
     }

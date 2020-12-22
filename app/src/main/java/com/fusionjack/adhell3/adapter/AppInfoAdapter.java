@@ -2,9 +2,6 @@ package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +13,7 @@ import android.widget.TextView;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
@@ -23,30 +21,26 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.CompletableObserver;
+
 public class AppInfoAdapter extends BaseAdapter {
 
-    private List<AppInfo> applicationInfoList;
-    private WeakReference<Context> contextReference;
-    private AppRepository.Type appType;
-    private Map<String, Drawable> appIcons;
-    private Map<String, String> versionNames;
+    private final List<AppInfo> applicationInfoList;
+    private final WeakReference<Context> contextReference;
+    private final AppRepository.Type appType;
 
-    public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, boolean reload, Context context) {
+    private final Map<String, Drawable> appIcons;
+    private final Map<String, String> versionNames;
+
+    public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, Context context) {
         this.applicationInfoList = appInfoList;
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
-        Handler handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                notifyDataSetChanged();
-            }
-        };
-        if (reload) {
-            this.appIcons = AppCache.reload(context, handler).getIcons();
-        } else {
-            this.appIcons = AppCache.getInstance(context, handler).getIcons();
-            this.versionNames = AppCache.getInstance(context, handler).getVersionNames();
-        }
+
+        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(observer);
+        this.appIcons = appCache.getIcons();
+        this.versionNames = appCache.getVersionNames();
     }
 
     @Override
@@ -115,7 +109,8 @@ public class AppInfoAdapter extends BaseAdapter {
         holder.switchH.setChecked(checked);
 
         String info = appInfo.system ? "System" : "User";
-        holder.infoH.setText(String.format("%s (%s)", info, versionNames.get(appInfo.packageName)));
+        String versionName = versionNames.get(appInfo.packageName);
+        holder.infoH.setText(String.format("%s (%s)", info, versionName == null ? "0.0.0" : versionName));
 
         Drawable icon = appIcons.get(appInfo.packageName);
         if (icon == null) {

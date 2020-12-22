@@ -10,14 +10,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +18,15 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
@@ -480,15 +481,7 @@ public class HomeTabFragment extends Fragment {
             if (context != null) {
                 ListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
                 if (listView != null) {
-                    Handler handler = new Handler(Looper.getMainLooper()) {
-                        @Override
-                        public void handleMessage(Message msg) {
-                            ReportBlockedUrlAdapter adapter = (ReportBlockedUrlAdapter) listView.getAdapter();
-                            adapter.notifyDataSetChanged();
-                        }
-                    };
-
-                    ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls, handler);
+                    ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls);
                     listView.setAdapter(adapter);
                     listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, listView, false);

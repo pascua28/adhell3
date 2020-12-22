@@ -2,9 +2,6 @@ package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,25 +9,33 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.CompletableObserver;
+
 public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
-    private Map<String, Drawable> appIcons;
-    private Map<String, String> appNames;
+    private final Map<String, Drawable> appIcons;
+    private final Map<String, String> appNames;
 
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
 
-    public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull List<ReportBlockedUrl> objects, Handler handler) {
+    public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull List<ReportBlockedUrl> objects) {
         super(context, 0, objects);
-        AppCache appCache = AppCache.getInstance(context, handler);
-        appIcons = appCache.getIcons();
-        appNames = appCache.getNames();
+
+        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(observer);
+        this.appNames = appCache.getNames();
+        this.appIcons = appCache.getIcons();
     }
 
     @NonNull
