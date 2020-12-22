@@ -87,7 +87,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         this.context = getContext();
         if (this.searchText == null) this.searchText = "";
 
-        AppCache appCache = AppCache.getInstance(context, null);
+        AppCache appCache = AppCache.getInstance(null);
         appIcons = appCache.getIcons();
         appNames = appCache.getNames();
     }

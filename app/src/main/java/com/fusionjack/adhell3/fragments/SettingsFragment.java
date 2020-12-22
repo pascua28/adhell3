@@ -365,7 +365,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             fragment = FirewallDialogFragment.newInstance("Cleaning Database");
             fragment.setCancelable(false);
             fragment.show(fragmentManager, "dialog_clean_db");
-            appCache = AppCache.getInstance(contextReference.get(), handler);
+            appCache = AppCache.getInstance(null);
             appDatabase = AppDatabase.getAppDatabase(contextReference.get());
         }
 

@@ -84,6 +84,6 @@ public class AdhellAppIntegrity {
         if (appDatabase.applicationInfoDao().getAppSize() > 0) {
             return;
         }
-        AppCache.reload(null, null);
+        AppCache.load();
     }
 }

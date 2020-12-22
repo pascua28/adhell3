@@ -24,6 +24,7 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -55,7 +56,7 @@ public class AppFragment extends Fragment {
         this.searchText = "";
 
         appList = new ArrayList<>();
-        adapter = new AppInfoAdapter(appList, type, false, context);
+        adapter = new AppInfoAdapter(appList, type, context);
         viewModel = new ViewModelProvider(this).get(AppViewModel.class);
 
         observer = new SingleObserver<List<AppInfo>>() {
@@ -84,6 +85,7 @@ public class AppFragment extends Fragment {
                 viewModel.updateLoadingBarVisibility(false);
             }
         };
+        AppCache.load();
     }
 
     @Override

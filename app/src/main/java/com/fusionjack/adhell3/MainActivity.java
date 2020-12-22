@@ -1,13 +1,9 @@
 package com.fusionjack.adhell3;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,6 +27,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.databinding.ActivityMainBinding;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
@@ -52,14 +49,12 @@ import com.google.android.material.snackbar.Snackbar;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
     public static int themeChanged = 0;
-    public static AtomicBoolean appCacheReady = new AtomicBoolean(false);
     public static AtomicBoolean finishActivity = new AtomicBoolean(false);
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
     private static boolean selectFileActivityLaunched = false;
@@ -317,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Reload AppCache if needed
-        new ReloadAppCacheIfNeeded(this, getSupportFragmentManager()).execute();
+        AppCache.getInstance(AppCacheDialog.createActivityObserver(this, getSupportFragmentManager()));
 
         // Check for storage permission
         requestStoragePermission();
@@ -452,63 +447,6 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 decor.setSystemUiVisibility(0);
             }
-        }
-    }
-
-    private static class ReloadAppCacheIfNeeded extends AsyncTask<Void, Void, Boolean> {
-        private final WeakReference<Context> applicationContextReference;
-        private final FragmentManager fragmentManager;
-        private Fragment visibleFragment;
-        private Set<String> appCachePackageNames;
-        private List<ApplicationInfo> installedPackages;
-
-        ReloadAppCacheIfNeeded(Context applicationContext, FragmentManager fragmentManager) {
-            this.applicationContextReference = new WeakReference<>(applicationContext);
-            this.fragmentManager = fragmentManager;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            this.appCachePackageNames = AppCache.getInstance(applicationContextReference.get(), null).getNames().keySet();
-            this.installedPackages = AdhellFactory.getInstance().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            // Get visible fragment
-            if (fragmentManager != null) {
-                for (Fragment fragment: fragmentManager.getFragments()) {
-                    if (fragment != null && fragment.isVisible()) {
-                        visibleFragment = fragment;
-                        break;
-                    }
-                }
-            }
-
-            // make a copy of the list so the original list is not changed, and remove() is supported
-            ArrayList<String> cp = new ArrayList<>( appCachePackageNames );
-            cp.add(applicationContextReference.get().getPackageName());
-            for ( ApplicationInfo ai : installedPackages ) {
-                if ( !cp.remove( ai.packageName ) ) {
-                    return true;
-                }
-            }
-            return !cp.isEmpty();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean needReload) {
-            if (needReload) {
-                AppCache.reload(applicationContextReference.get(), null);
-            }
-            if (appCacheReady.compareAndSet(false, true)) {
-                if (visibleFragment != null) {
-                    visibleFragment.onResume();
-                }
-            }
-
-            // Clean resources to prevent memory leak
-            this.visibleFragment = null;
         }
     }
 }

@@ -2,15 +2,11 @@ package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -37,30 +33,20 @@ public class AppInfoAdapter extends BaseAdapter {
     private final List<AppInfo> applicationInfoList;
     private final WeakReference<Context> contextReference;
     private final AppRepository.Type appType;
-    private final Map<String, Drawable> appIcons;
-    private Map<String, String> versionNames;
     private final ApplicationPolicy appPolicy;
+    private final Map<String, Drawable> appIcons;
+    private final Map<String, String> versionNames;
 
-
-    public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, boolean reload, Context context) {
+    public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, Context context) {
         this.applicationInfoList = appInfoList;
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
 
-        Handler handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                notifyDataSetChanged();
-            }
-        };
-        if (reload) {
-            this.appIcons = AppCache.reload(context, handler).getIcons();
-        } else {
-            AppCache appCache = AppCache.getInstance(context, handler);
-            this.appIcons = appCache.getIcons();
-            this.versionNames = appCache.getVersionNames();
-        }
+        //CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(null);
+        this.appIcons = appCache.getIcons();
+        this.versionNames = appCache.getVersionNames();
     }
 
     @Override
@@ -167,7 +153,8 @@ public class AppInfoAdapter extends BaseAdapter {
         }
 
         String info = appInfo.system ? "System" : "User";
-        holder.binding.systemOrNot.setText(String.format("%s (%s)", info, versionNames.get(appInfo.packageName)));
+        String versionName = versionNames.get(appInfo.packageName);
+        holder.binding.systemOrNot.setText(String.format("%s (%s)", info, versionName == null ? "0.0.0" : versionName));
 
         Drawable icon = appIcons.get(appInfo.packageName);
         if (icon == null) {

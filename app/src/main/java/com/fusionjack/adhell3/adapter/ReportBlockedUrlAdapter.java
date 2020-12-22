@@ -2,7 +2,6 @@ package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,19 +23,19 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
-    private static Map<String, Drawable> appIcons;
-    private static Map<String, String> appNames;
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
+    private final Map<String, Drawable> appIcons;
+    private final Map<String, String> appNames;
     private final Context context;
     private List<String> expandableListTitle;
     private HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
 
-    public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects, Handler handler) {
-        AppCache appCache = AppCache.getInstance(context, handler);
-        if (appCache.getNames().size() > 0) {
-            appIcons = appCache.getIcons();
-            appNames = appCache.getNames();
-        }
+    public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects) {
+        //CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(null);
+        this.appNames = appCache.getNames();
+        this.appIcons = appCache.getIcons();
+
         this.context = context;
         this.expandableListTitle = new ArrayList<>(objects.keySet());
         this.expandableListDetail = objects;
