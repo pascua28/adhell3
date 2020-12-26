@@ -7,8 +7,6 @@ import android.util.JsonWriter;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.fusionjack.adhell3.App;
-import com.fusionjack.adhell3.blocker.ContentBlocker;
-import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
@@ -84,51 +82,33 @@ public final class DatabaseFactory {
             throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
         }
 
-        try {
-            ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-            contentBlocker.disableDomainRules();
-            contentBlocker.disableFirewallRules();
-            AdhellFactory.getInstance().setAppDisablerToggle(false);
-            AdhellFactory.getInstance().setAppComponentToggle(false);
+        InputStream input = App.getAppContext().getContentResolver().openInputStream(backupFile.getUri());
 
-            AdhellAppIntegrity appIntegrity = AdhellAppIntegrity.getInstance();
-            appIntegrity.checkDefaultPolicyExists();
-            appIntegrity.fillPackageDb();
-
-            InputStream input = App.getAppContext().getContentResolver().openInputStream(backupFile.getUri());
-
-            if (input != null) {
-                try (JsonReader reader = new JsonReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-                    reader.beginObject();
-                    while (reader.hasNext()) {
-                        String name = reader.nextName();
-                        if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
-                            readWhitelistedPackages(reader);
-                        } else if (name.equalsIgnoreCase("DisabledPackage")) {
-                            readDisabledPackages(reader);
-                        } else if (name.equalsIgnoreCase("RestrictedPackage")) {
-                            readRestrictedPackages(reader);
-                        } else if (name.equalsIgnoreCase("AppPermission")) {
-                            readAppComponent(reader);
-                        } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
-                            readBlockUrlProviders(reader);
-                        } else if (name.equalsIgnoreCase("UserBlockUrl")) {
-                            readUserBlockUrls(reader);
-                        } else if (name.equalsIgnoreCase("WhiteUrl")) {
-                            readWhiteUrls(reader);
-                        } else if (name.equalsIgnoreCase("DnsPackage")) {
-                            readDnsPackages(reader);
-                        } else if (name.equalsIgnoreCase("DnsAddresses")) {
-                            readDnsAddresses(reader);
-                        }
-                    }
-                    reader.endObject();
+        try (JsonReader reader = new JsonReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+                if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
+                    readWhitelistedPackages(reader);
+                } else if (name.equalsIgnoreCase("DisabledPackage")) {
+                    readDisabledPackages(reader);
+                } else if (name.equalsIgnoreCase("RestrictedPackage")) {
+                    readRestrictedPackages(reader);
+                } else if (name.equalsIgnoreCase("AppPermission")) {
+                    readAppComponent(reader);
+                } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
+                    readBlockUrlProviders(reader);
+                } else if (name.equalsIgnoreCase("UserBlockUrl")) {
+                    readUserBlockUrls(reader);
+                } else if (name.equalsIgnoreCase("WhiteUrl")) {
+                    readWhiteUrls(reader);
+                } else if (name.equalsIgnoreCase("DnsPackage")) {
+                    readDnsPackages(reader);
+                } else if (name.equalsIgnoreCase("DnsAddresses")) {
+                    readDnsAddresses(reader);
                 }
-                input.close();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            reader.endObject();
         }
     }
 

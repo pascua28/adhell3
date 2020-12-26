@@ -49,6 +49,8 @@ import com.google.android.material.snackbar.Snackbar;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String ALLOW_QSTILES_LOCKSCREEN = "allow_qstiles_lockscreen";
     public static final String SET_NIGHT_MODE_PREFERENCE = "set_night_mode_preference";
@@ -306,7 +308,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 contentBlocker.disableFirewallRules();
                 AdhellFactory.getInstance().setAppDisablerToggle(false);
                 AdhellFactory.getInstance().setAppComponentToggle(false);
-                AppDatabaseFactory.resetInstalledApps().subscribe();
+                AppDatabaseFactory.resetInstalledApps()
+                        .subscribeOn(Schedulers.computation())
+                        .blockingAwait();
+
                 DatabaseFactory.getInstance().restoreDatabase();
 
                 Context context = contextWeakReference.get();
