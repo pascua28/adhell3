@@ -41,9 +41,13 @@ import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
 import com.fusionjack.adhell3.databinding.FragmentBlockerBinding;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.AppDatabaseFactory;
+import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.DialogUtils;
@@ -65,6 +69,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class HomeTabFragment extends Fragment implements DefaultLifecycleObserver {
     private static final String STORAGE_FOLDERS = "Adhell3/Exports";
@@ -105,6 +117,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         }
 
         binding = FragmentBlockerBinding.inflate(inflater);
+
+        checkDatabaseIntegrity();
 
         return binding.getRoot();
     }
@@ -346,13 +360,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         View.OnClickListener appComponentDisabledOnClickListener = v -> AdhellFactory.getInstance().showAppComponentDisabledFragment(getParentFragmentManager());
         binding.appComponentStatusTextView.setOnClickListener(appComponentDisabledOnClickListener);
         binding.appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
-
-        AsyncTask.execute(() -> {
-            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
-            adhellAppIntegrity.checkDefaultPolicyExists();
-            adhellAppIntegrity.checkAdhellStandardPackage();
-            adhellAppIntegrity.fillPackageDb();
-        });
     }
 
     @Override
@@ -361,12 +368,64 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         updateUserInterface();
     }
 
+
     @Override
     public void onPause() {
         super.onPause();
         if (!MainActivity.finishActivity.compareAndSet(true, false)) {
             homeTabViewModel.updateLoadingBarVisibility(true);
         }
+    }
+
+    private void checkDatabaseIntegrity() {
+        Single.create((SingleOnSubscribe<AppDiff>) emitter -> {
+            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
+            adhellAppIntegrity.checkDefaultPolicyExists();
+            adhellAppIntegrity.checkAdhellStandardPackage();
+            AppDiff newApps = adhellAppIntegrity.findAppsDiff();
+            emitter.onSuccess(newApps);
+        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new SingleObserver<AppDiff>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull AppDiff appDiff) {
+                        if (!appDiff.isEmpty()) {
+                            String message = "New/deleted app(s) detected. Refreshing installed apps ...";
+                            LogUtils.info(message);
+                            final AppCacheDialog dialog = new AppCacheDialog(getContext(), message);
+                            AppDatabaseFactory.refreshInstalledApps()
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new CompletableObserver() {
+                                        @Override
+                                        public void onSubscribe(@NonNull Disposable d) {
+                                            dialog.showDialog();
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+                                            dialog.dismissDialog();
+                                            appDiff.getNewApps().forEach(app -> AppCache.getInstance(null).inject(app));
+                                        }
+
+                                        @Override
+                                        public void onError(@NonNull Throwable e) {
+                                            dialog.dismissDialog();
+                                            LogUtils.error(e.getMessage(), e);
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                    }
+        });
     }
 
     @Override

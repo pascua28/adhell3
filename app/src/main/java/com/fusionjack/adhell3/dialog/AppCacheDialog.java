@@ -26,13 +26,18 @@ public class AppCacheDialog {
 
     public AppCacheDialog(Context context) {
         this.contextWeakReference = new WeakReference<>(context);
-        createDialog();
+        createDialog("Caching apps, please wait...");
     }
 
-    private void createDialog() {
+    public AppCacheDialog(Context context, String message) {
+        this.contextWeakReference = new WeakReference<>(context);
+        createDialog(message);
+    }
+
+    private void createDialog(String message) {
         Context context = contextWeakReference.get();
         if (context != null) {
-            dialog = DialogUtils.getProgressDialog("Caching apps, please wait...", context);
+            dialog = DialogUtils.getProgressDialog(message, context);
             dialog.setCancelable(false);
         }
     }
@@ -98,7 +103,9 @@ public class AppCacheDialog {
             @Override
             public void onComplete() {
                 dialog.dismissDialog();
-                adapter.notifyDataSetChanged();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
             }
 
             @Override

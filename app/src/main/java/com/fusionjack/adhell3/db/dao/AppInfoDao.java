@@ -25,6 +25,11 @@ public interface AppInfoDao {
     void update(AppInfo appInfo);
 
 
+    // Get all package names
+    @Query("SELECT packageName FROM AppInfo")
+    List<String> getAllPackageNames();
+
+
     // Get app size
     @Query("SELECT COUNT(*) FROM AppInfo")
     int getAppSize();
