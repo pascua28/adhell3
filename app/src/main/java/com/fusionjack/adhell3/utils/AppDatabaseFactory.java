@@ -33,18 +33,31 @@ public final class AppDatabaseFactory {
     private AppDatabaseFactory() {
     }
 
+    public static Single<AppInfoResult> getInstalledApps() {
+        return Single.fromCallable(AppDatabaseFactory::fetchInstalledApps);
+    }
+
     // The app related tables are deleted and then will be filled with installed apps
     public static Completable resetInstalledApps() {
-        return Completable.fromCallable(() -> getInstalledApps(false));
+        return Completable.fromAction(() -> fillAppDatabase(false));
     }
 
     // The app related tables are deleted and they will be filled with installed apps and then the modified apps are restored
-    public static Single<AppInfoResult> refreshInstalledApps() {
-        return Single.fromCallable(() -> getInstalledApps(true));
+    public static Completable refreshInstalledApps() {
+        return Completable.fromAction(() -> fillAppDatabase(true));
     }
 
-    private static AppInfoResult getInstalledApps(boolean handleModifiedApp) throws Exception {
-        AppInfoResult result = handleModifiedApp ? new AppInfoResult() : null;
+    private static AppInfoResult fetchInstalledApps() throws Exception {
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+        List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        AppInfoResult result = new AppInfoResult();
+        processAppsInParallel(installedApps, result, false);
+
+        return result;
+    }
+
+    private static void fillAppDatabase(boolean restoreModifiedApp) throws Exception {
         List<AppInfo> modifiedApps = null;
 
         try {
@@ -57,16 +70,14 @@ public final class AppDatabaseFactory {
             modifiedApps = appDatabase.applicationInfoDao().getModifiedApps();
             resetAppRelatedTables();
 
-            // Cache the installed apps and insert them into db in parallel
-            processAppsInParallel(installedApps, result);
+            // Insert installed apps into db in parallel
+            processAppsInParallel(installedApps, null, true);
         } finally {
             // Put back the modified apps into db
-            if (handleModifiedApp) {
+            if (restoreModifiedApp) {
                 handleModifiedApps(modifiedApps);
             }
         }
-
-        return result;
     }
 
     private static void resetAppRelatedTables() {
@@ -78,11 +89,11 @@ public final class AppDatabaseFactory {
         appDatabase.dnsPackageDao().deleteAll();
     }
 
-    private static void processAppsInParallel(List<ApplicationInfo> apps, AppInfoResult result) throws Exception {
+    private static void processAppsInParallel(List<ApplicationInfo> apps, AppInfoResult result, boolean insertToDatabase) throws Exception {
         int cpuCount = Runtime.getRuntime().availableProcessors() / 2;
         ExecutorService executorService = Executors.newFixedThreadPool(cpuCount);
 
-        List<AppExecutor> appExecutors = chunkInstalledApps(apps);
+        List<AppExecutor> appExecutors = chunkInstalledApps(apps, insertToDatabase);
         List<Future<AppInfoResult>> futures = executorService.invokeAll(appExecutors);
         for (Future<AppInfoResult> future : futures) {
             AppInfoResult chunkResult = future.get(60, TimeUnit.SECONDS);
@@ -103,7 +114,7 @@ public final class AppDatabaseFactory {
         }
     }
 
-    private static List<AppExecutor> chunkInstalledApps(List<ApplicationInfo> apps) {
+    private static List<AppExecutor> chunkInstalledApps(List<ApplicationInfo> apps, boolean insertToDatabase) {
         List<AppExecutor> appExecutors = new ArrayList<>();
         int appCount = apps.size();
         int cpuCount = Runtime.getRuntime().availableProcessors() / 2;
@@ -111,7 +122,7 @@ public final class AppDatabaseFactory {
         List<List<ApplicationInfo>> chunks = Lists.partition(apps, distributedAppCount);
         for (List<ApplicationInfo> chunk : chunks) {
             long id = distributedAppCount * appExecutors.size();
-            AppExecutor appExecutor = new AppExecutor(chunk, id);
+            AppExecutor appExecutor = new AppExecutor(chunk, id, insertToDatabase);
             appExecutors.add(appExecutor);
         }
         return appExecutors;
@@ -169,11 +180,13 @@ public final class AppDatabaseFactory {
 
     private static class AppExecutor implements Callable<AppInfoResult> {
         private final List<ApplicationInfo> apps;
+        private final boolean insertToDatabase;
         private long appId;
 
-        AppExecutor(List<ApplicationInfo> apps, long appId) {
+        AppExecutor(List<ApplicationInfo> apps, long appId, boolean insertToDatabase) {
             this.apps = apps;
             this.appId = appId;
+            this.insertToDatabase = insertToDatabase;
         }
 
         @Override
@@ -182,42 +195,58 @@ public final class AppDatabaseFactory {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
             AppInfoResult appInfoResult = new AppInfoResult();
 
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            List<AppInfo> appsInfo = new ArrayList<>();
             int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
 
             for (ApplicationInfo app : apps) {
-                if (app.packageName.equals(ownPackageName)) {
+                String packageName = app.packageName;
+                if (packageName.equals(ownPackageName)) {
                     continue;
                 }
 
                 Drawable icon;
                 try {
-                    icon = packageManager.getApplicationIcon(app.packageName);
+                    icon = packageManager.getApplicationIcon(packageName);
                 } catch (PackageManager.NameNotFoundException e) {
                     icon = null;
                 }
-                appInfoResult.addAppIcon(app.packageName, icon);
+                appInfoResult.addAppIcon(packageName, icon);
 
                 String appName = packageManager.getApplicationLabel(app).toString();
-                appInfoResult.addAppName(app.packageName, appName);
+                appInfoResult.addAppName(packageName, appName);
 
-                AppInfo appInfo = new AppInfo();
-                appInfo.id = appId++;
-                appInfo.appName = appName;
-                appInfo.packageName = app.packageName;
-                appInfo.system = (app.flags & mask) != 0;
                 try {
-                    PackageInfo packageInfo = packageManager.getPackageInfo(app.packageName, 0);
-                    appInfo.installTime = packageInfo.firstInstallTime;
-                    appInfoResult.addVersionName(app.packageName, packageInfo.versionName);
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
-                    appInfo.installTime = 0;
+                    PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
+                    appInfoResult.addVersionName(packageName, packageInfo.versionName);
+                } catch (PackageManager.NameNotFoundException ignore) {
                 }
-                appsInfo.add(appInfo);
             }
-            appDatabase.applicationInfoDao().insertAll(appsInfo);
+
+            if (insertToDatabase) {
+                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+                List<AppInfo> appsInfo = new ArrayList<>();
+                for (ApplicationInfo app : apps) {
+                    String packageName = app.packageName;
+                    if (packageName.equals(ownPackageName)) {
+                        continue;
+                    }
+
+                    String appName = packageManager.getApplicationLabel(app).toString();
+
+                    AppInfo appInfo = new AppInfo();
+                    appInfo.id = appId++;
+                    appInfo.appName = appName;
+                    appInfo.packageName = packageName;
+                    appInfo.system = (app.flags & mask) != 0;
+                    try {
+                        PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
+                        appInfo.installTime = packageInfo.firstInstallTime;
+                    } catch (PackageManager.NameNotFoundException e) {
+                        appInfo.installTime = 0;
+                    }
+                    appsInfo.add(appInfo);
+                }
+                appDatabase.applicationInfoDao().insertAll(appsInfo);
+            }
 
             return appInfoResult;
         }

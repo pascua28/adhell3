@@ -31,9 +31,9 @@ public class AppCacheDialog {
         }
     }
 
-    public void showDialog() {
+    public void showDialog(String message) {
         if (dialog != null) {
-            dialog.setMessage("Caching apps, please wait...");
+            dialog.setMessage(message);
             dialog.show();
         }
     }
@@ -49,13 +49,15 @@ public class AppCacheDialog {
         return new CompletableObserver() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
-                dialog.showDialog();
+                dialog.showDialog("Caching apps's info, please wait ...");
             }
 
             @Override
             public void onComplete() {
                 dialog.dismissDialog();
-                adapter.notifyDataSetChanged();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
             }
 
             @Override

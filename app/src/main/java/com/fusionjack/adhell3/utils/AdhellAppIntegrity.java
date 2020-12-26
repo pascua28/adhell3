@@ -1,7 +1,10 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 
+import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -13,7 +16,10 @@ import com.fusionjack.adhell3.db.entity.PolicyPackage;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AdhellAppIntegrity {
     public static final String ADHELL_STANDARD_PACKAGE = BuildConfig.DEFAULT_HOST;
@@ -43,41 +49,6 @@ public class AdhellAppIntegrity {
             instance = new AdhellAppIntegrity();
         }
         return instance;
-    }
-
-    public void check() {
-        boolean defaultPolicyChecked = sharedPreferences.getBoolean(DEFAULT_POLICY_CHECKED, false);
-        if (!defaultPolicyChecked) {
-            checkDefaultPolicyExists();
-            sharedPreferences.edit().putBoolean(DEFAULT_POLICY_CHECKED, true).apply();
-        }
-        boolean disabledPackagesMoved = sharedPreferences.getBoolean(DISABLED_PACKAGES_MOVED, false);
-        if (!disabledPackagesMoved) {
-            copyDataFromAppInfoToDisabledPackage();
-            sharedPreferences.edit().putBoolean(DISABLED_PACKAGES_MOVED, true).apply();
-        }
-        boolean firewallWhitelistedPackagesMoved
-                = sharedPreferences.getBoolean(FIREWALL_WHITELISTED_PACKAGES_MOVED, false);
-        if (!firewallWhitelistedPackagesMoved) {
-            copyDataFromAppInfoToFirewallWhitelistedPackage();
-            sharedPreferences.edit().putBoolean(FIREWALL_WHITELISTED_PACKAGES_MOVED, true).apply();
-        }
-        boolean defaultPackagesFirewallWhitelisted
-                = sharedPreferences.getBoolean(DEFAULT_PACKAGES_FIREWALL_WHITELISTED, false);
-        if (!defaultPackagesFirewallWhitelisted) {
-            addDefaultAdblockWhitelist();
-            sharedPreferences.edit().putBoolean(DEFAULT_PACKAGES_FIREWALL_WHITELISTED, true).apply();
-        }
-        boolean adhellStandardPackageChecked = sharedPreferences.getBoolean(CHECK_ADHELL_STANDARD_PACKAGE, false);
-        if (!adhellStandardPackageChecked) {
-            checkAdhellStandardPackage();
-            sharedPreferences.edit().putBoolean(CHECK_ADHELL_STANDARD_PACKAGE, false).apply();
-        }
-        boolean packageDbFilled = sharedPreferences.getBoolean(CHECK_PACKAGE_DB, false);
-        if (!packageDbFilled) {
-            fillPackageDb();
-            sharedPreferences.edit().putBoolean(CHECK_PACKAGE_DB, true).apply();
-        }
     }
 
     public void checkDefaultPolicyExists() {
@@ -185,10 +156,46 @@ public class AdhellAppIntegrity {
         }
     }
 
-    public void fillPackageDb() {
-        if (appDatabase.applicationInfoDao().getAppSize() > 0) {
-            return;
+    public AppDiff findAppsDiff() {
+        LogUtils.info("Checking package database ...");
+
+        List<String> currentApps = appDatabase.applicationInfoDao().getAllPackageNames();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+        List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        return findListsDiff(installedApps, currentApps);
+    }
+
+    private AppDiff findListsDiff(List<ApplicationInfo> installedApps, List<String> currentApps) {
+        LogUtils.info("Comparing app lists ...");
+        AppDiff appDiff = new AppDiff();
+        try {
+            String ownPackageName = App.get().getApplicationContext().getPackageName();
+
+            // Find new apps
+            Set<String> currentAppSet = new HashSet<>(currentApps); // To improve contains() performance
+            List<ApplicationInfo> newApps = installedApps.stream()
+                    .filter(app -> !app.packageName.equalsIgnoreCase(ownPackageName) && !currentAppSet.contains(app.packageName))
+                    .collect(Collectors.toList());
+            appDiff.putNewApps(newApps);
+
+            // Find deleted apps
+            Set<String> installedAppSet = installedApps.stream()
+                    .map(app -> app.packageName)
+                    .collect(Collectors.toSet());
+
+            List<String> deletedApps = currentApps.stream()
+                    .filter(packageName -> !installedAppSet.contains(packageName))
+                    .collect(Collectors.toList());
+            appDiff.putDeletedApps(deletedApps);
+        } finally {
+            if (appDiff.isEmpty()) {
+                LogUtils.info("No apps diff detected.");
+            } else {
+                LogUtils.info("New apps: " + appDiff.getNewApps().stream().map(app -> app.packageName).collect(Collectors.toList()).toString());
+                LogUtils.info("Deleted apps: " + appDiff.getDeletedApps().toString());
+            }
         }
-        AppCache.load();
+        return appDiff;
     }
 }

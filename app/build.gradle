@@ -55,7 +55,7 @@ android {
         }
 
         applicationId packageName
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode 1
         versionName "3.2." + buildNumber

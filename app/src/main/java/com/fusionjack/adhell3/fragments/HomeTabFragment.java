@@ -37,9 +37,13 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.AppDatabaseFactory;
+import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -54,6 +58,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.SingleOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class HomeTabFragment extends Fragment {
 
@@ -143,12 +156,7 @@ public class HomeTabFragment extends Fragment {
             new ExportDomainsAsyncTask(getContext()).execute();
         });
 
-        AsyncTask.execute(() -> {
-            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
-            adhellAppIntegrity.checkDefaultPolicyExists();
-            adhellAppIntegrity.checkAdhellStandardPackage();
-            adhellAppIntegrity.fillPackageDb();
-        });
+        checkDatabaseIntegrity();
 
         return view;
     }
@@ -157,6 +165,56 @@ public class HomeTabFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateUserInterface();
+    }
+
+    private void checkDatabaseIntegrity() {
+        Single.create((SingleOnSubscribe<AppDiff>) emitter -> {
+            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
+            adhellAppIntegrity.checkDefaultPolicyExists();
+            adhellAppIntegrity.checkAdhellStandardPackage();
+            AppDiff newApps = adhellAppIntegrity.findAppsDiff();
+            emitter.onSuccess(newApps);
+        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new SingleObserver<AppDiff>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull AppDiff appDiff) {
+                        if (!appDiff.isEmpty()) {
+                            LogUtils.info("New/deleted app(s) detected. Refreshing installed apps ...");
+                            final AppCacheDialog dialog = new AppCacheDialog(getContext());
+                            AppDatabaseFactory.refreshInstalledApps()
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new CompletableObserver() {
+                                        @Override
+                                        public void onSubscribe(@NonNull Disposable d) {
+                                            dialog.showDialog("New/deleted app(s) detected. Refreshing installed apps ...");
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+                                            dialog.dismissDialog();
+                                            appDiff.getNewApps().forEach(app -> AppCache.getInstance(null).inject(app));
+                                        }
+
+                                        @Override
+                                        public void onError(@NonNull Throwable e) {
+                                            dialog.dismissDialog();
+                                            LogUtils.error(e.getMessage(), e);
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                    }
+        });
     }
 
     private void updateUserInterface() {

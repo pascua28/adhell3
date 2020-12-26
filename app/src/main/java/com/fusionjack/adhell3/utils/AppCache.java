@@ -1,5 +1,8 @@
 package com.fusionjack.adhell3.utils;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
 import java.util.Map;
@@ -42,12 +45,30 @@ public class AppCache {
         return instance;
     }
 
-    public static synchronized void load() {
-        getInstance(EMPTY_OBSERVER);
+    public void inject(ApplicationInfo appInfo) {
+        String packageName = appInfo.packageName;
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        Drawable icon;
+        try {
+            icon = packageManager.getApplicationIcon(packageName);
+        } catch (PackageManager.NameNotFoundException e) {
+            icon = null;
+        }
+        result.addAppIcon(appInfo.packageName, icon);
+
+        String appName = packageManager.getApplicationLabel(appInfo).toString();
+        result.addAppName(packageName, appName);
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
+            result.addVersionName(packageName, packageInfo.versionName);
+        } catch (PackageManager.NameNotFoundException ignore) {
+        }
     }
 
     private void cacheApps(CompletableObserver callerObserver) {
-        AppDatabaseFactory.refreshInstalledApps()
+        AppDatabaseFactory.getInstalledApps()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(handleResult(callerObserver == null ? EMPTY_OBSERVER : callerObserver));
