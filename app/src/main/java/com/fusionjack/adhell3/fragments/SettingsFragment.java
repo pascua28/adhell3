@@ -6,14 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.preference.SwitchPreference;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +15,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
+
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
@@ -31,11 +32,14 @@ import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 
 import java.lang.ref.WeakReference;
+
+import io.reactivex.schedulers.Schedulers;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private Context context;
@@ -211,7 +215,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         @Override
         protected void onPreExecute() {
-            dialog.setMessage("Restore database is running...");
+            dialog.setMessage("Restoring database, please wait ...");
             dialog.show();
         }
 
@@ -223,6 +227,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 contentBlocker.disableFirewallRules();
                 AdhellFactory.getInstance().setAppDisablerToggle(false);
                 AdhellFactory.getInstance().setAppComponentToggle(false);
+
+                AppDatabaseFactory.resetInstalledApps()
+                        .subscribeOn(Schedulers.computation())
+                        .blockingAwait();
 
                 DatabaseFactory.getInstance().restoreDatabase();
 

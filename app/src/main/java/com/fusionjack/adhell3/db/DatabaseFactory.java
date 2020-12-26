@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,40 +74,31 @@ public final class DatabaseFactory {
             throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
         }
 
-        try {
-            AdhellAppIntegrity appIntegrity = AdhellAppIntegrity.getInstance();
-            appIntegrity.checkDefaultPolicyExists();
-            appIntegrity.fillPackageDb();
-
-            try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), "UTF-8"))) {
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    String name = reader.nextName();
-                    if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
-                        readWhitelistedPackages(reader);
-                    } else if (name.equalsIgnoreCase("DisabledPackage")) {
-                        readDisabledPackages(reader);
-                    } else if (name.equalsIgnoreCase("RestrictedPackage")) {
-                        readRestrictedPackages(reader);
-                    } else if (name.equalsIgnoreCase("AppPermission")) {
-                        readAppComponent(reader);
-                    } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
-                        readBlockUrlProviders(reader);
-                    } else if (name.equalsIgnoreCase("UserBlockUrl")) {
-                        readUserBlockUrls(reader);
-                    } else if (name.equalsIgnoreCase("WhiteUrl")) {
-                        readWhiteUrls(reader);
-                    } else if (name.equalsIgnoreCase("DnsPackage")) {
-                        readDnsPackages(reader);
-                    } else if (name.equalsIgnoreCase("DnsAddresses")) {
-                        readDnsAddresses(reader);
-                    }
+        try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), StandardCharsets.UTF_8))) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+                if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
+                    readWhitelistedPackages(reader);
+                } else if (name.equalsIgnoreCase("DisabledPackage")) {
+                    readDisabledPackages(reader);
+                } else if (name.equalsIgnoreCase("RestrictedPackage")) {
+                    readRestrictedPackages(reader);
+                } else if (name.equalsIgnoreCase("AppPermission")) {
+                    readAppComponent(reader);
+                } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
+                    readBlockUrlProviders(reader);
+                } else if (name.equalsIgnoreCase("UserBlockUrl")) {
+                    readUserBlockUrls(reader);
+                } else if (name.equalsIgnoreCase("WhiteUrl")) {
+                    readWhiteUrls(reader);
+                } else if (name.equalsIgnoreCase("DnsPackage")) {
+                    readDnsPackages(reader);
+                } else if (name.equalsIgnoreCase("DnsAddresses")) {
+                    readDnsAddresses(reader);
                 }
-                reader.endObject();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            reader.endObject();
         }
     }
 
