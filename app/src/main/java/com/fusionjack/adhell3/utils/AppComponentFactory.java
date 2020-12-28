@@ -87,6 +87,32 @@ public final class AppComponentFactory {
         });
     }
 
+    public Single<String> processAppComponentInBatchForApp(String packageName, boolean enabled) {
+        DocumentFile componentsFile;
+
+        try {
+            componentsFile = FileUtils.getDocumentFile(STORAGE_FOLDERS, COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
+        } catch (Exception e) {
+            return Single.error(e);
+        }
+
+        Set<String> componentNames;
+        try {
+            componentNames = getFileContent(componentsFile);
+        } catch (IOException e) {
+            return Single.error(e);
+        }
+
+        return Single.create(emitter -> {
+            if (enabled) {
+                enableComponentsForApp(packageName, componentNames);
+            } else {
+                disableComponentsForApp(packageName, componentNames);
+            }
+            emitter.onSuccess("Success!");
+        });
+    }
+
     public Set<String> getFileContent(DocumentFile file) throws IOException {
         if (file.length() == 0) {
             throw new IOException("File '" + file.getName() + "' is empty !");
@@ -294,6 +320,35 @@ public final class AppComponentFactory {
         }
     }
 
+    private void enableComponentsForApp(String packageName, Set<String> compNames) {
+        Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
+        Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
+        Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+        for (String compName : compNames) {
+            if (availableServiceNames.contains(compName) ||
+                    availableActivityNames.contains(compName)) {
+                boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                if (!compState) {
+                    ComponentName componentName = new ComponentName(packageName, compName);
+                    boolean success = appPolicy.setApplicationComponentState(componentName, true);
+                    if (success) {
+                        appDatabase.appPermissionDao().delete(packageName, compName);
+                    }
+                }
+            } else if (availableReceiverNames.contains(compName)) {
+                boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                if (!compState) {
+                    ComponentName componentName = new ComponentName(packageName, compName);
+                    boolean success = appPolicy.setApplicationComponentState(componentName, true);
+                    if (success) {
+                        String receiverPair = compName + "|Auto";
+                        appDatabase.appPermissionDao().delete(packageName, receiverPair);
+                    }
+                }
+            }
+        }
+    }
+
     private void disableAppComponents(Set<String> compNames) {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
@@ -337,6 +392,51 @@ public final class AppComponentFactory {
                             appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
                             appDatabase.appPermissionDao().insert(appService);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private void disableComponentsForApp(String packageName, Set<String> compNames) {
+        Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
+        Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
+        Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+        Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
+        for (String compName : compNames) {
+            boolean disable = false;
+            int permissionStatus = 0;
+
+            if (availableServiceNames.contains(compName)) {
+                disable = true;
+                permissionStatus = AppPermission.STATUS_SERVICE;
+            } else if (availableReceiverNames.contains(compName)) {
+                disable = true;
+                permissionStatus = AppPermission.STATUS_RECEIVER;
+            } else if (availableActivityNames.contains(compName)) {
+                disable = true;
+                permissionStatus = AppPermission.STATUS_ACTIVITY;
+            } else if (availableProviderNames.contains(compName)) {
+                disable = true;
+                permissionStatus = AppPermission.STATUS_PROVIDER;
+            }
+
+            if (disable) {
+                boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
+                if (compState) {
+                    ComponentName componentName = new ComponentName(packageName, compName);
+                    boolean success = appPolicy.setApplicationComponentState(componentName, false);
+                    if (success) {
+                        AppPermission appService = new AppPermission();
+                        appService.packageName = packageName;
+                        if (permissionStatus == AppPermission.STATUS_RECEIVER) {
+                            appService.permissionName = compName + "|Auto";
+                        } else {
+                            appService.permissionName = compName;
+                        }
+                        appService.permissionStatus = permissionStatus;
+                        appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                        appDatabase.appPermissionDao().insert(appService);
                     }
                 }
             }

@@ -38,8 +38,12 @@ import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
+import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.AppCacheChangeListener;
+import com.fusionjack.adhell3.utils.AppDatabaseFactory;
+import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
@@ -50,6 +54,14 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
@@ -312,7 +324,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Reload AppCache if needed
-        AppCache.getInstance(AppCacheDialog.createActivityObserver(this, getSupportFragmentManager()));
+        //AppCache.getInstance(AppCacheDialog.createActivityObserver(this, getSupportFragmentManager()));
+        final AppCacheDialog dialog = new AppCacheDialog(this);
+        AppCache.getInstance(new CompletableObserver() {
+             @Override
+             public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                 dialog.showDialog();
+             }
+
+             @Override
+             public void onComplete() {
+                 dialog.dismissDialog();
+                 checkDatabaseIntegrity();
+             }
+
+             @Override
+             public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+                 dialog.dismissDialog();
+                 LogUtils.error(e.getMessage(), e);
+                 new AlertDialog.Builder(getBaseContext(), R.style.AlertDialogStyle)
+                         .setTitle("Error")
+                         .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
+                         .show();
+             }
+         });
 
         // Check for storage permission
         requestStoragePermission();
@@ -327,6 +362,100 @@ public class MainActivity extends AppCompatActivity {
                 binding.bottomBar.setSelectedItemId(R.id.homeTab);
             } else {
                 binding.bottomBar.setSelectedItemId(binding.bottomBar.getSelectedItemId());
+            }
+        }
+    }
+
+    private void checkDatabaseIntegrity() {
+        Single.create((SingleOnSubscribe<Boolean>) emitter -> {
+            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
+            adhellAppIntegrity.checkDefaultPolicyExists();
+            adhellAppIntegrity.checkAdhellStandardPackage();
+            Boolean isPackageDbEmpty = adhellAppIntegrity.isPackageDbEmpty();
+            emitter.onSuccess(isPackageDbEmpty);
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Boolean isPackageDbEmpty) {
+                        if (isPackageDbEmpty) {
+                            resetInstalledApps();
+                        } else {
+                            detectNewOrDeletedApps();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void resetInstalledApps() {
+        final AppCacheDialog dialog = new AppCacheDialog(this, "Processing installed apps ...");
+        AppDatabaseFactory.resetInstalledApps()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        dialog.showDialog();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dialog.dismissDialog();
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        dialog.dismissDialog();
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void detectNewOrDeletedApps() {
+        AppDatabaseFactory.detectNewOrDeletedApps()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<AppDiff>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull AppDiff diff) {
+                        if (!diff.isEmpty()) {
+                            int newAppSize = diff.getNewApps().size();
+                            int deletedAppSize = diff.getDeletedApps().size();
+                            String message = newAppSize + " new app(s) and " + deletedAppSize + " deleted app(s) have been detected.";
+                            makeSnackbar(message, Snackbar.LENGTH_LONG).show();
+                        }
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void updateUserInterface() {
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+            if (fragment != null && fragment.isVisible()) {
+                if (fragment instanceof AppCacheChangeListener) {
+                    ((AppCacheChangeListener) fragment).onAppCacheChange();
+                }
+                break;
             }
         }
     }

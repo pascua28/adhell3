@@ -36,6 +36,9 @@ public interface AppPermissionDao {
     @Query("DELETE FROM AppPermission WHERE packageName = :packageName AND permissionName = :permissionName")
     void delete(String packageName, String permissionName);
 
+    @Query("DELETE FROM AppPermission WHERE packageName = :packageName")
+    void deleteByPackageName(String packageName);
+
     @Query("DELETE FROM AppPermission WHERE permissionStatus = -1 AND packageName = :packageName")
     void deletePermissions(String packageName);
 

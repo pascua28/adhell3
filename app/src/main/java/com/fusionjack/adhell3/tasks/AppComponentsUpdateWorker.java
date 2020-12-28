@@ -86,7 +86,7 @@ public class AppComponentsUpdateWorker extends Worker {
 
     private void processAppComponentsInAutoUpdate() throws Throwable {
         LogUtils.info("Reloading App Cache...", handler);
-        AppCache.load();
+        AppCache.getInstance(null);
         LogUtils.info("Done.", handler);
 
         LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);

@@ -19,6 +19,7 @@ public class AppCache {
     private final AppInfoResult result;
 
     private static AppCache instance;
+    private static boolean appCached;
 
     private static final CompletableObserver EMPTY_OBSERVER = new CompletableObserver() {
         @Override
@@ -34,6 +35,10 @@ public class AppCache {
         }
     };
 
+    public boolean getAppCached() {
+        return appCached;
+    }
+
     private AppCache() {
         this.result = new AppInfoResult();
     }
@@ -41,12 +46,22 @@ public class AppCache {
     public static synchronized AppCache getInstance(CompletableObserver callerObserver) {
         if (instance == null) {
             instance = new AppCache();
+        }
+        if (!appCached) {
             instance.cacheApps(callerObserver);
+            appCached = true;
         }
         return instance;
     }
 
-    public void inject(ApplicationInfo appInfo) {
+    public synchronized static void inject(ApplicationInfo appInfo) {
+        if (instance == null) {
+            instance = new AppCache();
+        }
+        inject(instance, appInfo);
+    }
+
+    private static void inject(AppCache appCache, ApplicationInfo appInfo) {
         String packageName = appInfo.packageName;
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
@@ -56,14 +71,14 @@ public class AppCache {
         } catch (PackageManager.NameNotFoundException e) {
             icon = null;
         }
-        result.addAppIcon(appInfo.packageName, icon);
+        appCache.result.addAppIcon(appInfo.packageName, icon);
 
         String appName = packageManager.getApplicationLabel(appInfo).toString();
-        result.addAppName(packageName, appName);
+        appCache.result.addAppName(packageName, appName);
 
         try {
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
-            result.addVersionName(packageName, packageInfo.versionName);
+            appCache.result.addVersionName(packageName, packageInfo.versionName);
         } catch (PackageManager.NameNotFoundException ignore) {
         }
     }

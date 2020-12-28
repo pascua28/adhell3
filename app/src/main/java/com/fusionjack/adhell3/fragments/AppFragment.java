@@ -24,6 +24,7 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.utils.AppCacheChangeListener;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,7 +34,7 @@ import java.util.List;
 import io.reactivex.rxjava3.core.SingleObserver;
 import io.reactivex.rxjava3.disposables.Disposable;
 
-public class AppFragment extends Fragment {
+public class AppFragment extends Fragment implements AppCacheChangeListener {
     Context context;
     AppRepository.Type type;
     AppInfoAdapter adapter;
@@ -46,7 +47,6 @@ public class AppFragment extends Fragment {
     private List<AppInfo> appList;
 
     static FilterAppInfo filterAppInfo;
-
 
     public void initAppModel(AppRepository.Type type) {
         filterAppInfo = MainActivity.getFilterAppInfo();
@@ -180,6 +180,13 @@ public class AppFragment extends Fragment {
             searchText = "";
             searchView.setQuery(searchText, false);
             searchView.setIconified(true);
+        }
+    }
+
+    @Override
+    public void onAppCacheChange() {
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
         }
     }
 }

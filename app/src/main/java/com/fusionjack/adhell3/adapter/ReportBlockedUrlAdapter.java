@@ -31,7 +31,6 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects) {
-        //CompletableObserver observer = AppCacheDialog.createObserver(context, this);
         AppCache appCache = AppCache.getInstance(null);
         this.appNames = appCache.getNames();
         this.appIcons = appCache.getIcons();

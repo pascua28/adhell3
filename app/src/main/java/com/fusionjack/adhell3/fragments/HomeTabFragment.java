@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 
@@ -41,13 +42,10 @@ import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
 import com.fusionjack.adhell3.databinding.FragmentBlockerBinding;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
-import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
-import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
-import com.fusionjack.adhell3.utils.AppDatabaseFactory;
-import com.fusionjack.adhell3.utils.AppDiff;
+import com.fusionjack.adhell3.utils.AppCacheChangeListener;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.DialogUtils;
@@ -70,15 +68,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.CompletableObserver;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleObserver;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
-public class HomeTabFragment extends Fragment implements DefaultLifecycleObserver {
+public class HomeTabFragment extends Fragment implements DefaultLifecycleObserver, AppCacheChangeListener {
     private static final String STORAGE_FOLDERS = "Adhell3/Exports";
     private static final String EXPORTED_DOMAINS_FILENAME = "adhell_exported_domains.txt";
     private HomeTabViewModel homeTabViewModel;
@@ -117,8 +107,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         }
 
         binding = FragmentBlockerBinding.inflate(inflater);
-
-        checkDatabaseIntegrity();
 
         return binding.getRoot();
     }
@@ -168,65 +156,67 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         );
 
         homeTabViewModel.getReportBlockedUrls().observe(getViewLifecycleOwner(), reportBlockedUrls -> {
-            ExpandableListAdapter adapter = binding.blockedDomainsListView.getExpandableListAdapter();
-            Context context = getContext();
-            if (adapter == null && context != null) {
-                ReportBlockedUrlAdapter arrayAdapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls);
-                binding.blockedDomainsListView.setAdapter(arrayAdapter);
-                arrayAdapter.notifyDataSetChanged();
-            } else if (binding.blockedDomainsListView.getExpandableListAdapter() != null && binding.blockedDomainsListView.getExpandableListAdapter() instanceof ReportBlockedUrlAdapter) {
-                ReportBlockedUrlAdapter reportBlockedUrlAdapter = ((ReportBlockedUrlAdapter) binding.blockedDomainsListView.getExpandableListAdapter());
-                reportBlockedUrlAdapter.updateReportBlockedUrlMap(reportBlockedUrls);
-                reportBlockedUrlAdapter.notifyDataSetChanged();
+            if (AppCache.getInstance(null).getAppCached()) {
+                ExpandableListAdapter adapter = binding.blockedDomainsListView.getExpandableListAdapter();
+                Context context = getContext();
+                if (adapter == null && context != null) {
+                    ReportBlockedUrlAdapter arrayAdapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls);
+                    binding.blockedDomainsListView.setAdapter(arrayAdapter);
+                    arrayAdapter.notifyDataSetChanged();
+                } else if (binding.blockedDomainsListView.getExpandableListAdapter() != null && binding.blockedDomainsListView.getExpandableListAdapter() instanceof ReportBlockedUrlAdapter) {
+                    ReportBlockedUrlAdapter reportBlockedUrlAdapter = ((ReportBlockedUrlAdapter) binding.blockedDomainsListView.getExpandableListAdapter());
+                    reportBlockedUrlAdapter.updateReportBlockedUrlMap(reportBlockedUrls);
+                    reportBlockedUrlAdapter.notifyDataSetChanged();
+                }
+                binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View childView, int groupPosition, int childPosition, long id) -> {
+                    DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
+                    List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
+                    String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
+                    String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
+                    dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
+                    AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                            .setView(dialogWhitelistDomainBinding.getRoot())
+                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
+                                if (domainToAdd.indexOf('|') == -1) {
+                                    if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                        if (context instanceof MainActivity) {
+                                            MainActivity mainActivity = (MainActivity) context;
+                                            mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                    .show();
+                                        }
+                                        return;
+                                    }
+                                } else {
+                                    // packageName|url
+                                    StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+                                    if (tokens.countTokens() != 2) {
+                                        if (context instanceof MainActivity) {
+                                            MainActivity mainActivity = (MainActivity) context;
+                                            mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                    .show();
+                                        }
+                                        return;
+                                    }
+                                }
+                                WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
+                                AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
+                                if (context instanceof MainActivity) {
+                                    MainActivity mainActivity = (MainActivity) context;
+                                    mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
+                                            .show();
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, null)
+                            .create();
+
+                    alertDialog.show();
+
+                    return false;
+                });
+
+                homeTabViewModel.updateBlockedDomainInfo();
             }
-            binding.blockedDomainsListView.setOnChildClickListener((ExpandableListView parent, View childView, int groupPosition, int childPosition, long id) -> {
-                DialogWhitelistDomainBinding dialogWhitelistDomainBinding = DialogWhitelistDomainBinding.inflate(LayoutInflater.from(context));
-                List<String> groupList = new ArrayList<>(reportBlockedUrls.keySet());
-                String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
-                String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
-                dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogWhitelistDomainBinding.getRoot())
-                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                            String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
-                            if (domainToAdd.indexOf('|') == -1) {
-                                if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                    if (context instanceof MainActivity) {
-                                        MainActivity mainActivity = (MainActivity) context;
-                                        mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                .show();
-                                    }
-                                    return;
-                                }
-                            } else {
-                                // packageName|url
-                                StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                                if (tokens.countTokens() != 2) {
-                                    if (context instanceof MainActivity) {
-                                        MainActivity mainActivity = (MainActivity) context;
-                                        mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                .show();
-                                    }
-                                    return;
-                                }
-                            }
-                            WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
-                            AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                            if (context instanceof MainActivity) {
-                                MainActivity mainActivity = (MainActivity) context;
-                                mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
-                                        .show();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null)
-                        .create();
-
-                alertDialog.show();
-
-                return false;
-            });
-
-            homeTabViewModel.updateBlockedDomainInfo();
         });
 
         if (!BuildConfig.DISABLE_APPS) {
@@ -375,57 +365,6 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         if (!MainActivity.finishActivity.compareAndSet(true, false)) {
             homeTabViewModel.updateLoadingBarVisibility(true);
         }
-    }
-
-    private void checkDatabaseIntegrity() {
-        Single.create((SingleOnSubscribe<AppDiff>) emitter -> {
-            AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
-            adhellAppIntegrity.checkDefaultPolicyExists();
-            adhellAppIntegrity.checkAdhellStandardPackage();
-            AppDiff newApps = adhellAppIntegrity.findAppsDiff();
-            emitter.onSuccess(newApps);
-        })
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new SingleObserver<AppDiff>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                    }
-
-                    @Override
-                    public void onSuccess(@NonNull AppDiff appDiff) {
-                        if (!appDiff.isEmpty()) {
-                            String message = "New/deleted app(s) detected. Refreshing installed apps ...";
-                            LogUtils.info(message);
-                            final AppCacheDialog dialog = new AppCacheDialog(getContext(), message);
-                            AppDatabaseFactory.refreshInstalledApps()
-                                    .subscribeOn(Schedulers.computation())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new CompletableObserver() {
-                                        @Override
-                                        public void onSubscribe(@NonNull Disposable d) {
-                                            dialog.showDialog();
-                                        }
-
-                                        @Override
-                                        public void onComplete() {
-                                            dialog.dismissDialog();
-                                            appDiff.getNewApps().forEach(app -> AppCache.getInstance(null).inject(app));
-                                        }
-
-                                        @Override
-                                        public void onError(@NonNull Throwable e) {
-                                            dialog.dismissDialog();
-                                            LogUtils.error(e.getMessage(), e);
-                                        }
-                                    });
-                        }
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                    }
-        });
     }
 
     @Override
@@ -701,5 +640,13 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
     public boolean getFirewallSwitchState() {
         return binding.firewallRulesSwitch.isChecked();
+    }
+
+    @Override
+    public void onAppCacheChange() {
+        ExpandableListAdapter expandableListAdapter = binding.blockedDomainsListView.getExpandableListAdapter();
+        if (expandableListAdapter instanceof BaseExpandableListAdapter) {
+            ((BaseExpandableListAdapter) expandableListAdapter).notifyDataSetChanged();
+        }
     }
 }

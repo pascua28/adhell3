@@ -43,7 +43,6 @@ public class AppInfoAdapter extends BaseAdapter {
         this.appType = appType;
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
 
-        //CompletableObserver observer = AppCacheDialog.createObserver(context, this);
         AppCache appCache = AppCache.getInstance(null);
         this.appIcons = appCache.getIcons();
         this.versionNames = appCache.getVersionNames();

@@ -25,6 +25,8 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.blocker.ContentBlocker;
+import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.DialogSetPasswordBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -37,6 +39,7 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -298,6 +301,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         protected String doInBackground(Void... args) {
             try {
+                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
+                contentBlocker.disableDomainRules();
+                contentBlocker.disableFirewallRules();
+                AdhellFactory.getInstance().setAppDisablerToggle(false);
+                AdhellFactory.getInstance().setAppComponentToggle(false);
+                AppDatabaseFactory.resetInstalledApps().subscribe();
                 DatabaseFactory.getInstance().restoreDatabase();
 
                 Context context = contextWeakReference.get();
