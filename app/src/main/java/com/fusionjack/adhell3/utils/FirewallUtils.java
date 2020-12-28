@@ -151,13 +151,13 @@ public final class FirewallUtils {
             return reportBlockedUrls;
         }
 
-        List<DomainFilterReport> reports = firewall.getDomainFilterReport(null);
+        List<String> packageNames = appDatabase.applicationInfoDao().getAllPackageNames();
+        List<DomainFilterReport> reports = firewall.getDomainFilterReport(packageNames);
         if (reports == null) {
             return reportBlockedUrls;
         }
 
         long time = tree_days();
-        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         appDatabase.reportBlockedUrlDao().deleteBefore(time);
 
         ReportBlockedUrl lastBlockedUrl = appDatabase.reportBlockedUrlDao().getLastBlockedDomain();

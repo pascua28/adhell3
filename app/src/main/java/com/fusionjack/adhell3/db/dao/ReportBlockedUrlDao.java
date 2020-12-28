@@ -30,4 +30,7 @@ public interface ReportBlockedUrlDao {
     @Query("SELECT * FROM ReportBlockedUrl ORDER BY blockDate DESC LIMIT 1")
     ReportBlockedUrl getLastBlockedDomain();
 
+    @Query("DELETE FROM ReportBlockedUrl WHERE packageName = :packageName")
+    void deleteByPackageName(String packageName);
+
 }

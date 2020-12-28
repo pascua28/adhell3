@@ -8,92 +8,181 @@ import android.graphics.drawable.Drawable;
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
-import com.fusionjack.adhell3.db.entity.DisabledPackage;
-import com.fusionjack.adhell3.db.entity.DnsPackage;
-import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
-import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.google.common.collect.Lists;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-
-import static com.fusionjack.adhell3.db.DatabaseFactory.MOBILE_RESTRICTED_TYPE;
-import static com.fusionjack.adhell3.db.DatabaseFactory.WIFI_RESTRICTED_TYPE;
 
 public final class AppDatabaseFactory {
 
     private AppDatabaseFactory() {
     }
 
+    // Find new/deleted apps and process them if they exist
+    public static Single<AppDiff> detectNewOrDeletedApps() {
+        return Single.fromCallable(() -> {
+            AppDiff diff = findAppDiff();
+            if (!diff.isEmpty()) {
+                processAppDiff(diff);
+            }
+            return diff;
+        });
+    }
+
+    private static AppDiff findAppDiff() {
+        LogUtils.info("Finding apps diff ...");
+
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<String> currentApps = appDatabase.applicationInfoDao().getAllPackageNames();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+        List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        return findDiff(installedApps, currentApps);
+    }
+
+    private static AppDiff findDiff(List<ApplicationInfo> installedApps, List<String> currentApps) {
+        AppDiff appDiff = new AppDiff();
+        try {
+            String ownPackageName = App.get().getApplicationContext().getPackageName();
+
+            // Find new apps
+            Set<String> currentAppSet = new HashSet<>(currentApps); // To improve contains() performance
+            List<ApplicationInfo> newApps = installedApps.stream()
+                    .filter(app -> !app.packageName.equalsIgnoreCase(ownPackageName) && !currentAppSet.contains(app.packageName))
+                    .collect(Collectors.toList());
+            appDiff.putNewApps(newApps);
+
+            // Find deleted apps
+            Set<String> installedAppSet = installedApps.stream() // To improve contains() performance
+                    .map(app -> app.packageName)
+                    .collect(Collectors.toSet());
+
+            List<String> deletedApps = currentApps.stream()
+                    .filter(packageName -> !installedAppSet.contains(packageName))
+                    .collect(Collectors.toList());
+            appDiff.putDeletedApps(deletedApps);
+        } finally {
+            if (appDiff.isEmpty()) {
+                LogUtils.info("No app diff detected.");
+            } else {
+                LogUtils.info("New apps: " + appDiff.getNewApps().stream().map(app -> app.packageName).collect(Collectors.toList()).toString());
+                LogUtils.info("Deleted apps: " + appDiff.getDeletedApps().toString());
+            }
+        }
+        return appDiff;
+    }
+
+    private static void processAppDiff(AppDiff diff) {
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+
+        List<ApplicationInfo> newApps = diff.getNewApps();
+        newApps.forEach(app -> {
+            // Add app's icon, name and version name to AppCache
+            AppCache.inject(app);
+
+            // Add new app to app database
+            long lastId = appDatabase.applicationInfoDao().getLastAppId();
+            appDatabase.applicationInfoDao().insert(toAppInfo(app, ++lastId));
+
+            // Disable app's services and receivers based on adhell3_services.txt and adhell3_receivers.txt files
+            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+            if (enabled) {
+                try {
+                    AppComponentFactory.getInstance().disableService(app.packageName);
+                    AppComponentFactory.getInstance().disableReceiver(app.packageName);
+                } catch (IOException e) {
+                    LogUtils.error(e.getMessage(), e);
+                }
+            }
+        });
+
+        List<String> deletedApps = diff.getDeletedApps();
+        deletedApps.forEach(packageName -> {
+            appDatabase.applicationInfoDao().deleteByPackageName(packageName);
+            appDatabase.disabledPackageDao().deleteByPackageName(packageName);
+            appDatabase.restrictedPackageDao().deleteByPackageName(packageName);
+            appDatabase.firewallWhitelistedPackageDao().deleteByPackageName(packageName);
+            appDatabase.dnsPackageDao().deleteByPackageName(packageName);
+            appDatabase.reportBlockedUrlDao().deleteByPackageName(packageName);
+
+            // Knox cannot re-enable app's services and receivers because the app has been uninstalled
+            // However, the app's permission can be re-enabled. For the sake of consistency, we leave them disabled
+            // If the app is reinstalled, their disabled permissions, services and receivers will be applied automatically
+            appDatabase.appPermissionDao().deleteByPackageName(packageName);
+        });
+    }
+
+    private static AppInfo toAppInfo(ApplicationInfo app, long appId) {
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+        String appName = packageManager.getApplicationLabel(app).toString();
+        String packageName = app.packageName;
+        int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+
+        AppInfo appInfo = new AppInfo();
+        appInfo.id = appId;
+        appInfo.appName = appName;
+        appInfo.packageName = packageName;
+        appInfo.system = (app.flags & mask) != 0;
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
+            appInfo.installTime = packageInfo.firstInstallTime;
+        } catch (PackageManager.NameNotFoundException e) {
+            appInfo.installTime = 0;
+        }
+        return appInfo;
+    }
+
     public static Single<AppInfoResult> getInstalledApps() {
         return Single.fromCallable(AppDatabaseFactory::fetchInstalledApps);
     }
 
-    // The app related tables are deleted and then will be filled with installed apps
-    public static Completable resetInstalledApps() {
-        return Completable.fromAction(() -> fillAppDatabase(false));
-    }
-
-    // The app related tables are deleted and they will be filled with installed apps and then the modified apps are restored
-    public static Completable refreshInstalledApps() {
-        return Completable.fromAction(() -> fillAppDatabase(true));
-    }
-
     private static AppInfoResult fetchInstalledApps() throws Exception {
-        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-        List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
-
         AppInfoResult result = new AppInfoResult();
-        processAppsInParallel(installedApps, result, false);
+        processAppsInParallel(result, false);
 
         return result;
     }
 
-    private static void fillAppDatabase(boolean restoreModifiedApp) throws Exception {
-        List<AppInfo> modifiedApps = null;
+    // The app related tables are deleted and then the installed apps will be inserted into database
+    public static Completable resetInstalledApps() {
+        return Completable.fromAction(AppDatabaseFactory::resetAppDatabase);
+    }
 
-        try {
-            // Get installed apps
-            PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
-
-            // Backup modified apps temporary
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            modifiedApps = appDatabase.applicationInfoDao().getModifiedApps();
-            resetAppRelatedTables();
-
-            // Insert installed apps into db in parallel
-            processAppsInParallel(installedApps, null, true);
-        } finally {
-            // Put back the modified apps into db
-            if (restoreModifiedApp) {
-                handleModifiedApps(modifiedApps);
-            }
-        }
+    private static void resetAppDatabase() throws Exception {
+        resetAppRelatedTables();
+        processAppsInParallel(null, true);
     }
 
     private static void resetAppRelatedTables() {
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         appDatabase.applicationInfoDao().deleteAll();
-        appDatabase.firewallWhitelistedPackageDao().deleteAll();
         appDatabase.disabledPackageDao().deleteAll();
         appDatabase.restrictedPackageDao().deleteAll();
+        appDatabase.firewallWhitelistedPackageDao().deleteAll();
         appDatabase.dnsPackageDao().deleteAll();
+        appDatabase.appPermissionDao().deleteAll();
     }
 
-    private static void processAppsInParallel(List<ApplicationInfo> apps, AppInfoResult result, boolean insertToDatabase) throws Exception {
-        int cpuCount = Runtime.getRuntime().availableProcessors() / 2;
+    private static void processAppsInParallel(AppInfoResult result, boolean insertToDatabase) throws Exception {
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+        List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        int cpuCount = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(cpuCount);
 
-        List<AppExecutor> appExecutors = chunkInstalledApps(apps, insertToDatabase);
+        List<AppExecutor> appExecutors = chunkInstalledApps(installedApps, cpuCount, insertToDatabase);
         List<Future<AppInfoResult>> futures = executorService.invokeAll(appExecutors);
         for (Future<AppInfoResult> future : futures) {
             AppInfoResult chunkResult = future.get(60, TimeUnit.SECONDS);
@@ -114,10 +203,9 @@ public final class AppDatabaseFactory {
         }
     }
 
-    private static List<AppExecutor> chunkInstalledApps(List<ApplicationInfo> apps, boolean insertToDatabase) {
+    private static List<AppExecutor> chunkInstalledApps(List<ApplicationInfo> apps, int cpuCount, boolean insertToDatabase) {
         List<AppExecutor> appExecutors = new ArrayList<>();
         int appCount = apps.size();
-        int cpuCount = Runtime.getRuntime().availableProcessors() / 2;
         int distributedAppCount = (int) Math.ceil(appCount / (double) cpuCount);
         List<List<ApplicationInfo>> chunks = Lists.partition(apps, distributedAppCount);
         for (List<ApplicationInfo> chunk : chunks) {
@@ -126,56 +214,6 @@ public final class AppDatabaseFactory {
             appExecutors.add(appExecutor);
         }
         return appExecutors;
-    }
-
-    private static void handleModifiedApps(List<AppInfo> modifiedApps) {
-        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-        if (modifiedApps == null || appDatabase.applicationInfoDao().getAppSize() == 0) {
-            return;
-        }
-        for (AppInfo modifiedApp : modifiedApps) {
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(modifiedApp.packageName);
-            if (appInfo != null) {
-                if (modifiedApp.adhellWhitelisted) {
-                    appInfo.adhellWhitelisted = true;
-                    FirewallWhitelistedPackage whitelistedPackage = new FirewallWhitelistedPackage();
-                    whitelistedPackage.packageName = modifiedApp.packageName;
-                    whitelistedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.firewallWhitelistedPackageDao().insert(whitelistedPackage);
-                }
-                if (modifiedApp.disabled) {
-                    appInfo.disabled = true;
-                    DisabledPackage disabledPackage = new DisabledPackage();
-                    disabledPackage.packageName = modifiedApp.packageName;
-                    disabledPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.disabledPackageDao().insert(disabledPackage);
-                }
-                if (modifiedApp.mobileRestricted) {
-                    appInfo.mobileRestricted = true;
-                    RestrictedPackage restrictedPackage = new RestrictedPackage();
-                    restrictedPackage.packageName = modifiedApp.packageName;
-                    restrictedPackage.type = MOBILE_RESTRICTED_TYPE;
-                    restrictedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.restrictedPackageDao().insert(restrictedPackage);
-                }
-                if (modifiedApp.wifiRestricted) {
-                    appInfo.wifiRestricted = true;
-                    RestrictedPackage restrictedPackage = new RestrictedPackage();
-                    restrictedPackage.packageName = modifiedApp.packageName;
-                    restrictedPackage.type = WIFI_RESTRICTED_TYPE;
-                    restrictedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.restrictedPackageDao().insert(restrictedPackage);
-                }
-                if (modifiedApp.hasCustomDns) {
-                    appInfo.hasCustomDns = true;
-                    DnsPackage dnsPackage = new DnsPackage();
-                    dnsPackage.packageName = modifiedApp.packageName;
-                    dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.dnsPackageDao().insert(dnsPackage);
-                }
-                appDatabase.applicationInfoDao().update(appInfo);
-            }
-        }
     }
 
     private static class AppExecutor implements Callable<AppInfoResult> {
@@ -191,12 +229,11 @@ public final class AppDatabaseFactory {
 
         @Override
         public AppInfoResult call() {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String ownPackageName = App.get().getApplicationContext().getPackageName();
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
             AppInfoResult appInfoResult = new AppInfoResult();
-
-            int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
-
             for (ApplicationInfo app : apps) {
                 String packageName = app.packageName;
                 if (packageName.equals(ownPackageName)) {
@@ -222,29 +259,10 @@ public final class AppDatabaseFactory {
             }
 
             if (insertToDatabase) {
-                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                List<AppInfo> appsInfo = new ArrayList<>();
-                for (ApplicationInfo app : apps) {
-                    String packageName = app.packageName;
-                    if (packageName.equals(ownPackageName)) {
-                        continue;
-                    }
-
-                    String appName = packageManager.getApplicationLabel(app).toString();
-
-                    AppInfo appInfo = new AppInfo();
-                    appInfo.id = appId++;
-                    appInfo.appName = appName;
-                    appInfo.packageName = packageName;
-                    appInfo.system = (app.flags & mask) != 0;
-                    try {
-                        PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
-                        appInfo.installTime = packageInfo.firstInstallTime;
-                    } catch (PackageManager.NameNotFoundException e) {
-                        appInfo.installTime = 0;
-                    }
-                    appsInfo.add(appInfo);
-                }
+                List<AppInfo> appsInfo = apps.stream()
+                        .filter(app -> !app.packageName.equalsIgnoreCase(ownPackageName))
+                        .map(app -> toAppInfo(app, appId++))
+                        .collect(Collectors.toList());
                 appDatabase.applicationInfoDao().insertAll(appsInfo);
             }
 

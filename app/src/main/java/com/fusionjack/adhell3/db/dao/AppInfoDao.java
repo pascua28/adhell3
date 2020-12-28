@@ -41,6 +41,10 @@ public interface AppInfoDao {
     int getAppSize();
 
 
+    // Get last app id
+    @Query("SELECT MAX(id) FROM AppInfo")
+    long getLastAppId();
+
     // Get based on appName/packageName
     @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
     List<AppInfo> getAppsAlphabetically();

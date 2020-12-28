@@ -228,9 +228,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AdhellFactory.getInstance().setAppDisablerToggle(false);
                 AdhellFactory.getInstance().setAppComponentToggle(false);
 
-                AppDatabaseFactory.resetInstalledApps()
-                        .subscribeOn(Schedulers.computation())
-                        .blockingAwait();
+                AppDatabaseFactory.resetInstalledApps().subscribe();
 
                 DatabaseFactory.getInstance().restoreDatabase();
 

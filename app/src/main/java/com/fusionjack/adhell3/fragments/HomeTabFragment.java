@@ -41,7 +41,6 @@ import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -156,65 +155,96 @@ public class HomeTabFragment extends Fragment {
             new ExportDomainsAsyncTask(getContext()).execute();
         });
 
-        checkDatabaseIntegrity();
-
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateUserInterface();
+        checkDatabaseIntegrity();
     }
 
     private void checkDatabaseIntegrity() {
-        Single.create((SingleOnSubscribe<AppDiff>) emitter -> {
+        Single.create((SingleOnSubscribe<Boolean>) emitter -> {
             AdhellAppIntegrity adhellAppIntegrity = AdhellAppIntegrity.getInstance();
             adhellAppIntegrity.checkDefaultPolicyExists();
             adhellAppIntegrity.checkAdhellStandardPackage();
-            AppDiff newApps = adhellAppIntegrity.findAppsDiff();
-            emitter.onSuccess(newApps);
+            Boolean isPackageDbEmpty = adhellAppIntegrity.isPackageDbEmpty();
+            emitter.onSuccess(isPackageDbEmpty);
         })
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new SingleObserver<AppDiff>() {
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                        @Override
+                        public void onSubscribe(@NonNull Disposable d) {
+                        }
+
+                        @Override
+                        public void onSuccess(@NonNull Boolean isPackageDbEmpty) {
+                            if (isPackageDbEmpty) {
+                                resetInstalledApps();
+                            } else {
+                                detectNewOrDeletedApps();
+                            }
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable e) {
+                            LogUtils.error(e.getMessage(), e);
+                        }
+        });
+    }
+
+    private void resetInstalledApps() {
+        final AppCacheDialog dialog = new AppCacheDialog(getContext());
+        AppDatabaseFactory.resetInstalledApps()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        dialog.showDialog("Processing installed apps ...");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dialog.dismissDialog();
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        dialog.dismissDialog();
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void detectNewOrDeletedApps() {
+        AppDatabaseFactory.detectNewOrDeletedApps()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<AppDiff>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onSuccess(@NonNull AppDiff appDiff) {
-                        if (!appDiff.isEmpty()) {
-                            LogUtils.info("New/deleted app(s) detected. Refreshing installed apps ...");
-                            final AppCacheDialog dialog = new AppCacheDialog(getContext());
-                            AppDatabaseFactory.refreshInstalledApps()
-                                    .subscribeOn(Schedulers.computation())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new CompletableObserver() {
-                                        @Override
-                                        public void onSubscribe(@NonNull Disposable d) {
-                                            dialog.showDialog("New/deleted app(s) detected. Refreshing installed apps ...");
-                                        }
-
-                                        @Override
-                                        public void onComplete() {
-                                            dialog.dismissDialog();
-                                            appDiff.getNewApps().forEach(app -> AppCache.getInstance(null).inject(app));
-                                        }
-
-                                        @Override
-                                        public void onError(@NonNull Throwable e) {
-                                            dialog.dismissDialog();
-                                            LogUtils.error(e.getMessage(), e);
-                                        }
-                                    });
+                    public void onSuccess(@NonNull AppDiff diff) {
+                        if (!diff.isEmpty()) {
+                            int newAppSize = diff.getNewApps().size();
+                            int deletedAppSize = diff.getDeletedApps().size();
+                            String message = newAppSize + " new app(s) and " + deletedAppSize + " deleted app(s) have been detected.";
+                            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
                         }
+                        updateUserInterface();
                     }
 
                     @Override
                     public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
                     }
-        });
+                });
     }
 
     private void updateUserInterface() {
