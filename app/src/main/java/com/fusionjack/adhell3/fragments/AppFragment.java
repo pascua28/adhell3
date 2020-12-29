@@ -168,6 +168,13 @@ public class AppFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroyOptionsMenu()
+    {
+        searchView.setOnQueryTextListener(null);
+        searchView = null;
+    }
+
     public void resetSearchView() {
         if (searchView != null) {
             searchText = "";

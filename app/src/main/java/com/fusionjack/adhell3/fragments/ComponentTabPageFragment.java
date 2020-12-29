@@ -68,6 +68,7 @@ public class ComponentTabPageFragment extends Fragment {
     private int page;
     private String packageName;
     private Context context;
+    private SearchView searchView;
     private String searchText;
     private View view;
 
@@ -96,7 +97,7 @@ public class ComponentTabPageFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.appcomponent_menu, menu);
 
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
             searchView.setQuery(searchText, false);
@@ -117,6 +118,13 @@ public class ComponentTabPageFragment extends Fragment {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onDestroyOptionsMenu()
+    {
+        searchView.setOnQueryTextListener(null);
+        searchView = null;
     }
 
     @Override

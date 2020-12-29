@@ -67,6 +67,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private Map<String, String> appNames;
     private Parcelable state;
     private View view;
+    private SearchView searchView;
     private int listViewID;
 
     public static ComponentDisabledTabPageFragment newInstance(int page) {
@@ -96,7 +97,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.search_menu, menu);
 
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
             searchView.setQuery(searchText, false);
@@ -119,6 +120,13 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onDestroyOptionsMenu()
+    {
+        searchView.setOnQueryTextListener(null);
+        searchView = null;
     }
 
     @Override

@@ -21,6 +21,7 @@ import android.widget.ExpandableListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -91,6 +92,12 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         FragmentActivity activity = getActivity();
         if (activity != null) {
             homeTabViewModel = new ViewModelProvider(activity).get(HomeTabViewModel.class);
+            AppCompatActivity parentActivity = (AppCompatActivity) activity;
+            if (parentActivity.getSupportActionBar() != null) {
+                parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                String versionInfo = getResources().getString(R.string.version);
+                parentActivity.getSupportActionBar().setSubtitle(String.format(versionInfo, BuildConfig.VERSION_NAME));
+            }
         } else {
             homeTabViewModel = new ViewModelProvider(this).get(HomeTabViewModel.class);
         }

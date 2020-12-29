@@ -46,8 +46,7 @@ public class ComponentTabFragment extends Fragment {
             AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
             if (parentActivity.getSupportActionBar() != null) {
                 parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-                parentActivity.getSupportActionBar().setHomeButtonEnabled(true);
-                parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
+                parentActivity.getSupportActionBar().setSubtitle(null);
             }
         }
 

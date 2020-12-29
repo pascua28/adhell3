@@ -30,6 +30,7 @@ public class ProviderContentFragment extends Fragment {
 
     private String searchText;
     private Long providerId;
+    private SearchView searchView;
     private FragmentShowBlockedUrlsBinding binding;
 
     void setProviderId(Long providerId) {
@@ -65,7 +66,7 @@ public class ProviderContentFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.search_menu, menu);
 
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         if (!searchText.isEmpty()) {
             searchView.setQuery(searchText, false);
@@ -85,6 +86,13 @@ public class ProviderContentFragment extends Fragment {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onDestroyOptionsMenu()
+    {
+        searchView.setOnQueryTextListener(null);
+        searchView = null;
     }
 
     @Override

@@ -119,11 +119,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(false);
-            actionBar.setHomeButtonEnabled(false);
             actionBar.setElevation(0);
-            String versionInfo = getResources().getString(R.string.version);
-            actionBar.setSubtitle(String.format(versionInfo, BuildConfig.VERSION_NAME));
         }
 
         fragmentManager = getSupportFragmentManager();

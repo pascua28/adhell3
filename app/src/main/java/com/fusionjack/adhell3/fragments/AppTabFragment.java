@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
@@ -35,6 +36,11 @@ public class AppTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (getActivity() != null) {
             getActivity().setTitle("Apps Management");
+            AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
+            if (parentActivity.getSupportActionBar() != null) {
+                parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                parentActivity.getSupportActionBar().setSubtitle(null);
+            }
         }
         setHasOptionsMenu(true);
 
