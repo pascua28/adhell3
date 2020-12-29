@@ -301,6 +301,7 @@ public final class AppComponentFactory {
             Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
             Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
             Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+            Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
             for (String compName : compNames) {
                 boolean disable = false;
                 int permissionStatus = 0;
@@ -314,6 +315,9 @@ public final class AppComponentFactory {
                 } else if (availableActivityNames.contains(compName)) {
                     disable = true;
                     permissionStatus = AppPermission.STATUS_ACTIVITY;
+                } else if (availableProviderNames.contains(compName)) {
+                    disable = true;
+                    permissionStatus = AppPermission.STATUS_PROVIDER;
                 }
 
                 if (disable) {

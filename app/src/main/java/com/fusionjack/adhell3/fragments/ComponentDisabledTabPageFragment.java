@@ -25,16 +25,19 @@ import androidx.fragment.app.Fragment;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentDisabledAdapter;
+import com.fusionjack.adhell3.adapter.ContentProviderDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverDisabledInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceDisabledInfoAdapter;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppActivityDisabledBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppContentProviderDisabledBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppPermissionDisabledBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppReceiverDisabledBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppServiceDisabledBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponentDisabled;
+import com.fusionjack.adhell3.model.ContentProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
@@ -55,6 +58,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
     private static final int ACTIVITIES_PAGE = 3;
+    private static final int PROVIDER_PAGE = 4;
     private static final String ARG_PAGE = "page";
     private int page;
     private Context context;
@@ -146,6 +150,12 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 view = fragmentAppActivityDisabledBinding.getRoot();
                 listViewID = fragmentAppActivityDisabledBinding.activityExpandableListView.getId();
                 break;
+
+            case PROVIDER_PAGE:
+                FragmentAppContentProviderDisabledBinding fragmentAppContentProviderDisabledBinding = FragmentAppContentProviderDisabledBinding.inflate(inflater);
+                view = fragmentAppContentProviderDisabledBinding.getRoot();
+                listViewID = fragmentAppContentProviderDisabledBinding.providerExpandableListView.getId();
+                break;
         }
         new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
 
@@ -210,6 +220,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 case ACTIVITIES_PAGE:
                     list = AppComponentDisabled.getDisabledActivities(searchText);
                     break;
+                case PROVIDER_PAGE:
+                    list = AppComponentDisabled.getDisabledProviders(searchText);
+                    break;
             }
             Map<String, List<IComponentInfo>> componentMap = new TreeMap<>(String::compareToIgnoreCase);
             if (list != null) {
@@ -255,6 +268,10 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                         listViewId = R.id.activityExpandableListView;
                         adapter = new ActivityDisabledInfoAdapter(context, componentInfos, appIcons);
                         break;
+                    case PROVIDER_PAGE:
+                        listViewId = R.id.providerExpandableListView;
+                        adapter = new ContentProviderDisabledInfoAdapter(context, componentInfos, appIcons);
+                        break;
                 }
 
                 ExpandableListView listView = ((Activity) context).findViewById(listViewId);
@@ -295,6 +312,10 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                         if (component instanceof ActivityInfo) {
                             ActivityInfo activityInfo = (ActivityInfo) component;
                             compNameTmp = activityInfo.getName();
+                        }
+                        if (component instanceof ContentProviderInfo) {
+                            ContentProviderInfo contentProviderInfo = (ContentProviderInfo) component;
+                            compNameTmp = contentProviderInfo.getName();
                         }
                         compName = compNameTmp;
 

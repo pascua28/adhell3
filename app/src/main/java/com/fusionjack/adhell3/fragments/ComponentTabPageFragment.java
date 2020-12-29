@@ -24,10 +24,12 @@ import androidx.fragment.app.Fragment;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
+import com.fusionjack.adhell3.adapter.ContentProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
 import com.fusionjack.adhell3.databinding.FragmentAppActivityBinding;
+import com.fusionjack.adhell3.databinding.FragmentAppContentProviderBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppPermissionBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppReceiverBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppServiceBinding;
@@ -35,6 +37,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponent;
+import com.fusionjack.adhell3.model.ContentProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
@@ -59,6 +62,7 @@ public class ComponentTabPageFragment extends Fragment {
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
     private static final int ACTIVITIES_PAGE = 3;
+    private static final int PROVIDER_PAGE = 4;
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGENAME = "packageName";
     private int page;
@@ -140,10 +144,10 @@ public class ComponentTabPageFragment extends Fragment {
                 if (toggleEnabled) {
                     fragmentAppPermissionBinding.permissionInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         PermissionInfoAdapter adapter = (PermissionInfoAdapter) adView.getAdapter();
-                        new SetComponentAsyncTask(PERMISSIONS_PAGE, packageName, adapter.getItem(position), context).execute();
+                        new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(PERMISSIONS_PAGE, packageName, context, searchText).execute();
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
                 break;
 
             case SERVICES_PAGE:
@@ -152,10 +156,10 @@ public class ComponentTabPageFragment extends Fragment {
                 if (toggleEnabled) {
                     fragmentAppServiceBinding.serviceInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ServiceInfoAdapter adapter = (ServiceInfoAdapter) adView.getAdapter();
-                        new SetComponentAsyncTask(SERVICES_PAGE, packageName, adapter.getItem(position), context).execute();
+                        new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(SERVICES_PAGE, packageName, context, searchText).execute();
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
                 break;
 
             case RECEIVERS_PAGE:
@@ -164,10 +168,10 @@ public class ComponentTabPageFragment extends Fragment {
                 if (toggleEnabled) {
                     fragmentAppReceiverBinding.receiverInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ReceiverInfoAdapter adapter = (ReceiverInfoAdapter) adView.getAdapter();
-                        new SetComponentAsyncTask(RECEIVERS_PAGE, packageName, adapter.getItem(position), context).execute();
+                        new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(RECEIVERS_PAGE, packageName, context, searchText).execute();
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
                 break;
 
             case ACTIVITIES_PAGE:
@@ -176,10 +180,22 @@ public class ComponentTabPageFragment extends Fragment {
                 if (toggleEnabled) {
                     fragmentAppActivityBinding.activityInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ActivityInfoAdapter adapter = (ActivityInfoAdapter) adView.getAdapter();
-                        new SetComponentAsyncTask(ACTIVITIES_PAGE, packageName, adapter.getItem(position), context).execute();
+                        new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(ACTIVITIES_PAGE, packageName, context, searchText).execute();
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                break;
+
+            case PROVIDER_PAGE:
+                FragmentAppContentProviderBinding fragmentAppContentProviderBinding = FragmentAppContentProviderBinding.inflate(inflater);
+                view = fragmentAppContentProviderBinding.getRoot();
+                if (toggleEnabled) {
+                    fragmentAppContentProviderBinding.providerInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+                        ContentProviderInfoAdapter adapter = (ContentProviderInfoAdapter) adView.getAdapter();
+                        new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
+                    });
+                }
+                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
                 break;
 
         }
@@ -260,6 +276,17 @@ public class ComponentTabPageFragment extends Fragment {
                         appDatabase.appPermissionDao().deleteActivities(packageName);
                     }
                     break;
+                case PROVIDER_PAGE:
+                    if (appPolicy != null) {
+                        List<IComponentInfo> componentInfos = AppComponent.getProviders(packageName, searchText);
+                        for (IComponentInfo componentInfo : componentInfos) {
+                            ContentProviderInfo providerInfo = (ContentProviderInfo) componentInfo;
+                            ComponentName providerCompName = new ComponentName(packageName, providerInfo.getName());
+                            appPolicy.setApplicationComponentState(providerCompName, true);
+                        }
+                        appDatabase.appPermissionDao().deleteContentProviders(packageName);
+                    }
+                    break;
             }
             return null;
         }
@@ -281,6 +308,9 @@ public class ComponentTabPageFragment extends Fragment {
                         break;
                     case ACTIVITIES_PAGE:
                         listViewId = R.id.activityInfoListView;
+                        break;
+                    case PROVIDER_PAGE:
+                        listViewId = R.id.providerInfoListView;
                         break;
                 }
 
@@ -427,6 +457,33 @@ public class ComponentTabPageFragment extends Fragment {
                         LogUtils.warning("Failed talking with application policy", e);
                     }
                     break;
+
+                case PROVIDER_PAGE:
+                    if (appPolicy == null) {
+                        return null;
+                    }
+                    ContentProviderInfo providerInfo = (ContentProviderInfo) componentInfo;
+                    String providerName = providerInfo.getName();
+                    ComponentName providerCompName = new ComponentName(packageName, providerName);
+                    boolean providerState = !AdhellFactory.getInstance().getComponentState(packageName, providerName);
+                    try {
+                        boolean success = appPolicy.setApplicationComponentState(providerCompName, providerState);
+                        if (success) {
+                            if (providerState) {
+                                appDatabase.appPermissionDao().delete(packageName, providerName);
+                            } else {
+                                AppPermission appActivity = new AppPermission();
+                                appActivity.packageName = packageName;
+                                appActivity.permissionName = providerName;
+                                appActivity.permissionStatus = AppPermission.STATUS_PROVIDER;
+                                appActivity.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                                appDatabase.appPermissionDao().insert(appActivity);
+                            }
+                        }
+                    } catch (SecurityException e) {
+                        LogUtils.warning("Failed talking with application policy", e);
+                    }
+                    break;
             }
 
             return null;
@@ -449,6 +506,9 @@ public class ComponentTabPageFragment extends Fragment {
                         break;
                     case ACTIVITIES_PAGE:
                         listViewId = R.id.activityInfoListView;
+                        break;
+                    case PROVIDER_PAGE:
+                        listViewId = R.id.providerInfoListView;
                         break;
                 }
 
@@ -488,6 +548,8 @@ public class ComponentTabPageFragment extends Fragment {
                     return AppComponent.getReceivers(packageName, searchText);
                 case ACTIVITIES_PAGE:
                     return AppComponent.getActivities(packageName, searchText);
+                case PROVIDER_PAGE:
+                    return AppComponent.getProviders(packageName, searchText);
             }
             return null;
         }
@@ -514,6 +576,10 @@ public class ComponentTabPageFragment extends Fragment {
                     case ACTIVITIES_PAGE:
                         listViewId = R.id.activityInfoListView;
                         adapter = new ActivityInfoAdapter(context, componentInfos);
+                        break;
+                    case PROVIDER_PAGE:
+                        listViewId = R.id.providerInfoListView;
+                        adapter = new ContentProviderInfoAdapter(context, componentInfos);
                         break;
                 }
 

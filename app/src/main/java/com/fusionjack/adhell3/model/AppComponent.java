@@ -247,6 +247,69 @@ public class AppComponent {
         return activityInfoList;
     }
 
+    public static Set<String> getProviderNames(String packageName) {
+        Set<String> providerNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled provider won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getContentProviders(packageName);
+        for (AppPermission storedProvider : storedProviders) {
+            providerNameSet.add(storedProvider.permissionName);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PROVIDERS);
+            if (packageInfo != null) {
+                android.content.pm.ProviderInfo[] providers = packageInfo.providers;
+                if (providers != null) {
+                    for (android.content.pm.ProviderInfo providerInfo : providers) {
+                        providerNameSet.add(providerInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return providerNameSet;
+    }
+
+    public static List<IComponentInfo> getProviders(String packageName, String searchText) {
+        Set<String> providerNameSet = new HashSet<>();
+        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+
+        // Disabled providers won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getContentProviders(packageName);
+        for (AppPermission storedProvider : storedProviders) {
+            providerNameSet.add(storedProvider.permissionName);
+        }
+
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PROVIDERS);
+            if (packageInfo != null) {
+                android.content.pm.ProviderInfo[] providers = packageInfo.providers;
+                if (providers != null) {
+                    for (android.content.pm.ProviderInfo providerInfo : providers) {
+                        providerNameSet.add(providerInfo.name);
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        List<String> providerNameList = new ArrayList<>(providerNameSet);
+        Collections.sort(providerNameList);
+        List<IComponentInfo> providerInfoList = new ArrayList<>();
+        for (String providerName : providerNameList) {
+            if (searchText.length() <= 0 || providerName.toLowerCase().contains(searchText.toLowerCase())) {
+                providerInfoList.add(new ContentProviderInfo(packageName, providerName));
+            }
+        }
+
+        return providerInfoList;
+    }
+
     private static class ReceiverPair {
         private final String name;
         private final String permission;

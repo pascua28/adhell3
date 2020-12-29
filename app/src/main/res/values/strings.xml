@@ -19,7 +19,8 @@
     <string name="app_component_title">App component</string>
     <string name="app_component_toggle_info">
         %1$d permissions, %2$d services,
-        \n%3$d receivers, %4$d activities disabled.
+        \n%3$d receivers, %4$d activities,
+        \n%5$d providers disabled.
     </string>
     <string name="enable_adhell_title">Enable adhell3</string>
     <string name="enable_adhell_info">
@@ -131,7 +132,7 @@
         \nToggle Domain rules to apply changes.
     </string>
     <string name="app_component_info">
-        Disable app components (permissions, services, receivers and activities).
+        Disable app components (permissions, services, receivers, activities and providers).
         \nIf app component toggle is enabled, changes take effect immediately.
     </string>
     <string name="app_permission_info">
@@ -155,6 +156,12 @@
         \nOnce the activity is disabled, it will be removed from the app.
         \nSamsung Knox doesn\'t have an API to list disabled activities.
         \nTherefore, if the disabled activities don\'t appear below, you need to reinstall the app.
+    </string>
+    <string name="app_provider_info">
+        Disabling a content provider may crash the app.
+        \nOnce the content provider is disabled, it will be removed from the app.
+        \nSamsung Knox doesn\'t have an API to list disabled content providers.
+        \nTherefore, if the disabled content providers don\'t appear below, you need to reinstall the app.
     </string>
     <string name="backup">Backup</string>
     <string name="uninstall">Uninstall</string>
@@ -197,6 +204,7 @@
     <string name="service_fragment_title">Services</string>
     <string name="receiver_fragment_title">Receivers</string>
     <string name="activity_fragment_title">Activities</string>
+    <string name="provider_fragment_title">Content Provider</string>
     <string name="dialog_set_dns_title">Set DNS</string>
     <string name="dialog_set_dns_info">
         Set primary and secondary DNS.
@@ -266,7 +274,7 @@
     <string name="biometric_dialog_description">This app uses biometric authentication to protect your data.</string>
     <string name="biometric_dialog_cancel_button_text">Cancel</string>
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
-    <string name="dialog_appcomponent_batch_summary">The services, receivers and activities defined in adhell3_components.txt from \'Adhell3/BatchOp/\' folder will be used.
+    <string name="dialog_appcomponent_batch_summary">The services, receivers, activities and content providers defined in adhell3_components.txt from \'Adhell3/BatchOp/\' folder will be used.
         \nDo you want to enable or disable those components?</string>
     <string name="dialog_appcomponent_enable_summary">Enabling apps components, please wait …</string>
     <string name="dialog_appcomponent_disable_summary">Disabling apps components, please wait …</string>

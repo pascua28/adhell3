@@ -26,7 +26,8 @@ public class ComponentDisabledTabFragment extends Fragment {
             R.drawable.ic_permission,
             R.drawable.ic_service,
             R.drawable.ic_receiver,
-            R.drawable.ic_activity
+            R.drawable.ic_activity,
+            R.drawable.ic_content_provider
     };
 
     @Override
@@ -103,7 +104,8 @@ public class ComponentDisabledTabFragment extends Fragment {
                 requireContext().getString(R.string.permission_fragment_title),
                 requireContext().getString(R.string.service_fragment_title),
                 requireContext().getString(R.string.receiver_fragment_title),
-                requireContext().getString(R.string.activity_fragment_title)};
+                requireContext().getString(R.string.activity_fragment_title),
+                requireContext().getString(R.string.provider_fragment_title)};
 
         return tabTitles[position];
     }

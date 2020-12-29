@@ -164,6 +164,34 @@ public class AppComponentDisabled {
         return activityInfoList;
     }
 
+    public static List<IComponentInfo> getDisabledProviders(String searchText) {
+        Set<ProvidersPair> providerNameSet = new HashSet<>();
+
+        // Disabled services won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getAll();
+        for (AppPermission storedProvider : storedProviders) {
+            if (storedProvider.permissionStatus == AppPermission.STATUS_PROVIDER) {
+                providerNameSet.add(new ProvidersPair(storedProvider.packageName, storedProvider.permissionName));
+            }
+        }
+
+        List<ProvidersPair> providerNameList = new ArrayList<>(providerNameSet);
+        providerNameList.sort((r1, r2) -> r1.activityName.compareToIgnoreCase(r2.activityName));
+        providerNameList.sort((r1, r2) -> r1.packageName.compareToIgnoreCase(r2.packageName));
+        List<IComponentInfo> providerInfoList = new ArrayList<>();
+        for (ProvidersPair pair : providerNameList) {
+            if (searchText.length() <= 0
+                    || pair.packageName.toLowerCase().contains(searchText.toLowerCase())
+                    || pair.activityName.toLowerCase().contains(searchText.toLowerCase())
+            ) {
+                providerInfoList.add(new ContentProviderInfo(pair.packageName, pair.activityName));
+            }
+        }
+
+        return providerInfoList;
+    }
+
     private static class PermissionsPair {
         private final String packageName;
         private final String permissionName;
@@ -201,6 +229,16 @@ public class AppComponentDisabled {
         private final String activityName;
 
         ActivitiesPair(String packageName, String activityName) {
+            this.packageName = packageName;
+            this.activityName = activityName;
+        }
+    }
+
+    private static class ProvidersPair {
+        private final String packageName;
+        private final String activityName;
+
+        ProvidersPair(String packageName, String activityName) {
             this.packageName = packageName;
             this.activityName = activityName;
         }

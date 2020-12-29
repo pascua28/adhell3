@@ -7,7 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.fusionjack.adhell3.fragments.ComponentTabPageFragment;
 
 public class ComponentPagerAdapter extends FragmentStateAdapter {
-    private static final int PAGE_COUNT = 4;
+    private static final int PAGE_COUNT = 5;
     private final String packageName;
 
     public ComponentPagerAdapter(Fragment fragment, String packageName) {

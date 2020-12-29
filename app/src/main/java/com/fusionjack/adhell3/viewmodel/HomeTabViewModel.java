@@ -115,9 +115,9 @@ public class HomeTabViewModel extends ViewModel {
         return _appComponentInfo;
     }
 
-    private void updateAppComponentInfo(int permission,int service, int receiver, int activity) {
+    private void updateAppComponentInfo(int permission,int service, int receiver, int activity, int provider) {
         _appComponentInfo.postValue(
-                String.format(appComponentInfoBase, permission, service, receiver, activity)
+                String.format(appComponentInfoBase, permission, service, receiver, activity, provider)
         );
     }
 
@@ -226,6 +226,7 @@ public class HomeTabViewModel extends ViewModel {
         private int serviceSize;
         private int receiverSize;
         private int activitySize;
+        private int providerSize;
         private final boolean domainRulesEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
         private final boolean firewallRulesEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
         private final boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
@@ -259,6 +260,9 @@ public class HomeTabViewModel extends ViewModel {
                             break;
                         case AppPermission.STATUS_ACTIVITY:
                             activitySize++;
+                            break;
+                        case AppPermission.STATUS_PROVIDER:
+                            providerSize++;
                             break;
                     }
                 }
@@ -300,7 +304,7 @@ public class HomeTabViewModel extends ViewModel {
                 }
 
                 if (appComponentEnabled) {
-                    homeTabViewModel.updateAppComponentInfo(permissionSize, serviceSize, receiverSize, activitySize);
+                    homeTabViewModel.updateAppComponentInfo(permissionSize, serviceSize, receiverSize, activitySize, providerSize);
                 } else {
                     homeTabViewModel.resetAppComponentInfo();
                 }

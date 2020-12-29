@@ -104,6 +104,7 @@ public class AppComponentsUpdateWorker extends Worker {
                 Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
                 Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
                 Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+                Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
                 for (String compName : compNames) {
                     boolean disable = false;
                     int permissionStatus = 0;
@@ -121,6 +122,10 @@ public class AppComponentsUpdateWorker extends Worker {
                         disable = true;
                         permissionStatus = AppPermission.STATUS_ACTIVITY;
                         componentType = "activity";
+                    } else if (availableProviderNames.contains(compName)) {
+                        disable = true;
+                        permissionStatus = AppPermission.STATUS_PROVIDER;
+                        componentType = "content provider";
                     }
 
                     if (disable) {
