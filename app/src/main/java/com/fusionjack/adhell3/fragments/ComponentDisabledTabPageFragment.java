@@ -37,7 +37,7 @@ import com.fusionjack.adhell3.databinding.FragmentAppReceiverDisabledBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppServiceDisabledBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponentDisabled;
-import com.fusionjack.adhell3.model.ContentProviderInfo;
+import com.fusionjack.adhell3.model.ProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
@@ -307,7 +307,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
 
                         if (component instanceof PermissionInfo) {
                             PermissionInfo permissionInfo = (PermissionInfo) component;
-                            compNameTmp = permissionInfo.name;
+                            compNameTmp = permissionInfo.getName();
                         }
                         if (component instanceof ServiceInfo) {
                             ServiceInfo serviceInfo = (ServiceInfo) component;
@@ -321,9 +321,9 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                             ActivityInfo activityInfo = (ActivityInfo) component;
                             compNameTmp = activityInfo.getName();
                         }
-                        if (component instanceof ContentProviderInfo) {
-                            ContentProviderInfo contentProviderInfo = (ContentProviderInfo) component;
-                            compNameTmp = contentProviderInfo.getName();
+                        if (component instanceof ProviderInfo) {
+                            ProviderInfo providerInfo = (ProviderInfo) component;
+                            compNameTmp = providerInfo.getName();
                         }
                         compName = compNameTmp;
 

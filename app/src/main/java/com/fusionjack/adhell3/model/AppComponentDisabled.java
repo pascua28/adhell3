@@ -185,7 +185,7 @@ public class AppComponentDisabled {
                     || pair.packageName.toLowerCase().contains(searchText.toLowerCase())
                     || pair.activityName.toLowerCase().contains(searchText.toLowerCase())
             ) {
-                providerInfoList.add(new ContentProviderInfo(pair.packageName, pair.activityName));
+                providerInfoList.add(new ProviderInfo(pair.packageName, pair.activityName));
             }
         }
 

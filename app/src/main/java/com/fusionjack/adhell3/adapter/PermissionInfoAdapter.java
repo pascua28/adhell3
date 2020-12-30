@@ -47,15 +47,15 @@ public class PermissionInfoAdapter extends ComponentAdapter {
 
         if (componentInfo instanceof PermissionInfo) {
             PermissionInfo permissionInfo = (PermissionInfo) componentInfo;
-            holder.binding.permissionLabelTextView.setText(permissionInfo.label);
-            holder.binding.permissionNameTextView.setText(permissionInfo.name);
+            holder.binding.permissionLabelTextView.setText(permissionInfo.getLabel());
+            holder.binding.permissionNameTextView.setText(permissionInfo.getName());
             holder.binding.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
 
             boolean checked = false;
             ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
             if (appPolicy != null) {
                 List<String> deniedPermissions = appPolicy.getRuntimePermissions(permissionInfo.getPackageName(), PERMISSION_POLICY_STATE_DENY);
-                if (!deniedPermissions.contains(permissionInfo.name)) {
+                if (!deniedPermissions.contains(permissionInfo.getName())) {
                     checked = true;
                 }
                 holder.binding.switchDisable.setChecked(checked);

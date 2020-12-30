@@ -15,17 +15,32 @@ public interface AppPermissionDao {
     @Query("SELECT * FROM AppPermission")
     List<AppPermission> getAll();
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :permissionName AND permissionStatus = -1")
+    AppPermission getPermission(String packageName, String permissionName);
+
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 2")
     List<AppPermission> getServices(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :serviceName AND permissionStatus = 2")
+    AppPermission getService(String packageName, String serviceName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 5")
     List<AppPermission> getReceivers(String packageName);
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :receiverPairName AND permissionStatus = 5")
+    AppPermission getReceiver(String packageName, String receiverPairName);
+
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 8")
     List<AppPermission> getActivities(String packageName);
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :activityPairName AND permissionStatus = 5")
+    AppPermission getActivity(String packageName, String activityPairName);
+
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 11")
     List<AppPermission> getContentProviders(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :providerPairName AND permissionStatus = 5")
+    AppPermission getContentProvider(String packageName, String providerPairName);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(AppPermission appPermission);

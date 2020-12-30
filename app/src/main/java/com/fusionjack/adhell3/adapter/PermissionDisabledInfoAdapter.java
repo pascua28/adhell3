@@ -137,9 +137,9 @@ public class PermissionDisabledInfoAdapter extends ComponentDisabledAdapter {
             if (componentInfo instanceof PermissionInfo) {
                 PermissionInfo permissionInfo = (PermissionInfo) componentInfo;
 
-                holder.binding.permissionNameTextView.setText(permissionInfo.name);
+                holder.binding.permissionNameTextView.setText(permissionInfo.getName());
                 holder.binding.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
-                holder.binding.permissionLabelTextView.setText(permissionInfo.label);
+                holder.binding.permissionLabelTextView.setText(permissionInfo.getLabel());
             }
         }
 

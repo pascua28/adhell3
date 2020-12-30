@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.databinding.ItemContentProviderInfoBinding;
-import com.fusionjack.adhell3.model.ContentProviderInfo;
+import com.fusionjack.adhell3.model.ProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -41,8 +41,8 @@ public class ContentProviderInfoAdapter extends ComponentAdapter {
             return holder.view;
         }
 
-        if (componentInfo instanceof ContentProviderInfo) {
-            ContentProviderInfo providerInfo = (ContentProviderInfo) componentInfo;
+        if (componentInfo instanceof ProviderInfo) {
+            ProviderInfo providerInfo = (ProviderInfo) componentInfo;
             String packageName = providerInfo.getPackageName();
             String providerName = providerInfo.getName();
             holder.binding.providerNameTextView.setText(providerName);

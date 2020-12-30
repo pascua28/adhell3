@@ -11,7 +11,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.fusionjack.adhell3.databinding.GroupAppComponentInfoBinding;
 import com.fusionjack.adhell3.databinding.ItemContentProviderDisabledInfoBinding;
-import com.fusionjack.adhell3.model.ContentProviderInfo;
+import com.fusionjack.adhell3.model.ProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 
 import java.lang.ref.WeakReference;
@@ -132,8 +132,8 @@ public class ContentProviderDisabledInfoAdapter extends ComponentDisabledAdapter
             holder = (ContentProviderDisabledInfoItemViewHolder) convertView.getTag();
         }
 
-        if (componentInfo instanceof ContentProviderInfo) {
-            ContentProviderInfo providerInfo = (ContentProviderInfo) componentInfo;
+        if (componentInfo instanceof ProviderInfo) {
+            ProviderInfo providerInfo = (ProviderInfo) componentInfo;
 
             holder.binding.providerNameTextView.setText(providerInfo.getName());
         }
