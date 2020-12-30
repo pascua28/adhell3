@@ -7,6 +7,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.model.AppComponent;
+import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.io.BufferedReader;
@@ -16,11 +17,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import io.reactivex.Single;
+
+import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_NONE;
+import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
 
 public final class AppComponentFactory {
 
@@ -28,46 +33,31 @@ public final class AppComponentFactory {
     private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
     private static AppComponentFactory instance;
 
-    private ApplicationPolicy appPolicy;
-    private AppDatabase appDatabase;
+    private final ApplicationPolicy appPolicy;
+    private final AppDatabase appDatabase;
+
+    private final Set<String> serviceNames;
+    private final Set<String> receiverNames;
 
     private AppComponentFactory() {
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
-    }
 
-    public static AppComponentFactory getInstance() {
-        if (instance == null) {
-            instance = new AppComponentFactory();
-        }
-        return instance;
-    }
-
-    public Single<String> processAppComponentInBatch(boolean enabled) {
         Set<String> serviceNames;
         try {
             serviceNames = getFileContent(SERVICE_FILENAME);
         } catch (IOException e) {
-            return Single.error(e);
+            serviceNames = Collections.emptySet();
         }
+        this.serviceNames = serviceNames;
 
         Set<String> receiverNames;
         try {
             receiverNames = getFileContent(RECEIVER_FILENAME);
         } catch (IOException e) {
-            return Single.error(e);
+            receiverNames = Collections.emptySet();
         }
-
-        return Single.create(emitter -> {
-            if (enabled) {
-                enableServices(serviceNames);
-                enableReceivers(receiverNames);
-            } else {
-                disableServices(serviceNames);
-                disableReceivers(receiverNames);
-            }
-            emitter.onSuccess("Success!");
-        });
+        this.receiverNames = receiverNames;
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
@@ -88,106 +78,226 @@ public final class AppComponentFactory {
         return lines;
     }
 
-    private void enableServices(Set<String> compNames) {
+    public static AppComponentFactory getInstance() {
+        if (instance == null) {
+            instance = new AppComponentFactory();
+        }
+        return instance;
+    }
+
+    public void togglePermissionState(String packageName, String permissionName) {
+        List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
+        boolean state = deniedPermissions.contains(permissionName);
+        setPermissionState(state, packageName, permissionName);
+    }
+
+    // Enable all permissions for the given app
+    public void enablePermissions(String packageName) {
+        List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
+        int errorCode = AdhellFactory.getInstance().setAppPermission(packageName, deniedPermissions, true);
+        if (errorCode == ERROR_NONE) {
+            appDatabase.appPermissionDao().deletePermissions(packageName);
+        }
+        //deniedPermissions.forEach(permissionName -> setPermissionState(state, packageName, permissionName));
+    }
+
+    private void setPermissionState(boolean state, String packageName, String permissionName) {
+        int errorCode = AdhellFactory.getInstance().setAppPermission(packageName, Collections.singletonList(permissionName), state);
+        if (errorCode == ApplicationPolicy.ERROR_NONE) {
+            if (state) {
+                List<String> siblingPermissionNames = AppPermissionUtils.getSiblingPermissions(permissionName);
+                for (String name : siblingPermissionNames) {
+                    appDatabase.appPermissionDao().delete(packageName, name);
+                }
+            } else {
+                insertPermissionToDatabase(packageName, permissionName);
+            }
+        }
+    }
+
+    private void insertPermissionToDatabase(String packageName, String permissionName) {
+        AppPermission appPermission = new AppPermission();
+        appPermission.packageName = packageName;
+        appPermission.permissionName = permissionName;
+        appPermission.permissionStatus = AppPermission.STATUS_PERMISSION;
+        appPermission.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+        appDatabase.appPermissionDao().insert(appPermission);
+    }
+
+    public Single<String> processAppComponentInBatch(boolean enabled) {
+        if (serviceNames.isEmpty() || receiverNames.isEmpty()) {
+            return Single.error(new FileNotFoundException("File name '" + SERVICE_FILENAME + "' or '" + RECEIVER_FILENAME + "' cannot be found."));
+        }
+        return Single.create(emitter -> {
+            if (enabled) {
+                enableTxtServices();
+                enableTxtReceivers();
+            } else {
+                disableTxtServices();
+                disableTxtReceivers();
+            }
+            emitter.onSuccess("Success!");
+        });
+    }
+
+    // Enable services from 'adhell3_services.txt' for all apps
+    private void enableTxtServices() {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
-            Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
-            for (String compName : compNames) {
-                if (availableServiceNames.contains(compName)) {
-                    boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
-                    if (!compState) {
-                        ComponentName componentName = new ComponentName(packageName, compName);
-                        boolean success = appPolicy.setApplicationComponentState(componentName, true);
-                        if (success) {
-                            appDatabase.appPermissionDao().delete(packageName, compName);
-                        }
+            setTxtServicesState(true, packageName);
+        }
+    }
+
+    // Disable services from 'adhell3_services.txt' for all apps
+    private void disableTxtServices() {
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            disableTxtServices(app.packageName);
+        }
+    }
+
+    // Disable services from 'adhell3_services.txt' for the given app
+    public void disableTxtServices(String packageName) {
+        setTxtServicesState(false, packageName);
+    }
+
+    // Only services from 'adhell3_services.txt' will be enabled/disabled
+    private void setTxtServicesState(boolean state, String packageName) {
+        AppComponent.getServiceNames(packageName).stream()
+                .filter(serviceNames::contains)
+                .forEach(serviceName -> {
+                    boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+                    if (state != currentState) {
+                        setServiceState(state, packageName, serviceName);
                     }
-                }
-            }
-        }
+                });
     }
 
-    private void disableServices(Set<String> toBeDisabledServiceNames) {
-        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
-        for (AppInfo app : apps) {
-            String packageName = app.packageName;
-            disableService(packageName, toBeDisabledServiceNames);
-        }
-    }
-
-    public void disableService(String packageName) throws IOException {
-        Set<String> serviceNames = getFileContent(SERVICE_FILENAME);
-        disableService(packageName, serviceNames);
-    }
-
-    private void disableService(String packageName, Set<String> toBeDisabledServiceNames) {
-        Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
-        for (String serviceName : toBeDisabledServiceNames) {
-            if (availableServiceNames.contains(serviceName)) {
-                ComponentName componentName = new ComponentName(packageName, serviceName);
-                boolean success = appPolicy.setApplicationComponentState(componentName, false);
-                if (success) {
-                    AppPermission appService = new AppPermission();
-                    appService.packageName = packageName;
-                    appService.permissionName = serviceName;
-                    appService.permissionStatus = AppPermission.STATUS_SERVICE;
-                    appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.appPermissionDao().insert(appService);
-                }
-            }
-        }
-    }
-
-    private void enableReceivers(Set<String> compNames) {
-        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
-        for (AppInfo app : apps) {
-            String packageName = app.packageName;
-            Set<String> availableServiceNames = AppComponent.getReceiverNames(packageName);
-            for (String compName : compNames) {
-                if (availableServiceNames.contains(compName)) {
-                    boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
-                    if (!compState) {
-                        ComponentName componentName = new ComponentName(packageName, compName);
-                        boolean success = appPolicy.setApplicationComponentState(componentName, true);
-                        if (success) {
-                            String receiverPair = compName + "|Auto";
-                            appDatabase.appPermissionDao().delete(packageName, receiverPair);
-                        }
+    // Enable all services for the given app
+    public void enableServices(String packageName) {
+        AppComponent.getServiceNames(packageName)
+                .forEach(serviceName -> {
+                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+                    if (!state) {
+                        setServiceState(true, packageName, serviceName);
                     }
-                }
+                });
+    }
+
+    public void toggleServiceState(String packageName, String serviceName) {
+        boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+        setServiceState(!state, packageName, serviceName);
+    }
+
+    private void setServiceState(boolean state, String packageName, String serviceName) {
+        ComponentName serviceCompName = new ComponentName(packageName, serviceName);
+        boolean success = appPolicy.setApplicationComponentState(serviceCompName, state);
+        if (success) {
+            if (state) {
+                appDatabase.appPermissionDao().delete(packageName, serviceName);
+            } else {
+                insertServiceToDatabase(packageName, serviceName);
             }
         }
     }
 
-    private void disableReceivers(Set<String> toBeDisabledReceiverNames) {
+    private void insertServiceToDatabase(String packageName, String serviceName) {
+        AppPermission appService = new AppPermission();
+        appService.packageName = packageName;
+        appService.permissionName = serviceName;
+        appService.permissionStatus = AppPermission.STATUS_SERVICE;
+        appService.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+        appDatabase.appPermissionDao().insert(appService);
+    }
+
+    // Enable services from 'adhell3_receivers.txt' for all apps
+    private void enableTxtReceivers() {
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
-            disableReceiver(packageName, toBeDisabledReceiverNames);
+            setTxtReceiversState(true, packageName);
         }
     }
 
-    public void disableReceiver(String packageName) throws IOException {
-        Set<String> receiverNames = getFileContent(RECEIVER_FILENAME);
-        disableReceiver(packageName, receiverNames);
+    // Disable services from 'adhell3_receivers.txt' for all apps
+    private void disableTxtReceivers() {
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            disableTxtReceivers(app.packageName);
+        }
     }
 
-    private void disableReceiver(String packageName, Set<String> toBeDisabledReceiverNames) {
-        Set<String> availableServiceNames = AppComponent.getReceiverNames(packageName);
-        for (String receiverName : toBeDisabledReceiverNames) {
-            if (availableServiceNames.contains(receiverName)) {
-                ComponentName componentName = new ComponentName(packageName, receiverName);
-                boolean success = appPolicy.setApplicationComponentState(componentName, false);
-                if (success) {
-                    AppPermission appReceiver = new AppPermission();
-                    appReceiver.packageName = packageName;
-                    appReceiver.permissionName = receiverName + "|Auto";
-                    appReceiver.permissionStatus = AppPermission.STATUS_RECEIVER;
-                    appReceiver.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                    appDatabase.appPermissionDao().insert(appReceiver);
-                }
+    // Disable services from 'adhell3_receivers.txt' for the given app
+    public void disableTxtReceivers(String packageName) {
+        setTxtReceiversState(false, packageName);
+    }
+
+    // Only receivers from 'adhell3_services.txt' will be enabled/disabled
+    private void setTxtReceiversState(boolean state, String packageName) {
+        AppComponent.getReceivers(packageName).stream()
+                .filter(info -> receiverNames.contains(((ReceiverInfo)info).getName()))
+                .forEach(info -> {
+                    String receiverName = ((ReceiverInfo) info).getName();
+                    String receiverPermission = ((ReceiverInfo) info).getPermission();
+                    boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+                    if (state != currentState) {
+                        setReceiverState(state, packageName, receiverName, receiverPermission);
+                    }
+                });
+    }
+
+    // Enable all receivers for the given app
+    public void enableReceivers(String packageName) {
+        AppComponent.getReceivers(packageName)
+                .forEach(info -> {
+                    String receiverName = ((ReceiverInfo) info).getName();
+                    String receiverPermission = ((ReceiverInfo) info).getPermission();
+                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+                    if (!state) {
+                        setReceiverState(true, packageName, receiverName, receiverPermission);
+                    }
+                });
+    }
+
+    public void toggleReceiverState(String packageName, String receiverName, String receiverPermission) {
+        boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+        setReceiverState(!state, packageName, receiverName, receiverPermission);
+    }
+
+    private void setReceiverState(boolean state, String packageName, String receiverName, String receiverPermission) {
+        int indexOfPipe = receiverName.indexOf('|');
+        if (indexOfPipe != -1) {
+            receiverName = receiverName.substring(0, indexOfPipe);
+        }
+        ComponentName receiverCompName = new ComponentName(packageName, receiverName);
+        boolean success = appPolicy.setApplicationComponentState(receiverCompName, state);
+        if (success) {
+            if (state) {
+                deleteReceiverFromDatabase(packageName, receiverName, receiverPermission);
+            } else {
+                insertReceiverToDatabase(packageName, receiverName, receiverPermission);
             }
         }
+    }
+
+    private void insertReceiverToDatabase(String packageName, String receiverName, String receiverPermission) {
+        AppPermission appReceiver = new AppPermission();
+        appReceiver.packageName = packageName;
+        appReceiver.permissionName = buildReceiverPair(receiverName, receiverPermission);
+        appReceiver.permissionStatus = AppPermission.STATUS_RECEIVER;
+        appReceiver.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+        appDatabase.appPermissionDao().insert(appReceiver);
+    }
+
+    private void deleteReceiverFromDatabase(String packageName, String receiverName, String receiverPermission) {
+        String receiverPair = buildReceiverPair(receiverName, receiverPermission);
+        appDatabase.appPermissionDao().delete(packageName, receiverPair);
+        receiverPair = buildReceiverPair(receiverName,"Auto");
+        appDatabase.appPermissionDao().delete(packageName, receiverPair);
+    }
+
+    private String buildReceiverPair(String receiverName, String receiverPermission) {
+        return receiverName + "|" + receiverPermission;
     }
 }

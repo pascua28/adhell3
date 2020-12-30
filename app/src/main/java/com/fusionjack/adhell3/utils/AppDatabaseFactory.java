@@ -10,7 +10,6 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -99,12 +98,8 @@ public final class AppDatabaseFactory {
             // Disable app's services and receivers based on adhell3_services.txt and adhell3_receivers.txt files
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             if (enabled) {
-                try {
-                    AppComponentFactory.getInstance().disableService(app.packageName);
-                    AppComponentFactory.getInstance().disableReceiver(app.packageName);
-                } catch (IOException e) {
-                    LogUtils.error(e.getMessage(), e);
-                }
+                AppComponentFactory.getInstance().disableTxtServices(app.packageName);
+                AppComponentFactory.getInstance().disableTxtReceivers(app.packageName);
             }
         });
 
