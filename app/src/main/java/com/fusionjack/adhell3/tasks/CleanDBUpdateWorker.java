@@ -223,12 +223,38 @@ public class CleanDBUpdateWorker extends Worker {
         for (AppPermission appPermissionsPackage : appPermissionsPackages) {
             if (!appCache.getNames().containsKey(appPermissionsPackage.packageName)) {
                 try {
-                    LogUtils.info(String.format("    Deleting rules for package: %s.", appPermissionsPackage.packageName), handler);
-                    appDatabase.appPermissionDao().deletePermissions(appPermissionsPackage.packageName);
-                    appDatabase.appPermissionDao().deleteServices(appPermissionsPackage.packageName);
-                    appDatabase.appPermissionDao().deleteReceivers(appPermissionsPackage.packageName);
-                    appDatabase.appPermissionDao().deleteActivities(appPermissionsPackage.packageName);
-                    LogUtils.info("    Done.", handler);
+                    boolean deleted = false;
+                    String strDeleteRule = String.format("    Deleting rule for package: %s", appPermissionsPackage.packageName);
+                    switch (appPermissionsPackage.permissionStatus) {
+                        case AppPermission.STATUS_PERMISSION:
+                            LogUtils.info(String.format("%s and permission: %s.", strDeleteRule, appPermissionsPackage.permissionName), handler);
+                            appDatabase.appPermissionDao().deletePermissions(appPermissionsPackage.packageName);
+                            deleted = true;
+                            break;
+                        case AppPermission.STATUS_SERVICE:
+                            LogUtils.info(String.format("%s and service: %s.", strDeleteRule, appPermissionsPackage.permissionName), handler);
+                            appDatabase.appPermissionDao().deleteServices(appPermissionsPackage.packageName);
+                            deleted = true;
+                            break;
+                        case AppPermission.STATUS_RECEIVER:
+                            LogUtils.info(String.format("%s and receiver: %s.", strDeleteRule, appPermissionsPackage.permissionName), handler);
+                            appDatabase.appPermissionDao().deleteReceivers(appPermissionsPackage.packageName);
+                            deleted = true;
+                            break;
+                        case AppPermission.STATUS_ACTIVITY:
+                            LogUtils.info(String.format("%s and activity: %s.", strDeleteRule, appPermissionsPackage.permissionName), handler);
+                            appDatabase.appPermissionDao().deleteActivities(appPermissionsPackage.packageName);
+                            deleted = true;
+                            break;
+                        case AppPermission.STATUS_PROVIDER:
+                            LogUtils.info(String.format("%s and content provider: %s.", strDeleteRule, appPermissionsPackage.permissionName), handler);
+                            appDatabase.appPermissionDao().deleteContentProviders(appPermissionsPackage.packageName);
+                            deleted = true;
+                            break;
+                    }
+                    if (deleted) {
+                        LogUtils.info("    Done.", handler);
+                    }
                 } catch (Exception e) {
                     LogUtils.error("    Error deleting rule.", e, handler);
                 }
