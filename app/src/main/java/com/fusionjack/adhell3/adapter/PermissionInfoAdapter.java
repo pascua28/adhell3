@@ -12,15 +12,22 @@ import com.fusionjack.adhell3.databinding.ItemPermissionInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
 
 public class PermissionInfoAdapter extends ComponentAdapter {
+
+    private final ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
 
     public PermissionInfoAdapter(@NonNull Context context, @NonNull List<IComponentInfo> componentInfos) {
         super(context, componentInfos);
@@ -47,22 +54,30 @@ public class PermissionInfoAdapter extends ComponentAdapter {
 
         if (componentInfo instanceof PermissionInfo) {
             PermissionInfo permissionInfo = (PermissionInfo) componentInfo;
-            holder.binding.permissionLabelTextView.setText(permissionInfo.getLabel());
-            holder.binding.permissionNameTextView.setText(permissionInfo.getName());
+
+            String packageName = permissionInfo.getPackageName();
+            String permissionName = permissionInfo.getName();
+            String permissionLabel = permissionInfo.getLabel();
+
+            holder.binding.permissionLabelTextView.setText(permissionLabel);
+            holder.binding.permissionNameTextView.setText(permissionName);
             holder.binding.protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
 
             boolean checked = false;
-            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-            if (appPolicy != null) {
-                List<String> deniedPermissions = appPolicy.getRuntimePermissions(permissionInfo.getPackageName(), PERMISSION_POLICY_STATE_DENY);
-                if (!deniedPermissions.contains(permissionInfo.getName())) {
-                    checked = true;
-                }
-                holder.binding.switchDisable.setChecked(checked);
-
-                boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                holder.binding.switchDisable.setEnabled(enabled);
+            List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
+            if (!deniedPermissions.contains(permissionName)) {
+                checked = true;
             }
+            if (!checked) {
+                Completable.fromAction(() -> AppComponentFactory.getInstance().addPermissionToDatabaseIfNotExist(packageName, permissionName))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe();
+            }
+            holder.binding.switchDisable.setChecked(checked);
+
+            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+            holder.binding.switchDisable.setEnabled(enabled);
         }
 
         return holder.view;

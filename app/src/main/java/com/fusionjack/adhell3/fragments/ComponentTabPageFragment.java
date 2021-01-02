@@ -23,7 +23,7 @@ import androidx.fragment.app.Fragment;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
-import com.fusionjack.adhell3.adapter.ContentProviderInfoAdapter;
+import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
@@ -188,7 +188,7 @@ public class ComponentTabPageFragment extends Fragment {
                 view = fragmentAppContentProviderBinding.getRoot();
                 if (toggleEnabled) {
                     fragmentAppContentProviderBinding.providerInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                        ContentProviderInfoAdapter adapter = (ContentProviderInfoAdapter) adView.getAdapter();
+                        ProviderInfoAdapter adapter = (ProviderInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
@@ -417,7 +417,7 @@ public class ComponentTabPageFragment extends Fragment {
                         break;
                     case PROVIDER_PAGE:
                         listViewId = R.id.providerInfoListView;
-                        adapter = new ContentProviderInfoAdapter(context, componentInfos);
+                        adapter = new ProviderInfoAdapter(context, componentInfos);
                         break;
                 }
 

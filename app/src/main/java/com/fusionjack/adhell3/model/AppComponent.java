@@ -206,7 +206,7 @@ public class AppComponent {
 
         // Disabled provider won't be appear in the package manager anymore
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getContentProviders(packageName);
+        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getProviders(packageName);
         for (AppPermission storedProvider : storedProviders) {
             providerNameSet.add(storedProvider.permissionName);
         }

@@ -12,9 +12,14 @@ import com.fusionjack.adhell3.databinding.ItemActivityInfoBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
 import java.util.List;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ActivityInfoAdapter extends ComponentAdapter {
 
@@ -45,8 +50,17 @@ public class ActivityInfoAdapter extends ComponentAdapter {
             ActivityInfo activityInfo = (ActivityInfo) componentInfo;
             String packageName = activityInfo.getPackageName();
             String activityName = activityInfo.getName();
+
             holder.binding.activityNameTextView.setText(activityName);
-            holder.binding.switchDisable.setChecked(AdhellFactory.getInstance().getComponentState(packageName, activityName));
+
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, activityName);
+            if (!state) {
+                Completable.fromAction(() -> AppComponentFactory.getInstance().addActivityToDatabaseIfNotExist(packageName, activityName))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe();
+            }
+            holder.binding.switchDisable.setChecked(state);
 
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             holder.binding.switchDisable.setEnabled(enabled);

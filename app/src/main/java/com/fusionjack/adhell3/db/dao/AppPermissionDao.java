@@ -37,10 +37,10 @@ public interface AppPermissionDao {
     AppPermission getActivity(String packageName, String activityPairName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 11")
-    List<AppPermission> getContentProviders(String packageName);
+    List<AppPermission> getProviders(String packageName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :providerPairName AND permissionStatus = 5")
-    AppPermission getContentProvider(String packageName, String providerPairName);
+    AppPermission getProvider(String packageName, String providerPairName);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(AppPermission appPermission);

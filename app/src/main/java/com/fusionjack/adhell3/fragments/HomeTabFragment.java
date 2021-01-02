@@ -648,5 +648,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         if (expandableListAdapter instanceof BaseExpandableListAdapter) {
             ((BaseExpandableListAdapter) expandableListAdapter).notifyDataSetChanged();
         }
+        if (homeTabViewModel != null) {
+            homeTabViewModel.setInfo();
+        }
     }
 }

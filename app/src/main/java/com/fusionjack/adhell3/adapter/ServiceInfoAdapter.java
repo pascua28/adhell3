@@ -12,9 +12,14 @@ import com.fusionjack.adhell3.databinding.ItemServiceInfoBinding;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ServiceInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
 import java.util.List;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ServiceInfoAdapter extends ComponentAdapter {
 
@@ -45,8 +50,17 @@ public class ServiceInfoAdapter extends ComponentAdapter {
             ServiceInfo serviceInfo = (ServiceInfo) componentInfo;
             String packageName = serviceInfo.getPackageName();
             String serviceName = serviceInfo.getName();
+
             holder.binding.serviceNameTextView.setText(serviceName);
-            holder.binding.switchDisable.setChecked(AdhellFactory.getInstance().getComponentState(packageName, serviceName));
+
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+            if (!state) {
+                Completable.fromAction(() -> AppComponentFactory.getInstance().addServiceToDatabaseIfNotExist(packageName, serviceName))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe();
+            }
+            holder.binding.switchDisable.setChecked(state);
 
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             holder.binding.switchDisable.setEnabled(enabled);
