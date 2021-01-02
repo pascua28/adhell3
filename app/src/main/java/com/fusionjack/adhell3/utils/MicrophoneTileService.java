@@ -22,13 +22,6 @@ public class MicrophoneTileService extends TileService {
     }
 
     @Override
-    public void onStartListening() {
-        super.onStartListening();
-
-        updateTitle(AdhellFactory.getInstance().getMicrophoneState());
-    }
-
-    @Override
     public void onClick() {
         super.onClick();
 

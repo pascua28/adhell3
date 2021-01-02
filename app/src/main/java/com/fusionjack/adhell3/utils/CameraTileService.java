@@ -22,13 +22,6 @@ public class CameraTileService extends TileService {
     }
 
     @Override
-    public void onStartListening() {
-        super.onStartListening();
-
-        updateTitle(AdhellFactory.getInstance().getCameraState());
-    }
-
-    @Override
     public void onClick() {
         super.onClick();
 
