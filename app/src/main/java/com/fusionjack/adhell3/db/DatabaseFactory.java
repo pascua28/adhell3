@@ -35,6 +35,7 @@ import java.util.List;
 public final class DatabaseFactory {
     private static final String STORAGE_FOLDERS = "Adhell3/BackupDB";
     private static final String BACKUP_FILENAME = "adhell_backup.txt";
+
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
     private static DatabaseFactory instance;
@@ -253,10 +254,13 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            FirewallWhitelistedPackage whitelistedPackage = new FirewallWhitelistedPackage();
-            whitelistedPackage.packageName = packageName;
-            whitelistedPackage.policyPackageId = policyPackageId;
-            whitelistedPackages.add(whitelistedPackage);
+            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
+            if (appInfo != null) {
+                FirewallWhitelistedPackage whitelistedPackage = new FirewallWhitelistedPackage();
+                whitelistedPackage.packageName = packageName;
+                whitelistedPackage.policyPackageId = policyPackageId;
+                whitelistedPackages.add(whitelistedPackage);
+            }
         }
         reader.endArray();
 
@@ -290,10 +294,13 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            DisabledPackage disabledPackage = new DisabledPackage();
-            disabledPackage.packageName = packageName;
-            disabledPackage.policyPackageId = policyPackageId;
-            disabledPackages.add(disabledPackage);
+            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
+            if (appInfo != null) {
+                DisabledPackage disabledPackage = new DisabledPackage();
+                disabledPackage.packageName = packageName;
+                disabledPackage.policyPackageId = policyPackageId;
+                disabledPackages.add(disabledPackage);
+            }
         }
         reader.endArray();
 
@@ -330,11 +337,14 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            RestrictedPackage restrictedPackage = new RestrictedPackage();
-            restrictedPackage.packageName = packageName;
-            restrictedPackage.type = type.isEmpty() ? MOBILE_RESTRICTED_TYPE : type;
-            restrictedPackage.policyPackageId = policyPackageId;
-            restrictedPackages.add(restrictedPackage);
+            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
+            if (appInfo != null) {
+                RestrictedPackage restrictedPackage = new RestrictedPackage();
+                restrictedPackage.packageName = packageName;
+                restrictedPackage.type = type.isEmpty() ? MOBILE_RESTRICTED_TYPE : type;
+                restrictedPackage.policyPackageId = policyPackageId;
+                restrictedPackages.add(restrictedPackage);
+            }
         }
         reader.endArray();
 
@@ -381,12 +391,15 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            AppPermission appPermission = new AppPermission();
-            appPermission.packageName = packageName;
-            appPermission.permissionName = permissionName;
-            appPermission.permissionStatus = permissionStatus;
-            appPermission.policyPackageId = policyPackageId;
-            appPermissions.add(appPermission);
+            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
+            if (appInfo != null) {
+                AppPermission appPermission = new AppPermission();
+                appPermission.packageName = packageName;
+                appPermission.permissionName = permissionName;
+                appPermission.permissionStatus = permissionStatus;
+                appPermission.policyPackageId = policyPackageId;
+                appPermissions.add(appPermission);
+            }
         }
         reader.endArray();
 
@@ -505,10 +518,13 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            DnsPackage dnsPackage = new DnsPackage();
-            dnsPackage.packageName = packageName;
-            dnsPackage.policyPackageId = policyPackageId;
-            dnsPackages.add(dnsPackage);
+            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
+            if (appInfo != null) {
+                DnsPackage dnsPackage = new DnsPackage();
+                dnsPackage.packageName = packageName;
+                dnsPackage.policyPackageId = policyPackageId;
+                dnsPackages.add(dnsPackage);
+            }
         }
         reader.endArray();
 
