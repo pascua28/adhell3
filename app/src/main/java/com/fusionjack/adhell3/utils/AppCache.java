@@ -38,7 +38,7 @@ public class AppCache {
     private final Map<String, String> appsNames;
     private final Map<String, String> versionNames;
 
-    private AppCache(Context context, Handler handler, Boolean async) {
+    private AppCache(Context context, Handler handler, Boolean async) throws Throwable {
         this.appsIcons = new HashMap<>();
         this.appsNames = new HashMap<>();
         this.versionNames = new HashMap<>();
@@ -51,29 +51,33 @@ public class AppCache {
 
     public static synchronized AppCache getInstance(Context context, Handler handler) {
         if (instance == null) {
-            instance = new AppCache(context, handler, true);
+            try {
+                instance = new AppCache(context, handler, true);
+            } catch (Throwable th) {
+                th.printStackTrace();
+            }
         }
         return instance;
     }
 
     public static synchronized AppCache reload(Context context, Handler handler) {
         instance = null;
-        instance = new AppCache(context, handler, true);
+        try {
+            instance = new AppCache(context, handler, true);
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
         return instance;
     }
 
-    public static synchronized AppCache reloadSync(Handler handler) {
+    public static synchronized AppCache reloadSync(Handler handler) throws Throwable {
         instance = null;
         instance = new AppCache(null, handler, false);
         return instance;
     }
 
-    private void loadAppsSync(Handler handler) {
-        try {
-            throw new AppCacheAsyncTask(null, handler, appsIcons, appsNames, versionNames).reloadAppCache();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
+    private void loadAppsSync(Handler handler) throws Throwable {
+        new AppCacheAsyncTask(null, handler, appsIcons, appsNames, versionNames).reloadAppCache();
     }
 
     private void loadAppsAsync(Context context, Handler handler) {
@@ -123,7 +127,12 @@ public class AppCache {
 
         @Override
         protected Throwable doInBackground(Void... args) {
-            return reloadAppCache();
+            try {
+                reloadAppCache();
+            } catch (Throwable th) {
+                return th;
+            }
+            return null;
         }
 
         @Override
@@ -147,7 +156,7 @@ public class AppCache {
             this.handler = null;
         }
 
-        public Throwable reloadAppCache() {
+        public void reloadAppCache() throws Throwable {
 
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             List<AppInfo> modifiedApps = null;
@@ -191,7 +200,7 @@ public class AppCache {
                 if (modifiedApps != null) {
                     appDatabase.applicationInfoDao().insertAll(modifiedApps);
                 }
-                return th;
+                throw th;
             }
 
             if (modifiedApps != null && modifiedApps.size() > 0 && appDatabase.applicationInfoDao().getAppSize() > 0) {
@@ -244,7 +253,6 @@ public class AppCache {
                     }
                 }
             }
-            return null;
         }
     }
 

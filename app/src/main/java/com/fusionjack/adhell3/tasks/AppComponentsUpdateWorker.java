@@ -71,8 +71,8 @@ public class AppComponentsUpdateWorker extends Worker {
                 } else {
                     LogUtils.info("The management of app components is disabled, nothing to do.", handler);
                 }
-            } catch (Exception e) {
-                LogUtils.error("Failed App components auto update! Will be retried.", e, handler);
+            } catch (Throwable th) {
+                LogUtils.error("Failed App components auto update! Will be retried.", th, handler);
                 LogUtils.info("------Failed App components auto update------", handler);
                 return Result.retry();
             }
@@ -84,7 +84,7 @@ public class AppComponentsUpdateWorker extends Worker {
         return Result.success();
     }
 
-    private void processAppComponentsInAutoUpdate() throws Exception {
+    private void processAppComponentsInAutoUpdate() throws Throwable {
         LogUtils.info("Reloading App Cache...", handler);
         AppCache.reloadSync(handler);
         LogUtils.info("Done.", handler);
@@ -92,7 +92,7 @@ public class AppComponentsUpdateWorker extends Worker {
         LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);
         DocumentFile componentsFile = FileUtils.getDocumentFile(AppComponentFactory.STORAGE_FOLDERS, AppComponentFactory.COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
 
-        LogUtils.info("Listing services, receivers and activities to be disabled...", handler);
+        LogUtils.info("Listing services, receivers, activities and content providers to be disabled...", handler);
         Set<String> compNames = AppComponentFactory.getInstance().getFileContent(componentsFile);
 
         if (compNames.size() > 0) {
