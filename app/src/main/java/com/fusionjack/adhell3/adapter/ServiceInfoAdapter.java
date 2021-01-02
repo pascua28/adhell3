@@ -1,21 +1,27 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ServiceInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 
 import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class ServiceInfoAdapter extends ComponentAdapter {
 
@@ -42,7 +48,15 @@ public class ServiceInfoAdapter extends ComponentAdapter {
             TextView serviceNameTextView = convertView.findViewById(R.id.serviceNameTextView);
             Switch permissionSwitch = convertView.findViewById(R.id.switchDisable);
             serviceNameTextView.setText(serviceName);
-            permissionSwitch.setChecked(AdhellFactory.getInstance().getComponentState(packageName, serviceName));
+
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+            if (!state) {
+                Completable.fromAction(() -> AppComponentFactory.getInstance().addServiceToDatabaseIfNotExist(packageName, serviceName))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe();
+            }
+            permissionSwitch.setChecked(state);
 
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             permissionSwitch.setEnabled(enabled);

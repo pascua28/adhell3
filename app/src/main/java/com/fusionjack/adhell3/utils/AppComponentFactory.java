@@ -115,6 +115,14 @@ public final class AppComponentFactory {
         }
     }
 
+    public void addPermissionToDatabaseIfNotExist(String packageName, String permissionName) {
+        AppPermission permission = appDatabase.appPermissionDao().getPermission(packageName, permissionName);
+        if (permission == null) {
+            LogUtils.info("Adding permission name '" + packageName + "|" + permissionName + "' to database.");
+            insertPermissionToDatabase(packageName, permissionName);
+        }
+    }
+
     private void insertPermissionToDatabase(String packageName, String permissionName) {
         AppPermission appPermission = new AppPermission();
         appPermission.packageName = packageName;
@@ -202,6 +210,14 @@ public final class AppComponentFactory {
         }
     }
 
+    public void addServiceToDatabaseIfNotExist(String packageName, String serviceName) {
+        AppPermission service = appDatabase.appPermissionDao().getService(packageName, serviceName);
+        if (service == null) {
+            LogUtils.info("Adding service name '" + packageName + "|" + serviceName + "' to database.");
+            insertServiceToDatabase(packageName, serviceName);
+        }
+    }
+
     private void insertServiceToDatabase(String packageName, String serviceName) {
         AppPermission appService = new AppPermission();
         appService.packageName = packageName;
@@ -278,6 +294,14 @@ public final class AppComponentFactory {
             } else {
                 insertReceiverToDatabase(packageName, receiverName, receiverPermission);
             }
+        }
+    }
+
+    public void addReceiverToDatabaseIfNotExist(String packageName, String receiverName, String receiverPermission) {
+        AppPermission receiver = appDatabase.appPermissionDao().getReceiver(packageName, buildReceiverPair(receiverName, receiverPermission));
+        if (receiver == null) {
+            LogUtils.info("Adding receiver name '" + packageName + "|" + receiverName + "|" + receiverPermission + "' to database.");
+            insertReceiverToDatabase(packageName, receiverName, receiverPermission);
         }
     }
 
