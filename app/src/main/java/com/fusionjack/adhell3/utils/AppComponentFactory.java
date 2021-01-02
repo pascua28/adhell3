@@ -85,6 +85,30 @@ public final class AppComponentFactory {
         return instance;
     }
 
+    // If an app component is disabled, it should be existed in the database
+    // If it is not the case, insert it into database
+    public void checkAppComponentConsistency(String packageName) {
+        List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
+        deniedPermissions.forEach(permissionName -> addPermissionToDatabaseIfNotExist(packageName, permissionName));
+
+        AppComponent.getServiceNames(packageName).forEach(serviceName -> {
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+            if (!state) {
+                addServiceToDatabaseIfNotExist(packageName, serviceName);
+            }
+        });
+
+        AppComponent.getReceivers(packageName).forEach(info -> {
+            ReceiverInfo receiverInfo = ((ReceiverInfo) info);
+            String receiverName = receiverInfo.getName();
+            String receiverPermission = receiverInfo.getPermission();
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+            if (!state) {
+                addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission);
+            }
+        });
+    }
+
     public void togglePermissionState(String packageName, String permissionName) {
         List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
         boolean state = deniedPermissions.contains(permissionName);

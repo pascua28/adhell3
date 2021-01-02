@@ -96,10 +96,16 @@ public final class AppDatabaseFactory {
             appDatabase.applicationInfoDao().insert(toAppInfo(app, ++lastId));
 
             // Disable app's services and receivers based on adhell3_services.txt and adhell3_receivers.txt files
+            // Also check disabled app's component for consistency:
+            // If some app's component are disabled and then the app is uninstalled, they cannot be re-enabled and
+            // android system still marks them as disabled even the app is reinstalled.
+            // If the app is reinstalled, their database entries are missing. checkAppComponentConsistency() will re-add them.
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             if (enabled) {
-                AppComponentFactory.getInstance().disableTxtServices(app.packageName);
-                AppComponentFactory.getInstance().disableTxtReceivers(app.packageName);
+                String packageName = app.packageName;
+                AppComponentFactory.getInstance().disableTxtServices(packageName);
+                AppComponentFactory.getInstance().disableTxtReceivers(packageName);
+                AppComponentFactory.getInstance().checkAppComponentConsistency(packageName);
             }
         });
 
