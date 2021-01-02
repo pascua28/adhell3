@@ -100,26 +100,33 @@ public final class LogUtils {
     }
 
     private static void shrinkLogFile(DocumentFile logFile, @SuppressWarnings("SameParameterValue") int maxFileSizeInBytes, @SuppressWarnings("SameParameterValue") int nbLinesToKeep) throws IOException {
-        if(logFile.length() > maxFileSizeInBytes){
+        if(logFile.length() > maxFileSizeInBytes) {
             InputStream input = App.getAppContext().getContentResolver().openInputStream(logFile.getUri());
-            OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri());
-            if (input != null && out != null) {
+            if (input != null) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(input));
                 List<String> tmp = new ArrayList<>();
                 String line;
                 do {
                     line = br.readLine();
-                    tmp.add(line);
+                    if (line != null) {
+                        if (tmp.size() >= nbLinesToKeep) {
+                            tmp.remove(0);
+                        }
+                        tmp.add(line);
+                    }
                 } while (line != null);
                 input.close();
 
-                if (tmp.get(tmp.size()-1) == null) tmp.remove(tmp.size()-1);
+                LogUtils.info("log - tmp size: "+tmp.size());
 
-                for(int i=((tmp.size()-1)-nbLinesToKeep);i<=tmp.size()-1;i++) {
-                    out.write(String.format("%s%s", tmp.get(i), System.lineSeparator()).getBytes());
+                OutputStream out = App.getAppContext().getContentResolver().openOutputStream(logFile.getUri(), "wrt");
+                if (out != null) {
+                    for (String tmpLine : tmp) {
+                        out.write(String.format("%s%s", tmpLine, System.lineSeparator()).getBytes());
+                    }
+                    out.flush();
+                    out.close();
                 }
-                out.flush();
-                out.close();
             }
         }
     }
