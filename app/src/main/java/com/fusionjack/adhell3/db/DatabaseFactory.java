@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.fusionjack.adhell3.App;
@@ -30,7 +32,12 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public final class DatabaseFactory {
     private static final String STORAGE_FOLDERS = "Adhell3/BackupDB";
@@ -371,8 +378,9 @@ public final class DatabaseFactory {
         String packageName = "";
         String permissionName = "";
         int permissionStatus = -1;
-        String policyPackageId = "";
-        List<AppPermission> appPermissions = new ArrayList<>();
+
+        Set<String> installedPackageNames = new HashSet<>(appDatabase.applicationInfoDao().getAllPackageNames());
+        Map<String, Set<AppPermissionInfo>> appComponentMap = new HashMap<>();
 
         reader.beginArray();
         while (reader.hasNext()) {
@@ -386,25 +394,80 @@ public final class DatabaseFactory {
                 } else if (name.equalsIgnoreCase("permissionStatus")) {
                     permissionStatus = reader.nextInt();
                 } else if (name.equalsIgnoreCase("policyPackageId")) {
-                    policyPackageId = reader.nextString();
+                    reader.nextString();
                 }
             }
             reader.endObject();
 
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
-            if (appInfo != null) {
-                AppPermission appPermission = new AppPermission();
-                appPermission.packageName = packageName;
-                appPermission.permissionName = permissionName;
-                appPermission.permissionStatus = permissionStatus;
-                appPermission.policyPackageId = policyPackageId;
-                appPermissions.add(appPermission);
+            if (installedPackageNames.contains(packageName)) {
+                AppPermissionInfo appComponentInfo = new AppPermissionInfo(packageName, permissionName, permissionStatus);
+                Set<AppPermissionInfo> appComponentInfos = appComponentMap.computeIfAbsent(packageName, f -> new HashSet<>());
+                appComponentInfos.add(appComponentInfo);
             }
         }
         reader.endArray();
 
+        List<AppPermission> appPermissions = new ArrayList<>();
+        appComponentMap.values().forEach(appComponentInfos -> appComponentInfos.forEach(appComponentInfo -> {
+            AppPermission appPermission = new AppPermission();
+            appPermission.packageName = appComponentInfo.getPackageName();
+            appPermission.permissionName = appComponentInfo.getPermissionName();
+            appPermission.permissionStatus = appComponentInfo.getPermissionStatus();
+            appPermission.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+            appPermissions.add(appPermission);
+        }));
+
         appDatabase.appPermissionDao().deleteAll();
         appDatabase.appPermissionDao().insertAll(appPermissions);
+    }
+
+    private static class AppPermissionInfo {
+        private final String packageName;
+        private final String permissionName;
+        private final int permissionStatus;
+
+        public AppPermissionInfo(String packageName, String permissionName, int permissionStatus) {
+            this.packageName = packageName;
+            this.permissionName = permissionName;
+            this.permissionStatus = permissionStatus;
+        }
+
+        public String getPackageName() {
+            return packageName;
+        }
+
+        public String getPermissionName() {
+            return permissionName;
+        }
+
+        public int getPermissionStatus() {
+            return permissionStatus;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(packageName, permissionName, permissionStatus);
+        }
+
+        @Override
+        public boolean equals(@Nullable Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof AppPermissionInfo)) {
+                return false;
+            }
+            AppPermissionInfo other = (AppPermissionInfo) o;
+            return Objects.equals(packageName, other.packageName)
+                    && Objects.equals(permissionName, other.permissionName)
+                    && permissionStatus == other.permissionStatus;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return packageName + "|" + permissionName + "|" + permissionStatus;
+        }
     }
 
     private void readBlockUrlProviders(JsonReader reader) throws IOException {
