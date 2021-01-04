@@ -44,11 +44,13 @@ public final class DatabaseFactory {
     public static final String WIFI_RESTRICTED_TYPE = "wifi";
 
     private final AppDatabase appDatabase;
+    private final Set<String> installedPackageNames;
 
     private static DatabaseFactory instance;
 
     private DatabaseFactory() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        this.installedPackageNames = new HashSet<>(appDatabase.applicationInfoDao().getAllPackageNames());
     }
 
     public static DatabaseFactory getInstance() {
@@ -253,8 +255,7 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
-            if (appInfo != null) {
+            if (installedPackageNames.contains(packageName)) {
                 FirewallWhitelistedPackage whitelistedPackage = new FirewallWhitelistedPackage();
                 whitelistedPackage.packageName = packageName;
                 whitelistedPackage.policyPackageId = policyPackageId;
@@ -293,8 +294,7 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
-            if (appInfo != null) {
+            if (installedPackageNames.contains(packageName)) {
                 DisabledPackage disabledPackage = new DisabledPackage();
                 disabledPackage.packageName = packageName;
                 disabledPackage.policyPackageId = policyPackageId;
@@ -336,8 +336,7 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
-            if (appInfo != null) {
+            if (installedPackageNames.contains(packageName)) {
                 RestrictedPackage restrictedPackage = new RestrictedPackage();
                 restrictedPackage.packageName = packageName;
                 restrictedPackage.type = type.isEmpty() ? MOBILE_RESTRICTED_TYPE : type;
@@ -371,7 +370,6 @@ public final class DatabaseFactory {
         String permissionName = "";
         int permissionStatus = -1;
 
-        Set<String> installedPackageNames = new HashSet<>(appDatabase.applicationInfoDao().getAllPackageNames());
         Map<String, Set<AppPermissionInfo>> appComponentMap = new HashMap<>();
 
         reader.beginArray();
@@ -569,8 +567,7 @@ public final class DatabaseFactory {
             }
             reader.endObject();
 
-            AppInfo appInfo = appDatabase.applicationInfoDao().getAppByPackageName(packageName);
-            if (appInfo != null) {
+            if (installedPackageNames.contains(packageName)) {
                 DnsPackage dnsPackage = new DnsPackage();
                 dnsPackage.packageName = packageName;
                 dnsPackage.policyPackageId = policyPackageId;
