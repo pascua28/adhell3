@@ -19,6 +19,8 @@ import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.LogUtils;
+import com.google.common.io.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,16 +30,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 public final class DatabaseFactory {
+    private static final String BACKUP_COPY_FILENAME = "adhell_backup_%s.txt";
     private static final String BACKUP_FILENAME = "adhell_backup.txt";
 
     public static final String MOBILE_RESTRICTED_TYPE = "mobile";
@@ -62,6 +67,7 @@ public final class DatabaseFactory {
 
     public void backupDatabase() throws Exception {
         File file = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
+
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
             writer.beginObject();
@@ -75,9 +81,13 @@ public final class DatabaseFactory {
             writeCustomDNS(writer, appDatabase);
             writer.endObject();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtils.error(e.getMessage(), e);
             throw e;
         }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
+        File copyFile = new File(Environment.getExternalStorageDirectory(), String.format(BACKUP_COPY_FILENAME, formatter.format(new Date())));
+        Files.copy(file, copyFile);
     }
 
     public void restoreDatabase() throws Exception {
@@ -111,6 +121,9 @@ public final class DatabaseFactory {
                 }
             }
             reader.endObject();
+        } catch (Exception e) {
+            LogUtils.error(e.getMessage(), e);
+            throw e;
         }
     }
 
