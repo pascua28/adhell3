@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="10dp"
     android:orientation="vertical">
 
@@ -25,42 +26,44 @@
             android:id="@+id/providerTypeRemote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/dialog_add_provider_remote" />
 
         <RadioButton
             android:id="@+id/providerTypeLocal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/dialog_add_provider_local" />
     </RadioGroup>
 
-    <RelativeLayout
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:hintTextColor="@color/colorText"
+        app:boxStrokeColor="@color/colorPrimary"
+        android:hint="Provider location"
+        app:placeholderText="@string/dialog_add_provider_hint"
+        app:placeholderTextColor="@color/colorTextPlaceholder"
+        app:endIconMode="custom"
+        app:endIconCheckable="true"
+        app:endIconDrawable="@android:drawable/ic_menu_search"
+        app:endIconTint="@color/colorText"
+        android:id="@+id/filePicker">
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/providerEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            android:layout_toStartOf="@+id/filePicker"
-            android:hint="@string/dialog_add_provider_hint"
             android:inputType="textUri"
             android:textColor="@color/colorText"
-            android:textSize="16sp"
-            android:autofillHints="" />
-
-        <Button
-            android:id="@+id/filePicker"
-            android:layout_width="90dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="@string/dialog_add_provider_button"
-            android:layout_alignParentEnd="true"
-            android:visibility="gone"/>
-
-    </RelativeLayout>
+            android:textSize="16sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

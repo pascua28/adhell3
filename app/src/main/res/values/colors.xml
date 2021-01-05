@@ -5,6 +5,7 @@
     <color name="colorPrimaryLight">#999999</color>
     <color name="colorAccent">#448AFF</color>
     <color name="colorText">#000000</color>
+    <color name="colorTextPlaceholder">#ff595959</color>
     <color name="colorStatus">@color/colorPrimary</color>
     <color name="colorBorder">@color/colorPrimary</color>
     <color name="colorSelector">@color/colorPrimaryDark</color>

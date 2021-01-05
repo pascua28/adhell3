@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="10dp"
     android:orientation="vertical">
 
@@ -23,30 +24,55 @@
         android:layout_marginBottom="10dp"
         android:text="@string/dialog_set_dns_info" />
 
-    <EditText
-        android:id="@+id/primaryDnsEditText"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
-        android:hint="8.8.8.8"
-        android:inputType="text"
-        android:textColor="@color/colorText"
-        android:textSize="16sp"
-        android:autofillHints="" />
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:hintTextColor="@color/colorText"
+        app:boxStrokeColor="@color/colorPrimary"
+        android:hint="Primary DNS"
+        app:placeholderText="8.8.8.8 or 2001:4860:4860::8888"
+        app:placeholderTextColor="@color/colorTextPlaceholder"
+        app:endIconMode="clear_text">
 
-    <EditText
-        android:id="@+id/secondaryDnsEditText"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/primaryDnsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorText"
+            android:textSize="16sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
-        android:hint="8.8.4.4"
-        android:inputType="text"
-        android:textColor="@color/colorText"
-        android:textSize="16sp"
-        android:autofillHints="" />
+        app:boxCornerRadiusTopStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:hintTextColor="@color/colorText"
+        app:boxStrokeColor="@color/colorPrimary"
+        android:hint="Secondary DNS"
+        app:placeholderText="8.8.4.4 or 2001:4860:4860::8844"
+        app:placeholderTextColor="@color/colorTextPlaceholder"
+        app:endIconMode="clear_text">
 
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/secondaryDnsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorText"
+            android:textSize="16sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

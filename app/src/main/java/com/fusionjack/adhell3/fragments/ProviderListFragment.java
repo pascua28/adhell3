@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.textfield.TextInputLayout;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 
 import java.util.List;
@@ -188,25 +190,32 @@ public class ProviderListFragment extends Fragment {
 
                 alertDialog.show();
 
-                dialogAddProviderBinding.filePicker.setOnClickListener(v1 -> {
-                    MainActivity.setSelectFileActivityLaunched(true);
-                    String[] types = { "*/*" };
-                    openDocumentLauncher.launch(types);
-                });
-
                 dialogAddProviderBinding.providerTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
                     if (checkedId == R.id.providerTypeRemote) {
-                        dialogAddProviderBinding.filePicker.setVisibility(View.GONE);
+                        dialogAddProviderBinding.providerEditText.setText("");
                         dialogAddProviderBinding.providerEditText.setEnabled(true);
-                        dialogAddProviderBinding.providerEditText.setHint(R.string.dialog_add_provider_hint);
-                        dialogAddProviderBinding.providerEditText.setText("");
+                        dialogAddProviderBinding.filePicker.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                        dialogAddProviderBinding.filePicker.setHint("Provider URL");
+                        dialogAddProviderBinding.filePicker.setPlaceholderText(getResources().getString(R.string.dialog_add_provider_hint));
+                        dialogAddProviderBinding.filePicker.setPlaceholderTextColor(ColorStateList.valueOf(getResources().getColor(R.color.colorTextPlaceholder, getActivity().getTheme())));
+                        dialogAddProviderBinding.providerEditText.requestFocus();
                     } else if (checkedId == R.id.providerTypeLocal) {
-                        dialogAddProviderBinding.filePicker.setVisibility(View.VISIBLE);
-                        dialogAddProviderBinding.providerEditText.setEnabled(false);
-                        dialogAddProviderBinding.providerEditText.setHint("");
                         dialogAddProviderBinding.providerEditText.setText("");
+                        dialogAddProviderBinding.providerEditText.setEnabled(false);
+                        dialogAddProviderBinding.filePicker.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
+                        dialogAddProviderBinding.filePicker.setEndIconTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorText, getActivity().getTheme())));
+                        dialogAddProviderBinding.filePicker.setEndIconDrawable(android.R.drawable.ic_menu_search);
+                        dialogAddProviderBinding.filePicker.setEndIconOnClickListener(v1 -> {
+                            MainActivity.setSelectFileActivityLaunched(true);
+                            String[] types = { "text/plain" };
+                            openDocumentLauncher.launch(types);
+                        });
+                        dialogAddProviderBinding.filePicker.setHint("Select a file");
+                        dialogAddProviderBinding.filePicker.setPlaceholderText("");
+                        dialogAddProviderBinding.filePicker.setPlaceholderTextColor(ColorStateList.valueOf(getResources().getColor(R.color.colorText, getActivity().getTheme())));
                     }
                 });
+                dialogAddProviderBinding.providerTypeRemote.setChecked(true);
                 return true;
             }
             return false;
