@@ -25,26 +25,34 @@ import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppCacheChangeListener;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class AppFragment extends Fragment implements AppCacheChangeListener {
     Context context;
     AppRepository.Type type;
-    AppInfoAdapter adapter;
     AppFlag appFlag;
     View rootView;
     private AppViewModel viewModel;
     private String searchText;
     private SearchView searchView;
     private SingleObserver<List<AppInfo>> observer;
-    private List<AppInfo> appList;
+
+    private List<AppInfo> initAppList;
+    private List<AppInfo> adapterAppList;
+    protected AppInfoAdapter adapter;
 
     static FilterAppInfo filterAppInfo;
 
@@ -54,11 +62,12 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
         this.type = type;
         this.searchText = "";
 
-        appList = new ArrayList<>();
-        adapter = new AppInfoAdapter(appList, type, context);
-        viewModel = new ViewModelProvider(this).get(AppViewModel.class);
+        this.initAppList = new ArrayList<>();
+        this.adapterAppList = new ArrayList<>();
+        this.adapter = new AppInfoAdapter(adapterAppList, type, context);
+        this.viewModel = new ViewModelProvider(this).get(AppViewModel.class);
 
-        observer = new SingleObserver<List<AppInfo>>() {
+        this.observer = new SingleObserver<List<AppInfo>>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
                 viewModel.updateLoadingBarVisibility(true);
@@ -66,10 +75,7 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
 
             @Override
             public void onSuccess(@NonNull List<AppInfo> list) {
-                appList.clear();
-                appList.addAll(list);
-                adapter.notifyDataSetChanged();
-                viewModel.updateLoadingBarVisibility(false);
+                updateAppList(list);
             }
 
             @Override
@@ -115,15 +121,8 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
                     }
                 }
         );
+        initAppList();
         return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    public void loadAppList(AppRepository.Type type) {
-        if (searchText.isEmpty()) {
-            viewModel.loadAppList(type, observer, filterAppInfo);
-        } else {
-            viewModel.loadAppList(searchText, type, observer, filterAppInfo);
-        }
     }
 
     @Override
@@ -140,8 +139,43 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.app_menu, menu);
-
         initSearchView(menu);
+    }
+
+    protected void initAppList() {
+        viewModel.loadAppList(type, filterAppInfo)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<AppInfo>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull List<AppInfo> appList) {
+                        initAppList = appList;
+                        updateAppList(appList);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void updateAppList(List<AppInfo> list) {
+        adapterAppList.clear();
+        adapterAppList.addAll(list);
+        adapter.notifyDataSetChanged();
+        viewModel.updateLoadingBarVisibility(false);
+    }
+
+    protected void loadAppList(AppRepository.Type type) {
+        viewModel.loadAppList(type, filterAppInfo)
+            .subscribeOn(Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(observer);
     }
 
     public void initSearchView(Menu menu) {
@@ -162,7 +196,16 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                viewModel.loadAppList(text, type, observer, filterAppInfo);
+                if (text.isEmpty()) {
+                    updateAppList(initAppList);
+                } else {
+                    Single.create((SingleOnSubscribe<List<AppInfo>>) emitter -> {
+                        List<AppInfo> filteredList = initAppList.stream()
+                                .filter(appInfo -> appInfo.appName.contains(text) || appInfo.packageName.contains(text))
+                                .collect(Collectors.toList());
+                        emitter.onSuccess(filteredList);
+                    }).subscribe(observer);
+                }
                 return false;
             }
         });
@@ -175,7 +218,7 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
         searchView = null;
     }
 
-    public void resetSearchView() {
+    protected void resetSearchView() {
         if (searchView != null) {
             searchText = "";
             searchView.setQuery(searchText, false);

@@ -10,30 +10,18 @@ import com.fusionjack.adhell3.fragments.FilterAppInfo;
 
 import java.util.List;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.SingleObserver;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
 
 public class AppViewModel extends ViewModel {
-    private final AppRepository repository;
     private MutableLiveData<Boolean> _loadingVisibility;
+    private final AppRepository repository;
 
     public AppViewModel() {
         this.repository = new AppRepository();
     }
 
-    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
-        repository.loadAppList("", type, filterAppInfo)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
-
-    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer, FilterAppInfo filterAppInfo) {
-        repository.loadAppList(text, type, filterAppInfo)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
+    public Single<List<AppInfo>> loadAppList(AppRepository.Type type, FilterAppInfo filterAppInfo) {
+        return repository.loadAppList("", type, filterAppInfo);
     }
 
     public LiveData<Boolean> getLoadingBarVisibility() {

@@ -105,6 +105,7 @@ public class DnsFragment extends AppFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
 
         binding = FragmentDnsBinding.inflate(inflater);

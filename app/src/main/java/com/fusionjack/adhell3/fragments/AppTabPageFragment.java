@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
@@ -88,6 +87,7 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
         View view = null;
         switch (page) {
@@ -194,12 +194,6 @@ public class AppTabPageFragment extends AppFragment {
                     return false;
                 });
                 popup.show();
-            });
-
-            SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
-            swipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type);
-                resetSearchView();
             });
         }
         rootView = view;
