@@ -133,7 +133,7 @@ public class ContentBlocker56 implements ContentBlocker {
             processWhitelistedApps(handler);
             processWhitelistedDomains(handler);
             processBlockedDomains(handler);
-            AdhellFactory.getInstance().applyDns(handler);
+            applyDns(handler);
 
             List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
             List<String> userList = new ArrayList<>(BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null));
@@ -152,13 +152,14 @@ public class ContentBlocker56 implements ContentBlocker {
                 firewall.enableDomainFilterReport(true);
                 LogUtils.info("Firewall report is enabled.", handler);
             }
+            AppPreferences.getInstance().setDomainRulesToggle(true);
         } catch (Exception e) {
             disableDomainRules();
             e.printStackTrace();
         }
-
-        AppPreferences.getInstance().setDomainRulesToggle(true);
     }
+
+    private List<DomainFilterRule> allActiveRules;
 
     @Override
     public void updateAllRules(boolean updateProviders, HomeTabFragment parentFragment) {
@@ -181,13 +182,16 @@ public class ContentBlocker56 implements ContentBlocker {
                  LogUtils.info("Enabling domain/firewall rules...", handler);
              } else {
                  LogUtils.info("Updating domain/firewall rules...", handler);
+
+                 LogUtils.info("\nGetting all active rules...", handler);
+                 allActiveRules = firewallUtils.getDomainFilterRuleForAllAppsFromKnox();
              }
 
              if (parentFragment.getDomainSwitchState()) {
                  processWhitelistedApps(handler);
                  processWhitelistedDomains(handler);
                  processBlockedDomains(handler);
-                 AdhellFactory.getInstance().applyDns(handler);
+                 applyDns(handler);
              }
              if (parentFragment.getFirewallSwitchState()) {
                  processCustomRules(handler);
@@ -482,7 +486,7 @@ public class ContentBlocker56 implements ContentBlocker {
         whiteListedAppRules.clear();
 
         if (!isCurrentDomainLimitAboveDefault) {
-            List<DomainFilterRule> currentWhitelistedApps = firewallUtils.getWhitelistedAppsFromKnox();
+            List<DomainFilterRule> currentWhitelistedApps = firewallUtils.getWhitelistedAppsFromKnox(allActiveRules);
 
             if (whitelistedApps.size() <= 0 && currentWhitelistedApps.size() <= 0)
                 return;
@@ -544,7 +548,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
         if (!isCurrentDomainLimitAboveDefault) {
             List<String> currentWhiteUrlListAllApps = firewallUtils.getWhitelistUrlAllAppsFromKnox();
-            List<DomainFilterRule> currentWhiteUrlIndividualAppsList = firewallUtils.getWhitelistUrlAppsFromKnox();
+            List<DomainFilterRule> currentWhiteUrlIndividualAppsList = firewallUtils.getWhitelistUrlAppsFromKnox(allActiveRules);
 
             if (whiteUrls.size() <= 0 && currentWhiteUrlListAllApps.size() <= 0 && currentWhiteUrlIndividualAppsList.size() <= 0)
                 return;
@@ -730,6 +734,159 @@ public class ContentBlocker56 implements ContentBlocker {
         AppPreferences.getInstance().setWhitelistedDomainsCount(whitelistDomainsCount);
     }
 
+    public void applyDns(Handler handler) {
+        if (AppPreferences.getInstance().isDnsNotEmpty()) {
+            FirewallUtils firewallUtils = FirewallUtils.getInstance();
+            List<DomainFilterRule> rulesToAdd = new ArrayList<>();
+            String dns1 = AppPreferences.getInstance().getDns1();
+            String dns2 = AppPreferences.getInstance().getDns2();
+            List<AppInfo> dnsPackages = appDatabase.applicationInfoDao().getDnsApps();
+
+            LogUtils.info("\nProcessing DNS...", handler);
+            LogUtils.info("DNS 1: " + dns1, handler);
+            LogUtils.info("DNS 2: " + dns2, handler);
+            LogUtils.info("Size: " + dnsPackages.size(), handler);
+
+            if (!firewallUtils.isCurrentDomainLimitAboveDefault()) {
+                List<DomainFilterRule> customDnsRules = firewallUtils.getCustomDnsAppsFromKnox(allActiveRules);
+
+                List<AppInfo> appsToAdd = new ArrayList<>(dnsPackages);
+                List<DomainFilterRule> appsToUpdate = new ArrayList<>();
+                List<DomainFilterRule> appsToRemove = new ArrayList<>(customDnsRules);
+
+                for (AppInfo app : dnsPackages) {
+                    for (DomainFilterRule customDnsRule : customDnsRules) {
+                        if (customDnsRule.getApplication().getPackageName().equals(app.packageName)) {
+                            appsToAdd.remove(app);
+                            appsToUpdate.add(customDnsRule);
+                        }
+                    }
+                }
+
+                if (appsToUpdate.size() > 0) {
+                    for (DomainFilterRule appToUpdate : appsToUpdate) {
+                        if (!appToUpdate.getDns1().equals(dns1) && !appToUpdate.getDns2().equals(dns2)) {
+                            LogUtils.info("   Updating DNS settings for package: " + appToUpdate.getApplication().getPackageName(), handler);
+                            DomainFilterRule rule = new DomainFilterRule(new AppIdentity(appToUpdate.getApplication().getPackageName(), null));
+                            rulesToAdd.add(rule);
+                        } else {
+                            LogUtils.info("   DNS settings already set for package: " + appToUpdate.getApplication().getPackageName(), handler);
+                            appsToRemove.remove(appToUpdate);
+                        }
+
+                    }
+                }
+
+                if (appsToRemove.size() > 0) {
+                    List<DomainFilterRule> rulesToRemove = new ArrayList<>();
+                    List<DomainFilterRule> rulesToUpdate = new ArrayList<>();
+                    for (DomainFilterRule appToRemove : appsToRemove) {
+                        LogUtils.info("   Removing DNS settings for package: " + appToRemove.getApplication().getPackageName(), handler);
+                        List<DomainFilterRule> currentDomainList = firewallUtils.getCustomDnsAppsFromKnox(appToRemove.getApplication().getPackageName());
+
+                        for (DomainFilterRule currentDomain : currentDomainList) {
+                            rulesToRemove.add(currentDomain);
+                            if (currentDomain.getAllowDomains().size() > 0 ||
+                                    currentDomain.getDenyDomains().size() > 0 ||
+                                    currentDomain.getDns1() == null ||
+                                    currentDomain.getDns2() == null
+                            ) {
+                                rulesToUpdate.add(
+                                        new DomainFilterRule(currentDomain.getApplication(), currentDomain.getDenyDomains(), currentDomain.getAllowDomains(), null, null)
+                                );
+                            }
+                        }
+                    }
+                    try {
+                        if (rulesToRemove.size() > 0) {
+                            for (DomainFilterRule ruleToRemove : rulesToRemove) {
+                                List<DomainFilterRule> ruleAsList = new ArrayList<>();
+                                ruleAsList.add(ruleToRemove);
+                                firewallUtils.removeDomainFilterRules(ruleAsList, handler);
+                            }
+                        }
+                        if (rulesToUpdate.size() > 0) {
+                            for (DomainFilterRule ruleToUpdate : rulesToUpdate) {
+                                processDomains(ruleToUpdate.getApplication(), ruleToUpdate.getDenyDomains(), ruleToUpdate.getAllowDomains());
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (appsToAdd.size() > 0) {
+                    for (AppInfo app : appsToAdd) {
+                        LogUtils.info("   Adding DNS settings for package: " + app.packageName, handler);
+                        DomainFilterRule rule = new DomainFilterRule(new AppIdentity(app.packageName, null));
+                        rulesToAdd.add(rule);
+                    }
+                }
+            } else {
+                for (AppInfo app : dnsPackages) {
+                    LogUtils.info("   Setting DNS for package: " + app.packageName, handler);
+                    DomainFilterRule rule = new DomainFilterRule(new AppIdentity(app.packageName, null));
+                    rulesToAdd.add(rule);
+                }
+            }
+            if (rulesToAdd.size() > 0) {
+                try {
+                    for (DomainFilterRule ruleToAdd : rulesToAdd) {
+                        processDomains(ruleToAdd.getApplication(), ruleToAdd.getDenyDomains(), ruleToAdd.getAllowDomains(), dns1, dns2);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            LogUtils.info("Done.", handler);
+        } else {
+            // Clean all existent rules if in update mode and dns is empty
+            FirewallUtils firewallUtils = FirewallUtils.getInstance();
+            if (!firewallUtils.isCurrentDomainLimitAboveDefault()) {
+                LogUtils.info("\nChecking if all DNS rules are disabled...", handler);
+                List<DomainFilterRule> customDnsRules = firewallUtils.getCustomDnsAppsFromKnox(allActiveRules);
+                if (customDnsRules.size() > 0) {
+                    List<DomainFilterRule> rulesToRemove = new ArrayList<>();
+                    List<DomainFilterRule> rulesToUpdate = new ArrayList<>();
+                    for (DomainFilterRule appToRemove : customDnsRules) {
+                        LogUtils.info("   Removing previous DNS rules for package: " + appToRemove.getApplication().getPackageName(), handler);
+                        List<DomainFilterRule> currentDomainList = firewallUtils.getCustomDnsAppsFromKnox(appToRemove.getApplication().getPackageName());
+
+                        for (DomainFilterRule currentDomain : currentDomainList) {
+                            rulesToRemove.add(currentDomain);
+                            if (currentDomain.getAllowDomains().size() > 0 ||
+                                    currentDomain.getDenyDomains().size() > 0 ||
+                                    currentDomain.getDns1() == null ||
+                                    currentDomain.getDns2() == null
+                            ) {
+                                rulesToUpdate.add(
+                                        new DomainFilterRule(currentDomain.getApplication(), currentDomain.getDenyDomains(), currentDomain.getAllowDomains(), null, null)
+                                );
+                            }
+                        }
+                    }
+                    try {
+                        if (rulesToRemove.size() > 0) {
+                            for (DomainFilterRule ruleToRemove : rulesToRemove) {
+                                List<DomainFilterRule> ruleAsList = new ArrayList<>();
+                                ruleAsList.add(ruleToRemove);
+                                firewallUtils.removeDomainFilterRules(ruleAsList, handler);
+                            }
+                        }
+                        if (rulesToUpdate.size() > 0) {
+                            for (DomainFilterRule ruleToUpdate : rulesToUpdate) {
+                                processDomains(ruleToUpdate.getApplication(), ruleToUpdate.getDenyDomains(), ruleToUpdate.getAllowDomains());
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                LogUtils.info("Done.", handler);
+            }
+        }
+    }
+
     public void processBlockedDomains(Handler handler) throws Exception {
         boolean isCurrentDomainLimitAboveDefault = firewallUtils.isCurrentDomainLimitAboveDefault();
         LogUtils.info("\nProcessing blocked domains...", handler);
@@ -769,6 +926,10 @@ public class ContentBlocker56 implements ContentBlocker {
     }
 
     private void processDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList) throws Exception {
+        processDomains(appIdentity, denyList, allowList, null, null);
+    }
+
+    private void processDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList, String dns1, String dns2) throws Exception {
         int start = 0;
         int partitionSize = 5000;
         if (denyList.size() > 0) {
@@ -781,18 +942,21 @@ public class ContentBlocker56 implements ContentBlocker {
                 start += chunk.size();
 
                 List<DomainFilterRule> rules = new ArrayList<>();
-                rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
+                rules.add(new DomainFilterRule(appIdentity, chunk, allowList, dns1, dns2));
                 firewallUtils.addDomainFilterRules(rules, handler);
             }
         } else if (allowList.size() > 0) {
             LogUtils.info("\n     Processing " + start + " to " + (start + allowList.size()) + " domains...", handler);
 
             List<DomainFilterRule> rules = new ArrayList<>();
-            rules.add(new DomainFilterRule(appIdentity, denyList, allowList));
+            rules.add(new DomainFilterRule(appIdentity, denyList, allowList, dns1, dns2));
+            firewallUtils.addDomainFilterRules(rules, handler);
+        } else if (dns1 != null && dns2 != null) {
+            List<DomainFilterRule> rules = new ArrayList<>();
+            rules.add(new DomainFilterRule(appIdentity, denyList, allowList, dns1, dns2));
             firewallUtils.addDomainFilterRules(rules, handler);
         }
     }
-
 
     private void processRemoveDomains(AppIdentity appIdentity, List<String> denyList, List<String> allowList) throws Exception {
         int start = 0;

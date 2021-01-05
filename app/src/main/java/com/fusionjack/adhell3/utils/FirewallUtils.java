@@ -155,18 +155,29 @@ public final class FirewallUtils {
         return returnDomainRules;
     }
 
-    public List<DomainFilterRule> getWhitelistedAppsFromKnox() {
+    public List<DomainFilterRule> getDomainFilterRuleForAllAppsFromKnox() {
         List<AppInfo> appList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
-        List<DomainFilterRule> whitelistApps = new ArrayList<>();
+        List<DomainFilterRule> domainFilterRules = new ArrayList<>();
         if (firewall == null) {
-            return whitelistApps;
+            return domainFilterRules;
         }
         for (AppInfo app : appList) {
             List<String> packageNameList = new ArrayList<>();
             packageNameList.add(app.packageName);
-            List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
-            for (DomainFilterRule domainRule : domainRules) {
-                if (domainRule.getAllowDomains().contains("*")) {
+            domainFilterRules.addAll(firewall.getDomainFilterRules(packageNameList));
+        }
+        return domainFilterRules;
+    }
+
+    public List<DomainFilterRule> getWhitelistedAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
+        List<DomainFilterRule> whitelistApps = new ArrayList<>();
+        for (DomainFilterRule domainRule : allDomainFilterRules) {
+            if (domainRule.getAllowDomains().contains("*")) {
+                if (domainRule.getAllowDomains().size() > 0 ||
+                        domainRule.getDenyDomains().size() > 0 ||
+                        domainRule.getDns1() == null ||
+                        domainRule.getDns2() == null
+                ) {
                     whitelistApps.add(domainRule);
                 }
             }
@@ -174,23 +185,52 @@ public final class FirewallUtils {
         return whitelistApps;
     }
 
-    public List<DomainFilterRule> getWhitelistUrlAppsFromKnox() {
-        List<AppInfo> appList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+    public List<DomainFilterRule> getWhitelistUrlAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
         List<DomainFilterRule> whitelistUrl = new ArrayList<>();
+        for (DomainFilterRule domainRule : allDomainFilterRules) {
+            if (!domainRule.getAllowDomains().contains("*")) {
+                if (domainRule.getAllowDomains().size() > 0 ||
+                        domainRule.getDenyDomains().size() > 0 ||
+                        domainRule.getDns1() == null ||
+                        domainRule.getDns2() == null
+                ) {
+                    whitelistUrl.add(domainRule);
+                }
+            }
+        }
+        return whitelistUrl;
+    }
+
+    public List<DomainFilterRule> getCustomDnsAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
+        List<DomainFilterRule> customDnsRules = new ArrayList<>();
+        for (DomainFilterRule domainRule : allDomainFilterRules) {
+            if (domainRule.getDns1() != null && domainRule.getDns2() != null) {
+                customDnsRules.add(domainRule);
+            }
+        }
+        return customDnsRules;
+    }
+
+    public List<DomainFilterRule> getCustomDnsAppsFromKnox(String packageName) {
+        List<AppInfo> appList = new ArrayList<>();
+        AppInfo allAppInfo = new AppInfo();
+        allAppInfo.packageName = packageName;
+        appList.add(allAppInfo);
+        List<DomainFilterRule> customDnsRules = new ArrayList<>();
         if (firewall == null) {
-            return whitelistUrl;
+            return customDnsRules;
         }
         for (AppInfo app : appList) {
             List<String> packageNameList = new ArrayList<>();
             packageNameList.add(app.packageName);
             List<DomainFilterRule> domainRules = firewall.getDomainFilterRules(packageNameList);
             for (DomainFilterRule domainRule : domainRules) {
-                if (!domainRule.getAllowDomains().contains("*")) {
-                    whitelistUrl.add(domainRule);
+                if (domainRule.getDns1() != null && domainRule.getDns2() != null) {
+                    customDnsRules.add(domainRule);
                 }
             }
         }
-        return whitelistUrl;
+        return customDnsRules;
     }
 
     public List<String> getWhitelistUrlAllAppsFromKnox() {

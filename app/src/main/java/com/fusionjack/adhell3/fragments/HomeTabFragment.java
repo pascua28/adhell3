@@ -73,6 +73,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
     private FragmentManager fragmentManager;
     private FragmentBlockerBinding binding;
 
+    private boolean refreshRunning = false;
+
     private boolean domainRulesEnabled;
     private boolean firewallRulesEnabled;
     private boolean disablerEnabled;
@@ -379,8 +381,10 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.refresh) {
+        if (item.getItemId() == R.id.refresh && !refreshRunning) {
+            refreshRunning = true;
             new SetFirewallAsyncTask(true, this, fragmentManager, getContext(), true).execute();
+            refreshRunning = false;
         }
         return super.onOptionsItemSelected(item);
     }

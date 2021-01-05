@@ -55,6 +55,7 @@ public class FirewallDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        binding.getRoot().setKeepScreenOn(true);
 
         Bundle bundle = getArguments();
         if (bundle != null) {

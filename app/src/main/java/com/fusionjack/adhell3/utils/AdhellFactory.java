@@ -11,7 +11,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Patterns;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -36,7 +35,6 @@ import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
-import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
 
@@ -223,7 +221,7 @@ public final class AdhellFactory {
                 Message message = handler.obtainMessage(0, R.string.restored_dns);
                 message.sendToTarget();
             }
-        } else if (!Patterns.IP_ADDRESS.matcher(primaryDns).matches() || !Patterns.IP_ADDRESS.matcher(secondaryDns).matches()) {
+        } else if (InetAddressUtils.isNotIPAddress(primaryDns) || InetAddressUtils.isNotIPAddress(secondaryDns)) {
             if (handler != null) {
                 Message message = handler.obtainMessage(0, R.string.check_input_dns);
                 message.sendToTarget();
@@ -233,38 +231,6 @@ public final class AdhellFactory {
             if (handler != null) {
                 Message message = handler.obtainMessage(0, R.string.changed_dns);
                 message.sendToTarget();
-            }
-        }
-    }
-
-    public void applyDns(Handler handler) {
-        if (AppPreferences.getInstance().isDnsNotEmpty()) {
-            String dns1 = AppPreferences.getInstance().getDns1();
-            String dns2 = AppPreferences.getInstance().getDns2();
-            if (Patterns.IP_ADDRESS.matcher(dns1).matches() && Patterns.IP_ADDRESS.matcher(dns2).matches()) {
-                LogUtils.info("\nProcessing DNS...", handler);
-
-                LogUtils.info("DNS 1: " + dns1, handler);
-                LogUtils.info("DNS 2: " + dns2, handler);
-                List<AppInfo> dnsPackages = appDatabase.applicationInfoDao().getDnsApps();
-                if (dnsPackages.size() == 0) {
-                    LogUtils.info("No app is selected", handler);
-                } else {
-                    LogUtils.info("Size: " + dnsPackages.size(), handler);
-                    List<DomainFilterRule> rules = new ArrayList<>();
-                    for (AppInfo app : dnsPackages) {
-                        DomainFilterRule rule = new DomainFilterRule(new AppIdentity(app.packageName, null));
-                        rule.setDns1(dns1);
-                        rule.setDns2(dns2);
-                        rules.add(rule);
-                    }
-
-                    try {
-                        FirewallUtils.getInstance().addDomainFilterRules(rules, handler);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
     }

@@ -233,13 +233,12 @@ public class DnsFragment extends AppFragment {
                             AdhellFactory.getInstance().setDns(primaryDns, secondaryDns, handler);
 
                             if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                                binding.dnsAppsList.setEnabled(true);
                                 binding.dnsAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                                     AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
                                     new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
                                 });
                             } else {
-                                binding.dnsAppsList.setEnabled(false);
+                                binding.dnsAppsList.setOnItemClickListener(null);
                             }
 
                             if (binding.dnsAppsList.getAdapter() instanceof AppInfoAdapter) {

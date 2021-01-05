@@ -99,7 +99,7 @@ public class RulesUpdateWorker extends Worker {
             contentBlocker.processWhitelistedApps(handler);
             contentBlocker.processWhitelistedDomains(handler);
             contentBlocker.processBlockedDomains(handler);
-            AdhellFactory.getInstance().applyDns(handler);
+            contentBlocker.applyDns(handler);
         }
         if (firewallRulesNeedUpdate) {
             LogUtils.info(firewallRulesText, handler);

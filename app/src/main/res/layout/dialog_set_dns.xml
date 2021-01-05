@@ -30,9 +30,8 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
-        android:digits="0123456789."
         android:hint="8.8.8.8"
-        android:inputType="number|numberDecimal"
+        android:inputType="text"
         android:textColor="@color/colorText"
         android:textSize="16sp"
         android:autofillHints="" />
@@ -44,9 +43,8 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="10dp"
-        android:digits="0123456789."
         android:hint="8.8.4.4"
-        android:inputType="number|numberDecimal"
+        android:inputType="text"
         android:textColor="@color/colorText"
         android:textSize="16sp"
         android:autofillHints="" />
