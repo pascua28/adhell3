@@ -36,6 +36,7 @@ public class ContentBlocker56 implements ContentBlocker {
     private final ApplicationPolicy appPolicy;
     private final FirewallUtils firewallUtils;
     private final List<String> whiteListedAppRules = new ArrayList<>();
+    private List<DomainFilterRule> allActiveRules;
     private Handler handler;
 
     private ContentBlocker56() {
@@ -159,8 +160,6 @@ public class ContentBlocker56 implements ContentBlocker {
         }
     }
 
-    private List<DomainFilterRule> allActiveRules;
-
     @Override
     public void updateAllRules(boolean updateProviders, HomeTabFragment parentFragment) {
         if (firewall == null) {
@@ -182,9 +181,7 @@ public class ContentBlocker56 implements ContentBlocker {
                  LogUtils.info("Enabling domain/firewall rules...", handler);
              } else {
                  LogUtils.info("Updating domain/firewall rules...", handler);
-
-                 LogUtils.info("\nGetting all active rules...", handler);
-                 allActiveRules = firewallUtils.getDomainFilterRuleForAllAppsFromKnox();
+                 setAllActiveRules();
              }
 
              if (parentFragment.getDomainSwitchState()) {
@@ -251,6 +248,11 @@ public class ContentBlocker56 implements ContentBlocker {
         AppPreferences.getInstance().resetBlockedDomainsCount();
         AppPreferences.getInstance().resetWhitelistedDomainsCount();
         AppPreferences.getInstance().setDomainRulesToggle(false);
+    }
+
+    public void setAllActiveRules() {
+        LogUtils.info("\nGetting all active rules...", handler);
+        allActiveRules = firewallUtils.getDomainFilterRuleForAllAppsFromKnox();
     }
 
     public void processCustomRules(Handler handler) throws Exception {

@@ -93,6 +93,10 @@ public class RulesUpdateWorker extends Worker {
                 contentBlocker.disableFirewallRules();
                 firewallRulesText = "Enabling firewall rules...";
             }
+        } else {
+            if (domainRulesNeedUpdate || firewallRulesNeedUpdate) {
+                contentBlocker.setAllActiveRules();
+            }
         }
         if (domainRulesNeedUpdate) {
             LogUtils.info(domainRulesText, handler);
