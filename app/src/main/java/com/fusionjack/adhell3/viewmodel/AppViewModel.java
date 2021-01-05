@@ -7,30 +7,18 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 
 import java.util.List;
 
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.Single;
 
 public class AppViewModel extends ViewModel {
 
-    private AppRepository repository;
+    private final AppRepository repository;
 
     public AppViewModel() {
         this.repository = new AppRepository();
     }
 
-    public void loadAppList(AppRepository.Type type, SingleObserver<List<AppInfo>> observer) {
-        repository.loadAppList("", type)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
-
-    public void loadAppList(String text, AppRepository.Type type, SingleObserver<List<AppInfo>> observer) {
-        repository.loadAppList(text, type)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
+    public Single<List<AppInfo>> loadAppList(AppRepository.Type type) {
+        return repository.loadAppList("", type);
     }
 
 }

@@ -77,6 +77,7 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
         View view = null;
         switch (page) {
@@ -117,8 +118,6 @@ public class AppTabPageFragment extends AppFragment {
                     swipeContainer.setRefreshing(false);
                     resetSearchView();
             });
-
-            loadAppList(type);
         }
 
         return view;
