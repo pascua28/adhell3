@@ -174,9 +174,11 @@ public class ContentBlocker56 implements ContentBlocker {
              if (firewallUtils.isCurrentDomainLimitAboveDefault()) {
                  if (parentFragment.getDomainSwitchState()) {
                      disableDomainRules();
+                     AppPreferences.getInstance().setDomainRulesToggle(true);
                  }
                  if (parentFragment.getFirewallSwitchState()) {
                      disableFirewallRules();
+                     AppPreferences.getInstance().setFirewallRulesToggle(true);
                  }
                  LogUtils.info("Enabling domain/firewall rules...", handler);
              } else {

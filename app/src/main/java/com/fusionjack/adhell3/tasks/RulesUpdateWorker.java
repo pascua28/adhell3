@@ -87,10 +87,12 @@ public class RulesUpdateWorker extends Worker {
         if (FirewallUtils.getInstance().isCurrentDomainLimitAboveDefault()) {
             if (domainRulesNeedUpdate) {
                 contentBlocker.disableDomainRules();
+                AppPreferences.getInstance().setDomainRulesToggle(true);
                 domainRulesText = "Enabling domain rules...";
             }
             if (firewallRulesNeedUpdate) {
                 contentBlocker.disableFirewallRules();
+                AppPreferences.getInstance().setFirewallRulesToggle(true);
                 firewallRulesText = "Enabling firewall rules...";
             }
         } else {
