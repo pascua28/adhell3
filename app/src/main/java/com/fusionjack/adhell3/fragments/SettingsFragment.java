@@ -25,31 +25,25 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.blocker.ContentBlocker;
-import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.DialogSetPasswordBinding;
 import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
+import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
-import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
-
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String ALLOW_QSTILES_LOCKSCREEN = "allow_qstiles_lockscreen";
@@ -125,7 +119,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new RestoreDatabaseAsyncTask(context).execute()
+                                new RestoreDatabaseRxTask(context).run()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -281,78 +275,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
         return super.onPreferenceTreeClick(preference);
-    }
-
-    private static class RestoreDatabaseAsyncTask extends AsyncTask<Void, String, String> {
-        private final WeakReference<Context> contextWeakReference;
-        private final AlertDialog dialog;
-        private AlertDialog.Builder builder;
-
-        RestoreDatabaseAsyncTask(Context context) {
-            this.builder = new AlertDialog.Builder(context, R.style.AlertDialogStyle);
-            this.dialog = DialogUtils.getProgressDialog("Restore database is running...", context);
-            this.dialog.setCancelable(false);
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(Void... args) {
-            try {
-                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-                contentBlocker.disableDomainRules();
-                contentBlocker.disableFirewallRules();
-                AdhellFactory.getInstance().setAppDisablerToggle(false);
-                AdhellFactory.getInstance().setAppComponentToggle(false);
-                AppDatabaseFactory.resetInstalledApps()
-                        .subscribeOn(Schedulers.computation())
-                        .blockingAwait();
-
-                DatabaseFactory.getInstance().restoreDatabase();
-
-                Context context = contextWeakReference.get();
-                if (context != null) {
-                    if (AdhellFactory.getInstance().hasInternetAccess(context)) {
-                        publishProgress("Updating all providers...");
-                        AdhellFactory.getInstance().updateAllProviders();
-                    }
-                }
-
-                return null;
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            dialog.setMessage(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String message) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-
-            if (message == null) {
-                builder.setMessage("Restore database is finished. Turn on Adhell.\n\nIf needed, re-add local host sources file since permissions cannot be restored.");
-                builder.setTitle("Info");
-            } else {
-                builder.setMessage(message);
-                builder.setTitle("Error");
-            }
-            AlertDialog dialog = builder.create();
-
-            dialog.show();
-
-            // Clean resource to prevent memory leak
-            this.builder = null;
-        }
     }
 
     private static class CleanDatabaseAsyncTask extends AsyncTask<Void, Void, Void> {

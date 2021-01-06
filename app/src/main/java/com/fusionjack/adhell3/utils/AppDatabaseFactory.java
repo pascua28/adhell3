@@ -6,7 +6,10 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.blocker.ContentBlocker;
+import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
+import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 
 import java.util.ArrayList;
@@ -23,11 +26,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.Single;
 
 public final class AppDatabaseFactory {
 
     private AppDatabaseFactory() {
+    }
+
+    public static void restoreDatabase(ObservableEmitter<String> emitter, boolean hasInternetAccess) throws Exception {
+        emitter.onNext("Restore database: Disabling firewall and domain blocker ...");
+        ContentBlocker contentBlocker = ContentBlocker56.getInstance();
+        contentBlocker.disableDomainRules();
+        contentBlocker.disableFirewallRules();
+
+        emitter.onNext("Restore database: Enabling disabled apps ...");
+        AdhellFactory.getInstance().setAppDisablerToggle(false);
+
+        emitter.onNext("Restore database: Enabling app's components ...");
+        AdhellFactory.getInstance().setAppComponentToggle(false);
+
+        emitter.onNext("Restore database: Resetting database ...");
+        resetAppDatabase();
+
+        emitter.onNext("Restore database: Importing entries to database ...");
+        DatabaseFactory.getInstance().restoreDatabase();
+
+        emitter.onNext("Restore database: Updating host providers ...");
+        if (hasInternetAccess) {
+            AdhellFactory.getInstance().updateAllProviders();
+        }
     }
 
     // Find new/deleted apps and process them if they exist
