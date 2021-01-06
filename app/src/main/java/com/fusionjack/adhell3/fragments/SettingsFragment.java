@@ -24,8 +24,8 @@ import androidx.preference.SwitchPreference;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
-import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
+import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -77,7 +77,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 new AlertDialog.Builder(context)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new BackupDatabaseAsyncTask(getActivity()).execute()
+                                new BackupDatabaseRxTask(context).run()
                         )
                         .setNegativeButton(android.R.string.no, null).show();
                 break;
