@@ -32,7 +32,7 @@ import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
-import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
+import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
@@ -103,7 +103,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new BackupDatabaseAsyncTask(context).execute()
+                                new BackupDatabaseRxTask(context).run()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();

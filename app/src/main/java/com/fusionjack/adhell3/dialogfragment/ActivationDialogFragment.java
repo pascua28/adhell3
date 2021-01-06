@@ -28,7 +28,7 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.databinding.DialogFragmentActivationBinding;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
-import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
+import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -194,7 +194,7 @@ public class ActivationDialogFragment extends DialogFragment {
             AlertDialog alertDialog = new AlertDialog.Builder(requireContext(), R.style.AlertDialogStyle)
                     .setView(dialogQuestionBinding.getRoot())
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                            new BackupDatabaseAsyncTask(getActivity()).execute()
+                            new BackupDatabaseRxTask(getActivity()).run()
                     )
                     .setNegativeButton(android.R.string.no, null)
                     .create();
