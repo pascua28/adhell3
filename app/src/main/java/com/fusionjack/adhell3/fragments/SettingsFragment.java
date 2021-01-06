@@ -1,10 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -26,20 +23,13 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.blocker.ContentBlocker;
-import com.fusionjack.adhell3.blocker.ContentBlocker56;
-import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseAsyncTask;
+import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
-
-import java.lang.ref.WeakReference;
-
-import io.reactivex.schedulers.Schedulers;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private Context context;
@@ -102,7 +92,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 new AlertDialog.Builder(context)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new RestoreDatabaseAsyncTask(getActivity(), getContext()).execute()
+                                new RestoreDatabaseRxTask(context).run()
                         )
                         .setNegativeButton(android.R.string.no, null).show();
                 break;
@@ -200,71 +190,5 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
         return super.onPreferenceTreeClick(preference);
-    }
-
-    private static class RestoreDatabaseAsyncTask extends AsyncTask<Void, String, String> {
-        private ProgressDialog dialog;
-        private AlertDialog.Builder builder;
-        private WeakReference<Context> contextWeakReference;
-
-        RestoreDatabaseAsyncTask(Activity activity, Context context) {
-            this.builder = new AlertDialog.Builder(activity);
-            this.dialog = new ProgressDialog(activity);
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setMessage("Restoring database, please wait ...");
-            dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(Void... args) {
-            try {
-                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-                contentBlocker.disableDomainRules();
-                contentBlocker.disableFirewallRules();
-                AdhellFactory.getInstance().setAppDisablerToggle(false);
-                AdhellFactory.getInstance().setAppComponentToggle(false);
-
-                AppDatabaseFactory.resetInstalledApps().subscribe();
-
-                DatabaseFactory.getInstance().restoreDatabase();
-
-                Context context = contextWeakReference.get();
-                if (context != null) {
-                    if (AdhellFactory.getInstance().hasInternetAccess(context)) {
-                        publishProgress("Updating all providers...");
-                        AdhellFactory.getInstance().updateAllProviders();
-                    }
-                }
-
-                return null;
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            dialog.setMessage(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String message) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-
-            if (message == null) {
-                builder.setMessage("Restore database is finished. Turn on Adhell.");
-                builder.setTitle("Info");
-            } else {
-                builder.setMessage(message);
-                builder.setTitle("Error");
-            }
-            builder.create().show();
-        }
     }
 }
