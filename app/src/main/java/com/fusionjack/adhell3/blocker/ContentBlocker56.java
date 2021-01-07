@@ -20,6 +20,7 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -427,8 +428,7 @@ public class ContentBlocker56 implements ContentBlocker {
                 return domainCount == 0;
             }
 
-            List<String> packageNameList = new ArrayList<>();
-            packageNameList.add(Firewall.FIREWALL_ALL_PACKAGES);
+            List<String> packageNameList = Collections.singletonList(Firewall.FIREWALL_ALL_PACKAGES);
             List<DomainFilterRule> rules = firewall.getDomainFilterRules(packageNameList);
             return rules != null && rules.size() == 0;
         }

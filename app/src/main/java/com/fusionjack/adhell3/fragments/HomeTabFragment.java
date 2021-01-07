@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -34,7 +35,6 @@ import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.dialog.AppCacheDialog;
@@ -53,11 +53,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -82,6 +84,9 @@ public class HomeTabFragment extends Fragment {
     private TextView infoTextView;
     private SwipeRefreshLayout swipeContainer;
     private ContentBlocker contentBlocker;
+
+    List<ReportBlockedUrl> blockedUrls;
+    ReportBlockedUrlAdapter blockedUrlAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -155,7 +160,43 @@ public class HomeTabFragment extends Fragment {
             new ExportDomainsAsyncTask(getContext()).execute();
         });
 
+        ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
+        initBlockedDomainsView(blockedDomainsListView);
+
         return view;
+    }
+
+    private void initBlockedDomainsView(ListView blockedDomainsListView) {
+        Context context = getContext();
+
+        this.blockedUrls = new ArrayList<>();
+        this.blockedUrlAdapter = new ReportBlockedUrlAdapter(context, blockedUrls);
+
+        blockedDomainsListView.setAdapter(blockedUrlAdapter);
+        blockedDomainsListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
+            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, blockedDomainsListView, false);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.dialog_whitelist_domain_title);
+            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+            questionTextView.setText(R.string.dialog_add_to_whitelist_question);
+            new AlertDialog.Builder(context)
+                    .setView(dialogView)
+                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                        String blockedUrl = blockedUrls.get(position).url;
+                        addBlockedUrlToWhitelist(blockedUrl);
+                    })
+                    .setNegativeButton(android.R.string.no, null).show();
+        });
+    }
+
+    private void addBlockedUrlToWhitelist(String blockedUrl) {
+        Completable.fromAction(() -> {
+            WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            appDatabase.whiteUrlDao().insert(whiteUrl);
+        })
+                .subscribeOn(Schedulers.io())
+                .subscribe();
     }
 
     @Override
@@ -248,39 +289,279 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void updateUserInterface() {
-        new SetInfoAsyncTask(getContext()).execute();
+        setInfoCount();
+        setDomainInfo();
+        setFirewallInfo();
+        setAppDisablerInfo();
+        setAppComponentInfo();
+    }
 
-        boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
-        boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+    private void setInfoCount() {
+        Single.create((SingleOnSubscribe<InfoCount>) emitter -> {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
 
-        if (contentBlocker == null || isDomainRuleEmpty) {
-            domainStatusTextView.setText(R.string.domain_rules_disabled);
-            domainSwitch.setChecked(false);
-        } else {
-            domainStatusTextView.setText(R.string.domain_rules_enabled);
-            domainSwitch.setChecked(true);
+            int disablerSize = appDatabase.disabledPackageDao().getSize();
+            int permissionSize = appDatabase.appPermissionDao().getPermissionSize();
+            int serviceSize = appDatabase.appPermissionDao().getServiceSize();
+            int receiverSize = appDatabase.appPermissionDao().getReceiverSize();
+
+            FirewallUtils.DomainStat domainStat = FirewallUtils.getInstance().getDomainStatFromKnox();
+            int blackListSize = domainStat.blackListSize;
+            int whiteListSize = domainStat.whiteListSize;
+
+            int whitelistAppSize = FirewallUtils.getInstance().getWhitelistAppCountFromKnox();
+
+            // Dirty solution: Every deny firewall is created for IPv4 and IPv6.
+            FirewallUtils.FirewallStat stat = FirewallUtils.getInstance().getFirewallStatFromKnox();
+            int customSize = stat.allNetworkSize / 2;
+            int mobileSize = stat.mobileDataSize / 2;
+            int wifiSize = stat.wifiDataSize / 2;
+
+            emitter.onSuccess(new InfoCount(mobileSize, wifiSize, customSize, blackListSize,
+                    whiteListSize, whitelistAppSize, disablerSize, permissionSize, serviceSize, receiverSize));
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<InfoCount>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull InfoCount infoCount) {
+                        int mobileSize = infoCount.getMobileSize();
+                        int wifiSize = infoCount.getWifiSize();
+                        int customSize = infoCount.getCustomSize();
+                        int blackListSize = infoCount.getBlackListSize();
+                        int whiteListSize = infoCount.getWhiteListSize();
+                        int whitelistAppSize = infoCount.getWhitelistAppSize();
+                        int disablerSize = infoCount.getDisablerSize();
+                        int permissionSize = infoCount.getPermissionSize();
+                        int serviceSize = infoCount.getServiceSize();
+                        int receiverSize = infoCount.getReceiverSize();
+
+                        Resources resources = getContext().getResources();
+                        Activity activity = ((Activity) getContext());
+
+                        TextView domainInfoTextView = activity.findViewById(R.id.domainInfoTextView);
+                        if (domainInfoTextView != null) {
+                            String domainInfo = resources.getString(R.string.domain_rules_info_placeholder);
+                            domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
+                        }
+                        TextView firewallInfoTextView = activity.findViewById(R.id.firewallInfoTextView);
+                        if (firewallInfoTextView != null) {
+                            String firewallInfo = resources.getString(R.string.firewall_rules_info_placeholder);
+                            firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
+                        }
+                        TextView disablerInfoTextView = activity.findViewById(R.id.disablerInfoTextView);
+                        if (disablerInfoTextView != null) {
+                            String disablerInfo = resources.getString(R.string.app_disabler_info_placeholder);
+                            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                            disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
+                        }
+                        TextView appComponentInfoTextView = activity.findViewById(R.id.appComponentInfoTextView);
+                        if (appComponentInfoTextView != null) {
+                            String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
+                            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+                            String info;
+                            if (enabled) {
+                                info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
+                            } else {
+                                info = String.format(appComponentInfo, 0, 0, 0);
+                            }
+                            appComponentInfoTextView.setText(info);
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private static class InfoCount {
+        private final int mobileSize;
+        private final int wifiSize;
+        private final int customSize;
+        private final int blackListSize;
+        private final int whiteListSize;
+        private final int whitelistAppSize;
+        private final int disablerSize;
+        private final int permissionSize;
+        private final int serviceSize;
+        private final int receiverSize;
+
+        public InfoCount(int mobileSize, int wifiSize, int customSize, int blackListSize,
+                         int whiteListSize, int whitelistAppSize, int disablerSize,
+                         int permissionSize, int serviceSize, int receiverSize) {
+            this.mobileSize = mobileSize;
+            this.wifiSize = wifiSize;
+            this.customSize = customSize;
+            this.blackListSize = blackListSize;
+            this.whiteListSize = whiteListSize;
+            this.whitelistAppSize = whitelistAppSize;
+            this.disablerSize = disablerSize;
+            this.permissionSize = permissionSize;
+            this.serviceSize = serviceSize;
+            this.receiverSize = receiverSize;
         }
 
-        if (contentBlocker == null || isFirewallRuleEmpty) {
-            firewallStatusTextView.setText(R.string.firewall_rules_disabled);
-            firewallSwitch.setChecked(false);
-        } else {
-            firewallStatusTextView.setText(R.string.firewall_rules_enabled);
-            firewallSwitch.setChecked(true);
+        public int getMobileSize() {
+            return mobileSize;
         }
 
-        if (!isDomainRuleEmpty) {
-            infoTextView.setVisibility(View.VISIBLE);
-            swipeContainer.setVisibility(View.VISIBLE);
-            swipeContainer.setOnRefreshListener(() ->
-                    new RefreshAsyncTask(getContext()).execute()
-            );
-            new RefreshAsyncTask(getContext()).execute();
-        } else {
-            infoTextView.setVisibility(View.INVISIBLE);
-            swipeContainer.setVisibility(View.INVISIBLE);
+        public int getWifiSize() {
+            return wifiSize;
         }
 
+        public int getCustomSize() {
+            return customSize;
+        }
+
+        public int getBlackListSize() {
+            return blackListSize;
+        }
+
+        public int getWhiteListSize() {
+            return whiteListSize;
+        }
+
+        public int getWhitelistAppSize() {
+            return whitelistAppSize;
+        }
+
+        public int getDisablerSize() {
+            return disablerSize;
+        }
+
+        public int getPermissionSize() {
+            return permissionSize;
+        }
+
+        public int getServiceSize() {
+            return serviceSize;
+        }
+
+        public int getReceiverSize() {
+            return receiverSize;
+        }
+    }
+
+    private void setDomainInfo() {
+        Single.create((SingleOnSubscribe<Boolean>) emitter -> {
+            boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
+            emitter.onSuccess(isDomainRuleEmpty);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Boolean isDomainRuleEmpty) {
+                        if (contentBlocker == null || isDomainRuleEmpty) {
+                            domainStatusTextView.setText(R.string.domain_rules_disabled);
+                            domainSwitch.setChecked(false);
+                        } else {
+                            domainStatusTextView.setText(R.string.domain_rules_enabled);
+                            domainSwitch.setChecked(true);
+                        }
+
+                        if (!isDomainRuleEmpty) {
+                            infoTextView.setVisibility(View.VISIBLE);
+                            swipeContainer.setVisibility(View.VISIBLE);
+                            swipeContainer.setOnRefreshListener(() ->
+                                    loadBlockedUrls()
+                            );
+                            loadBlockedUrls();
+                        } else {
+                            infoTextView.setVisibility(View.INVISIBLE);
+                            swipeContainer.setVisibility(View.INVISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void loadBlockedUrls() {
+        Single.create((SingleOnSubscribe<List<ReportBlockedUrl>>) emitter -> {
+            List<ReportBlockedUrl> blockedUrls = FirewallUtils.getInstance().getReportBlockedUrl();
+            emitter.onSuccess(blockedUrls);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<ReportBlockedUrl>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull List<ReportBlockedUrl> blockedUrls) {
+                        updateBlockedUrls(blockedUrls);
+
+                        Context context = getContext();
+                        TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
+                        if (infoTextView != null) {
+                            infoTextView.setText(String.format("%s%s",
+                                    context.getString(R.string.last_day_blocked), blockedUrls.size()));
+                        }
+                        SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);
+                        if (swipeContainer != null) {
+                            swipeContainer.setRefreshing(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void updateBlockedUrls(List<ReportBlockedUrl> blockedUrls) {
+        this.blockedUrls.clear();
+        this.blockedUrls.addAll(blockedUrls);
+        blockedUrlAdapter.notifyDataSetChanged();
+    }
+
+    private void setFirewallInfo() {
+        Single.create((SingleOnSubscribe<Boolean>) emitter -> {
+            boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+            emitter.onSuccess(isFirewallRuleEmpty);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Boolean isFirewallRuleEmpty) {
+                        if (contentBlocker == null || isFirewallRuleEmpty) {
+                            firewallStatusTextView.setText(R.string.firewall_rules_disabled);
+                            firewallSwitch.setChecked(false);
+                        } else {
+                            firewallStatusTextView.setText(R.string.firewall_rules_enabled);
+                            firewallSwitch.setChecked(true);
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void setAppDisablerInfo() {
         boolean disablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
         if (disablerEnabled) {
             disablerStatusTextView.setText(R.string.app_disabler_enabled);
@@ -289,7 +570,9 @@ public class HomeTabFragment extends Fragment {
             disablerStatusTextView.setText(R.string.app_disabler_disabled);
             disablerSwitch.setChecked(false);
         }
+    }
 
+    private void setAppComponentInfo() {
         boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
         if (appComponentEnabled) {
             appComponentStatusTextView.setText(R.string.app_component_enabled);
@@ -297,121 +580,6 @@ public class HomeTabFragment extends Fragment {
         } else {
             appComponentStatusTextView.setText(R.string.app_component_disabled);
             appComponentSwitch.setChecked(false);
-        }
-    }
-
-    private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Context> contextWeakReference;
-        private int mobileSize;
-        private int wifiSize;
-        private int customSize;
-        private int blackListSize;
-        private int whiteListSize;
-        private int whitelistAppSize;
-        private int disablerSize;
-        private int permissionSize;
-        private int serviceSize;
-        private int receiverSize;
-
-        SetInfoAsyncTask(Context context) {
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                TextView domainInfoTextView = ((Activity) context).findViewById(R.id.domainInfoTextView);
-                if (domainInfoTextView != null) {
-                    String domainInfo = context.getResources().getString(R.string.domain_rules_info);
-                    domainInfoTextView.setText(String.format(domainInfo, 0, 0, 0));
-                }
-                TextView firewallInfoTextView = ((Activity) context).findViewById(R.id.firewallInfoTextView);
-                if (firewallInfoTextView != null) {
-                    String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
-                    firewallInfoTextView.setText(String.format(firewallInfo, 0, 0, 0));
-                }
-                TextView disablerInfoTextView = ((Activity) context).findViewById(R.id.disablerInfoTextView);
-                if (disablerInfoTextView != null) {
-                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                    disablerInfoTextView.setText(String.format(disablerInfo, 0));
-                }
-                TextView appComponentInfoTextView = ((Activity) context).findViewById(R.id.appComponentInfoTextView);
-                if (appComponentInfoTextView != null) {
-                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    appComponentInfoTextView.setText(String.format(appComponentInfo, 0, 0, 0));
-                }
-            }
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            disablerSize = appDatabase.disabledPackageDao().getAll().size();
-
-            List<AppPermission> appPermissions = appDatabase.appPermissionDao().getAll();
-            for (AppPermission appPermission : appPermissions) {
-                switch (appPermission.permissionStatus) {
-                    case AppPermission.STATUS_PERMISSION:
-                        permissionSize++;
-                        break;
-                    case AppPermission.STATUS_SERVICE:
-                        serviceSize++;
-                        break;
-                    case AppPermission.STATUS_RECEIVER:
-                        receiverSize++;
-                        break;
-                }
-            }
-
-            FirewallUtils.DomainStat domainStat = FirewallUtils.getInstance().getDomainStatFromKnox();
-            blackListSize = domainStat.blackListSize;
-            whiteListSize = domainStat.whiteListSize;
-
-            whitelistAppSize = FirewallUtils.getInstance().getWhitelistAppCountFromKnox();
-
-            // Dirty solution: Every deny firewall is created for IPv4 and IPv6.
-            FirewallUtils.FirewallStat stat = FirewallUtils.getInstance().getFirewallStatFromKnox();
-            customSize = stat.allNetworkSize / 2;
-            mobileSize = stat.mobileDataSize / 2;
-            wifiSize = stat.wifiDataSize / 2;
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                TextView domainInfoTextView = ((Activity) context).findViewById(R.id.domainInfoTextView);
-                if (domainInfoTextView != null) {
-                    String domainInfo = context.getResources().getString(R.string.domain_rules_info);
-                    domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
-                }
-                TextView firewallInfoTextView = ((Activity) context).findViewById(R.id.firewallInfoTextView);
-                if (firewallInfoTextView != null) {
-                    String firewallInfo = context.getResources().getString(R.string.firewall_rules_info);
-                    firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
-                }
-                TextView disablerInfoTextView = ((Activity) context).findViewById(R.id.disablerInfoTextView);
-                if (disablerInfoTextView != null) {
-                    String disablerInfo = context.getResources().getString(R.string.app_disabler_info);
-                    boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-                    disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
-                }
-                TextView appComponentInfoTextView = ((Activity) context).findViewById(R.id.appComponentInfoTextView);
-                if (appComponentInfoTextView != null) {
-                    String appComponentInfo = context.getResources().getString(R.string.app_component_toggle_info);
-                    boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                    String info;
-                    if (enabled) {
-                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
-                    } else {
-                        info = String.format(appComponentInfo, 0, 0, 0);
-                    }
-                    appComponentInfoTextView.setText(info);
-                }
-            }
         }
     }
 
@@ -548,60 +716,6 @@ public class HomeTabFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             fragment.enableCloseButton();
             parentFragment.updateUserInterface();
-        }
-    }
-
-    private static class RefreshAsyncTask extends AsyncTask<Void, Void, List<ReportBlockedUrl>> {
-        private WeakReference<Context> contextReference;
-
-        RefreshAsyncTask(Context context) {
-            this.contextReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected List<ReportBlockedUrl> doInBackground(Void... voids) {
-            return FirewallUtils.getInstance().getReportBlockedUrl();
-        }
-
-        @Override
-        protected void onPostExecute(List<ReportBlockedUrl> reportBlockedUrls) {
-            Context context = contextReference.get();
-            if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.blockedDomainsListView);
-                if (listView != null) {
-                    ReportBlockedUrlAdapter adapter = new ReportBlockedUrlAdapter(context, reportBlockedUrls);
-                    listView.setAdapter(adapter);
-                    listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, listView, false);
-                        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                        titlTextView.setText(R.string.dialog_whitelist_domain_title);
-                        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                        questionTextView.setText(R.string.dialog_add_to_whitelist_question);
-                        new AlertDialog.Builder(context)
-                            .setView(dialogView)
-                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                AsyncTask.execute(() -> {
-                                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                                    final String blockedUrl = reportBlockedUrls.get(position).url;
-                                    WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
-                                    appDatabase.whiteUrlDao().insert(whiteUrl);
-                                })
-                            )
-                            .setNegativeButton(android.R.string.no, null).show();
-                    });
-                }
-
-                TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
-                if (infoTextView != null) {
-                    infoTextView.setText(String.format("%s%s",
-                            context.getString(R.string.last_day_blocked), String.valueOf(reportBlockedUrls.size())));
-                }
-
-                SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);
-                if (swipeContainer != null) {
-                    swipeContainer.setRefreshing(false);
-                }
-            }
         }
     }
 

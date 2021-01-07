@@ -18,7 +18,7 @@
             android:id="@+id/domainStatusTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/domain_rules_enabled"
+            android:text="@string/domain_rules_status"
             android:textStyle="bold" />
 
         <TextView
@@ -61,7 +61,7 @@
             android:id="@+id/firewallStatusTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/firewall_rules_enabled"
+            android:text="@string/firewall_rules_status"
             android:textStyle="bold" />
 
         <TextView
@@ -104,7 +104,7 @@
             android:id="@+id/disablerStatusTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_disabler_enabled"
+            android:text="@string/app_disabler_status"
             android:textStyle="bold" />
 
         <TextView
@@ -147,7 +147,7 @@
             android:id="@+id/appComponentStatusTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_component_enabled"
+            android:text="@string/app_component_status"
             android:textStyle="bold" />
 
         <TextView

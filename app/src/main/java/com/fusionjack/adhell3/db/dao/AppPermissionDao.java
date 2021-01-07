@@ -12,6 +12,15 @@ import java.util.List;
 @Dao
 public interface AppPermissionDao {
 
+    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = -1")
+    int getPermissionSize();
+
+    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 2")
+    int getServiceSize();
+
+    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 5")
+    int getReceiverSize();
+
     @Query("SELECT * FROM AppPermission")
     List<AppPermission> getAll();
 
