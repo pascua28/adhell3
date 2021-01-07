@@ -18,6 +18,9 @@ public interface DisabledPackageDao {
     @Query("SELECT * FROM DisabledPackage")
     List<DisabledPackage> getAll();
 
+    @Query("SELECT COUNT(*) FROM DisabledPackage")
+    int getSize();
+
     @Insert
     void insertAll(List<DisabledPackage> disabledPackages);
 

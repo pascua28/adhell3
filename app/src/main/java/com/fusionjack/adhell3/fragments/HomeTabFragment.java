@@ -40,6 +40,7 @@ import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.databinding.DialogWhitelistDomainBinding;
 import com.fusionjack.adhell3.databinding.FragmentBlockerBinding;
+import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
@@ -67,6 +68,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class HomeTabFragment extends Fragment implements DefaultLifecycleObserver, AppCacheChangeListener {
     private static final String STORAGE_FOLDERS = "Adhell3/Exports";
@@ -174,44 +178,43 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     String blockedPackageName = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).packageName;
                     String blockedUrl = Objects.requireNonNull(reportBlockedUrls.get(groupList.get(groupPosition))).get(childPosition).url;
                     dialogWhitelistDomainBinding.domainEditText.setText(String.format("%s|%s", blockedPackageName, blockedUrl));
-                    AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                            .setView(dialogWhitelistDomainBinding.getRoot())
-                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
-                                if (domainToAdd.indexOf('|') == -1) {
-                                    if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                        if (context instanceof MainActivity) {
-                                            MainActivity mainActivity = (MainActivity) context;
-                                            mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                    if (context != null && dialogWhitelistDomainBinding.domainEditText.getText() != null) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                                .setView(dialogWhitelistDomainBinding.getRoot())
+                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                    String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
+                                    if (domainToAdd.indexOf('|') == -1) {
+                                        if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Url not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
+                                            return;
                                         }
-                                        return;
-                                    }
-                                } else {
-                                    // packageName|url
-                                    StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                                    if (tokens.countTokens() != 2) {
-                                        if (context instanceof MainActivity) {
-                                            MainActivity mainActivity = (MainActivity) context;
-                                            mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
-                                                    .show();
+                                    } else {
+                                        // packageName|url
+                                        StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+                                        if (tokens.countTokens() != 2) {
+                                            if (context instanceof MainActivity) {
+                                                MainActivity mainActivity = (MainActivity) context;
+                                                mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)
+                                                        .show();
+                                            }
+                                            return;
                                         }
-                                        return;
                                     }
-                                }
-                                WhiteUrl whiteUrl = new WhiteUrl(domainToAdd, new Date());
-                                AsyncTask.execute(() -> AdhellFactory.getInstance().getAppDatabase().whiteUrlDao().insert(whiteUrl));
-                                if (context instanceof MainActivity) {
-                                    MainActivity mainActivity = (MainActivity) context;
-                                    mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
-                                            .show();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, null)
-                            .create();
-
-                    alertDialog.show();
-
+                                    addBlockedUrlToWhitelist(domainToAdd);
+                                    if (context instanceof MainActivity) {
+                                        MainActivity mainActivity = (MainActivity) context;
+                                        mainActivity.makeSnackbar("Domain whitelist has been added", Snackbar.LENGTH_SHORT)
+                                                .show();
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, null)
+                                .create();
+                        alertDialog.show();
+                    }
                     return false;
                 });
 
@@ -352,6 +355,16 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         binding.appComponentInfoTextView.setOnClickListener(appComponentDisabledOnClickListener);
     }
 
+    private void addBlockedUrlToWhitelist(String blockedUrl) {
+        Completable.fromAction(() -> {
+            WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            appDatabase.whiteUrlDao().insert(whiteUrl);
+        })
+                .subscribeOn(Schedulers.io())
+                .subscribe();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -402,7 +415,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         binding.appDisablerSwitch.setChecked(disablerEnabled);
         binding.appComponentSwitch.setChecked(appComponentEnabled);
 
-        homeTabViewModel.setInfo();
+        homeTabViewModel.setInfoCount();
         homeTabViewModel.refreshBlockedUrls();
     }
 
@@ -649,7 +662,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             ((BaseExpandableListAdapter) expandableListAdapter).notifyDataSetChanged();
         }
         if (homeTabViewModel != null) {
-            homeTabViewModel.setInfo();
+            homeTabViewModel.setInfoCount();
         }
     }
 }

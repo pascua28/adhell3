@@ -10,6 +10,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.google.common.collect.Lists;
 import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
@@ -22,6 +23,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -937,10 +939,7 @@ public class ContentBlocker56 implements ContentBlocker {
         int start = 0;
         int partitionSize = 5000;
         if (denyList.size() > 0) {
-            List<List<String>> chunks = new ArrayList<>();
-            for (int i = 0; i < denyList.size(); i += partitionSize) {
-                chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
-            }
+            List<List<String>> chunks = Lists.partition(denyList, partitionSize);
             for (List<String> chunk : chunks) {
                 LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
                 start += chunk.size();
@@ -966,10 +965,7 @@ public class ContentBlocker56 implements ContentBlocker {
         int start = 0;
         int partitionSize = 5000;
         if (denyList.size() > 0) {
-            List<List<String>> chunks = new ArrayList<>();
-            for (int i = 0; i < denyList.size(); i += partitionSize) {
-                chunks.add(denyList.subList(i, Math.min(i + partitionSize, denyList.size())));
-            }
+            List<List<String>> chunks = Lists.partition(denyList, partitionSize);
             for (List<String> chunk : chunks) {
                 LogUtils.info("\n     Processing " + start + " to " + (start + chunk.size()) + " domains...", handler);
                 start += chunk.size();
@@ -1013,8 +1009,7 @@ public class ContentBlocker56 implements ContentBlocker {
                 return domainCount == 0;
             }
 
-            List<String> packageNameList = new ArrayList<>();
-            packageNameList.add(Firewall.FIREWALL_ALL_PACKAGES);
+            List<String> packageNameList = Collections.singletonList(Firewall.FIREWALL_ALL_PACKAGES);
             List<DomainFilterRule> rules = firewall.getDomainFilterRules(packageNameList);
             return rules != null && rules.size() == 0;
         }

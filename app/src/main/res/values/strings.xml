@@ -14,7 +14,7 @@
     </string>
     <string name="app_disabler_title">App disabler</string>
     <string name="app_disabler_info">
-        %1$d apps are disabled.
+        %1$d apps are disabled
     </string>
     <string name="app_component_title">App component</string>
     <string name="app_component_toggle_info">
