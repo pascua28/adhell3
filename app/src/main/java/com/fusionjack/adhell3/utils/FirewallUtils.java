@@ -16,7 +16,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public final class FirewallUtils {
     private static FirewallUtils instance;
@@ -156,7 +158,7 @@ public final class FirewallUtils {
     }
 
     public List<DomainFilterRule> getDomainFilterRuleForAllAppsFromKnox() {
-        List<AppInfo> appList = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
+        List<AppInfo> appList = Optional.ofNullable(appDatabase.applicationInfoDao().getAppsInDisabledOrder().getValue()).orElse(Collections.emptyList());
         List<DomainFilterRule> domainFilterRules = new ArrayList<>();
         if (firewall == null) {
             return domainFilterRules;

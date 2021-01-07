@@ -117,7 +117,7 @@ public class AppTabPageFragment extends AppFragment {
         }
 
         if (view != null) {
-            ListView listView = view.findViewById(appFlag.getLoadLayout());
+            ListView listView = view.findViewById(appFlag.getLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
@@ -189,8 +189,6 @@ public class AppTabPageFragment extends AppFragment {
                     }
 
                     MainActivity.setFilterAppInfo(filterAppInfo);
-                    resetSearchView();
-                    loadAppList(type);
                     return false;
                 });
                 popup.show();
@@ -219,8 +217,6 @@ public class AppTabPageFragment extends AppFragment {
             int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
             filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
-
-        loadAppList(type);
     }
 
     @Override
@@ -293,7 +289,6 @@ public class AppTabPageFragment extends AppFragment {
                                 appDatabase.firewallWhitelistedPackageDao().deleteAll();
                                 break;
                         }
-                        loadAppList(type);
                     });
                 })
                 .setNegativeButton(android.R.string.no, null)

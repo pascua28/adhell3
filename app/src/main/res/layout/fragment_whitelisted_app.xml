@@ -33,28 +33,19 @@
             android:focusable="true"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_filter" />
-
-
     </RelativeLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/whitelistedSwipeContainer"
+    <ListView
+        android:id="@+id/whitelisted_apps_list"
+        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:animateLayoutChanges="true">
-
-        <ListView
-            android:id="@+id/whitelisted_apps_list"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbarStyle="outsideOverlay"
-            android:smoothScrollbar="true"
-            android:fastScrollEnabled="true"
-            android:fastScrollAlwaysVisible="false" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:animateLayoutChanges="true"
+        android:scrollbarStyle="outsideOverlay"
+        android:smoothScrollbar="true"
+        android:fastScrollEnabled="true"
+        android:fastScrollAlwaysVisible="false" />
 
     <ProgressBar
         android:id="@+id/loadingBar"

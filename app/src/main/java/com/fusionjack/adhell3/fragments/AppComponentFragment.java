@@ -89,13 +89,16 @@ public class AppComponentFragment extends AppFragment {
         } else if (id == R.id.action_batch) {
             batchOperation();
         } else if (id == R.id.action_show_disabled) {
-            AdhellFactory.getInstance().showAppComponentDisabledFragment(getParentFragment().getParentFragmentManager());
+            if (getParentFragment() != null) {
+                AdhellFactory.getInstance().showAppComponentDisabledFragment(getParentFragment().getParentFragmentManager());
+            }
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
 
         binding = FragmentAppComponentBinding.inflate(inflater);
@@ -105,19 +108,22 @@ public class AppComponentFragment extends AppFragment {
 
         binding.componentAppsList.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-            FragmentManager fragmentManager = getParentFragment().getParentFragmentManager();
+            FragmentManager fragmentManager = null;
+            if (getParentFragment() != null) {
+                fragmentManager = getParentFragment().getParentFragmentManager();
 
-            Bundle bundle = new Bundle();
-            AppInfo appInfo = adapter.getItem(position);
-            bundle.putString("packageName", appInfo.packageName);
-            bundle.putString("appName", appInfo.appName);
-            ComponentTabFragment fragment = new ComponentTabFragment();
-            fragment.setArguments(bundle);
+                Bundle bundle = new Bundle();
+                AppInfo appInfo = adapter.getItem(position);
+                bundle.putString("packageName", appInfo.packageName);
+                bundle.putString("appName", appInfo.appName);
+                ComponentTabFragment fragment = new ComponentTabFragment();
+                fragment.setArguments(bundle);
 
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-            fragmentTransaction.addToBackStack("appComponents");
-            fragmentTransaction.commit();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+                fragmentTransaction.addToBackStack("appComponents");
+                fragmentTransaction.commit();
+            }
         });
 
         int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
@@ -192,16 +198,9 @@ public class AppComponentFragment extends AppFragment {
                 }
 
                 MainActivity.setFilterAppInfo(filterAppInfo);
-                resetSearchView();
-                loadAppList(type);
                 return false;
             });
             popup.show();
-        });
-
-        binding.componentSwipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type);
-            resetSearchView();
         });
 
         rootView = binding.getRoot();
@@ -226,8 +225,6 @@ public class AppComponentFragment extends AppFragment {
             int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
             binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
-
-        loadAppList(type);
     }
 
     @Override

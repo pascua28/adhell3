@@ -39,7 +39,9 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.snackbar.Snackbar;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class DnsFragment extends AppFragment {
 
@@ -81,7 +83,7 @@ public class DnsFragment extends AppFragment {
                                 appDatabase.dnsPackageDao().deleteAll();
                             } else {
                                 appDatabase.dnsPackageDao().deleteAll();
-                                List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
+                                List<AppInfo> userApps = Optional.ofNullable(appDatabase.applicationInfoDao().getUserApps().getValue()).orElse(Collections.emptyList());
                                 for (AppInfo app : userApps) {
                                     app.hasCustomDns = true;
                                     appDatabase.applicationInfoDao().update(app);
@@ -93,8 +95,6 @@ public class DnsFragment extends AppFragment {
                             }
 
                             AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
-
-                            loadAppList(type);
                         })
                 )
                 .setNegativeButton(android.R.string.no, null)
@@ -183,16 +183,9 @@ public class DnsFragment extends AppFragment {
                 }
 
                 MainActivity.setFilterAppInfo(filterAppInfo);
-                resetSearchView();
-                loadAppList(type);
                 return false;
             });
             popup.show();
-        });
-
-        binding.dnsSwipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type);
-            resetSearchView();
         });
 
         binding.dnsActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_set_dns, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_dns_white_24dp, requireContext().getTheme()))
@@ -308,8 +301,6 @@ public class DnsFragment extends AppFragment {
             int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
             binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
         }
-
-        loadAppList(type);
     }
 
     @Override

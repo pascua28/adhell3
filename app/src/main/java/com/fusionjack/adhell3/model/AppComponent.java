@@ -153,7 +153,7 @@ public class AppComponent {
     public static Set<String> getReceiverNames(String packageName) {
         List<IComponentInfo> componentInfoList = getReceivers(packageName, "");
         return componentInfoList.stream()
-                .map(receiverName -> ((android.content.pm.ActivityInfo) receiverName).name)
+                .map(receiverName -> ((ReceiverInfo) receiverName).getName())
                 .collect(Collectors.toSet());
     }
 

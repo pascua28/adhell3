@@ -20,10 +20,6 @@ public class AppViewModel extends ViewModel {
         this.repository = new AppRepository();
     }
 
-    public Single<List<AppInfo>> loadAppList(AppRepository.Type type, FilterAppInfo filterAppInfo) {
-        return repository.loadAppList(type, filterAppInfo);
-    }
-
     public LiveData<Boolean> getLoadingBarVisibility() {
         if (_loadingVisibility == null) {
             _loadingVisibility = new MutableLiveData<>();
@@ -31,6 +27,10 @@ public class AppViewModel extends ViewModel {
             updateLoadingBarVisibility(true);
         }
         return _loadingVisibility;
+    }
+
+    public Single<LiveData<List<AppInfo>>> loadAppList(AppRepository.Type type, FilterAppInfo filterAppInfo) {
+        return repository.loadAppList(type, filterAppInfo);
     }
 
     public void updateLoadingBarVisibility(boolean isVisible) {

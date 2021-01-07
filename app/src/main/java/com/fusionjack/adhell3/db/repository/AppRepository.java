@@ -1,5 +1,9 @@
 package com.fusionjack.adhell3.db.repository;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -16,10 +20,13 @@ import io.reactivex.rxjava3.core.Single;
 
 public class AppRepository {
     private final AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+    private final MutableLiveData<List<AppInfo>> resultList = new MutableLiveData<>();
 
-    public Single<List<AppInfo>> loadAppList(Type type, FilterAppInfo filterAppInfo) {
+    public Single<LiveData<List<AppInfo>>> loadAppList(Type type, FilterAppInfo filterAppInfo) {
         return Single.create(emitter -> {
-            List<AppInfo> list = new ArrayList<>();
+            LiveData<List<AppInfo>> list = null;
+            MutableLiveData<List<AppInfo>> tempListLiveData = new MutableLiveData<>();
+            MediatorLiveData<List<AppInfo>> mediatorList = new MediatorLiveData<>();
             switch (type) {
                 case DISABLER:
                     boolean appComponentsEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
@@ -91,10 +98,23 @@ public class AppRepository {
                     break;
             }
 
-            if (filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter()) {
+            if (list != null) {
+                mediatorList.addSource(list, appInfos -> {
+                    if (appInfos.size() > 0) {
+                        mediatorList.setValue(appInfos);
+                    }
+                } );
+            }
+            mediatorList.addSource(tempListLiveData, appInfos -> {
+                if (appInfos.size() > 0) {
+                    mediatorList.postValue(appInfos);
+                }
+            });
+
+            if ((filterAppInfo.getHighlightRunningApps() || !filterAppInfo.getRunningAppsFilter() || !filterAppInfo.getStoppedAppsFilter()) && list != null && list.getValue() != null) {
                 List<AppInfo> tempList = new ArrayList<>();
                 ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-                for (AppInfo item : list) {
+                for (AppInfo item : list.getValue()) {
                     boolean isRunning = false;
                     try {
                         if (appPolicy != null) {
@@ -111,11 +131,11 @@ public class AppRepository {
                     } else if (filterAppInfo.getStoppedAppsFilter() && !isRunning)
                         tempList.add(item);
                 }
-                list.clear();
-                list.addAll(tempList);
+                tempListLiveData.postValue(tempList);
                 tempList.clear();
             }
-            emitter.onSuccess(list);
+
+            emitter.onSuccess(mediatorList);
         });
     }
 

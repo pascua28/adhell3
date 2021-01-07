@@ -15,8 +15,8 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
@@ -31,6 +31,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -90,6 +91,8 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
                 viewModel.updateLoadingBarVisibility(false);
             }
         };
+
+        loadAppList(type);
     }
 
     @Override
@@ -99,20 +102,16 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
                 isVisible -> {
                     if (rootView != null && appFlag != null) {
                         ProgressBar loadingBar = rootView.findViewById(R.id.loadingBar);
-                        ListView listView = rootView.findViewById(appFlag.getLoadLayout());
-                        SwipeRefreshLayout swipeContainer = rootView.findViewById(appFlag.getRefreshLayout());
+                        ListView listView = rootView.findViewById(appFlag.getLayout());
 
                         if (isVisible) {
-                            if (!swipeContainer.isRefreshing()) {
-                                loadingBar.setVisibility(View.VISIBLE);
-                            }
+                            loadingBar.setVisibility(View.VISIBLE);
 
                             if (listView.getVisibility() == View.VISIBLE) {
                                 listView.setVisibility(View.GONE);
                             }
                         } else {
                             loadingBar.setVisibility(View.GONE);
-                            swipeContainer.setRefreshing(false);
 
                             if (listView.getVisibility() == View.GONE) {
                                 listView.setVisibility(View.VISIBLE);
@@ -121,40 +120,38 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
                     }
                 }
         );
-        initAppList();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (!MainActivity.finishActivity.compareAndSet(true, false)) {
-            viewModel.updateLoadingBarVisibility(true);
-        }
+        resetSearchView();
         // Close keyboard
-        ViewCompat.getWindowInsetsController(rootView).hide(WindowInsetsCompat.Type.ime());
+        Objects.requireNonNull(ViewCompat.getWindowInsetsController(rootView)).hide(WindowInsetsCompat.Type.ime());
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.app_menu, menu);
-        initSearchView(menu);
-    }
-
-    protected void initAppList() {
+    private void loadAppList(AppRepository.Type type) {
         viewModel.loadAppList(type, filterAppInfo)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<AppInfo>>() {
+                .subscribe(new SingleObserver<LiveData<List<AppInfo>>>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onSuccess(@NonNull List<AppInfo> appList) {
-                        initAppList = appList;
-                        updateAppList(appList);
+                    public void onSuccess(@NonNull LiveData<List<AppInfo>> liveData) {
+                        liveData.observe(AppFragment.this, appList -> {
+                            if (appList != null) {
+                                initAppList = appList;
+                                if (searchText.isEmpty()) {
+                                    updateAppList(appList);
+                                } else {
+                                    searchView.setQuery(searchText, true);
+                                }
+                            }
+                        });
                     }
 
                     @Override
@@ -171,22 +168,16 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
         viewModel.updateLoadingBarVisibility(false);
     }
 
-    protected void loadAppList(AppRepository.Type type) {
-        viewModel.loadAppList(type, filterAppInfo)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(observer);
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.app_menu, menu);
+        initSearchView(menu);
     }
 
-    public void initSearchView(Menu menu) {
+    protected void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
-        if (!searchText.isEmpty()) {
-            searchView.setQuery(searchText, false);
-            searchView.setIconified(false);
-            searchView.requestFocus();
-        }
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -218,18 +209,17 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
         searchView = null;
     }
 
-    protected void resetSearchView() {
-        if (searchView != null) {
-            searchText = "";
-            searchView.setQuery(searchText, false);
-            searchView.setIconified(true);
-        }
-    }
-
     @Override
     public void onAppCacheChange() {
         if (adapter != null) {
             adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void resetSearchView() {
+        if (searchView != null) {
+            searchView.setQuery("", false);
+            searchView.setIconified(true);
         }
     }
 }
