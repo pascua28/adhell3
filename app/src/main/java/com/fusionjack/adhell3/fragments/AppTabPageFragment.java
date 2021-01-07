@@ -2,8 +2,6 @@ package com.fusionjack.adhell3.fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +10,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -77,7 +77,6 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
         View view = null;
         switch (page) {
@@ -103,7 +102,7 @@ public class AppTabPageFragment extends AppFragment {
         }
 
         if (view != null) {
-            ListView listView = view.findViewById(appFlag.getLoadLayout());
+            ListView listView = view.findViewById(appFlag.getLayout());
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
@@ -111,13 +110,6 @@ public class AppTabPageFragment extends AppFragment {
                     new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
                 });
             }
-
-            SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
-            swipeContainer.setOnRefreshListener(() -> {
-                    loadAppList(type);
-                    swipeContainer.setRefreshing(false);
-                    resetSearchView();
-            });
         }
 
         return view;
@@ -186,7 +178,6 @@ public class AppTabPageFragment extends AppFragment {
                             appDatabase.firewallWhitelistedPackageDao().deleteAll();
                             break;
                     }
-                    loadAppList(type);
                 });
             })
             .setNegativeButton(android.R.string.no, null).show();

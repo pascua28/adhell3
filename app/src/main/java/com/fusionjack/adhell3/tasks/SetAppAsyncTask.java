@@ -117,7 +117,7 @@ public class SetAppAsyncTask extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         Context context = contextWeakReference.get();
         if (context != null) {
-            ListView listView = ((Activity) context).findViewById(appFlag.getLoadLayout());
+            ListView listView = ((Activity) context).findViewById(appFlag.getLayout());
             if (listView != null) {
                 if (listView.getAdapter() instanceof AppInfoAdapter) {
                     ((AppInfoAdapter) listView.getAdapter()).notifyDataSetChanged();

@@ -1,16 +1,13 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.fusionjack.adhell3.R;
@@ -67,24 +64,33 @@ public class AppFragment extends Fragment {
 
             @Override
             public void onError(@NonNull Throwable e) {
+                LogUtils.error(e.getMessage(), e);
                 Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         };
+
+        loadAppList(type);
     }
 
-    protected void initAppList() {
+    private void loadAppList(AppRepository.Type type) {
         viewModel.loadAppList(type)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<AppInfo>>() {
+                .subscribe(new SingleObserver<LiveData<List<AppInfo>>>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onSuccess(@NonNull List<AppInfo> appList) {
-                        initAppList = appList;
-                        updateAppList(appList);
+                    public void onSuccess(@NonNull LiveData<List<AppInfo>> liveData) {
+                        liveData.observe(AppFragment.this, appList -> {
+                            initAppList = appList;
+                            if (searchText.isEmpty()) {
+                                updateAppList(appList);
+                            } else {
+                                searchView.setQuery(searchText, true);
+                            }
+                        });
                     }
 
                     @Override
@@ -100,19 +106,6 @@ public class AppFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-    protected void loadAppList(AppRepository.Type type) {
-        viewModel.loadAppList(type)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(observer);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        initAppList();
-        return null;
-    }
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -123,12 +116,6 @@ public class AppFragment extends Fragment {
     protected void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
-        if (!searchText.isEmpty()) {
-            searchView.setQuery(searchText, false);
-            searchView.setIconified(false);
-            searchView.requestFocus();
-        }
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -151,13 +138,5 @@ public class AppFragment extends Fragment {
                 return false;
             }
         });
-    }
-
-    protected void resetSearchView() {
-        if (searchView != null) {
-            searchText = "";
-            searchView.setQuery(searchText, false);
-            searchView.setIconified(true);
-        }
     }
 }

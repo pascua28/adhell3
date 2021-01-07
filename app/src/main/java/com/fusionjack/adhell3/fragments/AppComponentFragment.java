@@ -3,10 +3,6 @@ package com.fusionjack.adhell3.fragments;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +13,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
@@ -140,13 +140,12 @@ public class AppComponentFragment extends AppFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_app_component, container, false);
 
         AppFlag appFlag = AppFlag.createComponentFlag();
-        ListView listView = view.findViewById(appFlag.getLoadLayout());
+        ListView listView = view.findViewById(appFlag.getLayout());
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
@@ -163,13 +162,6 @@ public class AppComponentFragment extends AppFragment {
             fragmentTransaction.replace(R.id.fragmentContainer, fragment);
             fragmentTransaction.addToBackStack("appComponents");
             fragmentTransaction.commit();
-        });
-
-        SwipeRefreshLayout swipeContainer = view.findViewById(appFlag.getRefreshLayout());
-        swipeContainer.setOnRefreshListener(() -> {
-            loadAppList(type);
-            swipeContainer.setRefreshing(false);
-            resetSearchView();
         });
 
         return view;

@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.viewmodel;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -17,7 +18,7 @@ public class AppViewModel extends ViewModel {
         this.repository = new AppRepository();
     }
 
-    public Single<List<AppInfo>> loadAppList(AppRepository.Type type) {
+    public Single<LiveData<List<AppInfo>>> loadAppList(AppRepository.Type type) {
         return repository.loadAppList(type);
     }
 

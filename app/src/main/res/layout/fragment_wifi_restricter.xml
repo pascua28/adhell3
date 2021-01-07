@@ -10,19 +10,11 @@
         android:text="@string/wifi_restricter_info"
         android:background="@drawable/border" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/wifiSwipeContainer"
+    <ListView
+        android:id="@+id/wifi_apps_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginTop="5dp"
-        android:layout_below="@id/infoTextView">
-
-        <ListView
-            android:id="@+id/wifi_apps_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:layout_below="@id/infoTextView" />
 
 </RelativeLayout>

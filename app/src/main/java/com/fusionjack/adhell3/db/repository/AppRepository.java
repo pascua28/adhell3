@@ -1,11 +1,12 @@
 package com.fusionjack.adhell3.db.repository;
 
+import androidx.lifecycle.LiveData;
+
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Single;
@@ -22,9 +23,9 @@ public class AppRepository {
         DNS
     }
 
-    public Single<List<AppInfo>> loadAppList(Type type) {
+    public Single<LiveData<List<AppInfo>>> loadAppList(Type type) {
         return Single.create(emitter -> {
-            List<AppInfo> list = new ArrayList<>();
+            LiveData<List<AppInfo>> list = null;
             switch (type) {
                 case DISABLER:
                     list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();

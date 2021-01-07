@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +14,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -31,7 +31,9 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class DnsFragment extends AppFragment {
 
@@ -73,7 +75,7 @@ public class DnsFragment extends AppFragment {
                         appDatabase.dnsPackageDao().deleteAll();
                     } else {
                         appDatabase.dnsPackageDao().deleteAll();
-                        List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
+                        List<AppInfo> userApps = Optional.ofNullable(appDatabase.applicationInfoDao().getUserApps().getValue()).orElse(Collections.emptyList());
                         for (AppInfo app : userApps) {
                             app.hasCustomDns = true;
                             appDatabase.applicationInfoDao().update(app);
@@ -85,8 +87,6 @@ public class DnsFragment extends AppFragment {
                     }
 
                     AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
-
-                    loadAppList(type);
                 })
             )
             .setNegativeButton(android.R.string.no, null).show();
@@ -94,7 +94,6 @@ public class DnsFragment extends AppFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_dns, container, false);
@@ -108,13 +107,6 @@ public class DnsFragment extends AppFragment {
                 new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
             });
         }
-
-        SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.dnsSwipeContainer);
-        dnsSwipeContainer.setOnRefreshListener(() -> {
-                loadAppList(type);
-                dnsSwipeContainer.setRefreshing(false);
-                resetSearchView();
-        });
 
         FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);
         FloatingActionButton actionSetDns = view.findViewById(R.id.action_set_dns);

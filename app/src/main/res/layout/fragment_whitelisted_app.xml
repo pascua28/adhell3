@@ -10,19 +10,11 @@
         android:text="@string/whitelisted_app_info"
         android:background="@drawable/border" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/whitelistedSwipeContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_below="@id/infoTextView">
-
     <ListView
         android:id="@+id/whitelisted_apps_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/infoTextView" />
 
 </RelativeLayout>
