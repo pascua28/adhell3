@@ -18,7 +18,7 @@ public class AppViewModel extends ViewModel {
     }
 
     public Single<List<AppInfo>> loadAppList(AppRepository.Type type) {
-        return repository.loadAppList("", type);
+        return repository.loadAppList(type);
     }
 
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import io.reactivex.Single;
 
 public class AppRepository {
+    private final AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
 
     public enum Type {
         DISABLER,
@@ -21,58 +22,30 @@ public class AppRepository {
         DNS
     }
 
-    public Single<List<AppInfo>> loadAppList(String text, Type type) {
+    public Single<List<AppInfo>> loadAppList(Type type) {
         return Single.create(emitter -> {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            String filterText = '%' + text + '%';
             List<AppInfo> list = new ArrayList<>();
             switch (type) {
                 case DISABLER:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInDisabledOrder(filterText);
-                    }
+                    list = appDatabase.applicationInfoDao().getAppsInDisabledOrder();
                     break;
                 case MOBILE_RESTRICTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder(filterText);
-                    }
+                    list = appDatabase.applicationInfoDao().getAppsInMobileRestrictedOrder();
                     break;
                 case WIFI_RESTRICTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder(filterText);
-                    }
+                    list = appDatabase.applicationInfoDao().getAppsInWifiRestrictedOrder();
                     break;
                 case WHITELISTED:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder(filterText);
-                    }
+                    list = appDatabase.applicationInfoDao().getAppsInWhitelistedOrder();
                     break;
                 case COMPONENT:
                     boolean showSystemApps = BuildConfig.SHOW_SYSTEM_APP_COMPONENT;
-                    if (text.length() == 0) {
-                        list = showSystemApps ?
-                                appDatabase.applicationInfoDao().getEnabledAppsAlphabetically() :
-                                appDatabase.applicationInfoDao().getUserApps();
-                    } else {
-                        list = showSystemApps ?
-                                appDatabase.applicationInfoDao().getEnabledAppsAlphabetically(filterText) :
-                                appDatabase.applicationInfoDao().getUserApps(filterText);
-                    }
+                    list = showSystemApps ?
+                            appDatabase.applicationInfoDao().getEnabledApps() :
+                            appDatabase.applicationInfoDao().getUserApps();
                     break;
                 case DNS:
-                    if (text.length() == 0) {
-                        list = appDatabase.applicationInfoDao().getAppsInDnsOrder();
-                    } else {
-                        list = appDatabase.applicationInfoDao().getAppsInDnsOrder(filterText);
-                    }
+                    list = appDatabase.applicationInfoDao().getAppsInDnsOrder();
                     break;
             }
             emitter.onSuccess(list);
