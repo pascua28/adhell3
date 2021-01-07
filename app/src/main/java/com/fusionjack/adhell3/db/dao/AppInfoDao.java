@@ -36,6 +36,10 @@ public interface AppInfoDao {
     @Query("SELECT packageName FROM AppInfo")
     List<String> getAllPackageNames();
 
+    // Get app based on a package name
+    @Query("SELECT * FROM AppInfo WHERE packageName = :packageName")
+    AppInfo getAppByPackageName(String packageName);
+
 
     // Get app size
     @Query("SELECT COUNT(*) FROM AppInfo")
@@ -46,24 +50,6 @@ public interface AppInfoDao {
     @Query("SELECT MAX(id) FROM AppInfo")
     long getLastAppId();
 
-    // Get based on appName/packageName
-    @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
-    List<AppInfo> getAppsAlphabetically();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY appName ASC")
-    List<AppInfo> getAppsAlphabetically(String str);
-
-    @Query("SELECT * FROM AppInfo WHERE packageName = :packageName")
-    AppInfo getAppByPackageName(String packageName);
-
-
-    // Get apps
-    @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
-    List<AppInfo> getApps();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY appName ASC")
-    List<AppInfo> getApps(String str);
-
 
     // Disabled apps
     @Query("SELECT * FROM AppInfo WHERE disabled = 1 ORDER BY appName ASC")
@@ -71,9 +57,6 @@ public interface AppInfoDao {
 
     @Query("SELECT * FROM AppInfo ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAppsInDisabledOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) ORDER BY disabled DESC, appName ASC")
-    List<AppInfo> getAppsInDisabledOrder(String str);
 
 
     // Mobile restricted apps (only enabled apps)
@@ -83,9 +66,6 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY mobileRestricted DESC, appName ASC")
     List<AppInfo> getAppsInMobileRestrictedOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY mobileRestricted DESC, appName ASC")
-    List<AppInfo> getAppsInMobileRestrictedOrder(String str);
-
 
     // Wifi restricted apps (only enabled apps)
     @Query("SELECT * FROM AppInfo WHERE wifiRestricted = 1 AND disabled = 0")
@@ -93,9 +73,6 @@ public interface AppInfoDao {
 
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY wifiRestricted DESC, appName ASC")
     List<AppInfo> getAppsInWifiRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY wifiRestricted DESC, appName ASC")
-    List<AppInfo> getAppsInWifiRestrictedOrder(String str);
 
 
     // Whitelisted apps (only enabled apps)
@@ -105,16 +82,10 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY adhellWhitelisted DESC, appName ASC")
     List<AppInfo> getAppsInWhitelistedOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY adhellWhitelisted DESC, appName ASC")
-    List<AppInfo> getAppsInWhitelistedOrder(String str);
-
 
     // User apps
     @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 0 ORDER BY appName ASC")
     List<AppInfo> getUserApps();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 AND disabled = 0 ORDER BY appName ASC")
-    List<AppInfo> getUserApps(String str);
 
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY appName ASC")
     List<AppInfo> getUserAndDisabledApps();
@@ -124,16 +95,10 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE system = 1 AND disabled = 0 ORDER BY appName ASC")
     List<AppInfo> getSystemApps();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 AND disabled = 0 ORDER BY appName ASC")
-    List<AppInfo> getSystemApps(String str);
-
 
     // Enabled apps
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY appName ASC")
-    List<AppInfo> getEnabledAppsAlphabetically();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY appName ASC")
-    List<AppInfo> getEnabledAppsAlphabetically(String str);
+    List<AppInfo> getEnabledApps();
 
 
     // DNS apps
@@ -143,73 +108,37 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY hasCustomDns DESC, appName ASC")
     List<AppInfo> getAppsInDnsOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND disabled = 0 ORDER BY hasCustomDns DESC, appName ASC")
-    List<AppInfo> getAppsInDnsOrder(String str);
-
-    @Query("SELECT * FROM AppInfo WHERE adhellWhitelisted = 1 OR disabled = 1 OR mobileRestricted = 1 OR wifiRestricted = 1 OR hasCustomDns = 1")
-    List<AppInfo> getModifiedApps();
-
 
     // All user apps
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllUserAppsInDisabledOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY disabled DESC, appName ASC")
-    List<AppInfo> getAllUserAppsInDisabledOrder(String str);
-
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY mobileRestricted DESC, appName ASC")
     List<AppInfo> getAllUserAppsInMobileRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY mobileRestricted DESC, appName ASC")
-    List<AppInfo> getAllUserAppsInMobileRestrictedOrder(String str);
 
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY wifiRestricted DESC, appName ASC")
     List<AppInfo> getAllUserAppsInWifiRestrictedOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY wifiRestricted DESC, appName ASC")
-    List<AppInfo> getAllUserAppsInWifiRestrictedOrder(String str);
-
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY adhellWhitelisted DESC, appName ASC")
     List<AppInfo> getAllUserAppsInWhitelistedOrder();
 
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY adhellWhitelisted DESC, appName ASC")
-    List<AppInfo> getAllUserAppsInWhitelistedOrder(String str);
-
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY hasCustomDns DESC, appName ASC")
     List<AppInfo> getAllUserAppsInDnsOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 0 ORDER BY hasCustomDns DESC, appName ASC")
-    List<AppInfo> getAllUserAppsInDnsOrder(String str);
 
 
     // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY disabled DESC, appName ASC")
     List<AppInfo> getAllSystemAppsInDisabledOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY disabled DESC, appName ASC")
-    List<AppInfo> getAllSystemAppsInDisabledOrder(String str);
     // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY mobileRestricted DESC, appName ASC")
     List<AppInfo> getAllSystemAppsInMobileRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY mobileRestricted DESC, appName ASC")
-    List<AppInfo> getAllSystemAppsInMobileRestrictedOrder(String str);
     // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY wifiRestricted DESC, appName ASC")
     List<AppInfo> getAllSystemAppsInWifiRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY wifiRestricted DESC, appName ASC")
-    List<AppInfo> getAllSystemAppsInWifiRestrictedOrder(String str);
     // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY adhellWhitelisted DESC, appName ASC")
     List<AppInfo> getAllSystemAppsInWhitelistedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY adhellWhitelisted DESC, appName ASC")
-    List<AppInfo> getAllSystemAppsInWhitelistedOrder(String str);
     // All system apps
     @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY hasCustomDns DESC, appName ASC")
     List<AppInfo> getAllSystemAppsInDnsOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE (appName LIKE :str OR packageName LIKE :str) AND system = 1 ORDER BY hasCustomDns DESC, appName ASC")
-    List<AppInfo> getAllSystemAppsInDnsOrder(String str);
 }

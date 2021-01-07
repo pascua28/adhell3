@@ -21,7 +21,7 @@ public class AppViewModel extends ViewModel {
     }
 
     public Single<List<AppInfo>> loadAppList(AppRepository.Type type, FilterAppInfo filterAppInfo) {
-        return repository.loadAppList("", type, filterAppInfo);
+        return repository.loadAppList(type, filterAppInfo);
     }
 
     public LiveData<Boolean> getLoadingBarVisibility() {
