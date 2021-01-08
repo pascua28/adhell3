@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         LogUtils.info("Destroying activity");
         this.binding = null;
+        this.permissionDialog = null;
         finishActivity.compareAndSet(true, false);
         closeActivity(false);
 
