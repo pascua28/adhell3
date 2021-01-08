@@ -171,14 +171,16 @@ public final class FirewallUtils {
 
     public List<DomainFilterRule> getWhitelistedAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
         List<DomainFilterRule> whitelistApps = new ArrayList<>();
-        for (DomainFilterRule domainRule : allDomainFilterRules) {
-            if (domainRule.getAllowDomains().contains("*")) {
-                if (domainRule.getAllowDomains().size() > 0 ||
-                        domainRule.getDenyDomains().size() > 0 ||
-                        domainRule.getDns1() == null ||
-                        domainRule.getDns2() == null
-                ) {
-                    whitelistApps.add(domainRule);
+        if (allDomainFilterRules != null) {
+            for (DomainFilterRule domainRule : allDomainFilterRules) {
+                if (domainRule.getAllowDomains().contains("*")) {
+                    if (domainRule.getAllowDomains().size() > 0 ||
+                            domainRule.getDenyDomains().size() > 0 ||
+                            domainRule.getDns1() == null ||
+                            domainRule.getDns2() == null
+                    ) {
+                        whitelistApps.add(domainRule);
+                    }
                 }
             }
         }
@@ -187,14 +189,16 @@ public final class FirewallUtils {
 
     public List<DomainFilterRule> getWhitelistUrlAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
         List<DomainFilterRule> whitelistUrl = new ArrayList<>();
-        for (DomainFilterRule domainRule : allDomainFilterRules) {
-            if (!domainRule.getAllowDomains().contains("*")) {
-                if (domainRule.getAllowDomains().size() > 0 ||
-                        domainRule.getDenyDomains().size() > 0 ||
-                        domainRule.getDns1() == null ||
-                        domainRule.getDns2() == null
-                ) {
-                    whitelistUrl.add(domainRule);
+        if (allDomainFilterRules != null) {
+            for (DomainFilterRule domainRule : allDomainFilterRules) {
+                if (!domainRule.getAllowDomains().contains("*")) {
+                    if (domainRule.getAllowDomains().size() > 0 ||
+                            domainRule.getDenyDomains().size() > 0 ||
+                            domainRule.getDns1() == null ||
+                            domainRule.getDns2() == null
+                    ) {
+                        whitelistUrl.add(domainRule);
+                    }
                 }
             }
         }
@@ -203,9 +207,11 @@ public final class FirewallUtils {
 
     public List<DomainFilterRule> getCustomDnsAppsFromKnox(List<DomainFilterRule> allDomainFilterRules) {
         List<DomainFilterRule> customDnsRules = new ArrayList<>();
-        for (DomainFilterRule domainRule : allDomainFilterRules) {
-            if (domainRule.getDns1() != null && domainRule.getDns2() != null) {
-                customDnsRules.add(domainRule);
+        if (allDomainFilterRules != null) {
+            for (DomainFilterRule domainRule : allDomainFilterRules) {
+                if (domainRule.getDns1() != null && domainRule.getDns2() != null) {
+                    customDnsRules.add(domainRule);
+                }
             }
         }
         return customDnsRules;
