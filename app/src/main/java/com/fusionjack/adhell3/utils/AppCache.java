@@ -18,6 +18,7 @@ import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -272,6 +273,7 @@ public class AppCache {
             AppInfoResult appInfoResult = new AppInfoResult();
 
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+			ApplicationPolicy applicationPolicy = AdhellFactory.getInstance().getAppPolicy();
             List<AppInfo> appsInfo = new ArrayList<>();
             int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
 
@@ -300,6 +302,7 @@ public class AppCache {
                     PackageInfo packageInfo = packageManager.getPackageInfo(app.packageName, 0);
                     appInfo.installTime = packageInfo.firstInstallTime;
                     appInfoResult.putVersionName(app.packageName, packageInfo.versionName);
+					appInfo.disabled = !applicationPolicy.getApplicationStateEnabled(app.packageName);
                 } catch (PackageManager.NameNotFoundException e) {
                     e.printStackTrace();
                     appInfo.installTime = 0;

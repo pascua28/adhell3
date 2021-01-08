@@ -15,6 +15,7 @@ import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -240,8 +241,13 @@ public class HomeTabViewModel extends ViewModel {
         @Override
         protected Void doInBackground(Void... voids) {
             if (appDisablerEnabled) {
-                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                disablerSize = appDatabase.disabledPackageDao().getAll().size();
+				ApplicationPolicy applicationPolicy = AdhellFactory.getInstance().getAppPolicy();
+				String[] disabledAppFromKnox = applicationPolicy.getApplicationStateList(false);
+                if (disabledAppFromKnox != null) {
+                    disablerSize = Math.max(disabledAppFromKnox.length, 0);
+                } else {
+                    disablerSize = 0;
+                }
             }
 
             if (appComponentEnabled) {
