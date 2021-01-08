@@ -26,9 +26,11 @@
     </style>
 
     <style name="FastScrollStyle" parent="android:Widget.Material.FastScroll">
-        <item name="android:minWidth">48dip</item>
+        <item name="android:minWidth">44dip</item>
         <item name="android:minHeight">48dip</item>
-        <item name="android:padding">4dip</item>
+        <item name="android:paddingTop">4dip</item>
+        <item name="android:paddingBottom">4dip</item>
+        <item name="android:paddingRight">4dip</item>
     </style>
 
     <style name="WindowAnimationTransition">
