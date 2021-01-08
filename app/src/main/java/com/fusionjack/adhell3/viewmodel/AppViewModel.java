@@ -46,6 +46,6 @@ public class AppViewModel extends ViewModel {
     }
 
     public void updateLoadingBarVisibility(boolean isVisible) {
-        _loadingVisibility.setValue(isVisible);
+        _loadingVisibility.postValue(isVisible);
     }
 }
