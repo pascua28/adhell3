@@ -519,7 +519,9 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             this.handler = new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
-                    fragment.appendText(msg.obj.toString());
+                    if (fragment != null) {
+                        fragment.appendText(msg.obj.toString());
+                    }
                 }
             };
         }
