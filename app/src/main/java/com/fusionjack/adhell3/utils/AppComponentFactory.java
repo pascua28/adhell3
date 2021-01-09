@@ -36,28 +36,29 @@ public final class AppComponentFactory {
     private final ApplicationPolicy appPolicy;
     private final AppDatabase appDatabase;
 
-    private final Set<String> serviceNames;
-    private final Set<String> receiverNames;
-
     private AppComponentFactory() {
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
+    }
 
+    private Set<String> readTxtServices() {
         Set<String> serviceNames;
         try {
             serviceNames = getFileContent(SERVICE_FILENAME);
         } catch (IOException e) {
             serviceNames = Collections.emptySet();
         }
-        this.serviceNames = serviceNames;
+        return serviceNames;
+    }
 
+    private Set<String> readTxtReceivers() {
         Set<String> receiverNames;
         try {
             receiverNames = getFileContent(RECEIVER_FILENAME);
         } catch (IOException e) {
             receiverNames = Collections.emptySet();
         }
-        this.receiverNames = receiverNames;
+        return receiverNames;
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
@@ -157,6 +158,8 @@ public final class AppComponentFactory {
     }
 
     public Single<String> processAppComponentInBatch(boolean enabled) {
+        Set<String> serviceNames = readTxtServices();
+        Set<String> receiverNames = readTxtReceivers();
         if (serviceNames.isEmpty() || receiverNames.isEmpty()) {
             return Single.error(new FileNotFoundException("File name '" + SERVICE_FILENAME + "' or '" + RECEIVER_FILENAME + "' cannot be found."));
         }
@@ -174,28 +177,31 @@ public final class AppComponentFactory {
 
     // Enable services from 'adhell3_services.txt' for all apps
     private void enableTxtServices() {
+        Set<String> serviceNames = readTxtServices();
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
             String packageName = app.packageName;
-            setTxtServicesState(true, packageName);
+            setTxtServicesState(true, packageName, serviceNames);
         }
     }
 
     // Disable services from 'adhell3_services.txt' for all apps
     private void disableTxtServices() {
+        Set<String> serviceNames = readTxtServices();
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
-            disableTxtServices(app.packageName);
+            setTxtServicesState(false, app.packageName, serviceNames);
         }
     }
 
     // Disable services from 'adhell3_services.txt' for the given app
     public void disableTxtServices(String packageName) {
-        setTxtServicesState(false, packageName);
+        Set<String> serviceNames = readTxtServices();
+        setTxtServicesState(false, packageName, serviceNames);
     }
 
     // Only services from 'adhell3_services.txt' will be enabled/disabled
-    private void setTxtServicesState(boolean state, String packageName) {
+    private void setTxtServicesState(boolean state, String packageName, Set<String> serviceNames) {
         AppComponent.getServiceNames(packageName).stream()
                 .filter(serviceNames::contains)
                 .forEach(serviceName -> {
@@ -229,7 +235,7 @@ public final class AppComponentFactory {
             if (state) {
                 appDatabase.appPermissionDao().delete(packageName, serviceName);
             } else {
-                insertServiceToDatabase(packageName, serviceName);
+                addServiceToDatabaseIfNotExist(packageName, serviceName);
             }
         }
     }
@@ -253,28 +259,30 @@ public final class AppComponentFactory {
 
     // Enable services from 'adhell3_receivers.txt' for all apps
     private void enableTxtReceivers() {
+        Set<String> receiverNames = readTxtReceivers();
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
-            String packageName = app.packageName;
-            setTxtReceiversState(true, packageName);
+            setTxtReceiversState(true, app.packageName, receiverNames);
         }
     }
 
     // Disable services from 'adhell3_receivers.txt' for all apps
     private void disableTxtReceivers() {
+        Set<String> receiverNames = readTxtReceivers();
         List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
         for (AppInfo app : apps) {
-            disableTxtReceivers(app.packageName);
+            setTxtReceiversState(false, app.packageName, receiverNames);
         }
     }
 
     // Disable services from 'adhell3_receivers.txt' for the given app
     public void disableTxtReceivers(String packageName) {
-        setTxtReceiversState(false, packageName);
+        Set<String> receiverNames = readTxtReceivers();
+        setTxtReceiversState(false, packageName, receiverNames);
     }
 
     // Only receivers from 'adhell3_services.txt' will be enabled/disabled
-    private void setTxtReceiversState(boolean state, String packageName) {
+    private void setTxtReceiversState(boolean state, String packageName, Set<String> receiverNames) {
         AppComponent.getReceivers(packageName).stream()
                 .filter(info -> receiverNames.contains(((ReceiverInfo)info).getName()))
                 .forEach(info -> {
@@ -316,7 +324,7 @@ public final class AppComponentFactory {
             if (state) {
                 deleteReceiverFromDatabase(packageName, receiverName, receiverPermission);
             } else {
-                insertReceiverToDatabase(packageName, receiverName, receiverPermission);
+                addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission);
             }
         }
     }
