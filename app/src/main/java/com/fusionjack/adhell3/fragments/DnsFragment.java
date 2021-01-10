@@ -24,7 +24,7 @@ import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
-import com.fusionjack.adhell3.tasks.SetAppAsyncTask;
+import com.fusionjack.adhell3.tasks.ToggleAppInfoRxTask;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -103,8 +103,7 @@ public class DnsFragment extends AppFragment {
         listView.setAdapter(adapter);
         if (AppPreferences.getInstance().isDnsNotEmpty()) {
             listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-                new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
+                ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
             });
         }
 
@@ -140,8 +139,7 @@ public class DnsFragment extends AppFragment {
                         if (AppPreferences.getInstance().isDnsNotEmpty()) {
                             listView.setEnabled(true);
                             listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                                AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-                                new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
+                                ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
                             });
                         } else {
                             listView.setEnabled(false);

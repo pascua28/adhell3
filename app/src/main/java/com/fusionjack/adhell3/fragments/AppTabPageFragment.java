@@ -14,13 +14,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
-import com.fusionjack.adhell3.tasks.SetAppAsyncTask;
+import com.fusionjack.adhell3.tasks.ToggleAppInfoRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.samsung.android.knox.application.ApplicationPolicy;
@@ -106,8 +105,7 @@ public class AppTabPageFragment extends AppFragment {
             listView.setAdapter(adapter);
             if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
                 listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                    AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-                    new SetAppAsyncTask(adapter.getItem(position), appFlag, context).execute();
+                    ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
                 });
             }
         }

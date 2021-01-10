@@ -11,7 +11,13 @@ import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
+import com.fusionjack.adhell3.db.entity.DisabledPackage;
+import com.fusionjack.adhell3.db.entity.DnsPackage;
+import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
+import com.fusionjack.adhell3.db.entity.RestrictedPackage;
+import com.fusionjack.adhell3.model.AppFlag;
 import com.google.common.collect.Lists;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +37,83 @@ import io.reactivex.Single;
 public final class AppDatabaseFactory {
 
     private AppDatabaseFactory() {
+    }
+
+    public static void toggleAppInfo(AppInfo appInfo, AppFlag appFlag) {
+        ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+
+        String packageName = appInfo.packageName;
+        switch (appFlag.getType()) {
+            case DISABLER:
+                appInfo.disabled = !appInfo.disabled;
+                if (appInfo.disabled) {
+                    DisabledPackage disabledPackage = new DisabledPackage();
+                    disabledPackage.packageName = packageName;
+                    disabledPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                    appDatabase.disabledPackageDao().insert(disabledPackage);
+                } else {
+                    appDatabase.disabledPackageDao().deleteByPackageName(packageName);
+                }
+
+                if (appInfo.disabled) {
+                    appPolicy.setDisableApplication(packageName);
+                } else {
+                    appPolicy.setEnableApplication(packageName);
+                }
+                break;
+
+            case MOBILE_RESTRICTED:
+                appInfo.mobileRestricted = !appInfo.mobileRestricted;
+                if (appInfo.mobileRestricted) {
+                    RestrictedPackage restrictedPackage = new RestrictedPackage();
+                    restrictedPackage.packageName = packageName;
+                    restrictedPackage.type = DatabaseFactory.MOBILE_RESTRICTED_TYPE;
+                    restrictedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                    appDatabase.restrictedPackageDao().insert(restrictedPackage);
+                } else {
+                    appDatabase.restrictedPackageDao().deleteByPackageName(packageName, DatabaseFactory.MOBILE_RESTRICTED_TYPE);
+                }
+                break;
+
+            case WIFI_RESTRICTED:
+                appInfo.wifiRestricted = !appInfo.wifiRestricted;
+                if (appInfo.wifiRestricted) {
+                    RestrictedPackage restrictedPackage = new RestrictedPackage();
+                    restrictedPackage.packageName = packageName;
+                    restrictedPackage.type = DatabaseFactory.WIFI_RESTRICTED_TYPE;
+                    restrictedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                    appDatabase.restrictedPackageDao().insert(restrictedPackage);
+                } else {
+                    appDatabase.restrictedPackageDao().deleteByPackageName(packageName, DatabaseFactory.WIFI_RESTRICTED_TYPE);
+                }
+                break;
+
+            case WHITELISTED:
+                appInfo.adhellWhitelisted = !appInfo.adhellWhitelisted;
+                if (appInfo.adhellWhitelisted) {
+                    FirewallWhitelistedPackage whitelistedPackage = new FirewallWhitelistedPackage();
+                    whitelistedPackage.packageName = packageName;
+                    whitelistedPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                    appDatabase.firewallWhitelistedPackageDao().insert(whitelistedPackage);
+                } else {
+                    appDatabase.firewallWhitelistedPackageDao().deleteByPackageName(packageName);
+                }
+                break;
+
+            case DNS:
+                appInfo.hasCustomDns = !appInfo.hasCustomDns;
+                if (appInfo.hasCustomDns) {
+                    DnsPackage dnsPackage = new DnsPackage();
+                    dnsPackage.packageName = packageName;
+                    dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                    appDatabase.dnsPackageDao().insert(dnsPackage);
+                } else {
+                    appDatabase.dnsPackageDao().deleteByPackageName(packageName);
+                }
+                break;
+        }
+        appDatabase.applicationInfoDao().update(appInfo);
     }
 
     public static void restoreDatabase(ObservableEmitter<String> emitter, boolean hasInternetAccess) throws Exception {
