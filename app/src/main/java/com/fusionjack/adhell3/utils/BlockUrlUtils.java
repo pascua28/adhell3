@@ -2,6 +2,8 @@ package com.fusionjack.adhell3.utils;
 
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+
 import android.webkit.URLUtil;
 
 import com.fusionjack.adhell3.db.AppDatabase;
@@ -95,8 +97,12 @@ public class BlockUrlUtils {
         return list;
     }
 
-    public static int getAllBlockedUrlsCount(AppDatabase appDatabase) {
-        return appDatabase.blockUrlProviderDao().getUniqueBlockedUrlsCount();
+    public static int getTotalDomainCount(AppDatabase appDatabase) {
+        return appDatabase.blockUrlProviderDao().getUniqueDomainCount();
+    }
+
+    public static LiveData<Integer> getTotalDomainCountAsLiveData(AppDatabase appDatabase) {
+        return appDatabase.blockUrlProviderDao().getUniqueDomainCountAsLiveData();
     }
 
     public static List<String> getAllBlockedUrls(AppDatabase appDatabase) {

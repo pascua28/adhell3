@@ -16,10 +16,10 @@ import java.util.List;
 public interface BlockUrlProviderDao {
 
     @Query("SELECT * FROM BlockUrlProviders ORDER BY deletable ASC")
-    List<BlockUrlProvider> getAll2();
+    List<BlockUrlProvider> getAll();
 
     @Query("SELECT * FROM BlockUrlProviders ORDER BY deletable ASC")
-    LiveData<List<BlockUrlProvider>> getAll();
+    LiveData<List<BlockUrlProvider>> getAllAsLiveData();
 
     @Query("SELECT * FROM BlockUrlProviders WHERE selected = :selected")
     List<BlockUrlProvider> getBlockUrlProviderBySelectedFlag(int selected);
@@ -28,7 +28,10 @@ public interface BlockUrlProviderDao {
     List<String> getUniqueBlockedUrls();
 
     @Query("SELECT COUNT(DISTINCT url) AS unique_count FROM BlockUrl WHERE urlProviderId IN (SELECT _id FROM BlockUrlProviders WHERE selected = 1)")
-    int getUniqueBlockedUrlsCount();
+    LiveData<Integer> getUniqueDomainCountAsLiveData();
+
+    @Query("SELECT COUNT(DISTINCT url) AS unique_count FROM BlockUrl WHERE urlProviderId IN (SELECT _id FROM BlockUrlProviders WHERE selected = 1)")
+    int getUniqueDomainCount();
 
     @Query("SELECT * FROM BlockUrlProviders WHERE url = :url")
     BlockUrlProvider getByUrl(String url);

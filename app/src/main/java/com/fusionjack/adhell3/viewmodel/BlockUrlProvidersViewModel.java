@@ -1,31 +1,33 @@
 package com.fusionjack.adhell3.viewmodel;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.BlockUrlUtils;
 
 import java.util.List;
 
+import io.reactivex.Single;
+
 public class BlockUrlProvidersViewModel extends ViewModel {
-    private LiveData<List<BlockUrlProvider>> blockUrlProviders;
 
     public BlockUrlProvidersViewModel() {
     }
 
-    public LiveData<List<BlockUrlProvider>> getBlockUrlProviders() {
-        if (blockUrlProviders == null) {
-            blockUrlProviders = new MutableLiveData<>();
-            loadBlockUrlProviders();
-        }
-        return blockUrlProviders;
+    public Single<LiveData<Integer>> getDomainCount() {
+        return Single.fromCallable(() -> {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            return BlockUrlUtils.getTotalDomainCountAsLiveData(appDatabase);
+        });
     }
 
-    private void loadBlockUrlProviders() {
-        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-        blockUrlProviders = appDatabase.blockUrlProviderDao().getAll();
+    public Single<LiveData<List<BlockUrlProvider>>> getBlockUrlProviders() {
+        return Single.fromCallable(() -> {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+            return appDatabase.blockUrlProviderDao().getAllAsLiveData();
+        });
     }
 }

@@ -1,15 +1,13 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,26 +15,31 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
-import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
-import com.fusionjack.adhell3.tasks.SetDomainCountAsyncTask;
+import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.material.tabs.TabLayout;
 
-import java.lang.ref.WeakReference;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
@@ -55,28 +58,23 @@ public class ProviderListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_provider, container, false);
 
-        // Set URL limit
+        BlockUrlProvidersViewModel model = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
+
+        // Init URL limit
         TextView hintTextView = view.findViewById(R.id.providerInfoTextView);
         String strFormat = getResources().getString(R.string.provider_info);
         hintTextView.setText(String.format(strFormat, AdhellAppIntegrity.BLOCK_URL_LIMIT));
 
-        // Set domain count to 0
+        // Init total domain count - LiveData
         TextView infoTextView = view.findViewById(R.id.infoTextView);
-        strFormat = getResources().getString(R.string.total_unique_domains);
-        infoTextView.setText(String.format(strFormat, 0));
+        initDomainCount(model, infoTextView);
 
-        new SetDomainCountAsyncTask(context).execute();
-
-        // Provider list
+        // Init provider list with an empty list - LiveData
+        List<BlockUrlProvider> providerList = new ArrayList<>();
+        BlockUrlProviderAdapter providerAdapter = new BlockUrlProviderAdapter(context, providerList);
         ListView providerListView = view.findViewById(R.id.providerListView);
-        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
-        providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
-            ListAdapter adapter = providerListView.getAdapter();
-            if (adapter == null) {
-                BlockUrlProviderAdapter arrayAdapter = new BlockUrlProviderAdapter(context, blockUrlProviders);
-                providerListView.setAdapter(arrayAdapter);
-            }
-        });
+        providerListView.setAdapter(providerAdapter);
+        initProviderList(model, providerList, providerAdapter);
 
         providerListView.setOnItemClickListener((parent, view1, position, id) -> {
             BlockUrlProvider provider = (BlockUrlProvider) parent.getItemAtPosition(position);
@@ -97,7 +95,7 @@ public class ProviderListFragment extends Fragment {
 
         SwipeRefreshLayout dnsSwipeContainer = view.findViewById(R.id.providerSwipeContainer);
         dnsSwipeContainer.setOnRefreshListener(() ->
-                new UpdateProviderAsyncTask(context).execute()
+                updateAllProviders(dnsSwipeContainer)
         );
 
         FloatingActionsMenu providerFloatMenu = view.findViewById(R.id.provider_actions);
@@ -110,9 +108,9 @@ public class ProviderListFragment extends Fragment {
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText providerEditText = dialogView.findViewById(R.id.providerEditText);
-                        String provider = providerEditText.getText().toString();
-                        if (URLUtil.isValidUrl(provider)) {
-                            new AddProviderAsyncTask(provider, context).execute();
+                        String providerUrl = providerEditText.getText().toString();
+                        if (URLUtil.isValidUrl(providerUrl)) {
+                            addProvider(providerUrl);
                         } else {
                             Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
                         }
@@ -123,169 +121,123 @@ public class ProviderListFragment extends Fragment {
         return view;
     }
 
-    private static class AddProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private String provider;
-        private WeakReference<Context> contextWeakReference;
-        private BlockUrlProvider blockUrlProvider;
-
-        AddProviderAsyncTask(String provider, Context context) {
-            this.provider = provider;
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-
-            blockUrlProvider = new BlockUrlProvider();
-            blockUrlProvider.url = provider;
-            blockUrlProvider.count = 0;
-            blockUrlProvider.deletable = true;
-            blockUrlProvider.lastUpdated = new Date();
-            blockUrlProvider.selected = false;
-            blockUrlProvider.id = appDatabase.blockUrlProviderDao().insertAll(blockUrlProvider)[0];
-            blockUrlProvider.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-            appDatabase.blockUrlProviderDao().updateBlockUrlProviders(blockUrlProvider);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.providerListView);
-                if (listView != null) {
-                    if (listView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                        BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) listView.getAdapter();
-                        adapter.add(blockUrlProvider);
-                        adapter.notifyDataSetChanged();
-
-                        new LoadProviderAsyncTask(blockUrlProvider, context).execute();
+    private void initProviderList(BlockUrlProvidersViewModel model, List<BlockUrlProvider> providerList, BlockUrlProviderAdapter providerAdapter) {
+        model.getBlockUrlProviders()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<LiveData<List<BlockUrlProvider>>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
                     }
-                }
-            }
-        }
-    }
 
-    private static class LoadProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private WeakReference<Context> contextWeakReference;
-
-        LoadProviderAsyncTask(BlockUrlProvider provider, Context context) {
-            this.provider = provider;
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            try {
-                List<BlockUrl> blockUrls = BlockUrlUtils.loadBlockUrls(provider);
-                provider.count = blockUrls.size();
-                provider.lastUpdated = new Date();
-                appDatabase.blockUrlProviderDao().updateBlockUrlProviders(provider);
-                appDatabase.blockUrlDao().insertAll(blockUrls);
-            } catch (Exception e) {
-                appDatabase.blockUrlProviderDao().delete(provider);
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.providerListView);
-                if (listView != null) {
-                    if (listView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                        BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) listView.getAdapter();
-                        adapter.notifyDataSetChanged();
+                    @Override
+                    public void onSuccess(@NonNull LiveData<List<BlockUrlProvider>> liveData) {
+                        liveData.observe(getViewLifecycleOwner(), _providerList -> {
+                            providerList.clear();
+                            providerList.addAll(_providerList);
+                            providerAdapter.notifyDataSetChanged();
+                        });
                     }
-                }
-            }
-        }
-    }
 
-    private static class UpdateProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Context> contextWeakReference;
+                    @Override
+                    public void onError(@NonNull Throwable e) {
 
-        UpdateProviderAsyncTask(Context context) {
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                if (AdhellFactory.getInstance().hasInternetAccess(context)) {
-                    AdhellFactory.getInstance().updateAllProviders();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                new SetProviderAsyncTask(context).execute();
-
-                SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.providerSwipeContainer);
-                if (swipeContainer != null) {
-                    swipeContainer.setRefreshing(false);
-                }
-
-                new SetDomainCountAsyncTask(context).execute();
-            }
-        }
-    }
-
-    private static class SetProviderAsyncTask extends AsyncTask<Void, Void, List<BlockUrlProvider>> {
-        private WeakReference<Context> contextWeakReference;
-
-        SetProviderAsyncTask(Context context) {
-            this.contextWeakReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected List<BlockUrlProvider> doInBackground(Void... voids) {
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            return appDatabase.blockUrlProviderDao().getAll2();
-        }
-
-        @Override
-        protected void onPostExecute(List<BlockUrlProvider> providers) {
-            Context context = contextWeakReference.get();
-            if (context != null) {
-                ListView listView = ((Activity) context).findViewById(R.id.providerListView);
-                if (listView != null) {
-                    if (listView.getAdapter() instanceof BlockUrlProviderAdapter) {
-                        BlockUrlProviderAdapter adapter = (BlockUrlProviderAdapter) listView.getAdapter();
-                        for (int i = 0; i < adapter.getCount(); i++) {
-                            BlockUrlProvider provider = adapter.getItem(i);
-                            if (provider != null) {
-                                BlockUrlProvider dbProvider = getProvider(provider.id, providers);
-                                if (dbProvider != null) {
-                                    provider.count = dbProvider.count;
-                                    provider.lastUpdated = dbProvider.lastUpdated;
-                                }
-                            }
-                        }
-                        adapter.notifyDataSetChanged();
                     }
-                }
-            }
-        }
-
-        private BlockUrlProvider getProvider(long id, List<BlockUrlProvider> providers) {
-            for (BlockUrlProvider provider : providers) {
-                if (provider.id == id) {
-                    return provider;
-                }
-            }
-            return null;
-        }
+                });
     }
+
+    private void initDomainCount(BlockUrlProvidersViewModel model, TextView infoTextView) {
+        model.getDomainCount()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<LiveData<Integer>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        String strFormat = getResources().getString(R.string.total_unique_domains);
+                        infoTextView.setText(String.format(strFormat, 0));
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull LiveData<Integer> liveData) {
+                        liveData.observe(getViewLifecycleOwner(), count -> {
+                            String strFormat = context.getResources().getString(R.string.total_unique_domains);
+                            infoTextView.setText(String.format(strFormat, count));
+                        });
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void addProvider(String providerUrl) {
+        DomainRxTaskFactory.addProvider(providerUrl)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<BlockUrlProvider>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull BlockUrlProvider provider) {
+                        ProgressDialog dialog = new ProgressDialog(context);
+                        DomainRxTaskFactory.loadProvider(provider)
+                                .subscribeOn(Schedulers.computation())
+                                .subscribe(new CompletableObserver() {
+                                    @Override
+                                    public void onSubscribe(@NonNull Disposable d) {
+                                        dialog.setMessage("Loading provider ...");
+                                        dialog.show();
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+                                        dialog.dismiss();
+                                    }
+
+                                    @Override
+                                    public void onError(@NonNull Throwable e) {
+                                        dialog.dismiss();
+                                        LogUtils.error(e.getMessage(), e);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private void updateAllProviders(SwipeRefreshLayout swipeContainer) {
+        ProgressDialog dialog = new ProgressDialog(context);
+        boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(context);
+        DomainRxTaskFactory.updateAllProviders(hasInternetAccess)
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        swipeContainer.setRefreshing(false);
+                        dialog.setMessage("Updating providers ...");
+                        dialog.show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        dialog.dismiss();
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
 }

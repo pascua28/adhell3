@@ -189,7 +189,7 @@ public final class DatabaseFactory {
     private void writeBlockUrlProviders(JsonWriter writer, AppDatabase appDatabase) throws IOException {
         writer.name("BlockUrlProvider");
         writer.beginArray();
-        List<BlockUrlProvider> blockUrlProviders = appDatabase.blockUrlProviderDao().getAll2();
+        List<BlockUrlProvider> blockUrlProviders = appDatabase.blockUrlProviderDao().getAll();
         for (BlockUrlProvider provider: blockUrlProviders) {
             writer.beginObject();
             writer.name("url").value(provider.url);

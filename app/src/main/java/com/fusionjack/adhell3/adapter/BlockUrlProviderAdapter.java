@@ -1,10 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,23 +11,30 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fusionjack.adhell3.App;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
-import com.fusionjack.adhell3.tasks.SetDomainCountAsyncTask;
+import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import com.fusionjack.adhell3.utils.LogUtils;
 
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
 
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
     public BlockUrlProviderAdapter(Context context, List<BlockUrlProvider> blockUrlProviders) {
         super(context, 0, blockUrlProviders);
@@ -59,15 +63,15 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         blockUrlProviderTextView.setText(blockUrlProvider.url);
         blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
 
+        Date lastUpdated = blockUrlProvider.lastUpdated;
         urlProviderCheckBox.setChecked(blockUrlProvider.selected);
         urlProviderCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             int position2 = (Integer) buttonView.getTag();
             BlockUrlProvider provider = getItem(position2);
-            new GetAllBlockedUrlsAsyncTask(provider, isChecked, this, getContext()).execute();
+            selectProvider(isChecked, provider);
         });
 
-        Date lastUpdated = blockUrlProvider.lastUpdated == null ? new Date() : blockUrlProvider.lastUpdated;
-        lastUpdatedTextView.setText(dateFormatter.format(lastUpdated));
+        lastUpdatedTextView.setText(lastUpdated == null ? "Never" : dateFormatter.format(lastUpdated));
         if (!blockUrlProvider.deletable) {
             deleteUrlImageView.setVisibility(View.GONE);
         }
@@ -83,7 +87,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         int position2 = (Integer) imageView.getTag();
                         BlockUrlProvider provider = getItem(position2);
-                        new DeleteProviderAsyncTask(provider, this).execute();
+                        deleteProvider(provider);
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });
@@ -91,70 +95,56 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         return convertView;
     }
 
-    private static class DeleteProviderAsyncTask extends AsyncTask<Void, Void, Void> {
-        private BlockUrlProvider provider;
-        private BlockUrlProviderAdapter adapter;
-
-        DeleteProviderAsyncTask(BlockUrlProvider provider, BlockUrlProviderAdapter adapter) {
-            this.provider = provider;
-            this.adapter = adapter;
+    private void selectProvider(boolean isChecked, BlockUrlProvider provider) {
+        boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(getContext());
+        if (provider.lastUpdated == null && !hasInternetAccess) {
+            Toast.makeText(getContext(), "There is no internet access and it is never updated", Toast.LENGTH_LONG).show();
+            return;
         }
 
-        @Override
-        protected Void doInBackground(Void... voids) {
-            AppDatabase appDatabase = AppDatabase.getAppDatabase(App.get().getApplicationContext());
-            appDatabase.blockUrlProviderDao().delete(provider);
-            return null;
-        }
+        ProgressDialog dialog = new ProgressDialog(getContext());
+        boolean showDialog = provider.lastUpdated == null;
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            adapter.remove(provider);
-            adapter.notifyDataSetChanged();
-        }
+        DomainRxTaskFactory.selectProvider(isChecked, provider)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                        if (showDialog) {
+                            dialog.setMessage("Loading provider ...");
+                            dialog.show();
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(@io.reactivex.annotations.NonNull Boolean isValid) {
+                        if (showDialog) {
+                            dialog.dismiss();
+                        }
+                        if (!isValid) {
+                            String message = String.format(Locale.ENGLISH, "The total number of unique domains exceeds the maximum limit of %d",
+                                    AdhellAppIntegrity.BLOCK_URL_LIMIT);
+                            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                        if (showDialog) {
+                            dialog.dismiss();
+                        }
+                        LogUtils.error(e.getMessage(), e);
+                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
-    private static class GetAllBlockedUrlsAsyncTask extends AsyncTask<Void, Void, Integer> {
-        private BlockUrlProvider provider;
-        private boolean isChecked;
-        private BlockUrlProviderAdapter adapter;
-        private WeakReference<Context> contextReference;
-
-        GetAllBlockedUrlsAsyncTask(BlockUrlProvider provider, boolean isChecked, BlockUrlProviderAdapter adapter, Context context) {
-            this.provider = provider;
-            this.isChecked = isChecked;
-            this.adapter = adapter;
-            this.contextReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Integer doInBackground(Void... o) {
-            provider.selected = isChecked;
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            appDatabase.blockUrlProviderDao().updateBlockUrlProviders(provider);
-            int totalUrls = BlockUrlUtils.getAllBlockedUrlsCount(appDatabase);
-            if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
-                provider.selected = false;
-                appDatabase.blockUrlProviderDao().updateBlockUrlProviders(provider);
-            }
-            return totalUrls;
-        }
-
-        @Override
-        protected void onPostExecute(Integer totalUrls) {
-            Context context = contextReference.get();
-            if (context != null) {
-                adapter.notifyDataSetChanged();
-
-                if (totalUrls > AdhellAppIntegrity.BLOCK_URL_LIMIT) {
-                    String message = String.format("The total number of unique domains %d exceeds the maximum limit of %d",
-                                    totalUrls, AdhellAppIntegrity.BLOCK_URL_LIMIT);
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-                } else {
-                    // Update the total unique domain count
-                    new SetDomainCountAsyncTask(context).execute();
-                }
-            }
-        }
+    private void deleteProvider(BlockUrlProvider provider) {
+        DomainRxTaskFactory.deleteProvider(provider)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
     }
+
 }
