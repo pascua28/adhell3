@@ -27,8 +27,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+
 public class CleanDBUpdateWorker extends Worker {
-    private final AppDatabase appDatabase;
+    private static AppDatabase appDatabase;
+    private static AppCache appCache;
     private int retryCount;
     private Handler handler = null;
 
@@ -50,6 +54,7 @@ public class CleanDBUpdateWorker extends Worker {
         appDatabase = AppDatabase.getAppDatabase(context);
     }
 
+
     @NonNull
     @Override
     public Result doWork() {
@@ -62,9 +67,23 @@ public class CleanDBUpdateWorker extends Worker {
         if (AppPreferences.getInstance().getCleanDBOnAutoUpdate()) {
             LogUtils.info("------Start auto clean database------", handler);
             try {
-                LogUtils.info("Getting app cache instance...", handler);
-                AppCache appCache = AppCache.getInstance(null);
-                cleanDatabase(appDatabase, appCache, handler);
+                appCache = AppCache.getInstance(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                        LogUtils.info("Getting app cache instance...", handler);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        LogUtils.info("Done.", handler);
+                        cleanDatabase(appDatabase, appCache, handler);
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+                        LogUtils.error("Error!", e, handler);
+                    }
+                });
             } catch (Throwable th) {
                 LogUtils.error("Failed auto clean database! Will be retried.", th, handler);
                 LogUtils.info("------Failed auto clean database------", handler);

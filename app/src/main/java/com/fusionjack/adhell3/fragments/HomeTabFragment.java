@@ -156,7 +156,7 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         );
 
         homeTabViewModel.getReportBlockedUrls().observe(getViewLifecycleOwner(), reportBlockedUrls -> {
-            if (AppCache.getInstance(null).getAppCached()) {
+            if (AppCache.getAppsIsCached()) {
                 ExpandableListAdapter adapter = binding.blockedDomainsListView.getExpandableListAdapter();
                 Context context = getContext();
                 if (adapter == null && context != null) {

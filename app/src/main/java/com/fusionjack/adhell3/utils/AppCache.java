@@ -35,12 +35,29 @@ public class AppCache {
         }
     };
 
-    public boolean getAppCached() {
-        return appCached;
+    public static boolean getAppsIsCached() {
+        boolean isCached = false;
+        if (instance != null && appCached) {
+            isCached = true;
+        }
+        return isCached;
     }
 
     private AppCache() {
         this.result = new AppInfoResult();
+    }
+
+    public static synchronized boolean load(CompletableObserver callerObserver) {
+        boolean load = false;
+        if (instance == null) {
+            instance = new AppCache();
+        }
+        if (!appCached) {
+            instance.cacheApps(callerObserver);
+            load = true;
+            appCached = true;
+        }
+        return load;
     }
 
     public static synchronized AppCache getInstance(CompletableObserver callerObserver) {

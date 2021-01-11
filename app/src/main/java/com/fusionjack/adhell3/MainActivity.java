@@ -323,12 +323,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Reload AppCache if needed
-        //AppCache.getInstance(AppCacheDialog.createActivityObserver(this, getSupportFragmentManager()));
+        // Reload AppCache and check DB integrity
         final AppCacheDialog dialog = new AppCacheDialog(this);
-        AppCache.getInstance(new CompletableObserver() {
+        if (!AppCache.load(new CompletableObserver() {
              @Override
-             public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+             public void onSubscribe(@NonNull Disposable d) {
                  dialog.showDialog();
              }
 
@@ -339,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
              }
 
              @Override
-             public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+             public void onError(@NonNull Throwable e) {
                  dialog.dismissDialog();
                  LogUtils.error(e.getMessage(), e);
                  new AlertDialog.Builder(getBaseContext(), R.style.AlertDialogStyle)
@@ -347,7 +346,14 @@ public class MainActivity extends AppCompatActivity {
                          .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
                          .show();
              }
-         });
+         })) {
+            checkDatabaseIntegrity();
+        }
+
+        // Launch database integrity if apps is already cached
+        if (AppCache.getAppsIsCached()) {
+            checkDatabaseIntegrity();
+        }
 
         // Check for storage permission
         requestStoragePermission();
@@ -411,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         dialog.dismissDialog();
-                        updateUserInterface();
+                        applyAppCacheChange();
                     }
 
                     @Override
@@ -439,7 +445,7 @@ public class MainActivity extends AppCompatActivity {
                             String message = newAppSize + " new app(s) and " + deletedAppSize + " deleted app(s) have been detected.";
                             makeSnackbar(message, Snackbar.LENGTH_LONG).show();
                         }
-                        updateUserInterface();
+                        applyAppCacheChange();
                     }
 
                     @Override
@@ -449,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void updateUserInterface() {
+    private void applyAppCacheChange() {
         for (Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment != null && fragment.isVisible()) {
                 if (fragment instanceof AppCacheChangeListener) {

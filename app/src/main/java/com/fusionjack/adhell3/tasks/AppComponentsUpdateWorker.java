@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+
 public class AppComponentsUpdateWorker extends Worker {
     private final AppDatabase appDatabase;
     private int retryCount;
@@ -67,7 +70,27 @@ public class AppComponentsUpdateWorker extends Worker {
             LogUtils.info("------Start App components auto update------", handler);
             try {
                 if (AppPreferences.getInstance().isAppComponentToggleEnabled()) {
-                    processAppComponentsInAutoUpdate();
+                    AppCache.getInstance(new CompletableObserver() {
+                        @Override
+                        public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                            LogUtils.info("Reloading App Cache...", handler);
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            LogUtils.info("Done.", handler);
+                            try {
+                                processAppComponentsInAutoUpdate();
+                            } catch (Throwable throwable) {
+                                LogUtils.error("Error!", throwable, handler);
+                            }
+                        }
+
+                        @Override
+                        public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+                            LogUtils.error("Error!", e, handler);
+                        }
+                    });
                 } else {
                     LogUtils.info("The management of app components is disabled, nothing to do.", handler);
                 }
@@ -85,10 +108,6 @@ public class AppComponentsUpdateWorker extends Worker {
     }
 
     private void processAppComponentsInAutoUpdate() throws Throwable {
-        LogUtils.info("Reloading App Cache...", handler);
-        AppCache.getInstance(null);
-        LogUtils.info("Done.", handler);
-
         LogUtils.info(String.format(Locale.getDefault(), "Getting file '%s'...", AppComponentFactory.COMPONENTS_FILENAME), handler);
         DocumentFile componentsFile = FileUtils.getDocumentFile(AppComponentFactory.STORAGE_FOLDERS, AppComponentFactory.COMPONENTS_FILENAME, FileUtils.FileCreationType.IF_NOT_EXIST);
 
