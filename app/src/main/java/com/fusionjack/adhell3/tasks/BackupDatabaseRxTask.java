@@ -10,12 +10,12 @@ import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BackupDatabaseRxTask implements Runnable {
 
