@@ -53,7 +53,10 @@ public interface AppInfoDao {
 
     // User apps
     @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 0 ORDER BY appName ASC")
-    LiveData<List<AppInfo>> getUserApps();
+    LiveData<List<AppInfo>> getUserAppsAsLiveData();
+
+    @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 0 ORDER BY appName ASC")
+    List<AppInfo> getUserApps();
 
     @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY appName ASC")
     List<AppInfo> getUserAndDisabledApps();

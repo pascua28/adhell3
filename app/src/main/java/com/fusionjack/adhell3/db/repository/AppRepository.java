@@ -43,7 +43,7 @@ public class AppRepository {
                     boolean showSystemApps = BuildConfig.SHOW_SYSTEM_APP_COMPONENT;
                     list = showSystemApps ?
                             appDatabase.applicationInfoDao().getEnabledApps() :
-                            appDatabase.applicationInfoDao().getUserApps();
+                            appDatabase.applicationInfoDao().getUserAppsAsLiveData();
                     break;
                 case DNS:
                     list = appDatabase.applicationInfoDao().getAppsInDnsOrder();

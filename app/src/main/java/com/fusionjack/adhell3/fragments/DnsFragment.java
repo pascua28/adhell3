@@ -75,7 +75,7 @@ public class DnsFragment extends AppFragment {
                         appDatabase.dnsPackageDao().deleteAll();
                     } else {
                         appDatabase.dnsPackageDao().deleteAll();
-                        List<AppInfo> userApps = Optional.ofNullable(appDatabase.applicationInfoDao().getUserApps().getValue()).orElse(Collections.emptyList());
+                        List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
                         for (AppInfo app : userApps) {
                             app.hasCustomDns = true;
                             appDatabase.applicationInfoDao().update(app);
