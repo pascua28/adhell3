@@ -10,10 +10,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -38,12 +38,10 @@ public class AppComponentFragment extends AppFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initAppModel(AppRepository.Type.COMPONENT);
-
         if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT) {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.dialog_system_app_components_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.dialog_system_app_components_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_system_app_components_info);
             new AlertDialog.Builder(context)
@@ -53,9 +51,32 @@ public class AppComponentFragment extends AppFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.appcomponent_tab_menu, menu);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        return inflateFragment(R.layout.fragment_app_component, inflater, container, AppRepository.Type.COMPONENT, AppFlag.createComponentFlag());
+    }
 
+    @Override
+    protected void listOnItemClickListener(AdapterView<?> adView, View view2, int position, long id, AppFlag appFlag) {
+        AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
+
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        Bundle bundle = new Bundle();
+        AppInfo appInfo = adapter.getItem(position);
+        bundle.putString("packageName", appInfo.packageName);
+        bundle.putString("appName", appInfo.appName);
+        ComponentTabFragment fragment = new ComponentTabFragment();
+        fragment.setArguments(bundle);
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+        fragmentTransaction.addToBackStack("appComponents");
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.appcomponent_tab_menu, menu);
         initSearchView(menu);
     }
 
@@ -73,9 +94,9 @@ public class AppComponentFragment extends AppFragment {
     }
 
     private void batchOperation() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_appcomponent_batch_title);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_appcomponent_batch_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
 
@@ -84,11 +105,11 @@ public class AppComponentFragment extends AppFragment {
 
         SingleObserver<String> observer = new SingleObserver<String>() {
             @Override
-            public void onSubscribe(Disposable d) {
+            public void onSubscribe(@NonNull Disposable d) {
             }
 
             @Override
-            public void onSuccess(String s) {
+            public void onSuccess(@NonNull String s) {
                 progressDialog.dismiss();
                 Toast.makeText(context, s, Toast.LENGTH_LONG).show();
             }
@@ -122,9 +143,9 @@ public class AppComponentFragment extends AppFragment {
     }
 
     private void enableAllAppComponents() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_enable_components_title);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_enable_components_title);
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_enable_components_info);
         new AlertDialog.Builder(context)
@@ -136,34 +157,5 @@ public class AppComponentFragment extends AppFragment {
                         })
                 )
                 .setNegativeButton(android.R.string.no, null).show();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
-        View view = inflater.inflate(R.layout.fragment_app_component, container, false);
-
-        AppFlag appFlag = AppFlag.createComponentFlag();
-        ListView listView = view.findViewById(appFlag.getLayout());
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-            AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            Bundle bundle = new Bundle();
-            AppInfo appInfo = adapter.getItem(position);
-            bundle.putString("packageName", appInfo.packageName);
-            bundle.putString("appName", appInfo.appName);
-            ComponentTabFragment fragment = new ComponentTabFragment();
-            fragment.setArguments(bundle);
-
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-            fragmentTransaction.addToBackStack("appComponents");
-            fragmentTransaction.commit();
-        });
-
-        return view;
     }
 }

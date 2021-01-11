@@ -7,13 +7,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -29,7 +30,6 @@ import java.util.List;
 public class AppTabPageFragment extends AppFragment {
     private static final String ARG_PAGE = "page";
     private int page;
-    private AppFlag appFlag;
 
     public static final int PACKAGE_DISABLER_PAGE = 0;
     public static final int MOBILE_RESTRICTER_PAGE = 1;
@@ -45,8 +45,9 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+
         this.page = getArguments().getInt(ARG_PAGE);
 
         AppRepository.Type type;
@@ -71,53 +72,40 @@ public class AppTabPageFragment extends AppFragment {
                 type = AppRepository.Type.DISABLER;
                 break;
         }
-        initAppModel(type);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
         View view = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
-                view = inflater.inflate(R.layout.fragment_package_disabler, container, false);
-                appFlag = AppFlag.createDisablerFlag();
+                view = inflateFragment(R.layout.fragment_package_disabler, inflater, container, type, AppFlag.createDisablerFlag());
                 break;
 
             case MOBILE_RESTRICTER_PAGE:
-                view = inflater.inflate(R.layout.fragment_mobile_restricter, container, false);
-                appFlag = AppFlag.createMobileRestrictedFlag();
+                view = inflateFragment(R.layout.fragment_mobile_restricter, inflater, container, type, AppFlag.createMobileRestrictedFlag());
                 break;
 
             case WIFI_RESTRICTER_PAGE:
-                view = inflater.inflate(R.layout.fragment_wifi_restricter, container, false);
-                appFlag = AppFlag.createWifiRestrictedFlag();
+                view = inflateFragment(R.layout.fragment_wifi_restricter, inflater, container, type, AppFlag.createWifiRestrictedFlag());
                 break;
 
             case WHITELIST_PAGE:
-                view = inflater.inflate(R.layout.fragment_whitelisted_app, container, false);
-                appFlag = AppFlag.createWhitelistedFlag();
+                view = inflateFragment(R.layout.fragment_whitelisted_app, inflater, container, type, AppFlag.createWhitelistedFlag());
                 break;
         }
-
-        if (view != null) {
-            ListView listView = view.findViewById(appFlag.getLayout());
-            listView.setAdapter(adapter);
-            if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
-                listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-                    ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
-                });
-            }
-        }
-
         return view;
     }
 
     @Override
+    protected void listOnItemClickListener(AdapterView<?> adView, View view2, int position, long id, AppFlag appFlag) {
+        if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
+            AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
+            ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_enable_all:
-                enableAllPackages();
+        if (item.getItemId() == R.id.action_enable_all) {
+            enableAllPackages();
         }
         return super.onOptionsItemSelected(item);
     }

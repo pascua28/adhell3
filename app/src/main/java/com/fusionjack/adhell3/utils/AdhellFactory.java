@@ -42,6 +42,8 @@ import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 
+import io.reactivex.ObservableEmitter;
+
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_UNKNOWN;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DEFAULT;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
@@ -166,23 +168,20 @@ public final class AdhellFactory {
         return appPolicy.applyRuntimePermissions(new AppIdentity(packageName, null), permissions, PERMISSION_POLICY_STATE_DENY);
     }
 
-    public void setDns(String primaryDns, String secondaryDns, Handler handler) {
+    public void setDns(String primaryDns, String secondaryDns, ObservableEmitter<Integer> emitter) {
         if (primaryDns.isEmpty() && secondaryDns.isEmpty()) {
             AppPreferences.getInstance().removeDns();
-            if (handler != null) {
-                Message message = handler.obtainMessage(0, R.string.restored_dns);
-                message.sendToTarget();
+            if (emitter != null) {
+                emitter.onNext(R.string.restored_dns);
             }
         } else if (!Patterns.IP_ADDRESS.matcher(primaryDns).matches() || !Patterns.IP_ADDRESS.matcher(secondaryDns).matches()) {
-            if (handler != null) {
-                Message message = handler.obtainMessage(0, R.string.check_input_dns);
-                message.sendToTarget();
+            if (emitter != null) {
+                emitter.onNext(R.string.check_input_dns);
             }
         } else {
             AppPreferences.getInstance().setDns(primaryDns, secondaryDns);
-            if (handler != null) {
-                Message message = handler.obtainMessage(0, R.string.changed_dns);
-                message.sendToTarget();
+            if (emitter != null) {
+                emitter.onNext(R.string.changed_dns);
             }
         }
     }
