@@ -1,11 +1,8 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -51,13 +48,11 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
@@ -83,10 +78,18 @@ public class HomeTabFragment extends Fragment {
     private Switch appComponentSwitch;
     private TextView infoTextView;
     private SwipeRefreshLayout swipeContainer;
+
+    private TextView domainInfoTextView;
+    private TextView firewallInfoTextView;
+    private TextView disablerInfoTextView;
+    private TextView appComponentInfoTextView;
+
     private ContentBlocker contentBlocker;
 
-    List<ReportBlockedUrl> blockedUrls;
-    ReportBlockedUrlAdapter blockedUrlAdapter;
+    private List<ReportBlockedUrl> blockedUrls;
+    private ReportBlockedUrlAdapter blockedUrlAdapter;
+
+    private Resources resources;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,7 +100,9 @@ public class HomeTabFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@androidx.annotation.NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.resources = getContext().getResources();
+
         ActionBar actionBar = parentActivity.getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
@@ -106,7 +111,7 @@ public class HomeTabFragment extends Fragment {
             View view = inflater.inflate(R.layout.activity_actionbar, container, false);
             TextView subtitleTextView = view.findViewById(R.id.subtitleTextView);
             if (subtitleTextView != null) {
-                String versionInfo = getContext().getResources().getString(R.string.version);
+                String versionInfo = resources.getString(R.string.version);
                 subtitleTextView.setText(String.format(versionInfo, BuildConfig.VERSION_NAME));
             }
             actionBar.setCustomView(view);
@@ -114,6 +119,7 @@ public class HomeTabFragment extends Fragment {
         }
 
         View view = inflater.inflate(R.layout.fragment_blocker, container, false);
+
         domainSwitch = view.findViewById(R.id.domainRulesSwitch);
         domainStatusTextView = view.findViewById(R.id.domainStatusTextView);
         firewallSwitch = view.findViewById(R.id.firewallRulesSwitch);
@@ -124,6 +130,11 @@ public class HomeTabFragment extends Fragment {
         appComponentStatusTextView = view.findViewById(R.id.appComponentStatusTextView);
         swipeContainer = view.findViewById(R.id.swipeContainer);
         infoTextView = view.findViewById(R.id.infoTextView);
+
+        domainInfoTextView = view.findViewById(R.id.domainInfoTextView);
+        firewallInfoTextView = view.findViewById(R.id.firewallInfoTextView);
+        disablerInfoTextView = view.findViewById(R.id.disablerInfoTextView);
+        appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
 
         infoTextView.setVisibility(View.INVISIBLE);
         swipeContainer.setVisibility(View.INVISIBLE);
@@ -137,19 +148,19 @@ public class HomeTabFragment extends Fragment {
 
         domainSwitch.setOnClickListener(v -> {
             LogUtils.info( "Domain switch button has been clicked");
-            new SetFirewallAsyncTask(true, this, fragmentManager, getContext()).execute();
+            toggleFirewall(true);
         });
         firewallSwitch.setOnClickListener(v -> {
             LogUtils.info( "Firewall switch button has been clicked");
-            new SetFirewallAsyncTask(false, this, fragmentManager, getContext()).execute();
+            toggleFirewall(false);
         });
         disablerSwitch.setOnClickListener(v -> {
             LogUtils.info( "App disabler switch button has been clicked");
-            new AppDisablerAsyncTask(this, getActivity()).execute();
+            toggleAppDisabler();
         });
         appComponentSwitch.setOnClickListener(v -> {
             LogUtils.info( "App component switch button has been clicked");
-            new AppComponentAsyncTask(this, getActivity()).execute();
+            toggleAppComponent();
         });
 
         FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
@@ -157,7 +168,7 @@ public class HomeTabFragment extends Fragment {
         actionAddWhiteDomain.setIcon(R.drawable.ic_public_white_24dp);
         actionAddWhiteDomain.setOnClickListener(v -> {
             domainFloatMenu.collapse();
-            new ExportDomainsAsyncTask(getContext()).execute();
+            exportDomain();
         });
 
         ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
@@ -166,20 +177,24 @@ public class HomeTabFragment extends Fragment {
         return view;
     }
 
-    private void initBlockedDomainsView(ListView blockedDomainsListView) {
-        Context context = getContext();
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkDatabaseIntegrity();
+    }
 
+    private void initBlockedDomainsView(ListView blockedDomainsListView) {
         this.blockedUrls = new ArrayList<>();
-        this.blockedUrlAdapter = new ReportBlockedUrlAdapter(context, blockedUrls);
+        this.blockedUrlAdapter = new ReportBlockedUrlAdapter(getContext(), blockedUrls);
 
         blockedDomainsListView.setAdapter(blockedUrlAdapter);
         blockedDomainsListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, blockedDomainsListView, false);
+            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, blockedDomainsListView, false);
             TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
             titleTextView.setText(R.string.dialog_whitelist_domain_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.dialog_add_to_whitelist_question);
-            new AlertDialog.Builder(context)
+            new AlertDialog.Builder(getContext())
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         String blockedUrl = blockedUrls.get(position).url;
@@ -199,10 +214,207 @@ public class HomeTabFragment extends Fragment {
                 .subscribe();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        checkDatabaseIntegrity();
+    private void exportDomain() {
+        Completable.fromAction(() -> {
+            Set<String> domains = FirewallUtils.getInstance().getReportBlockedUrl().stream()
+                    .map(domain -> domain.url)
+                    .collect(Collectors.toSet());
+
+            File file = new File(Environment.getExternalStorageDirectory(), "adhell_exported_domains.txt");
+            try (FileWriter writer = new FileWriter(file)) {
+                for (String domain : domains) {
+                    writer.write(domain);
+                    writer.write(System.lineSeparator());
+                }
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Toast.makeText(getContext(), "Blocked domains have been exported!", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Error")
+                                .setMessage(e.getMessage())
+                                .show();
+                    }
+                });
+    }
+
+    private void toggleAppDisabler() {
+        ProgressDialog dialog = new ProgressDialog(getContext());
+        Completable.fromAction(() -> {
+            boolean state = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+            AdhellFactory.getInstance().setAppDisablerToggle(!state); // toggle the switch
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                        dialog.setMessage(enabled ? "Enabling apps ..." : "Disabling apps ...");
+                        dialog.show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dialog.dismiss();
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        dialog.dismiss();
+                        LogUtils.error(e.getMessage(), e);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Error")
+                                .setMessage(e.getMessage())
+                                .show();
+                    }
+                });
+    }
+
+    private void toggleAppComponent() {
+        ProgressDialog dialog = new ProgressDialog(getContext());
+        Completable.fromAction(() -> {
+            boolean state = AppPreferences.getInstance().isAppComponentToggleEnabled();
+            AdhellFactory.getInstance().setAppComponentToggle(!state); // toggle the switch
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+                        dialog.setMessage(enabled ? "Enabling app component ..." : "Disabling app component ...");
+                        dialog.show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dialog.dismiss();
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        dialog.dismiss();
+                        LogUtils.error(e.getMessage(), e);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Error")
+                                .setMessage(e.getMessage())
+                                .show();
+                    }
+                });
+    }
+
+    private void toggleFirewall(boolean isDomain) {
+        Single.fromCallable(() -> getTitle(isDomain))
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<String>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull String title) {
+                        toggleFirewall(isDomain, title);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Error")
+                                .setMessage(e.getMessage())
+                                .show();
+                    }
+                });
+    }
+
+    private String getTitle(boolean isDomain) {
+        String title;
+        if (isDomain) {
+            boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
+            title = isDomainRuleEmpty ? "Enabling Domain Rules" : "Disabling Domain Rules";
+        } else {
+            boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+            title = isFirewallRuleEmpty ? "Enabling Firewall Rules" : "Disabling Firewall Rules";
+        }
+        return title;
+    }
+
+    private void toggleFirewall(boolean isDomain, String title) {
+        FirewallDialogFragment fragment = FirewallDialogFragment.newInstance(title);
+        fragment.setCancelable(false);
+        fragment.show(fragmentManager, "dialog_firewall");
+
+        Handler handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                fragment.appendText(msg.obj.toString());
+            }
+        };
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(getContext());
+        boolean updateProviders = preferences.getBoolean(SettingsFragment.UPDATE_PROVIDERS_PREFERENCE, false) && hasInternetAccess;
+
+        Completable.fromAction(() -> executeFirewall(isDomain, handler, updateProviders))
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        fragment.enableCloseButton();
+                        updateUserInterface();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        fragment.enableCloseButton();
+                        LogUtils.error(e.getMessage(), e);
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("Error")
+                                .setMessage(e.getMessage())
+                                .show();
+                    }
+                });
+    }
+
+    private void executeFirewall(boolean isDomain, Handler handler, boolean updateProviders) {
+        contentBlocker.setHandler(handler);
+        if (isDomain) {
+            boolean isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
+            if (isDomainRuleEmpty) {
+                contentBlocker.enableDomainRules(updateProviders);
+            } else {
+                contentBlocker.disableDomainRules();
+            }
+        } else {
+            boolean isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+            if (isFirewallRuleEmpty) {
+                contentBlocker.enableFirewallRules();
+            } else {
+                contentBlocker.disableFirewallRules();
+            }
+        }
     }
 
     private void checkDatabaseIntegrity() {
@@ -340,37 +552,25 @@ public class HomeTabFragment extends Fragment {
                         int serviceSize = infoCount.getServiceSize();
                         int receiverSize = infoCount.getReceiverSize();
 
-                        Resources resources = getContext().getResources();
-                        Activity activity = ((Activity) getContext());
+                        String domainInfo = resources.getString(R.string.domain_rules_info_placeholder);
+                        domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
 
-                        TextView domainInfoTextView = activity.findViewById(R.id.domainInfoTextView);
-                        if (domainInfoTextView != null) {
-                            String domainInfo = resources.getString(R.string.domain_rules_info_placeholder);
-                            domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize, whitelistAppSize));
+                        String firewallInfo = resources.getString(R.string.firewall_rules_info_placeholder);
+                        firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
+
+                        String disablerInfo = resources.getString(R.string.app_disabler_info_placeholder);
+                        boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                        disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
+
+                        String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
+                        enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+                        String info;
+                        if (enabled) {
+                            info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
+                        } else {
+                            info = String.format(appComponentInfo, 0, 0, 0);
                         }
-                        TextView firewallInfoTextView = activity.findViewById(R.id.firewallInfoTextView);
-                        if (firewallInfoTextView != null) {
-                            String firewallInfo = resources.getString(R.string.firewall_rules_info_placeholder);
-                            firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, customSize));
-                        }
-                        TextView disablerInfoTextView = activity.findViewById(R.id.disablerInfoTextView);
-                        if (disablerInfoTextView != null) {
-                            String disablerInfo = resources.getString(R.string.app_disabler_info_placeholder);
-                            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-                            disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
-                        }
-                        TextView appComponentInfoTextView = activity.findViewById(R.id.appComponentInfoTextView);
-                        if (appComponentInfoTextView != null) {
-                            String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
-                            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-                            String info;
-                            if (enabled) {
-                                info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
-                            } else {
-                                info = String.format(appComponentInfo, 0, 0, 0);
-                            }
-                            appComponentInfoTextView.setText(info);
-                        }
+                        appComponentInfoTextView.setText(info);
                     }
 
                     @Override
@@ -505,17 +705,8 @@ public class HomeTabFragment extends Fragment {
                     @Override
                     public void onSuccess(@NonNull List<ReportBlockedUrl> blockedUrls) {
                         updateBlockedUrls(blockedUrls);
-
-                        Context context = getContext();
-                        TextView infoTextView = ((Activity) context).findViewById(R.id.infoTextView);
-                        if (infoTextView != null) {
-                            infoTextView.setText(String.format("%s%s",
-                                    context.getString(R.string.last_day_blocked), blockedUrls.size()));
-                        }
-                        SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.swipeContainer);
-                        if (swipeContainer != null) {
-                            swipeContainer.setRefreshing(false);
-                        }
+                        infoTextView.setText(String.format("%s%s", resources.getString(R.string.last_day_blocked), blockedUrls.size()));
+                        swipeContainer.setRefreshing(false);
                     }
 
                     @Override
@@ -580,181 +771,6 @@ public class HomeTabFragment extends Fragment {
         } else {
             appComponentStatusTextView.setText(R.string.app_component_disabled);
             appComponentSwitch.setChecked(false);
-        }
-    }
-
-    private static class AppDisablerAsyncTask extends AsyncTask<Void, Void, Void> {
-        private HomeTabFragment parentFragment;
-        private ProgressDialog dialog;
-
-        AppDisablerAsyncTask(HomeTabFragment parentFragment, Activity activity) {
-            this.parentFragment = parentFragment;
-            this.dialog = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-            dialog.setMessage(enabled ? "Enabling apps..." : "Disabling apps...");
-            dialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-            AdhellFactory.getInstance().setAppDisablerToggle(!enabled); // toggle the switch
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-            parentFragment.updateUserInterface();
-        }
-    }
-
-    private static class AppComponentAsyncTask extends AsyncTask<Void, Void, Void> {
-        private HomeTabFragment parentFragment;
-        private ProgressDialog dialog;
-
-        AppComponentAsyncTask(HomeTabFragment parentFragment, Activity activity) {
-            this.parentFragment = parentFragment;
-            this.dialog = new ProgressDialog(activity);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            dialog.setMessage(enabled ? "Enabling app component..." : "Disabling app component...");
-            dialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            boolean toggleEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            AdhellFactory.getInstance().setAppComponentToggle(!toggleEnabled); // toggle the switch
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-            parentFragment.updateUserInterface();
-        }
-    }
-
-    private static class SetFirewallAsyncTask extends AsyncTask<Void, Void, Void> {
-        private FragmentManager fragmentManager;
-        private FirewallDialogFragment fragment;
-        private HomeTabFragment parentFragment;
-        private ContentBlocker contentBlocker;
-        private Handler handler;
-        private boolean isDomain;
-        private boolean isDomainRuleEmpty;
-        private boolean isFirewallRuleEmpty;
-        private WeakReference<Context> contextReference;
-
-        SetFirewallAsyncTask(boolean isDomain, HomeTabFragment parentFragment, FragmentManager fragmentManager, Context context) {
-            this.isDomain = isDomain;
-            this.parentFragment = parentFragment;
-            this.fragmentManager = fragmentManager;
-            this.contentBlocker = ContentBlocker56.getInstance();
-            this.isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
-            this.isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
-            this.contextReference = new WeakReference<>(context);
-
-            this.handler = new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(Message msg) {
-                    fragment.appendText(msg.obj.toString());
-                }
-            };
-        }
-
-        @Override
-        protected void onPreExecute() {
-            if (isDomain) {
-                fragment = FirewallDialogFragment.newInstance(
-                        isDomainRuleEmpty ? "Enabling Domain Rules" : "Disabling Domain Rules");
-            } else {
-                fragment = FirewallDialogFragment.newInstance(
-                        isFirewallRuleEmpty ? "Enabling Firewall Rules" : "Disabling Firewall Rules");
-            }
-            fragment.setCancelable(false);
-            fragment.show(fragmentManager, "dialog_firewall");
-        }
-
-        @Override
-        protected Void doInBackground(Void... args) {
-            contentBlocker.setHandler(handler);
-            if (isDomain) {
-                if (isDomainRuleEmpty) {
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(contextReference.get());
-                    boolean updateProviders = preferences.getBoolean(SettingsFragment.UPDATE_PROVIDERS_PREFERENCE, false);
-                    if (!AdhellFactory.getInstance().hasInternetAccess(contextReference.get())) {
-                        updateProviders = false;
-                    }
-                    contentBlocker.enableDomainRules(updateProviders);
-                } else {
-                    contentBlocker.disableDomainRules();
-                }
-            } else {
-                if (isFirewallRuleEmpty) {
-                    contentBlocker.enableFirewallRules();
-                } else {
-                    contentBlocker.disableFirewallRules();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            fragment.enableCloseButton();
-            parentFragment.updateUserInterface();
-        }
-    }
-
-    private static class ExportDomainsAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        private WeakReference<Context> contextReference;
-
-        ExportDomainsAsyncTask(Context context) {
-            this.contextReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            List<ReportBlockedUrl> domains = FirewallUtils.getInstance().getReportBlockedUrl();
-            try {
-                Set<String> set = new HashSet<>();
-                for (ReportBlockedUrl domain : domains) {
-                    set.add(domain.url);
-                }
-
-                File file = new File(Environment.getExternalStorageDirectory(), "adhell_exported_domains.txt");
-                FileWriter writer = new FileWriter(file);
-                for (String domain : set) {
-                    writer.write(domain);
-                    writer.write(System.lineSeparator());
-                }
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Context context = contextReference.get();
-            if (context != null) {
-                Toast.makeText(context, "Blocked domains have been exported!", Toast.LENGTH_LONG).show();
-            }
         }
     }
 }
