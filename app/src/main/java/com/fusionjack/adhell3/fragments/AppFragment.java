@@ -129,7 +129,12 @@ public abstract class AppFragment extends Fragment {
                 } else {
                     Single.create((SingleOnSubscribe<List<AppInfo>>) emitter -> {
                         List<AppInfo> filteredList = initAppList.stream()
-                                .filter(appInfo -> appInfo.appName.contains(text) || appInfo.packageName.contains(text))
+                                .filter(appInfo -> {
+                                    String appName = appInfo.appName.toLowerCase();
+                                    String packageName = appInfo.packageName.toLowerCase();
+                                    String _text = text.toLowerCase();
+                                    return appName.contains(_text) || packageName.contains(_text);
+                                })
                                 .collect(Collectors.toList());
                         emitter.onSuccess(filteredList);
                     })
