@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -34,7 +35,6 @@ import com.fusionjack.adhell3.fragments.AppTabFragment;
 import com.fusionjack.adhell3.fragments.AppTabPageFragment;
 import com.fusionjack.adhell3.fragments.DomainTabFragment;
 import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
-import com.fusionjack.adhell3.fragments.FilterAppInfo;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabFragment;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     private static int SELECTED_OTHER_TAB = OtherTabPageFragment.APP_COMPONENT_PAGE;
     private static boolean doubleBackToExitPressedOnce = false;
     private static int previousSelectedTabId = -1;
-    private static FilterAppInfo filterAppInfo;
     private static WeakReference<ActivationDialogFragment> activationDialogFragmentWeakReference;
     private final Handler snackbarDelayedHandler = new Handler();
     private AlertDialog permissionDialog;
@@ -91,14 +90,14 @@ public class MainActivity extends AppCompatActivity {
         if (permissionDialog != null) {
             permissionDialog.dismiss();
         }
-        finishOnResume();
+        activityResumed();
     });
 
     public final ActivityResultLauncher<Intent> adminPermissionLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
             makeSnackbar("Admin OK!", Snackbar.LENGTH_LONG)
                     .show();
-            finishOnResume();
+            continueOnResume();
         }
     });
 
@@ -154,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             if (themeChanged > 0) {
                 themeChanged--;
             }
-            finishOnResume();
+            continueOnResume();
         } else {
             selectFileActivityLaunched = false;
         }
@@ -208,8 +207,6 @@ public class MainActivity extends AppCompatActivity {
     private void closeActivity(boolean finish) {
         previousSelectedTabId = -1;
         restoreBackStack = false;
-
-        setFilterAppInfo(new FilterAppInfo());
 
         setSelectedAppTab(AppTabPageFragment.PACKAGE_DISABLER_PAGE);
         setSelectedDomainTab(DomainTabPageFragment.PROVIDER_LIST_PAGE);
@@ -305,58 +302,47 @@ public class MainActivity extends AppCompatActivity {
         return views;
     }
 
-    public static FilterAppInfo getFilterAppInfo() {
-        if (MainActivity.filterAppInfo == null) {
-            return new FilterAppInfo();
-        } else {
-            return MainActivity.filterAppInfo;
-        }
-    }
-
-    public static void setFilterAppInfo(FilterAppInfo filterAppInfo) {
-        MainActivity.filterAppInfo = filterAppInfo;
-    }
-
-    public void finishOnResume() {
+    public void continueOnResume() {
         // Check whether Knox is still valid. Show activation dialog if it is not valid anymore.
         if (!isKnoxValid()) {
             return;
         }
 
-        // Reload AppCache and check DB integrity
-        final AppCacheDialog dialog = new AppCacheDialog(this);
-        if (!AppCache.load(new CompletableObserver() {
-             @Override
-             public void onSubscribe(@NonNull Disposable d) {
-                 dialog.showDialog();
-             }
-
-             @Override
-             public void onComplete() {
-                 dialog.dismissDialog();
-                 checkDatabaseIntegrity();
-             }
-
-             @Override
-             public void onError(@NonNull Throwable e) {
-                 dialog.dismissDialog();
-                 LogUtils.error(e.getMessage(), e);
-                 new AlertDialog.Builder(getBaseContext(), R.style.AlertDialogStyle)
-                         .setTitle("Error")
-                         .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
-                         .show();
-             }
-         })) {
-            checkDatabaseIntegrity();
-        }
-
-        // Launch database integrity if apps is already cached
-        if (AppCache.getAppsIsCached()) {
-            checkDatabaseIntegrity();
-        }
-
         // Check for storage permission
-        requestStoragePermission();
+        if (!requestStoragePermission()) {
+            activityResumed();
+        }
+    }
+
+    private void activityResumed() {
+        // Load AppCache
+        AppCacheDialog appCacheDialog = new AppCacheDialog(this, "Caching apps's info, please wait ...");
+        Context context = this;
+        boolean appCacheReload = AppCache.load(new CompletableObserver() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                appCacheDialog.showDialog();
+            }
+
+            @Override
+            public void onComplete() {
+                appCacheDialog.dismissDialog();
+                checkDatabaseIntegrity();
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                appCacheDialog.dismissDialog();
+                LogUtils.error(e.getMessage(), e);
+                new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setTitle("Error")
+                        .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
+                        .show();
+            }
+        });
+        if (!appCacheReload) {
+            checkDatabaseIntegrity();
+        }
 
         // Select Other tab if theme has been changed or select Home tab by default
         if (themeChanged != 0) {
@@ -474,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
         activationDialogFragment.setCancelable(false);
         if (!DeviceAdminInteractor.getInstance().isAdminActive()) {
             LogUtils.info("Admin is not active, showing activation dialog");
-            if (activationDialogFragment != null && !activationDialogFragment.isVisible()) {
+            if (!activationDialogFragment.isVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -487,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
             if (!hasInternetAccess) {
                 AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
             }
-            if (activationDialogFragment != null && !activationDialogFragment.isVisible()) {
+            if (!activationDialogFragment.isVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -495,13 +481,14 @@ public class MainActivity extends AppCompatActivity {
             activationDialogFragment.setCancelable(true);
         }
 
-        if (activationDialogFragment != null && activationDialogFragment.isVisible()) {
+        if (activationDialogFragment.isVisible()) {
             activationDialogFragment.dismiss();
         }
         return true;
     }
 
-    private void requestStoragePermission() {
+    private boolean requestStoragePermission() {
+        boolean storageRequested = false;
         if (AppPreferences.getInstance().getStorageTreePath().equals("") || this.getContentResolver().getPersistedUriPermissions().size() <= 0) {
             DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(getLayoutInflater());
             dialogQuestionBinding.titleTextView.setText(R.string.dialog_storage_permission_title);
@@ -521,8 +508,10 @@ public class MainActivity extends AppCompatActivity {
                     .create();
 
                 permissionDialog.show();
+                storageRequested = true;
             }
         }
+        return storageRequested;
     }
 
     private void onTabSelected(int tabId) {

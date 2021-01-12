@@ -51,13 +51,17 @@ public interface AppInfoDao {
     @Query("SELECT MAX(id) FROM AppInfo")
     long getLastAppId();
 
+    // All apps
+    @Query("SELECT * FROM AppInfo ORDER BY appName ASC")
+    List<AppInfo> getAllApps();
+
+    @Query("SELECT * FROM AppInfo ORDER BY disabled DESC, appName ASC")
+    LiveData<List<AppInfo>> getAppsInDisabledOrder();
+
 
     // Disabled apps
     @Query("SELECT * FROM AppInfo WHERE disabled = 1 ORDER BY appName ASC")
     List<AppInfo> getDisabledApps();
-
-    @Query("SELECT * FROM AppInfo ORDER BY disabled DESC, appName ASC")
-    LiveData<List<AppInfo>> getAppsInDisabledOrder();
 
 
     // Mobile restricted apps (only enabled apps)
@@ -88,13 +92,8 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 0 ORDER BY appName ASC")
     LiveData<List<AppInfo>> getUserApps();
 
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY appName ASC")
+    @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 1 ORDER BY appName ASC")
     List<AppInfo> getUserAndDisabledApps();
-
-
-    // System apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 AND disabled = 0 ORDER BY appName ASC")
-    LiveData<List<AppInfo>> getSystemApps();
 
 
     // Enabled apps
@@ -108,38 +107,4 @@ public interface AppInfoDao {
 
     @Query("SELECT * FROM AppInfo WHERE disabled = 0 ORDER BY hasCustomDns DESC, appName ASC")
     LiveData<List<AppInfo>> getAppsInDnsOrder();
-
-
-    // All user apps
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY disabled DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllUserAppsInDisabledOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY mobileRestricted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllUserAppsInMobileRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY wifiRestricted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllUserAppsInWifiRestrictedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY adhellWhitelisted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllUserAppsInWhitelistedOrder();
-
-    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY hasCustomDns DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllUserAppsInDnsOrder();
-
-
-    // All system apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY disabled DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllSystemAppsInDisabledOrder();
-    // All system apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY mobileRestricted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllSystemAppsInMobileRestrictedOrder();
-    // All system apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY wifiRestricted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllSystemAppsInWifiRestrictedOrder();
-    // All system apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY adhellWhitelisted DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllSystemAppsInWhitelistedOrder();
-    // All system apps
-    @Query("SELECT * FROM AppInfo WHERE system = 1 ORDER BY hasCustomDns DESC, appName ASC")
-    LiveData<List<AppInfo>> getAllSystemAppsInDnsOrder();
 }

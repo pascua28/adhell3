@@ -33,8 +33,6 @@
             android:focusable="true"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_filter" />
-
-
     </RelativeLayout>
 
     <ListView
@@ -43,7 +41,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:animateLayoutChanges="true"
         android:scrollbarStyle="outsideOverlay"
         android:smoothScrollbar="true"
         android:fastScrollEnabled="true"

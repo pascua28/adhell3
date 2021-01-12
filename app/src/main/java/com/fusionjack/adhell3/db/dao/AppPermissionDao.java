@@ -21,6 +21,12 @@ public interface AppPermissionDao {
     @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 5")
     int getReceiverSize();
 
+    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 8")
+    int getActivitySize();
+
+    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 11")
+    int getProviderSize();
+
     @Query("SELECT * FROM AppPermission")
     List<AppPermission> getAll();
 
@@ -42,13 +48,13 @@ public interface AppPermissionDao {
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 8")
     List<AppPermission> getActivities(String packageName);
 
-    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :activityPairName AND permissionStatus = 5")
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :activityPairName AND permissionStatus = 8")
     AppPermission getActivity(String packageName, String activityPairName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 11")
     List<AppPermission> getProviders(String packageName);
 
-    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :providerPairName AND permissionStatus = 5")
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :providerPairName AND permissionStatus = 11")
     AppPermission getProvider(String packageName, String providerPairName);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -296,7 +296,7 @@ public class ActivationDialogFragment extends DialogFragment {
 
         if (context != null) {
             if (context instanceof MainActivity) {
-                ((MainActivity) context).finishOnResume();
+                ((MainActivity) context).continueOnResume();
             }
         }
     }

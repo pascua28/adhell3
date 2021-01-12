@@ -16,6 +16,7 @@ import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.ItemAppInfoBinding;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -26,6 +27,8 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import io.reactivex.rxjava3.core.CompletableObserver;
 
 public class AppInfoAdapter extends BaseAdapter {
 
@@ -43,7 +46,8 @@ public class AppInfoAdapter extends BaseAdapter {
         this.appType = appType;
         this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
 
-        AppCache appCache = AppCache.getInstance(null);
+        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(observer);
         this.appIcons = appCache.getIcons();
         this.versionNames = appCache.getVersionNames();
     }

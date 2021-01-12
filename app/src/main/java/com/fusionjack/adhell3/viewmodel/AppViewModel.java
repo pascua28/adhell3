@@ -13,27 +13,31 @@ import java.util.List;
 import io.reactivex.rxjava3.core.Single;
 
 public class AppViewModel extends ViewModel {
-    private MutableLiveData<Boolean> _loadingVisibility;
+    private MutableLiveData<FilterAppInfo> _filterAppInfoLive;
+    protected LiveData<FilterAppInfo> filterAppInfoLive = null;
     private final AppRepository repository;
 
     public AppViewModel() {
         this.repository = new AppRepository();
     }
 
-    public LiveData<Boolean> getLoadingBarVisibility() {
-        if (_loadingVisibility == null) {
-            _loadingVisibility = new MutableLiveData<>();
+    public Single<LiveData<List<AppInfo>>> loadAppList(AppRepository.Type type) {
+        return repository.loadAppList(type);
+    }
+
+    public LiveData<FilterAppInfo> getFilterAppInfo() {
+        if (_filterAppInfoLive == null) {
+            _filterAppInfoLive = new MutableLiveData<>();
+            filterAppInfoLive = _filterAppInfoLive;
             // Set initial value as true
-            updateLoadingBarVisibility(true);
+            updateFilterAppInfo(new FilterAppInfo());
         }
-        return _loadingVisibility;
+        return filterAppInfoLive;
     }
 
-    public Single<LiveData<List<AppInfo>>> loadAppList(AppRepository.Type type, FilterAppInfo filterAppInfo) {
-        return repository.loadAppList(type, filterAppInfo);
-    }
-
-    public void updateLoadingBarVisibility(boolean isVisible) {
-        _loadingVisibility.postValue(isVisible);
+    public void updateFilterAppInfo(FilterAppInfo filterAppInfo) {
+        if (_filterAppInfoLive != null) {
+            _filterAppInfoLive.setValue(filterAppInfo);
+        }
     }
 }

@@ -1,8 +1,8 @@
 package com.fusionjack.adhell3.viewmodel;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -10,14 +10,12 @@ import androidx.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
-import com.samsung.android.knox.application.ApplicationPolicy;
+import com.fusionjack.adhell3.utils.LogUtils;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,6 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class HomeTabViewModel extends ViewModel {
     private LiveData<List<ReportBlockedUrl>> reportBlockedUrlsDb;
@@ -56,14 +61,14 @@ public class HomeTabViewModel extends ViewModel {
         return _domainInfo;
     }
 
-    private void updateDomainInfo(int blacklistDomain, int whitelistDomain, int whitelistApp) {
-        _domainInfo.postValue(
+    public void updateDomainInfo(int blacklistDomain, int whitelistDomain, int whitelistApp) {
+        _domainInfo.setValue(
                 String.format(domainInfoBase, blacklistDomain, whitelistDomain, whitelistApp)
         );
     }
 
-    private void resetDomainInfo() {
-        _domainInfo.postValue(loadingString);
+    public void resetDomainInfo() {
+        _domainInfo.setValue(loadingString);
     }
 
     public LiveData<String> getFirewallInfo(String strBase) {
@@ -76,14 +81,14 @@ public class HomeTabViewModel extends ViewModel {
         return _firewallInfo;
     }
 
-    private void updateFirewallInfo(int mobileData, int wifiData, int custom) {
-        _firewallInfo.postValue(
+    public void updateFirewallInfo(int mobileData, int wifiData, int custom) {
+        _firewallInfo.setValue(
                 String.format(firewallInfoBase, mobileData, wifiData, custom)
         );
     }
 
-    private void resetFirewallInfo() {
-        _firewallInfo.postValue(loadingString);
+    public void resetFirewallInfo() {
+        _firewallInfo.setValue(loadingString);
     }
 
     public LiveData<String> getDisablerInfo(String strBase) {
@@ -96,14 +101,14 @@ public class HomeTabViewModel extends ViewModel {
         return _disablerInfo;
     }
 
-    private void updateDisablerInfo(int disabledApp) {
-        _disablerInfo.postValue(
+    public void updateDisablerInfo(int disabledApp) {
+        _disablerInfo.setValue(
                 String.format(disablerInfoBase, disabledApp)
         );
     }
 
-    private void resetDisablerInfo() {
-        _disablerInfo.postValue(loadingString);
+    public void resetDisablerInfo() {
+        _disablerInfo.setValue(loadingString);
     }
 
     public LiveData<String> getAppComponentInfo(String strBase) {
@@ -116,14 +121,14 @@ public class HomeTabViewModel extends ViewModel {
         return _appComponentInfo;
     }
 
-    private void updateAppComponentInfo(int permission,int service, int receiver, int activity, int provider) {
-        _appComponentInfo.postValue(
+    public void updateAppComponentInfo(int permission, int service, int receiver, int activity, int provider) {
+        _appComponentInfo.setValue(
                 String.format(appComponentInfoBase, permission, service, receiver, activity, provider)
         );
     }
 
-    private void resetAppComponentInfo() {
-        _appComponentInfo.postValue(loadingString);
+    public void resetAppComponentInfo() {
+        _appComponentInfo.setValue(loadingString);
     }
 
     public LiveData<String> getBlockedDomainInfo(Context context) {
@@ -137,23 +142,19 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     public void updateBlockedDomainInfo() {
-        if (_reportBlockedUrls != null) {
+        if (_reportBlockedUrls != null && _reportBlockedUrls.getValue() != null) {
             int total = 0;
             for (List<ReportBlockedUrl> list : _reportBlockedUrls.getValue().values()) {
                 total += list.size();
             }
             if (total > 0 || AppPreferences.getInstance().isDomainRulesToggleEnabled()) {
-                _blockedDomainInfo.postValue(
+                _blockedDomainInfo.setValue(
                         String.format(Locale.getDefault(), "%s%d", blockedDomainInfoBase, total)
                 );
                 return;
             }
         }
-        _blockedDomainInfo.postValue("");
-    }
-
-    public void setInfo() {
-        new SetInfoAsyncTask(this).execute();
+        _blockedDomainInfo.setValue("");
     }
 
     public LiveData<Boolean> getLoadingBarVisibility() {
@@ -166,7 +167,16 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     public void updateLoadingBarVisibility(boolean isVisible) {
-        _loadingVisibility.setValue(isVisible);
+        if (_loadingVisibility != null) {
+            if ( _loadingVisibility.getValue() != null) {
+                boolean currentState = _loadingVisibility.getValue();
+                if (currentState != isVisible) {
+                    _loadingVisibility.setValue(isVisible);
+                }
+            } else {
+                _loadingVisibility.setValue(isVisible);
+            }
+        }
     }
 
     public LiveData<HashMap<String, List<ReportBlockedUrl>>> getReportBlockedUrls() {
@@ -212,133 +222,196 @@ public class HomeTabViewModel extends ViewModel {
 
     public void refreshBlockedUrls() {
         updateLoadingBarVisibility(true);
-        new RefreshBlockedUrlAsyncTask(this).execute();
+        loadBlockedUrls();
     }
 
-    private static class SetInfoAsyncTask extends AsyncTask<Void, Void, Void> {
-        private int mobileSize;
-        private int wifiSize;
-        private int customSize;
-        private int blackListSize;
-        private int whiteListSize;
-        private int whitelistAppSize;
-        private int disablerSize;
-        private int permissionSize;
-        private int serviceSize;
-        private int receiverSize;
-        private int activitySize;
-        private int providerSize;
-        private final boolean domainRulesEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
-        private final boolean firewallRulesEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
-        private final boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
-        private final boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-        private final WeakReference<HomeTabViewModel> homeTabViewModelWeakReference;
-
-        SetInfoAsyncTask(HomeTabViewModel homeTabViewModel) {
-            this.homeTabViewModelWeakReference = new WeakReference<>(homeTabViewModel);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (appDisablerEnabled) {
-				ApplicationPolicy applicationPolicy = AdhellFactory.getInstance().getAppPolicy();
-				String[] disabledAppFromKnox = applicationPolicy.getApplicationStateList(false);
-                if (disabledAppFromKnox != null) {
-                    disablerSize = Math.max(disabledAppFromKnox.length, 0);
-                } else {
-                    disablerSize = 0;
-                }
-            }
-
-            if (appComponentEnabled) {
-                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                List<AppPermission> appPermissions = appDatabase.appPermissionDao().getAll();
-                for (AppPermission appPermission : appPermissions) {
-                    switch (appPermission.permissionStatus) {
-                        case AppPermission.STATUS_PERMISSION:
-                            permissionSize++;
-                            break;
-                        case AppPermission.STATUS_SERVICE:
-                            serviceSize++;
-                            break;
-                        case AppPermission.STATUS_RECEIVER:
-                            receiverSize++;
-                            break;
-                        case AppPermission.STATUS_ACTIVITY:
-                            activitySize++;
-                            break;
-                        case AppPermission.STATUS_PROVIDER:
-                            providerSize++;
-                            break;
+    private void loadBlockedUrls() {
+        Single.create((SingleOnSubscribe<List<ReportBlockedUrl>>) emitter -> {
+            List<ReportBlockedUrl> blockedUrls = FirewallUtils.getInstance().getReportBlockedUrl();
+            emitter.onSuccess(blockedUrls);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<ReportBlockedUrl>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
                     }
-                }
-            }
+
+                    @Override
+                    public void onSuccess(@NonNull List<ReportBlockedUrl> blockedUrls) {
+                        setReportBlockedUrls();
+                        updateLoadingBarVisibility(false);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    public void setInfoCount() {
+        Single.create((SingleOnSubscribe<InfoCount>) emitter -> {
+            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+
+            int disablerSize = appDatabase.disabledPackageDao().getSize();
+            int permissionSize = appDatabase.appPermissionDao().getPermissionSize();
+            int serviceSize = appDatabase.appPermissionDao().getServiceSize();
+            int receiverSize = appDatabase.appPermissionDao().getReceiverSize();
+            int activitySize = appDatabase.appPermissionDao().getActivitySize();
+            int providerSize = appDatabase.appPermissionDao().getProviderSize();
+
             FirewallUtils.DomainStat domainStat = FirewallUtils.getInstance().getDomainStatFromKnox();
-            blackListSize = domainStat.blackListSize;
-            whiteListSize = domainStat.whiteListSize;
-            whitelistAppSize = FirewallUtils.getInstance().getWhitelistAppCountFromKnox();
+            int blackListSize = domainStat.blackListSize;
+            int whiteListSize = domainStat.whiteListSize;
+
+            int whitelistAppSize = FirewallUtils.getInstance().getWhitelistAppCountFromKnox();
 
             // Dirty solution: Every deny firewall is created for IPv4 and IPv6.
             FirewallUtils.FirewallStat stat = FirewallUtils.getInstance().getFirewallStatFromKnox();
-            customSize = stat.allNetworkSize / 2;
-            mobileSize = stat.mobileDataSize / 2;
-            wifiSize = stat.wifiDataSize / 2;
+            int customSize = stat.allNetworkSize / 2;
+            int mobileSize = stat.mobileDataSize / 2;
+            int wifiSize = stat.wifiDataSize / 2;
 
-            return null;
-        }
+            emitter.onSuccess(new InfoCount(mobileSize, wifiSize, customSize, blackListSize,
+                    whiteListSize, whitelistAppSize, disablerSize, permissionSize, serviceSize, receiverSize, activitySize, providerSize));
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<InfoCount>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            HomeTabViewModel homeTabViewModel = homeTabViewModelWeakReference.get();
-            if (homeTabViewModel != null) {
-                if (domainRulesEnabled) {
-                    homeTabViewModel.updateDomainInfo(blackListSize, whiteListSize, whitelistAppSize);
-                } else {
-                    homeTabViewModel.resetDomainInfo();
-                }
+                    @Override
+                    public void onSuccess(@NonNull InfoCount infoCount) {
+                        int mobileSize = infoCount.getMobileSize();
+                        int wifiSize = infoCount.getWifiSize();
+                        int customSize = infoCount.getCustomSize();
+                        int blackListSize = infoCount.getBlackListSize();
+                        int whiteListSize = infoCount.getWhiteListSize();
+                        int whitelistAppSize = infoCount.getWhitelistAppSize();
+                        int disablerSize = infoCount.getDisablerSize();
+                        int permissionSize = infoCount.getPermissionSize();
+                        int serviceSize = infoCount.getServiceSize();
+                        int receiverSize = infoCount.getReceiverSize();
+                        int activitySize = infoCount.getActivitySize();
+                        int providerSize = infoCount.getProviderSize();
 
-                if (firewallRulesEnabled) {
-                    homeTabViewModel.updateFirewallInfo(mobileSize, wifiSize, customSize);
-                } else {
-                    homeTabViewModel.resetFirewallInfo();
-                }
+                        boolean domainRulesEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
+                        boolean firewallRulesEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
+                        boolean appDisablerEnabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
+                        boolean appComponentEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
 
-                if (appDisablerEnabled) {
-                    homeTabViewModel.updateDisablerInfo(disablerSize);
-                } else {
-                    homeTabViewModel.resetDisablerInfo();
-                }
+                        if (domainRulesEnabled) {
+                            updateDomainInfo(blackListSize, whiteListSize, whitelistAppSize);
+                        } else {
+                            resetDomainInfo();
+                        }
 
-                if (appComponentEnabled) {
-                    homeTabViewModel.updateAppComponentInfo(permissionSize, serviceSize, receiverSize, activitySize, providerSize);
-                } else {
-                    homeTabViewModel.resetAppComponentInfo();
-                }
-            }
-        }
+                        if (firewallRulesEnabled) {
+                            updateFirewallInfo(mobileSize, wifiSize, customSize);
+                        } else {
+                            resetFirewallInfo();
+                        }
+
+                        if (appDisablerEnabled) {
+                            updateDisablerInfo(disablerSize);
+                        } else {
+                            resetDisablerInfo();
+                        }
+
+                        if (appComponentEnabled) {
+                            updateAppComponentInfo(permissionSize, serviceSize, receiverSize, activitySize, providerSize);
+                        } else {
+                            resetAppComponentInfo();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                    }
+                });
     }
 
-    private static class RefreshBlockedUrlAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final WeakReference<HomeTabViewModel> homeTabViewModelWeakReference;
+    private static class InfoCount {
+        private final int mobileSize;
+        private final int wifiSize;
+        private final int customSize;
+        private final int blackListSize;
+        private final int whiteListSize;
+        private final int whitelistAppSize;
+        private final int disablerSize;
+        private final int permissionSize;
+        private final int serviceSize;
+        private final int receiverSize;
+        private final int activitySize;
+        private final int providerSize;
 
-        RefreshBlockedUrlAsyncTask(HomeTabViewModel homeTabViewModel) {
-            this.homeTabViewModelWeakReference = new WeakReference<>(homeTabViewModel);
+        public InfoCount(int mobileSize, int wifiSize, int customSize, int blackListSize,
+                         int whiteListSize, int whitelistAppSize, int disablerSize,
+                         int permissionSize, int serviceSize, int receiverSize, int activitySize, int providerSize) {
+            this.mobileSize = mobileSize;
+            this.wifiSize = wifiSize;
+            this.customSize = customSize;
+            this.blackListSize = blackListSize;
+            this.whiteListSize = whiteListSize;
+            this.whitelistAppSize = whitelistAppSize;
+            this.disablerSize = disablerSize;
+            this.permissionSize = permissionSize;
+            this.serviceSize = serviceSize;
+            this.receiverSize = receiverSize;
+            this.activitySize = activitySize;
+            this.providerSize = providerSize;
         }
 
-        @Override
-        protected Void doInBackground(Void... voids) {
-            FirewallUtils.getInstance().updateReportBlockedUrl();
-            return null;
+        public int getMobileSize() {
+            return mobileSize;
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            HomeTabViewModel homeTabViewModel = homeTabViewModelWeakReference.get();
-            if (homeTabViewModel != null) {
-                homeTabViewModel.setReportBlockedUrls();
-                //homeTabViewModel.updateBlockedDomainInfo();
-                homeTabViewModel.updateLoadingBarVisibility(false);
-            }
+        public int getWifiSize() {
+            return wifiSize;
+        }
+
+        public int getCustomSize() {
+            return customSize;
+        }
+
+        public int getBlackListSize() {
+            return blackListSize;
+        }
+
+        public int getWhiteListSize() {
+            return whiteListSize;
+        }
+
+        public int getWhitelistAppSize() {
+            return whitelistAppSize;
+        }
+
+        public int getDisablerSize() {
+            return disablerSize;
+        }
+
+        public int getPermissionSize() {
+            return permissionSize;
+        }
+
+        public int getServiceSize() {
+            return serviceSize;
+        }
+
+        public int getActivitySize() {
+            return activitySize;
+        }
+
+        public int getProviderSize() {
+            return providerSize;
+        }
+
+        public int getReceiverSize() {
+            return receiverSize;
         }
     }
 }

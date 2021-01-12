@@ -41,7 +41,7 @@ public class BlacklistFragment extends UserListFragment {
         List<String> items = new ArrayList<>();
         adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
 
-        viewModel = new ViewModelProvider(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
+        viewModel = new ViewModelProvider(getActivity() != null ? getActivity() : this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
         viewModel.getItems().observe(this, blackItems -> {
             items.clear();
             items.addAll(blackItems);

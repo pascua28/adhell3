@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.MainActivity;
@@ -42,14 +41,13 @@ import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CO
 
 public class ProviderListFragment extends Fragment {
     private Context context;
-    private FragmentActivity activity;
     private DialogAddProviderBinding dialogAddProviderBinding;
+    private BlockUrlProvidersViewModel viewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.context = getContext();
-        this.activity = getActivity();
     }
 
     private final ActivityResultLauncher<String[]> openDocumentLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), result -> {
@@ -62,20 +60,20 @@ public class ProviderListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FragmentProviderBinding binding = FragmentProviderBinding.inflate(inflater);
 
-        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
+        viewModel = new ViewModelProvider(getActivity() != null ? getActivity() : this).get(BlockUrlProvidersViewModel.class);
 
         // Set URL limit
         String strFormat = getResources().getString(R.string.provider_info);
         binding.providerInfoTextView.setText(String.format(strFormat, AdhellAppIntegrity.BLOCK_URL_LIMIT));
 
         // Set observer for domain count
-        providersViewModel.getDomainCountInfo(getContext()).observe(
+        viewModel.getDomainCountInfo(getContext()).observe(
                 getViewLifecycleOwner(),
                 binding.infoTextView::setText
         );
 
         // Set observer for loading bar
-        providersViewModel.getLoadingBarVisibility().observe(
+        viewModel.getLoadingBarVisibility().observe(
                 getViewLifecycleOwner(),
                 isVisible -> {
                     if (isVisible) {
@@ -98,7 +96,7 @@ public class ProviderListFragment extends Fragment {
         );
 
         // Provider list
-        providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
+        viewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
             ListAdapter adapter = binding.providerListView.getAdapter();
             if (adapter == null) {
                 BlockUrlProviderAdapter arrayAdapter = new BlockUrlProviderAdapter(context, blockUrlProviders);
@@ -142,7 +140,7 @@ public class ProviderListFragment extends Fragment {
             }
         });
 
-        binding.providerSwipeContainer.setOnRefreshListener(() -> providersViewModel.updateProvider(context, true));
+        binding.providerSwipeContainer.setOnRefreshListener(() -> viewModel.updateProvider(context, true));
 
         binding.providerActions.addActionItem(new SpeedDialActionItem.Builder(R.id.action_add_provider, ResourcesCompat.getDrawable(getResources(), R.drawable.ic_event_note_white_24dp, requireContext().getTheme()))
                 .setLabel(getString(R.string.dialog_add_provider_title))
@@ -176,7 +174,7 @@ public class ProviderListFragment extends Fragment {
                                         }
                                     }
                                 }
-                                providersViewModel.addProvider(provider, getContext());
+                                viewModel.addProvider(provider, getContext());
                             } else {
                                 if (getActivity() instanceof MainActivity) {
                                     MainActivity mainActivity = (MainActivity) getActivity();
@@ -253,7 +251,7 @@ public class ProviderListFragment extends Fragment {
             }
         });
 
-        providersViewModel.setDomainCount();
+        viewModel.setDomainCount();
 
         return binding.getRoot();
     }

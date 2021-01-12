@@ -97,17 +97,15 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         requireActivity().setTitle(R.string.app_name);
         setHasOptionsMenu(true);
 
+        homeTabViewModel = new ViewModelProvider(getActivity() != null ? getActivity() : this).get(HomeTabViewModel.class);
         FragmentActivity activity = getActivity();
         if (activity != null) {
-            homeTabViewModel = new ViewModelProvider(activity).get(HomeTabViewModel.class);
             AppCompatActivity parentActivity = (AppCompatActivity) activity;
             if (parentActivity.getSupportActionBar() != null) {
                 parentActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 String versionInfo = getResources().getString(R.string.version);
                 parentActivity.getSupportActionBar().setSubtitle(String.format(versionInfo, BuildConfig.VERSION_NAME));
             }
-        } else {
-            homeTabViewModel = new ViewModelProvider(this).get(HomeTabViewModel.class);
         }
 
         binding = FragmentBlockerBinding.inflate(inflater);
@@ -125,10 +123,12 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                     if (blockedDomainInfo.isEmpty()) {
                         binding.infoTextView.setVisibility(View.INVISIBLE);
                         binding.swipeContainer.setVisibility(View.INVISIBLE);
+                        binding.domainActions.setVisibility(View.INVISIBLE);
                     } else {
                         binding.infoTextView.setText(blockedDomainInfo);
                         binding.infoTextView.setVisibility(View.VISIBLE);
                         binding.swipeContainer.setVisibility(View.VISIBLE);
+                        binding.domainActions.setVisibility(View.VISIBLE);
                     }
                 }
         );

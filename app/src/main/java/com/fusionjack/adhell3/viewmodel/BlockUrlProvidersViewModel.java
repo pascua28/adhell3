@@ -71,7 +71,16 @@ public class BlockUrlProvidersViewModel extends ViewModel {
     }
 
     public void updateLoadingBarVisibility(boolean isVisible) {
-        _loadingVisibility.setValue(isVisible);
+        if (_loadingVisibility != null) {
+            if ( _loadingVisibility.getValue() != null) {
+                boolean currentState = _loadingVisibility.getValue();
+                if (currentState != isVisible) {
+                    _loadingVisibility.setValue(isVisible);
+                }
+            } else {
+                _loadingVisibility.setValue(isVisible);
+            }
+        }
     }
 
     public void addProvider(String strProvider, Context context) {

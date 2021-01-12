@@ -1,5 +1,11 @@
 package com.fusionjack.adhell3.fragments;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 public class FilterAppInfo {
     private boolean HIGHLIGHT_RUNNING_APPS;
     private boolean FILTER_MENU_SYSTEM_APPS;
@@ -53,5 +59,34 @@ public class FilterAppInfo {
 
     void setStoppedAppsFilter(boolean filterState) {
         this.FILTER_MENU_STOPPED_APPS = filterState;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        if (!(o instanceof FilterAppInfo)) {
+            return false;
+        }
+        FilterAppInfo other = (FilterAppInfo) o;
+        return Objects.equals(HIGHLIGHT_RUNNING_APPS, other.HIGHLIGHT_RUNNING_APPS)
+                && Objects.equals(FILTER_MENU_SYSTEM_APPS, other.FILTER_MENU_SYSTEM_APPS)
+                && Objects.equals(FILTER_MENU_USERS_APPS, other.FILTER_MENU_USERS_APPS)
+                && Objects.equals(FILTER_MENU_RUNNING_APPS, other.FILTER_MENU_RUNNING_APPS)
+                && Objects.equals(FILTER_MENU_STOPPED_APPS, other.FILTER_MENU_STOPPED_APPS);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 31;
+        List<Boolean> booleanList = Arrays.asList(
+                this.HIGHLIGHT_RUNNING_APPS,
+                this.FILTER_MENU_SYSTEM_APPS,
+                this.FILTER_MENU_USERS_APPS,
+                this.FILTER_MENU_RUNNING_APPS,
+                this.FILTER_MENU_STOPPED_APPS
+        );
+        for(boolean val : booleanList) {
+            result = 31 * result + Boolean.hashCode(val);
+        }
+        return result;
     }
 }

@@ -13,6 +13,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.fusionjack.adhell3.databinding.GroupBlockedUrlInfoBinding;
 import com.fusionjack.adhell3.databinding.ItemBlockedUrlInfoBinding;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
+import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 
 import java.text.SimpleDateFormat;
@@ -21,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import io.reactivex.rxjava3.core.CompletableObserver;
 
 public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
@@ -31,7 +34,8 @@ public class ReportBlockedUrlAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<ReportBlockedUrl>> expandableListDetail;
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull HashMap<String, List<ReportBlockedUrl>> objects) {
-        AppCache appCache = AppCache.getInstance(null);
+        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
+        AppCache appCache = AppCache.getInstance(observer);
         this.appNames = appCache.getNames();
         this.appIcons = appCache.getIcons();
 

@@ -1,12 +1,20 @@
 package com.fusionjack.adhell3.dialog;
 
 import android.content.Context;
+import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.DialogUtils;
+import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
+
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 
 public class AppCacheDialog {
@@ -42,5 +50,61 @@ public class AppCacheDialog {
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
+    }
+
+    public static CompletableObserver createObserver(Context context, BaseAdapter adapter) {
+        final AppCacheDialog dialog = new AppCacheDialog(context,"Caching apps's info, please wait ...");
+        return new CompletableObserver() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                dialog.showDialog();
+            }
+
+            @Override
+            public void onComplete() {
+                dialog.dismissDialog();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                dialog.dismissDialog();
+                LogUtils.error(e.getMessage(), e);
+                new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setTitle("Error")
+                        .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
+                        .show();
+            }
+        };
+    }
+
+    public static CompletableObserver createObserver(Context context, BaseExpandableListAdapter adapter) {
+        final AppCacheDialog dialog = new AppCacheDialog(context,"Caching apps's info, please wait ...");
+        return new CompletableObserver() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                dialog.showDialog();
+            }
+
+            @Override
+            public void onComplete() {
+                dialog.dismissDialog();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                dialog.dismissDialog();
+                LogUtils.error(e.getMessage(), e);
+                new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                        .setTitle("Error")
+                        .setMessage("Something went wrong when caching apps, please reopen adhell3. Error: \n\n" + e.getMessage())
+                        .show();
+            }
+        };
     }
 }

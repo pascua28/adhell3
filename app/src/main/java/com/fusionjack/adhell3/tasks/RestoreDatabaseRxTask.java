@@ -1,12 +1,13 @@
 package com.fusionjack.adhell3.tasks;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
+import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
@@ -21,7 +22,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class RestoreDatabaseRxTask implements Runnable {
     private final WeakReference<Context> contextWeakReference;
-    private ProgressDialog dialog;
+    private AlertDialog dialog;
 
     public RestoreDatabaseRxTask(Context context) {
         this.contextWeakReference = new WeakReference<>(context);
@@ -31,7 +32,7 @@ public class RestoreDatabaseRxTask implements Runnable {
     private void createDialog() {
         Context context = contextWeakReference.get();
         if (context != null) {
-            this.dialog = new ProgressDialog(context);
+            this.dialog = DialogUtils.getProgressDialog("Restoring database, please wait ...", context);
             dialog.setCancelable(false);
         }
     }
@@ -57,20 +58,19 @@ public class RestoreDatabaseRxTask implements Runnable {
                 .subscribe(new Observer<String>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
-                        dialog.setMessage("Restoring database, please wait ...");
                         dialog.show();
                     }
 
                     @Override
                     public void onNext(@NonNull String message) {
-                        dialog.setMessage(message);
+                        DialogUtils.setProgressDialogMessage(dialog, message);
                     }
 
                     @Override
                     public void onError(@NonNull Throwable e) {
                         dialog.dismiss();
                         LogUtils.error(e.getMessage(), e);
-                        new AlertDialog.Builder(context)
+                        new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setTitle("Error")
                                 .setMessage(e.getMessage())
                                 .show();
@@ -79,7 +79,7 @@ public class RestoreDatabaseRxTask implements Runnable {
                     @Override
                     public void onComplete() {
                         dialog.dismiss();
-                        new AlertDialog.Builder(context)
+                        new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setTitle("Info")
                                 .setMessage("Restore database is finished.\nGo to 'Home' tab and turn on Knox functionality.")
                                 .show();

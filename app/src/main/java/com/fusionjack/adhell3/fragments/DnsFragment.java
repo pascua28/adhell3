@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.res.ResourcesCompat;
@@ -51,8 +51,13 @@ public class DnsFragment extends AppFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         type = AppRepository.Type.DNS;
-
         initAppModel(type);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadAppList(type);
     }
 
     @Override
@@ -120,69 +125,56 @@ public class DnsFragment extends AppFragment {
             });
         }
 
-        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
-
-        binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
         binding.filterButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(context, binding.filterButton);
             popup.getMenuInflater().inflate(R.menu.filter_appinfo_menu, popup.getMenu());
-            popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(filterAppInfo.getHighlightRunningApps());
-            popup.getMenu().findItem(R.id.filterSystemApps).setChecked(filterAppInfo.getSystemAppsFilter());
-            popup.getMenu().findItem(R.id.filterUserApps).setChecked(filterAppInfo.getUserAppsFilter());
-            popup.getMenu().findItem(R.id.filterRunningApps).setChecked(filterAppInfo.getRunningAppsFilter());
-            popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(filterAppInfo.getStoppedAppsFilter());
+            if (viewModel.getFilterAppInfo().getValue() != null) {
+                popup.getMenu().findItem(R.id.highlightRunningApps).setChecked(viewModel.getFilterAppInfo().getValue().getHighlightRunningApps());
+                popup.getMenu().findItem(R.id.filterSystemApps).setChecked(viewModel.getFilterAppInfo().getValue().getSystemAppsFilter());
+                popup.getMenu().findItem(R.id.filterUserApps).setChecked(viewModel.getFilterAppInfo().getValue().getUserAppsFilter());
+                popup.getMenu().findItem(R.id.filterRunningApps).setChecked(viewModel.getFilterAppInfo().getValue().getRunningAppsFilter());
+                popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(viewModel.getFilterAppInfo().getValue().getStoppedAppsFilter());
+            }
             MenuCompat.setGroupDividerEnabled(popup.getMenu(), true);
             popup.setOnMenuItemClickListener(item -> {
                 item.setChecked(!item.isChecked());
                 int id = item.getItemId();
-                    if (id == R.id.highlightRunningApps) {
-                        filterAppInfo.setHighlightRunningApps(item.isChecked());
-                    } else if (id == R.id.filterSystemApps) {
-                        filterAppInfo.setSystemAppsFilter(item.isChecked());
-                        if (!item.isChecked()) {
-                            if (!popup.getMenu().findItem(R.id.filterUserApps).isChecked()) {
-                                popup.getMenu().findItem(R.id.filterUserApps).setChecked(true);
-                                filterAppInfo.setUserAppsFilter(true);
-                            }
-                        }
-                    } else if (id == R.id.filterUserApps) {
-                        filterAppInfo.setUserAppsFilter(item.isChecked());
-                        if (!item.isChecked()) {
-                            if (!popup.getMenu().findItem(R.id.filterSystemApps).isChecked()) {
-                                popup.getMenu().findItem(R.id.filterSystemApps).setChecked(true);
-                                filterAppInfo.setSystemAppsFilter(true);
-                            }
-                        }
-                    } else if (id == R.id.filterRunningApps) {
-                        filterAppInfo.setRunningAppsFilter(item.isChecked());
-                        if (!item.isChecked()) {
-                            if (!popup.getMenu().findItem(R.id.filterStoppedApps).isChecked()) {
-                                popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(true);
-                                filterAppInfo.setStoppedAppsFilter(true);
-                            }
-                        }
-                    } else if (id == R.id.filterStoppedApps) {
-                        filterAppInfo.setStoppedAppsFilter(item.isChecked());
-                        if (!item.isChecked()) {
-                            if (!popup.getMenu().findItem(R.id.filterRunningApps).isChecked()) {
-                                popup.getMenu().findItem(R.id.filterRunningApps).setChecked(true);
-                                filterAppInfo.setRunningAppsFilter(true);
-                            }
+
+                if (id == R.id.highlightRunningApps) {
+                    setFilterAppHighlightState(item.isChecked());
+                } else if (id == R.id.filterSystemApps) {
+                    setFilterAppSystemState(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterUserApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterUserApps).setChecked(true);
+                            setFilterAppUserState(true);
                         }
                     }
-                    if (!filterAppInfo.getHighlightRunningApps() &&
-                        filterAppInfo.getSystemAppsFilter() &&
-                        filterAppInfo.getUserAppsFilter() &&
-                        filterAppInfo.getRunningAppsFilter() &&
-                        filterAppInfo.getStoppedAppsFilter()
-                ) {
-                    binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-                } else {
-                    int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-                    binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
+                } else if (id == R.id.filterUserApps) {
+                    setFilterAppUserState(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterSystemApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterSystemApps).setChecked(true);
+                            setFilterAppSystemState(true);
+                        }
+                    }
+                } else if (id == R.id.filterRunningApps) {
+                    setFilterAppRunningState(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterStoppedApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterStoppedApps).setChecked(true);
+                            setFilterAppStoppedState(true);
+                        }
+                    }
+                } else if (id == R.id.filterStoppedApps) {
+                    setFilterAppStoppedState(item.isChecked());
+                    if (!item.isChecked()) {
+                        if (!popup.getMenu().findItem(R.id.filterRunningApps).isChecked()) {
+                            popup.getMenu().findItem(R.id.filterRunningApps).setChecked(true);
+                            setFilterAppRunningState(true);
+                        }
+                    }
                 }
-
-                MainActivity.setFilterAppInfo(filterAppInfo);
                 return false;
             });
             popup.show();
@@ -283,24 +275,6 @@ public class DnsFragment extends AppFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         return binding.getRoot();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Set filter button color
-        int themeColor = context.getResources().getColor(R.color.colorBottomNavUnselected, context.getTheme());
-        if (!filterAppInfo.getHighlightRunningApps() &&
-                filterAppInfo.getSystemAppsFilter() &&
-                filterAppInfo.getUserAppsFilter() &&
-                filterAppInfo.getRunningAppsFilter() &&
-                filterAppInfo.getStoppedAppsFilter()
-        ) {
-            binding.filterButton.setColorFilter(themeColor, PorterDuff.Mode.SRC_IN);
-        } else {
-            int accentColor = context.getResources().getColor(R.color.colorAccent, context.getTheme());
-            binding.filterButton.setColorFilter(accentColor, PorterDuff.Mode.SRC_IN);
-        }
     }
 
     @Override

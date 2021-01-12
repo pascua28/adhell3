@@ -1,11 +1,12 @@
 package com.fusionjack.adhell3.tasks;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.DatabaseFactory;
+import com.fusionjack.adhell3.utils.DialogUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
@@ -20,7 +21,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class BackupDatabaseRxTask implements Runnable {
 
     private final WeakReference<Context> contextWeakReference;
-    private ProgressDialog dialog;
+    private AlertDialog dialog;
 
     public BackupDatabaseRxTask(Context context) {
         this.contextWeakReference = new WeakReference<>(context);
@@ -30,7 +31,7 @@ public class BackupDatabaseRxTask implements Runnable {
     private void createDialog() {
         Context context = contextWeakReference.get();
         if (context != null) {
-            this.dialog = new ProgressDialog(context);
+            this.dialog = DialogUtils.getProgressDialog("Backing up database ...", context);
             dialog.setCancelable(false);
         }
     }
@@ -47,14 +48,13 @@ public class BackupDatabaseRxTask implements Runnable {
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
-                        dialog.setMessage("Backing up database ...");
                         dialog.show();
                     }
 
                     @Override
                     public void onComplete() {
                         dialog.dismiss();
-                        new AlertDialog.Builder(context)
+                        new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setTitle("Info")
                                 .setMessage("Backup database is finished.")
                                 .show();
@@ -64,7 +64,7 @@ public class BackupDatabaseRxTask implements Runnable {
                     public void onError(@NonNull Throwable e) {
                         dialog.dismiss();
                         LogUtils.error(e.getMessage(), e);
-                        new AlertDialog.Builder(context)
+                        new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                                 .setTitle("Error")
                                 .setMessage(e.getMessage())
                                 .show();

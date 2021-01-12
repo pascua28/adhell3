@@ -11,6 +11,7 @@ import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.core.Completable;
@@ -236,11 +236,7 @@ public final class AppDatabaseFactory {
         List<AppExecutor> appExecutors = new ArrayList<>();
         int appCount = apps.size();
         int distributedAppCount = (int) Math.ceil(appCount / (double) cpuCount);
-        final AtomicInteger counter = new AtomicInteger();
-        final Collection<List<ApplicationInfo>> chunks = apps.stream()
-                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / distributedAppCount))
-                .values();
-        //List<List<ApplicationInfo>> chunks = Lists.partition(apps, distributedAppCount);
+        Collection<List<ApplicationInfo>> chunks = Lists.partition(apps, distributedAppCount);
         for (List<ApplicationInfo> chunk : chunks) {
             long id = distributedAppCount * appExecutors.size();
             AppExecutor appExecutor = new AppExecutor(chunk, id, insertToDatabase);
