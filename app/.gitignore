@@ -2,3 +2,4 @@
 gradle.properties
 fabric.properties
 app.properties
+/src/test/resources/
