@@ -3,39 +3,25 @@
     <string name="domain_rules_status">Domain rules are</string>
     <string name="domain_rules_enabled">Domain rules are enabled</string>
     <string name="domain_rules_disabled">Domain rules are disabled</string>
-    <string name="domain_rules_info">
-        Blacklist: 0 domains | Whitelist: 0 domains and 0 apps
-    </string>
-    <string name="domain_rules_info_placeholder">
-        Blacklist: %1$d domains | Whitelist: %2$d domains and %3$d apps
-    </string>
+    <string name="domain_info">Blacklist: 0 domains | Whitelist: 0 domains</string>
+    <string name="domain_info_placeholder">Blacklist: %1$d domains | Whitelist: %2$d domains</string>
+    <string name="whitelist_app_info">&#160;and 0 apps</string>
+    <string name="whitelist_app_info_placeholder">&#160;and %1$d apps</string>
     <string name="firewall_rules_status">Firewall rules are</string>
     <string name="firewall_rules_enabled">Firewall rules are enabled</string>
     <string name="firewall_rules_disabled">Firewall rules are disabled</string>
-    <string name="firewall_rules_info">
-        Mobile data: 0 apps | Wi-Fi data: 0 apps | Custom: 0 apps
-    </string>
-    <string name="firewall_rules_info_placeholder">
-        Mobile data: %1$d apps | Wi-Fi data: %2$d apps | Custom: %3$d apps
-    </string>
+    <string name="firewall_rules_info">Mobile data: 0 apps | Wi-Fi data: 0 apps | Custom: 0 apps</string>
+    <string name="firewall_rules_info_placeholder">Mobile data: %1$d apps | Wi-Fi data: %2$d apps | Custom: %3$d apps</string>
     <string name="app_disabler_status">App disabler is</string>
     <string name="app_disabler_enabled">App disabler is enabled</string>
     <string name="app_disabler_disabled">App disabler is disabled</string>
-    <string name="app_disabler_info">
-        0 apps are disabled
-    </string>
-    <string name="app_disabler_info_placeholder">
-        %1$d apps are disabled
-    </string>
+    <string name="app_disabler_info">0 apps are disabled</string>
+    <string name="app_disabler_info_placeholder">%1$d apps are disabled</string>
     <string name="app_component_status">App component is</string>
     <string name="app_component_enabled">App component is enabled</string>
     <string name="app_component_disabled">App component is disabled</string>
-    <string name="app_component_toggle_info">
-        0 permissions, 0 services and 0 receivers are disabled
-    </string>
-    <string name="app_component_toggle_info_placeholder">
-        %1$d permissions, %2$d services and %3$d receivers are disabled
-    </string>
+    <string name="app_component_toggle_info">0 permissions, 0 services and 0 receivers are disabled</string>
+    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d services and %3$d receivers are disabled</string>
     <string name="adhell_not_supported">Adhell3 is not yet supported on your device.</string>
     <string name="enable_adhell_title">Enable adhell3</string>
     <string name="enable_adhell_info">

@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -14,6 +15,9 @@ public interface FirewallWhitelistedPackageDao {
 
     @Query("SELECT * FROM FirewallWhitelistedPackage")
     List<FirewallWhitelistedPackage> getAll();
+
+    @Query("SELECT COUNT(*) FROM FirewallWhitelistedPackage")
+    LiveData<Integer> getSize();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<FirewallWhitelistedPackage> firewallWhitelistedPackages);

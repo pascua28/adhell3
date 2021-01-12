@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -20,6 +21,9 @@ public interface ReportBlockedUrlDao {
 
     @Insert
     void insertAll(List<ReportBlockedUrl> reportBlockedUrls);
+
+    @Query("SELECT * FROM ReportBlockedUrl ORDER BY _id DESC")
+    LiveData<List<ReportBlockedUrl>> getReportBlockUrlAsLiveData();
 
     @Query("SELECT * FROM ReportBlockedUrl WHERE blockDate BETWEEN :startDate AND :endDate ORDER BY _id DESC")
     List<ReportBlockedUrl> getReportBlockUrlBetween(long startDate, long endDate);

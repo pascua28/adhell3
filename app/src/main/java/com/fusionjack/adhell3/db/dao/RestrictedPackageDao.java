@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -14,6 +15,9 @@ import java.util.List;
 @Dao
 @TypeConverters(DateConverter.class)
 public interface RestrictedPackageDao {
+
+    @Query("SELECT * FROM RestrictedPackage")
+    LiveData<List<RestrictedPackage>> getAllAsLiveData();
 
     @Query("SELECT * FROM RestrictedPackage")
     List<RestrictedPackage> getAll();

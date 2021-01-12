@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -19,7 +20,7 @@ public interface DisabledPackageDao {
     List<DisabledPackage> getAll();
 
     @Query("SELECT COUNT(*) FROM DisabledPackage")
-    int getSize();
+    LiveData<Integer> getSize();
 
     @Insert
     void insertAll(List<DisabledPackage> disabledPackages);

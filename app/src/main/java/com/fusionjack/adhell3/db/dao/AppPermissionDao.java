@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.db.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -13,13 +14,16 @@ import java.util.List;
 public interface AppPermissionDao {
 
     @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = -1")
-    int getPermissionSize();
+    LiveData<Integer> getPermissionSize();
 
     @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 2")
-    int getServiceSize();
+    LiveData<Integer> getServiceSize();
 
     @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 5")
-    int getReceiverSize();
+    LiveData<Integer> getReceiverSize();
+
+    @Query("SELECT * FROM AppPermission")
+    LiveData<List<AppPermission>> getAllAsLiveData();
 
     @Query("SELECT * FROM AppPermission")
     List<AppPermission> getAll();

@@ -29,10 +29,14 @@ import java.util.StringTokenizer;
 public class ContentBlocker56 implements ContentBlocker {
     private static ContentBlocker56 mInstance = null;
 
-    private Firewall firewall;
-    private AppDatabase appDatabase;
+    private final Firewall firewall;
+    private final AppDatabase appDatabase;
+    private final FirewallUtils firewallUtils;
+
     private Handler handler;
-    private FirewallUtils firewallUtils;
+
+    private int blockedDomainCount;
+    private int whitelistedDomainCount;
 
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
@@ -120,6 +124,7 @@ public class ContentBlocker56 implements ContentBlocker {
             processWhitelistedDomains();
             processUserBlockedDomains();
             processBlockedDomains(updateProviders);
+            storeDomainCountInPreference();
             AdhellFactory.getInstance().applyDns(handler);
 
             LogUtils.info("\nDomain rules are enabled.", handler);
@@ -338,6 +343,8 @@ public class ContentBlocker56 implements ContentBlocker {
             return;
         }
 
+        this.whitelistedDomainCount = whiteUrls.size();
+
         List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
         List<String> userList = BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null);
         denyList.addAll(userList);
@@ -378,6 +385,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
         List<String> denyList = BlockUrlUtils.getUserBlockedUrls(appDatabase, true, handler);
         if (denyList.size() > 0) {
+            this.blockedDomainCount += denyList.size();
             List<DomainFilterRule> rules = new ArrayList<>();
             final AppIdentity appIdentity = new AppIdentity("*", null);
             rules.add(new DomainFilterRule(appIdentity, denyList, new ArrayList<>()));
@@ -395,7 +403,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
         List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
         LogUtils.info("Total unique domains to block: " + denyList.size(), handler);
-        AppPreferences.getInstance().setBlockedDomainsCount(denyList.size());
+        this.blockedDomainCount += denyList.size();
 
         final AppIdentity appIdentity = new AppIdentity("*", null);
         processDomains(appIdentity, denyList, new ArrayList<>());
@@ -412,6 +420,12 @@ public class ContentBlocker56 implements ContentBlocker {
             rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
             firewallUtils.addDomainFilterRules(rules, handler);
         }
+    }
+
+    private void storeDomainCountInPreference() {
+        String domainCount = whitelistedDomainCount + "|" + blockedDomainCount;
+        AppPreferences.getInstance().setDomainsCount(domainCount);
+        AppPreferences.getInstance().setBlockedDomainsCount(blockedDomainCount);
     }
 
     @Override

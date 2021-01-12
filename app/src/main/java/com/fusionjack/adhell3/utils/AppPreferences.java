@@ -2,13 +2,21 @@ package com.fusionjack.adhell3.utils;
 
 import android.content.SharedPreferences;
 
+import com.fusionjack.adhell3.blocker.ContentBlocker;
+
+import io.reactivex.Single;
+
 public final class AppPreferences {
     private static AppPreferences instance;
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
 
-    private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
+    private static final String DOMAIN_RULE_TOGGLE = "domainRuleToggle";
+    private static final String FIREWALL_RULE_TOGGLE = "firewallRuleToggle";
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
+
+    private static final String DOMAINS_COUNT = "domainsCount";
+    private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
     private final static String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
     private static final String DNS1 = "dns1";
     private static final String DNS2 = "dns2";
@@ -25,6 +33,40 @@ public final class AppPreferences {
         return instance;
     }
 
+    public Single<SharedPreferenceBooleanLiveData> getDomainRuleLiveData(ContentBlocker contentBlocker) {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, DOMAIN_RULE_TOGGLE, !contentBlocker.isDomainRuleEmpty()));
+    }
+
+    public boolean isDomainRuleToggleEnabled(ContentBlocker contentBlocker) {
+        return sharedPreferences.getBoolean(DOMAIN_RULE_TOGGLE, !contentBlocker.isDomainRuleEmpty());
+    }
+
+    public void setDomainRuleToggle(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(DOMAIN_RULE_TOGGLE, enabled);
+        editor.apply();
+    }
+
+    public Single<SharedPreferenceBooleanLiveData> getFirewallRuleLiveData(ContentBlocker contentBlocker) {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, FIREWALL_RULE_TOGGLE, !contentBlocker.isFirewallRuleEmpty()));
+    }
+
+    public boolean isFirewallRuleToggleEnabled(ContentBlocker contentBlocker) {
+        return sharedPreferences.getBoolean(FIREWALL_RULE_TOGGLE, !contentBlocker.isFirewallRuleEmpty());
+    }
+
+    public void setFirewallRuleToggle(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(FIREWALL_RULE_TOGGLE, enabled);
+        editor.apply();
+    }
+
+    public SharedPreferenceBooleanLiveData getAppDisablerLiveData() {
+        return new SharedPreferenceBooleanLiveData(sharedPreferences, DISABLER_TOGGLE, true);
+    }
+
     public boolean isAppDisablerToggleEnabled() {
         return sharedPreferences.getBoolean(DISABLER_TOGGLE, true);
     }
@@ -33,6 +75,10 @@ public final class AppPreferences {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(DISABLER_TOGGLE, enabled);
         editor.apply();
+    }
+
+    public SharedPreferenceBooleanLiveData getAppComponentLiveData() {
+        return new SharedPreferenceBooleanLiveData(sharedPreferences, APP_COMPONENT_TOGGLE, true);
     }
 
     public boolean isAppComponentToggleEnabled() {
@@ -79,6 +125,34 @@ public final class AppPreferences {
         editor.remove(DNS1);
         editor.remove(DNS2);
         editor.apply();
+    }
+
+    public Single<SharedPreferenceStringLiveData> getDomainCountLiveData() {
+        return Single.fromCallable(() -> {
+            FirewallUtils.DomainStat stat = FirewallUtils.getInstance().getDomainStatFromKnox();
+            String countStr = stat.whiteListSize + "|" + stat.blackListSize;
+            return new SharedPreferenceStringLiveData(sharedPreferences, DOMAINS_COUNT, countStr);
+        });
+    }
+
+    public void setDomainsCount(String combinedCount) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(DOMAINS_COUNT, combinedCount);
+        editor.apply();
+    }
+
+    public int getWhitelistedDomainCount(String combinedDomainCount) {
+        if (!combinedDomainCount.isEmpty()) {
+            return Integer.parseInt(combinedDomainCount.substring(0, combinedDomainCount.indexOf('|')));
+        }
+        return 0;
+    }
+
+    public int getBlockedDomainCount(String combinedDomainCount) {
+        if (!combinedDomainCount.isEmpty()) {
+            return Integer.parseInt(combinedDomainCount.substring(combinedDomainCount.indexOf('|') + 1));
+        }
+        return 0;
     }
 
     public void setBlockedDomainsCount(int count) {
