@@ -19,11 +19,11 @@ import static com.fusionjack.adhell3.fragments.AppTabPageFragment.PACKAGE_DISABL
 
 public class AppTabFragment extends Fragment {
 
-    private int[] imageResId = {
-            R.drawable.ic_visibility_off_black_24dp,
-            R.drawable.ic_signal_cellular_off_black_24dp,
-            R.drawable.ic_signal_wifi_off_black_24dp,
-            R.drawable.ic_beenhere_black_24dp
+    private final int[] imageResId = {
+            R.drawable.ic_disable_app,
+            R.drawable.ic_disable_mobile,
+            R.drawable.ic_disable_wifi,
+            R.drawable.ic_whitelist_app
     };
 
     @Override

@@ -13,12 +13,12 @@
 
         <menu>
             <item android:id="@+id/action_enable_all"
-                android:icon="@drawable/ic_done_all_24dp"
+                android:icon="@drawable/ic_enable_all"
                 app:showAsAction="ifRoom"
                 android:title="@string/menu_enable_all" />
 
             <item android:id="@+id/action_batch"
-                android:icon="@drawable/ic_done_24dp"
+                android:icon="@drawable/ic_batch"
                 app:showAsAction="ifRoom"
                 android:title="@string/menu_batch" />
         </menu>

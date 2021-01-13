@@ -119,7 +119,7 @@ public class HomeTabFragment extends Fragment {
 
         FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
         FloatingActionButton actionAddWhiteDomain = view.findViewById(R.id.action_export_domains);
-        actionAddWhiteDomain.setIcon(R.drawable.ic_public_white_24dp);
+        actionAddWhiteDomain.setIcon(R.drawable.ic_export_domain);
         actionAddWhiteDomain.setOnClickListener(v -> {
             domainFloatMenu.collapse();
             exportDomain();

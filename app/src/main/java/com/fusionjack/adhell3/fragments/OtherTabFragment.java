@@ -20,10 +20,10 @@ import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAG
 
 public class OtherTabFragment extends Fragment {
 
-    private int[] imageResId = {
-            R.drawable.ic_security_black_24dp,
-            R.drawable.ic_dns_black_24dp,
-            R.drawable.ic_settings_black_24dp
+    private final int[] imageResId = {
+            R.drawable.ic_appcomponent,
+            R.drawable.ic_dns,
+            R.drawable.ic_settings
     };
     private String viewpagerPosition;
 

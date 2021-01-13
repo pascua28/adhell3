@@ -18,11 +18,11 @@ import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_LI
 
 public class DomainTabFragment extends Fragment {
 
-    private int[] imageResId = {
-            R.drawable.ic_event_busy_black_24dp,
-            R.drawable.ic_event_available_black_24dp,
-            R.drawable.ic_event_note_black_24dp,
-            R.drawable.ic_http_black_24dp
+    private final int[] imageResId = {
+            R.drawable.ic_blacklist,
+            R.drawable.ic_whitelist,
+            R.drawable.ic_providerlist,
+            R.drawable.ic_searchlist
     };
 
     @Override

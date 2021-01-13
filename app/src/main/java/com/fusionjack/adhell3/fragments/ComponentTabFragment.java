@@ -1,7 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
+
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +16,12 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
 
 public class ComponentTabFragment extends Fragment {
+
+    private final int[] imageResId = {
+            R.drawable.ic_permission,
+            R.drawable.ic_service,
+            R.drawable.ic_receiver
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,6 +48,16 @@ public class ComponentTabFragment extends Fragment {
         viewPager.setAdapter(new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName));
         viewPager.setOffscreenPageLimit(3);
         tabLayout.setupWithViewPager(viewPager);
+
+        int tabCount = viewPager.getAdapter().getCount();
+        for (int i = 0; i < tabCount; i++) {
+            TabLayout.Tab tab = tabLayout.getTabAt(i);
+            if (tab != null) {
+                tab.setIcon(imageResId[i]);
+                int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
+                tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+            }
+        }
 
         return view;
     }

@@ -48,7 +48,7 @@ public class DnsFragment extends AppFragment {
 
         FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);
         FloatingActionButton actionSetDns = view.findViewById(R.id.action_set_dns);
-        actionSetDns.setIcon(R.drawable.ic_dns_white_24dp);
+        actionSetDns.setIcon(R.drawable.ic_add_dns);
         actionSetDns.setOnClickListener(v -> {
             dnsFloatMenu.collapse();
 

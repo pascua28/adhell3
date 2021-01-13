@@ -7,7 +7,7 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
         android:id="@+id/action_enable_all"
-        android:icon="@drawable/ic_done_all_24dp"
+        android:icon="@drawable/ic_enable_all"
         android:title="Enable All"
         app:showAsAction="always">
         <menu></menu>

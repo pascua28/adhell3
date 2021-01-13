@@ -116,7 +116,7 @@ public final class AdhellFactory {
 
     public void createNoInternetConnectionDialog(Context context) {
         new AlertDialog.Builder(context)
-                .setIcon(R.drawable.ic_error_black_24dp)
+                .setIcon(R.drawable.ic_error)
                 .setTitle(context.getString(R.string.no_internet_connection_dialog_title))
                 .setMessage(context.getString(R.string.no_internet_connection))
                 .show();

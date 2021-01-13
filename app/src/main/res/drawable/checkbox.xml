@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:layout_width="wrap_content">
     <item android:state_checked="false"
-        android:drawable="@drawable/ic_check_box_outline_blank_black_24dp" />
+        android:drawable="@drawable/ic_checkbox_unchecked" />
     <item android:state_checked="true"
-        android:drawable="@drawable/ic_check_box_black_24dp" />
+        android:drawable="@drawable/ic_checkbox_checked" />
 </selector>
