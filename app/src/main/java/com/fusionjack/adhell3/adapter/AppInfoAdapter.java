@@ -9,6 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
@@ -32,6 +34,8 @@ public class AppInfoAdapter extends BaseAdapter {
     private final Map<String, Drawable> appIcons;
     private final Map<String, String> versionNames;
 
+    private final Drawable defaultIcon;
+
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, Context context) {
         this.applicationInfoList = appInfoList;
         this.contextReference = new WeakReference<>(context);
@@ -41,6 +45,8 @@ public class AppInfoAdapter extends BaseAdapter {
         AppCache appCache = AppCache.getInstance(observer);
         this.appIcons = appCache.getIcons();
         this.versionNames = appCache.getVersionNames();
+
+        this.defaultIcon = ContextCompat.getDrawable(contextReference.get(), android.R.drawable.sym_def_app_icon);
     }
 
     @Override
@@ -114,7 +120,7 @@ public class AppInfoAdapter extends BaseAdapter {
 
         Drawable icon = appIcons.get(appInfo.packageName);
         if (icon == null) {
-            icon = context.getResources().getDrawable(android.R.drawable.sym_def_app_icon);
+            icon = defaultIcon;
         }
         holder.imageH.setImageDrawable(icon);
 

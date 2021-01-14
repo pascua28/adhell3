@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
@@ -27,6 +28,8 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
     private final Map<String, Drawable> appIcons;
     private final Map<String, String> appNames;
 
+    private final Drawable defaultIcon;
+
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull List<ReportBlockedUrl> objects) {
@@ -36,6 +39,8 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
         AppCache appCache = AppCache.getInstance(observer);
         this.appNames = appCache.getNames();
         this.appIcons = appCache.getIcons();
+
+        this.defaultIcon = ContextCompat.getDrawable(getContext(), android.R.drawable.sym_def_app_icon);
     }
 
     @NonNull
@@ -57,7 +62,7 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
         String appName = appNames.get(reportBlockedUrl.packageName);
         Drawable icon = appIcons.get(reportBlockedUrl.packageName);
         if (icon == null) {
-            icon = getContext().getResources().getDrawable(android.R.drawable.sym_def_app_icon);
+            icon = defaultIcon;
         }
         blockedDomainIconImageView.setImageDrawable(icon);
         blockedDomainAppNameTextView.setText(appName == null ? "(unknown)" : appName);
