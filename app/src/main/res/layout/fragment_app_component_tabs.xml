@@ -7,7 +7,7 @@
     android:background="@drawable/border">
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/apps_sliding_tabs"
+        android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/ManagementTabLayout"
@@ -15,7 +15,7 @@
         app:tabGravity="fill"/>
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/apps_viewpager"
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="5dp"

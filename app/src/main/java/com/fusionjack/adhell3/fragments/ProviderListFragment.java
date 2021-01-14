@@ -84,7 +84,7 @@ public class ProviderListFragment extends Fragment {
                     ((ProviderContentFragment) fragment).setProviderId(provider.id);
                 }
             }
-            TabLayout tabLayout = getParentFragment().getActivity().findViewById(R.id.domains_sliding_tabs);
+            TabLayout tabLayout = getParentFragment().getActivity().findViewById(R.id.sliding_tabs);
             if (tabLayout != null) {
                 TabLayout.Tab tab = tabLayout.getTabAt(PROVIDER_CONTENT_PAGE);
                 if (tab != null) {

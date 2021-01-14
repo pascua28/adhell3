@@ -1,23 +1,21 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.os.Bundle;
-import com.google.android.material.tabs.TabLayout;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.graphics.PorterDuff;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 
 import static com.fusionjack.adhell3.fragments.AppTabPageFragment.PACKAGE_DISABLER_PAGE;
 
-public class AppTabFragment extends Fragment {
+public class AppTabFragment extends TabFragment {
 
     private final int[] imageResId = {
             R.drawable.ic_disable_app,
@@ -27,7 +25,7 @@ public class AppTabFragment extends Fragment {
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle("Apps Management");
         AppCompatActivity parentActivity = (AppCompatActivity) getActivity();
         if (parentActivity.getSupportActionBar() != null) {
@@ -37,47 +35,11 @@ public class AppTabFragment extends Fragment {
         }
         setHasOptionsMenu(true);
 
-        View view = inflater.inflate(R.layout.fragment_apps, container, false);
+        AppPagerAdapter adapter = new AppPagerAdapter(getChildFragmentManager(), getContext());
+        int offset = BuildConfig.DISABLE_APPS ? 0 : 1;
+        View view = inflateFragment(R.layout.fragment_apps, inflater, container, adapter, 4, imageResId, offset);
 
-        TabLayout tabLayout = view.findViewById(R.id.apps_sliding_tabs);
-        ViewPager viewPager = view.findViewById(R.id.apps_viewpager);
-        viewPager.setAdapter(new AppPagerAdapter(getChildFragmentManager(), getContext()));
-        viewPager.setOffscreenPageLimit(4);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
-
-                    @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
-                        super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                    }
-
-                    @Override
-                    public void onTabUnselected(TabLayout.Tab tab) {
-                        super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorText);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                    }
-
-                    @Override
-                    public void onTabReselected(TabLayout.Tab tab) {
-                        super.onTabReselected(tab);
-                        int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-                    }
-                }
-        );
-
-        int imageIndex = BuildConfig.DISABLE_APPS ? 0 : 1;
-        int tabCount = viewPager.getAdapter().getCount();
-        for (int i = 0; i < tabCount; i++, imageIndex++) {
-            tabLayout.getTabAt(i).setIcon(imageResId[imageIndex]);
-            int tabIconColor = ContextCompat.getColor(getContext(), R.color.colorBottomNavUnselected);
-            tabLayout.getTabAt(i).getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-        }
-
+        TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
         TabLayout.Tab tab = tabLayout.getTabAt(PACKAGE_DISABLER_PAGE);
         if (tab != null) {
             tab.select();
