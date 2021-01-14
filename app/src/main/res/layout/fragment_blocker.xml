@@ -39,7 +39,7 @@
             android:text="@string/whitelist_app_info"
             android:textSize="12sp"/>
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/domainRulesSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
             android:text="@string/firewall_rules_info"
             android:textSize="12sp"/>
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/firewallRulesSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -125,7 +125,7 @@
             android:text="@string/app_disabler_info"
             android:textSize="12sp"/>
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/appDisablerSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -168,7 +168,7 @@
             android:text="@string/app_component_toggle_info"
             android:textSize="12sp"/>
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/appComponentSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

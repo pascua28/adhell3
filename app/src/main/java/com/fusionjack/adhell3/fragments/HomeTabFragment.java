@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +52,7 @@ import com.fusionjack.adhell3.utils.SharedPreferenceStringLiveData;
 import com.fusionjack.adhell3.viewmodel.HomeViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -126,13 +126,13 @@ public class HomeTabFragment extends Fragment {
         });
 
         // Init main toggles
-        Switch domainSwitch = view.findViewById(R.id.domainRulesSwitch);
+        SwitchMaterial domainSwitch = view.findViewById(R.id.domainRulesSwitch);
         TextView domainStatusTextView = view.findViewById(R.id.domainStatusTextView);
-        Switch firewallSwitch = view.findViewById(R.id.firewallRulesSwitch);
+        SwitchMaterial firewallSwitch = view.findViewById(R.id.firewallRulesSwitch);
         TextView firewallStatusTextView = view.findViewById(R.id.firewallStatusTextView);
-        Switch disablerSwitch = view.findViewById(R.id.appDisablerSwitch);
+        SwitchMaterial disablerSwitch = view.findViewById(R.id.appDisablerSwitch);
         TextView disablerStatusTextView = view.findViewById(R.id.disablerStatusTextView);
-        Switch appComponentSwitch = view.findViewById(R.id.appComponentSwitch);
+        SwitchMaterial appComponentSwitch = view.findViewById(R.id.appComponentSwitch);
         TextView appComponentStatusTextView = view.findViewById(R.id.appComponentStatusTextView);
         SwipeRefreshLayout blockedDomainSwipeContainer = view.findViewById(R.id.swipeContainer);
         TextView blockedDomainInfoTextView = view.findViewById(R.id.infoTextView);
@@ -182,10 +182,10 @@ public class HomeTabFragment extends Fragment {
         loadBlockedUrls(null);
     }
 
-    private void initTogglePreferences(TextView domainStatusTextView, Switch domainSwitch,
-                                       TextView firewallStatusTextView, Switch firewallSwitch,
-                                       TextView disablerStatusTextView, Switch disablerSwitch,
-                                       TextView appComponentStatusTextView, Switch appComponentSwitch,
+    private void initTogglePreferences(TextView domainStatusTextView, SwitchMaterial domainSwitch,
+                                       TextView firewallStatusTextView, SwitchMaterial firewallSwitch,
+                                       TextView disablerStatusTextView, SwitchMaterial disablerSwitch,
+                                       TextView appComponentStatusTextView, SwitchMaterial appComponentSwitch,
                                        TextView infoTextView, SwipeRefreshLayout swipeContainer) {
 
         AppPreferences.getInstance().getDomainRuleLiveData(contentBlocker)

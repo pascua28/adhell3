@@ -34,7 +34,7 @@
         android:text="Internet"
         android:textSize="@dimen/text_mizerable_size"/>
 
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switchDisable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

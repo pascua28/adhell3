@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.fusionjack.adhell3.R;
@@ -16,6 +15,7 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -125,7 +125,7 @@ public class AppInfoAdapter extends BaseAdapter {
         TextView nameH;
         TextView packageH;
         TextView infoH;
-        Switch switchH;
+        SwitchMaterial switchH;
         ImageView imageH;
     }
 }
