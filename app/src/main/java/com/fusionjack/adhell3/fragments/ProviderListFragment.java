@@ -1,15 +1,9 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.app.Activity;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import com.google.android.material.tabs.TabLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +13,12 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.BlockUrlProviderAdapter;
@@ -32,6 +32,7 @@ import com.fusionjack.adhell3.utils.BlockUrlUtils;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.google.android.material.tabs.TabLayout;
 
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -68,8 +69,8 @@ public class ProviderListFragment extends Fragment {
 
         // Provider list
         ListView providerListView = view.findViewById(R.id.providerListView);
-        BlockUrlProvidersViewModel providersViewModel = ViewModelProviders.of(activity).get(BlockUrlProvidersViewModel.class);
-        providersViewModel.getBlockUrlProviders().observe(this, blockUrlProviders -> {
+        BlockUrlProvidersViewModel providersViewModel = new ViewModelProvider(activity).get(BlockUrlProvidersViewModel.class);
+        providersViewModel.getBlockUrlProviders().observe(getViewLifecycleOwner(), blockUrlProviders -> {
             ListAdapter adapter = providerListView.getAdapter();
             if (adapter == null) {
                 BlockUrlProviderAdapter arrayAdapter = new BlockUrlProviderAdapter(context, blockUrlProviders);

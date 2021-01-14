@@ -1,9 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +9,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
@@ -24,27 +25,20 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class BlacklistFragment extends UserListFragment {
-    private ArrayAdapter adapter;
-    private UserListViewModel viewModel;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        List<String> items = new ArrayList<>();
-        adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
-
-        viewModel = ViewModelProviders.of(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
-        viewModel.getItems().observe(this, blackItems -> {
-            items.clear();
-            items.addAll(blackItems);
-            adapter.notifyDataSetChanged();
-        });
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_blacklist, container, false);
+
+        List<String> items = new ArrayList<>();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
+
+        UserListViewModel viewModel = new ViewModelProvider(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
+        viewModel.getItems().observe(getViewLifecycleOwner(), blackItems -> {
+            items.clear();
+            items.addAll(blackItems);
+            adapter.notifyDataSetChanged();
+        });
 
         ListView blacklistView = view.findViewById(R.id.blackListView);
         blacklistView.setAdapter(adapter);

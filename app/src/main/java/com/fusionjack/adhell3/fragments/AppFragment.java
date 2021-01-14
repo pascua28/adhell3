@@ -8,7 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -50,7 +50,7 @@ public class AppFragment extends Fragment {
         this.initAppList = new ArrayList<>();
         this.adapterAppList = new ArrayList<>();
         this.adapter = new AppInfoAdapter(adapterAppList, type, context);
-        this.viewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        this.viewModel = new ViewModelProvider(this).get(AppViewModel.class);
 
         this.observer = new SingleObserver<List<AppInfo>>() {
             @Override
