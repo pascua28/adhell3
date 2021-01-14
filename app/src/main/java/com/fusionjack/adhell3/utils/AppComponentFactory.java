@@ -416,9 +416,12 @@ public final class AppComponentFactory {
         Set<String> availableServiceNames = AppComponent.getServiceNames(packageName);
         Set<String> availableReceiverNames = AppComponent.getReceiverNames(packageName);
         Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
+        Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
         for (String compName : compNames) {
             if (availableServiceNames.contains(compName) ||
-                    availableActivityNames.contains(compName)) {
+                    availableActivityNames.contains(compName) ||
+                    availableProviderNames.contains(compName)
+            ) {
                 boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
                 if (!compState) {
                     ComponentName componentName = new ComponentName(packageName, compName);
@@ -450,24 +453,19 @@ public final class AppComponentFactory {
             Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
             Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
             for (String compName : compNames) {
-                boolean disable = false;
                 int permissionStatus = 0;
 
                 if (availableServiceNames.contains(compName)) {
-                    disable = true;
                     permissionStatus = AppPermission.STATUS_SERVICE;
                 } else if (availableReceiverNames.contains(compName)) {
-                    disable = true;
                     permissionStatus = AppPermission.STATUS_RECEIVER;
                 } else if (availableActivityNames.contains(compName)) {
-                    disable = true;
                     permissionStatus = AppPermission.STATUS_ACTIVITY;
                 } else if (availableProviderNames.contains(compName)) {
-                    disable = true;
                     permissionStatus = AppPermission.STATUS_PROVIDER;
                 }
 
-                if (disable) {
+                if (permissionStatus != 0) {
                     boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
                     if (compState) {
                         ComponentName componentName = new ComponentName(packageName, compName);
@@ -496,24 +494,19 @@ public final class AppComponentFactory {
         Set<String> availableActivityNames = AppComponent.getActivityNames(packageName);
         Set<String> availableProviderNames = AppComponent.getProviderNames(packageName);
         for (String compName : compNames) {
-            boolean disable = false;
             int permissionStatus = 0;
 
             if (availableServiceNames.contains(compName)) {
-                disable = true;
                 permissionStatus = AppPermission.STATUS_SERVICE;
             } else if (availableReceiverNames.contains(compName)) {
-                disable = true;
                 permissionStatus = AppPermission.STATUS_RECEIVER;
             } else if (availableActivityNames.contains(compName)) {
-                disable = true;
                 permissionStatus = AppPermission.STATUS_ACTIVITY;
             } else if (availableProviderNames.contains(compName)) {
-                disable = true;
                 permissionStatus = AppPermission.STATUS_PROVIDER;
             }
 
-            if (disable) {
+            if (permissionStatus != 0) {
                 boolean compState = AdhellFactory.getInstance().getComponentState(packageName, compName);
                 if (compState) {
                     ComponentName componentName = new ComponentName(packageName, compName);

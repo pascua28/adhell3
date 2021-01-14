@@ -19,9 +19,8 @@ public final class AppPreferences {
     private static final String AUTO_UPDATE_INTERVAL = "autoUpdateInterval";
     private static final String AUTO_UPDATE_START_HOUR = "autoUpdateStartHour";
     private static final String AUTO_UPDATE_START_MINUTE = "autoUpdateStartMinute";
-    private static final String AUTO_UPDATE_APP_COMPONENTS_UPDATE = "autoUpdateAppComponentsUpdate";
+    private static final String AUTO_UPDATE_CHECK_DB = "autoUpdateCheckDB";
     private static final String AUTO_UPDATE_BLOCKED_URL_REPORT = "autoUpdateBlockedUrlReport";
-    private static final String AUTO_UPDATE_CLEAN_DATABASE = "autoUpdateCleanDatabase";
     private static final String AUTO_UPDATE_LOG = "autoUpdateLog";
     private static final String AUTO_UPDATE_CONSTRAINT_LOW_BATTERY = "autoUpdateConstraintLowBattery";
     private static final String AUTO_UPDATE_CONSTRAINT_MOBILE_DATA = "autoUpdateConstraintMobileData";
@@ -185,23 +184,13 @@ public final class AppPreferences {
         editor.apply();
     }
 
-    public boolean getAppComponentsAutoUpdate() {
-        return sharedPreferences.getBoolean(AUTO_UPDATE_APP_COMPONENTS_UPDATE, false);
+    public boolean getCheckDBAutoUpdate() {
+        return sharedPreferences.getBoolean(AUTO_UPDATE_CHECK_DB, true);
     }
 
-    public void setAppComponentsAutoUpdate(boolean enabled) {
+    public void setCheckDBAutoUpdate(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(AUTO_UPDATE_APP_COMPONENTS_UPDATE, enabled);
-        editor.apply();
-    }
-
-    public boolean getCleanDBOnAutoUpdate() {
-        return sharedPreferences.getBoolean(AUTO_UPDATE_CLEAN_DATABASE, true);
-    }
-
-    public void setCleanDBOnAutoUpdate(boolean enabled) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(AUTO_UPDATE_CLEAN_DATABASE, enabled);
+        editor.putBoolean(AUTO_UPDATE_CHECK_DB, enabled);
         editor.apply();
     }
 

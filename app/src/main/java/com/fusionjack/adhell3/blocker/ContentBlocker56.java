@@ -257,7 +257,6 @@ public class ContentBlocker56 implements ContentBlocker {
     public void setAllActiveRules() {
         LogUtils.info("\nGetting all active rules...", handler);
         allActiveRules = firewallUtils.getDomainFilterRuleForAllAppsFromKnox();
-        LogUtils.info("Size: " + allActiveRules.size(), handler);
     }
 
     public void processCustomRules(Handler handler) throws Exception {

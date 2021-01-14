@@ -92,7 +92,7 @@ public interface AppInfoDao {
     @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 0 ORDER BY appName ASC")
     LiveData<List<AppInfo>> getUserApps();
 
-    @Query("SELECT * FROM AppInfo WHERE system = 0 AND disabled = 1 ORDER BY appName ASC")
+    @Query("SELECT * FROM AppInfo WHERE system = 0 ORDER BY appName ASC")
     List<AppInfo> getUserAndDisabledApps();
 
 

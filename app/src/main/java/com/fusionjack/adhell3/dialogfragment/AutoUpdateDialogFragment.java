@@ -27,9 +27,8 @@ import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.databinding.DialogFragmentAutoUpdateBinding;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
-import com.fusionjack.adhell3.tasks.AppComponentsUpdateWorker;
+import com.fusionjack.adhell3.tasks.CheckDBIntegrityWorker;
 import com.fusionjack.adhell3.tasks.BlockedURLReportUpdateWorker;
-import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.tasks.ReScheduleUpdateWorker;
 import com.fusionjack.adhell3.tasks.RulesUpdateWorker;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
@@ -94,9 +93,8 @@ public class AutoUpdateDialogFragment extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar){}
         });
         binding.seekLabelTextView.setText(getSeekBarText(getValueFromSeekBar(binding.intervalSeekBar.getProgress())));
-        binding.appComponentsCheckBox.setChecked(AppPreferences.getInstance().getAppComponentsAutoUpdate());
+        binding.checkDbIntegrityCheckBox.setChecked(AppPreferences.getInstance().getCheckDBAutoUpdate());
         binding.blockedUrlReportCheckBox.setChecked(AppPreferences.getInstance().getBlockedUrlReportAutoUpdate());
-        binding.cleanDBCheckBox.setChecked(AppPreferences.getInstance().getCleanDBOnAutoUpdate());
         binding.logCheckBox.setChecked(AppPreferences.getInstance().getCreateLogOnAutoUpdate());
         binding.lowBatteryCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintLowBattery());
         binding.mobileDataCheckBox.setChecked(AppPreferences.getInstance().getAutoUpdateConstraintMobileData());
@@ -160,12 +158,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
                         TimeUnit.MILLISECONDS)
                 .build();
 
-        OneTimeWorkRequest appComponentsWorkRequest = new OneTimeWorkRequest.Builder(AppComponentsUpdateWorker.class)
-                .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-                .build();
-
-        OneTimeWorkRequest cleanDBWorkRequest = new OneTimeWorkRequest.Builder(CleanDBUpdateWorker.class)
+        OneTimeWorkRequest checkDBWorkRequest = new OneTimeWorkRequest.Builder(CheckDBIntegrityWorker.class)
                 .setConstraints(AutoUpdateDialogFragment.getAutoUpdateConstraints())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build();
@@ -185,8 +178,7 @@ public class AutoUpdateDialogFragment extends DialogFragment {
 
         // Enqueue new job with readjusting initial delay
         workManager.beginWith(rulesWorkRequest)
-                .then(appComponentsWorkRequest)
-                .then(cleanDBWorkRequest)
+                .then(checkDBWorkRequest)
                 .then(blockedURLReportWorkRequest)
                 .then(reScheduleWorkRequest)
                 .enqueue();
@@ -197,16 +189,15 @@ public class AutoUpdateDialogFragment extends DialogFragment {
     }
 
     private void saveAutoUpdateSettings() {
-        if (binding.appComponentsCheckBox.isChecked()) {
+        if (binding.checkDbIntegrityCheckBox.isChecked()) {
             if (getView() != null) {
                 AppComponentFactory.getInstance().checkMigrateOldBatchFiles(getContext());
             }
         }
 
         AppPreferences.getInstance().setAutoUpdateInterval(binding.intervalSeekBar.getProgress());
-        AppPreferences.getInstance().setAppComponentsAutoUpdate(binding.appComponentsCheckBox.isChecked());
+        AppPreferences.getInstance().setCheckDBAutoUpdate(binding.checkDbIntegrityCheckBox.isChecked());
         AppPreferences.getInstance().setBlockedUrlReportAutoUpdate(binding.blockedUrlReportCheckBox.isChecked());
-        AppPreferences.getInstance().setCleanDBOnAutoUpdate(binding.cleanDBCheckBox.isChecked());
         AppPreferences.getInstance().setCreateLogOnAutoUpdate(binding.logCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintLowBattery(binding.lowBatteryCheckBox.isChecked());
         AppPreferences.getInstance().setAutoUpdateConstraintMobileData(binding.mobileDataCheckBox.isChecked());

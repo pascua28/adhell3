@@ -23,12 +23,6 @@
         android:title="@string/restore_database"
         app:iconSpaceReserved="false" />
 
-    <Preference
-        android:key="clean_preference"
-        android:summary="@string/clean_database_summary"
-        android:title="@string/clean_database"
-        app:iconSpaceReserved="false" />
-
     <com.fusionjack.adhell3.model.CustomSwitchPreference
         android:defaultValue="false"
         android:key="auto_update_preference"

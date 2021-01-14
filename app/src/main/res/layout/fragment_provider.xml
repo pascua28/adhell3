@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/providerInfoTextView"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/border"
         android:paddingStart="10dp"
@@ -45,7 +45,6 @@
             android:smoothScrollbar="true"
             android:fastScrollEnabled="true"
             android:fastScrollAlwaysVisible="false" />
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar
@@ -53,7 +52,8 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/loading_animated"
         android:visibility="visible" />
@@ -69,5 +69,4 @@
         fab:sdMainFabClosedSrc="@drawable/ic_add"
         fab:sdMainFabClosedIconColor="@android:color/white"
         fab:sdMainFabOpenedIconColor="@android:color/white" />
-
 </RelativeLayout>

@@ -510,8 +510,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
         private ContentBlocker contentBlocker;
         private Handler handler;
         private final boolean isDomain;
-        private final boolean isDomainRuleEmpty;
-        private final boolean isFirewallRuleEmpty;
+        private final boolean isDomainRulesToggleEnabled;
+        private final boolean isFirewallRulesToggleEnabled;
         private final WeakReference<Context> contextReference;
         private final boolean doRefresh;
 
@@ -520,8 +520,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             this.parentFragment = parentFragment;
             this.fragmentManager = fragmentManager;
             this.contentBlocker = ContentBlocker56.getInstance();
-            this.isDomainRuleEmpty = contentBlocker.isDomainRuleEmpty();
-            this.isFirewallRuleEmpty = contentBlocker.isFirewallRuleEmpty();
+            this.isDomainRulesToggleEnabled = AppPreferences.getInstance().isDomainRulesToggleEnabled();
+            this.isFirewallRulesToggleEnabled = AppPreferences.getInstance().isFirewallRulesToggleEnabled();
             this.contextReference = new WeakReference<>(context);
             this.doRefresh = doRefresh;
 
@@ -542,10 +542,10 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
             } else {
                 if (isDomain) {
                     fragment = FirewallDialogFragment.newInstance(
-                            (isDomainRuleEmpty) ? "Enabling Domain Rules" : "Disabling Domain Rules");
+                            !isDomainRulesToggleEnabled ? "Enabling Domain Rules" : "Disabling Domain Rules");
                 } else {
                     fragment = FirewallDialogFragment.newInstance(
-                            isFirewallRuleEmpty ? "Enabling Firewall Rules" : "Disabling Firewall Rules");
+                            !isFirewallRulesToggleEnabled ? "Enabling Firewall Rules" : "Disabling Firewall Rules");
                 }
             }
             fragment.setCancelable(false);
@@ -565,16 +565,16 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                 contentBlocker.updateAllRules(updateProviders, parentFragment);
             else {
                 if (isDomain) {
-                    if (isDomainRuleEmpty) {
-                        contentBlocker.enableDomainRules(updateProviders);
-                    } else {
+                    if (isDomainRulesToggleEnabled) {
                         contentBlocker.disableDomainRules();
+                    } else {
+                        contentBlocker.enableDomainRules(updateProviders);
                     }
                 } else {
-                    if (isFirewallRuleEmpty) {
-                        contentBlocker.enableFirewallRules();
-                    } else {
+                    if (isFirewallRulesToggleEnabled) {
                         contentBlocker.disableFirewallRules();
+                    } else {
+                        contentBlocker.enableFirewallRules();
                     }
                 }
             }

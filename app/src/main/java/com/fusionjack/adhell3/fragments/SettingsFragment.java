@@ -4,16 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.widget.Button;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
@@ -27,22 +22,17 @@ import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.databinding.DialogQuestionBinding;
 import com.fusionjack.adhell3.databinding.DialogSetPasswordBinding;
-import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.dialogfragment.AutoUpdateDialogFragment;
-import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.model.CustomSwitchPreference;
 import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
-import com.fusionjack.adhell3.tasks.CleanDBUpdateWorker;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -57,7 +47,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private static final String BACKUP_PREFERENCE = "backup_preference";
     private static final String RESTORE_PREFERENCE = "restore_preference";
     private static final String RESTORE_WARNING_PREFERENCE = "restore_warning_dialog";
-    private static final String CLEAN_PREFERENCE = "clean_preference";
     private static final String REVOKE_STORAGE_PERMISSION = "revoke_storage_permission";
     private Context context;
 
@@ -120,22 +109,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         .setView(dialogQuestionBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
                                 new RestoreDatabaseRxTask(context).run()
-                        )
-                        .setNegativeButton(android.R.string.no, null)
-                        .create();
-
-                alertDialog.show();
-                break;
-            }
-            case CLEAN_PREFERENCE: {
-                DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(getContext()));
-                dialogQuestionBinding.titleTextView.setText(R.string.clean_database_dialog_title);
-                dialogQuestionBinding.questionTextView.setText(R.string.clean_database_dialog_text);
-
-                AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                        .setView(dialogQuestionBinding.getRoot())
-                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                                new CleanDatabaseAsyncTask(context, getChildFragmentManager()).execute()
                         )
                         .setNegativeButton(android.R.string.no, null)
                         .create();
@@ -275,52 +248,5 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
         return super.onPreferenceTreeClick(preference);
-    }
-
-    private static class CleanDatabaseAsyncTask extends AsyncTask<Void, Void, Void> {
-        private final WeakReference<Context> contextReference;
-        private final FragmentManager fragmentManager;
-        private Handler handler;
-        private FirewallDialogFragment fragment;
-        private AppCache appCache;
-        private AppDatabase appDatabase;
-
-        CleanDatabaseAsyncTask(Context context, FragmentManager fragmentManager) {
-            this.fragmentManager = fragmentManager;
-            this.contextReference = new WeakReference<>(context);
-            this.handler = new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(@NonNull Message msg) {
-                    fragment.appendText(msg.obj.toString());
-                }
-            };
-        }
-
-        @Override
-        protected void onPreExecute() {
-            fragment = FirewallDialogFragment.newInstance("Cleaning Database");
-            fragment.setCancelable(false);
-            fragment.show(fragmentManager, "dialog_clean_db");
-            appCache = AppCache.getInstance(null);
-            appDatabase = AppDatabase.getAppDatabase(contextReference.get());
-        }
-
-        @Override
-        protected Void doInBackground(Void... args) {
-            CleanDBUpdateWorker.cleanDatabase(appDatabase, appCache, handler);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            fragment.enableCloseButton();
-
-            // Clean resource to prevent memory leak
-            this.handler = null;
-            this.fragment = null;
-            this.appCache = null;
-            this.appDatabase = null;
-        }
     }
 }

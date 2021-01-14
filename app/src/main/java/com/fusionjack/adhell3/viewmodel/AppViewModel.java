@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
-import com.fusionjack.adhell3.fragments.FilterAppInfo;
+import com.fusionjack.adhell3.model.FilterAppInfo;
 
 import java.util.List;
 

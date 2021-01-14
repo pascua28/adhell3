@@ -124,7 +124,7 @@ public final class AppDatabaseFactory {
             long lastId = appDatabase.applicationInfoDao().getLastAppId();
             appDatabase.applicationInfoDao().insert(toAppInfo(app, ++lastId));
 
-            // Disable app's services and receivers based on adhell3_services.txt and adhell3_receivers.txt files
+            // Disable app's services and receivers based on adhell3_components.txt file
             // Also check disabled app's component for consistency:
             // If some app's component are disabled and then the app is uninstalled, they cannot be re-enabled and
             // android system still marks them as disabled even the app is reinstalled.
@@ -177,7 +177,7 @@ public final class AppDatabaseFactory {
         return Single.fromCallable(AppDatabaseFactory::fetchInstalledApps);
     }
 
-    private static AppInfoResult fetchInstalledApps() throws Exception {
+    public static AppInfoResult fetchInstalledApps() throws Exception {
         AppInfoResult result = new AppInfoResult();
         processAppsInParallel(result, false);
 

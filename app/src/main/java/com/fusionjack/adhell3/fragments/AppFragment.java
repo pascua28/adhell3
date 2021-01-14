@@ -24,6 +24,7 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.model.FilterAppInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCacheChangeListener;
 import com.fusionjack.adhell3.utils.LogUtils;
@@ -371,26 +372,21 @@ public class AppFragment extends Fragment implements AppCacheChangeListener {
         if (_loadingVisibility == null) {
             _loadingVisibility = new MutableLiveData<>();
             // Set initial value as true
-            updateLoadingBarVisibility(false);
+            updateLoadingBarVisibility(true);
         }
         return _loadingVisibility;
     }
 
     private void updateLoadingBarVisibility(boolean isVisible) {
-        LogUtils.info("AppViewModel - Updating loading bar visibility with value :"+isVisible);
         if (_loadingVisibility != null) {
             if ( _loadingVisibility.getValue() != null) {
                 boolean currentState = _loadingVisibility.getValue();
-                LogUtils.info("AppViewModel - Loading bar visibility has previous value :"+currentState);
                 if (currentState != isVisible) {
                     _loadingVisibility.setValue(isVisible);
                 }
             } else {
-                LogUtils.info("AppViewModel - Loading bar visibility has no previous value");
                 _loadingVisibility.setValue(isVisible);
             }
-        } else {
-            LogUtils.info("AppViewModel - Loading bar visibility is null!");
         }
     }
 }

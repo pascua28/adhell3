@@ -13,6 +13,7 @@ public class DialogUtils {
 
     public static AlertDialog getProgressDialog(String progressText, Context context) {
         DialogProgressBinding dialogProgressBinding = DialogProgressBinding.inflate(LayoutInflater.from(context));
+        dialogProgressBinding.getRoot().setKeepScreenOn(true);
 
         dialogProgressBinding.loadingMsg.setText(progressText);
 

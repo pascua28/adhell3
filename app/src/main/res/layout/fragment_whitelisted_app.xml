@@ -1,25 +1,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true">
 
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true">
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/infoTextView"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="35dp"
-        android:background="@drawable/border"
-        android:paddingStart="10dp"
-        android:paddingTop="7dp"
-        android:paddingEnd="5dp"
-        android:paddingBottom="5dp"
-        android:text="@string/whitelisted_app_info" />
+        <TextView
+            android:id="@+id/infoTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="55dp"
+            android:paddingStart="10dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/whitelisted_app_info" />
 
         <ImageView
             android:id="@+id/filterButton"
@@ -51,9 +49,9 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
         android:indeterminate="true"
         android:indeterminateDrawable="@drawable/loading_animated"
         android:visibility="visible" />
-
 </RelativeLayout>
