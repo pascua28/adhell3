@@ -173,6 +173,7 @@
     <string name="list_url_fragment_title">List</string>
     <string name="app_component_fragment_title">App Component</string>
     <string name="dns_fragment_title">DNS</string>
+    <string name="restrictions_fragment_title">Restrictions</string>
     <string name="settings_fragment_title">Settings</string>
     <string name="enable_apps_dialog_title">Enable All Apps</string>
     <string name="enable_apps_dialog_text">Do you really want to enable all apps?</string>
@@ -197,6 +198,47 @@
         Set primary and secondary DNS.
         \nLeave it empty to restore to default.
     </string>
+
+    <string name="google_category">Google</string>
+    <string name="allow_google_sync">Allow Google Account Sync</string>
+    <string name="allow_google_sync_summary">Allow or disallow auto sync for Google accounts.</string>
+    <string name="allow_google_crash">Allow Google Crash Report</string>
+    <string name="allow_google_crash_summary">Allow or disallow sending a crash report to Google.</string>
+    <string name="allow_google_backup">Allow Google Backup</string>
+    <string name="allow_google_backup_summary">Allow or disallow backing up to Google servers.</string>
+    <string name="allow_non_market_app">Allow Non Market Apps</string>
+    <string name="allow_non_market_app_summary">Allow or disallow installation of non-Google-Play applications.</string>
+
+    <string name="hardware_category">Hardware</string>
+    <string name="allow_camera">Allow Camera</string>
+    <string name="allow_camera_summary">Allow or disallow the camera. Other applications that use the camera cannot use it. It disables the photo camera, video camera, and video telephony functionality.</string>
+    <string name="allow_microphone">Allow Microphone</string>
+    <string name="allow_microphone_summary">Allow or disallow microphone. It disables only the microphone used for recording, not the phone application microphone.</string>
+    <string name="allow_audio_record">Allow Audio Recording</string>
+    <string name="allow_audio_record_summary">Allow or disallow audio recording. The device microphone is still available after disabling audio recording so that the user can make calls and use audio streaming. Video recording is still allowed if no audio recording is attempted.</string>
+    <string name="allow_video_record">Allow Video Recording</string>
+    <string name="allow_video_record_summary">Allow or disallow video recording. The device camera is still available after disabling video recording so that user can take pictures and use video streaming.</string>
+    <string name="allow_usb_host">Allow USB Host Storage</string>
+    <string name="allow_usb_host_summary">Allow or disallow the usage of USB host storage via USB OTG.</string>
+
+    <string name="connections_category">Connections</string>
+    <string name="allow_mobile_data">Allow Mobile Data</string>
+    <string name="allow_mobile_data_summary">Allow or disallow mobile data connections.</string>
+    <string name="allow_wifi_access">Allow Wi-Fi Access</string>
+    <string name="allow_wifi_access_summary">Allow or disallow Wi-Fi access. Wi-Fi Direct and S-Beam features which depend on this policy will also be affected by this setting. Even with disabled Wifi access, Wifi scanning is still possible.</string>
+    <string name="allow_bluetooth">Allow Bluetooth</string>
+    <string name="allow_bluetooth_summary">Allow or disallow Bluetooth access. User or third-party applications cannot enable Bluetooth access once it is disabled. Even with disabled Bluetooth access, BLE scanning is still possible.</string>
+    <string name="allow_tethering">Allow Tethering</string>
+    <string name="allow_tethering_summary">Allow or disallow the device from sharing its carrier data with another device through USB, WiFi, and Bluetooth.</string>
+
+    <string name="miscellaneous_category">Miscellaneous</string>
+    <string name="allow_clipboard">Allow Clipboard</string>
+    <string name="allow_clipboard_summary">Allow or disallow any editing functions that require access to the clipboard, including cut, copy, and paste operations.</string>
+    <string name="allow_clipboard_share">Allow Clipboard Share</string>
+    <string name="allow_clipboard_share_summary">Allow or disallow sharing the clipboard between applications.</string>
+    <string name="allow_screen_capture">Allow Screen Capture</string>
+    <string name="allow_screen_capture_summary">Allow or disallow a user from taking screenshots of the device screen.</string>
+
     <string name="update_provider_title">Update host providers</string>
     <string name="update_provider_summary">Update host providers when enabling domain rules</string>
     <string name="dialog_set_password_title">Set password</string>

@@ -10,13 +10,14 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.OtherTabPageFragment;
 
 public class OtherPagerAdapter extends FragmentPagerAdapter {
-    private static final int PAGE_COUNT = 3;
-    private String tabTitles[];
+    private static final int PAGE_COUNT = 4;
+    private final String[] tabTitles;
 
     public OtherPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
         tabTitles = new String[] {
                 context.getString(R.string.app_component_fragment_title),
+                context.getString(R.string.restrictions_fragment_title),
                 context.getString(R.string.dns_fragment_title),
                 context.getString(R.string.settings_fragment_title)
         };

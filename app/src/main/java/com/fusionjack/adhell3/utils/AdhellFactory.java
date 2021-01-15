@@ -34,6 +34,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
+import com.samsung.android.knox.restriction.RestrictionPolicy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +55,10 @@ public final class AdhellFactory {
     @Nullable
     @Inject
     ApplicationPolicy appPolicy;
+
+    @Nullable
+    @Inject
+    RestrictionPolicy restrictionPolicy;
 
     @Nullable
     @Inject
@@ -86,6 +91,11 @@ public final class AdhellFactory {
     @Nullable
     public ApplicationPolicy getAppPolicy() {
         return appPolicy;
+    }
+
+    @Nullable
+    public RestrictionPolicy getRestrictionPolicy() {
+        return restrictionPolicy;
     }
 
     @Nullable

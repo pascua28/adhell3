@@ -21,6 +21,7 @@ public class OtherTabFragment extends TabFragment {
 
     private final int[] imageResId = {
             R.drawable.ic_appcomponent,
+            R.drawable.ic_restrictions,
             R.drawable.ic_dns,
             R.drawable.ic_settings
     };
@@ -43,7 +44,7 @@ public class OtherTabFragment extends TabFragment {
 
         OtherPagerAdapter adapter = new OtherPagerAdapter(getChildFragmentManager(), getContext());
         int offset = BuildConfig.APP_COMPONENT ? 0 : 1;
-        View view = inflateFragment(R.layout.fragment_others, inflater, container, adapter, 3, imageResId, offset);
+        View view = inflateFragment(R.layout.fragment_others, inflater, container, adapter, 4, imageResId, offset);
 
         TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
         if (viewpagerPosition != null && viewpagerPosition.equalsIgnoreCase("Settings")) {

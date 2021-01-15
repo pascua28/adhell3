@@ -7,8 +7,9 @@ public class OtherTabPageFragment extends Fragment {
     private static final String ARG_PAGE = "page";
 
     public static final int APP_COMPONENT_PAGE = 0;
-    public static final int DNS_PAGE = 1;
-    public static final int SETTINGS_PAGE = 2;
+    public static final int RESTRICTION_PAGE = 1;
+    public static final int DNS_PAGE = 2;
+    public static final int SETTINGS_PAGE = 3;
 
     public static Fragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -18,6 +19,9 @@ public class OtherTabPageFragment extends Fragment {
         switch (page) {
             case APP_COMPONENT_PAGE:
                 fragment = new AppComponentFragment();
+                break;
+            case RESTRICTION_PAGE:
+                fragment = new RestrictionFragment();
                 break;
             case DNS_PAGE:
                 fragment = new DnsFragment();

@@ -10,6 +10,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import com.samsung.android.knox.net.firewall.Firewall;
+import com.samsung.android.knox.restriction.RestrictionPolicy;
 
 import dagger.Module;
 import dagger.Provides;
@@ -54,6 +55,16 @@ public class EnterpriseModule {
             LogUtils.error( "Failed to get EnterpriseDeviceManager", e);
             return null;
         }
+    }
+
+    @Nullable
+    @Provides
+    @AdhellApplicationScope
+    RestrictionPolicy providesRestrictionPolicy(@Nullable EnterpriseDeviceManager enterpriseDeviceManager) {
+        if (enterpriseDeviceManager == null) {
+            return null;
+        }
+        return enterpriseDeviceManager.getRestrictionPolicy();
     }
 
     @Nullable

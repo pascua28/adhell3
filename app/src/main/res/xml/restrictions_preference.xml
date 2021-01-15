@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/restrictions_fragment_title">
+
+    <PreferenceCategory
+        android:title="@string/google_category"
+        android:layout="@layout/preference_category_google">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="google_sync_preference"
+            android:summary="@string/allow_google_sync_summary"
+            android:title="@string/allow_google_sync"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="google_crash_preference"
+            android:summary="@string/allow_google_crash_summary"
+            android:title="@string/allow_google_crash"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="google_backup_preference"
+            android:summary="@string/allow_google_backup_summary"
+            android:title="@string/allow_google_backup"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="non_market_app_preference"
+            android:summary="@string/allow_non_market_app_summary"
+            android:title="@string/allow_non_market_app"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/hardware_category"
+        android:layout="@layout/preference_category_hardware">
+
+        <SwitchPreference
+            android:key="camera_preference"
+            android:title="@string/allow_camera"
+            android:summary="@string/allow_camera_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="microphone_preference"
+            android:title="@string/allow_microphone"
+            android:summary="@string/allow_microphone_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="audio_record_preference"
+            android:title="@string/allow_audio_record"
+            android:summary="@string/allow_audio_record_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="video_record_preference"
+            android:title="@string/allow_video_record"
+            android:summary="@string/allow_video_record_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="usb_host_preference"
+            android:title="@string/allow_usb_host"
+            android:summary="@string/allow_usb_host_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/connections_category"
+        android:layout="@layout/preference_category_connections">
+
+        <SwitchPreference
+            android:key="mobile_data_preference"
+            android:title="@string/allow_mobile_data"
+            android:summary="@string/allow_mobile_data_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="wifi_access_preference"
+            android:title="@string/allow_wifi_access"
+            android:summary="@string/allow_wifi_access_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="bluetooth_preference"
+            android:title="@string/allow_bluetooth"
+            android:summary="@string/allow_bluetooth_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="tethering_preference"
+            android:title="@string/allow_tethering"
+            android:summary="@string/allow_tethering_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/miscellaneous_category"
+        android:layout="@layout/preference_category_miscellaneous">
+
+        <SwitchPreference
+            android:key="clipboard_preference"
+            android:title="@string/allow_clipboard"
+            android:summary="@string/allow_clipboard_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="clipboard_share_preference"
+            android:title="@string/allow_clipboard_share"
+            android:summary="@string/allow_clipboard_share_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="screen_capture_preference"
+            android:title="@string/allow_screen_capture"
+            android:summary="@string/allow_screen_capture_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
