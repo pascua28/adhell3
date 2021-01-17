@@ -77,7 +77,9 @@ public final class AppDatabaseFactory {
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
         List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
 
-        return findDiff(installedApps, currentApps);
+        // Try to avoid a bug that makes the list of installedApps returned by the package manager incomplete
+        // by doing nothing if the difference is greater than 50
+        return (Math.abs(currentApps.size() - installedApps.size()) < 50) ? findDiff(installedApps, currentApps) : new AppDiff();
     }
 
     private static AppDiff findDiff(List<ApplicationInfo> installedApps, List<String> currentApps) {
