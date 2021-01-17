@@ -56,6 +56,7 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.viewmodel.HomeTabViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.base.Splitter;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 
 import java.io.IOException;
@@ -67,7 +68,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -194,8 +194,8 @@ public class HomeTabFragment extends Fragment implements DefaultLifecycleObserve
                                         }
                                     } else {
                                         // packageName|url
-                                        StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                                        if (tokens.countTokens() != 2) {
+                                        List<String> splittedDomain = Splitter.on('|').omitEmptyStrings().trimResults().splitToList(domainToAdd);
+                                        if (splittedDomain.size() != 2) {
                                             if (context instanceof MainActivity) {
                                                 MainActivity mainActivity = (MainActivity) context;
                                                 mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)

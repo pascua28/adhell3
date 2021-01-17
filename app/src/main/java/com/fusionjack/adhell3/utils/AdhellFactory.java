@@ -31,6 +31,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.fragments.ComponentDisabledTabFragment;
 import com.fusionjack.adhell3.receiver.CustomDeviceAdminReceiver;
+import com.google.common.base.Splitter;
 import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
@@ -41,7 +42,6 @@ import com.samsung.android.knox.restriction.RestrictionPolicy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 
@@ -195,8 +195,8 @@ public final class AdhellFactory {
                     appPolicy.setApplicationComponentState(componentName, state);
                     break;
                 case AppPermission.STATUS_RECEIVER:
-                    StringTokenizer tokenizer = new StringTokenizer(permissionName, "|");
-                    componentName = new ComponentName(packageName, tokenizer.nextToken());
+                    List<String> splittedPermission = Splitter.on('|').omitEmptyStrings().trimResults().splitToList(permissionName);
+                    componentName = new ComponentName(packageName, splittedPermission.get(0));
                     appPolicy.setApplicationComponentState(componentName, state);
                     break;
             }

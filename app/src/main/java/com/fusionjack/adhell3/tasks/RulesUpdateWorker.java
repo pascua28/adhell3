@@ -95,13 +95,10 @@ public class RulesUpdateWorker extends Worker {
                 AppPreferences.getInstance().setFirewallRulesToggle(true);
                 firewallRulesText = "Enabling firewall rules...";
             }
-        } else {
-            if (domainRulesNeedUpdate || firewallRulesNeedUpdate) {
-                contentBlocker.setAllActiveRules();
-            }
         }
         if (domainRulesNeedUpdate) {
             LogUtils.info(domainRulesText, handler);
+            contentBlocker.setAllActiveRules();
             contentBlocker.processWhitelistedApps(handler);
             contentBlocker.processWhitelistedDomains(handler);
             contentBlocker.processBlockedDomains(handler);

@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,11 +24,11 @@ import com.fusionjack.adhell3.databinding.FragmentWhitelistBinding;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.base.Splitter;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 public class WhitelistFragment extends UserListFragment {
     private ArrayAdapter<String> adapter;
@@ -86,7 +87,8 @@ public class WhitelistFragment extends UserListFragment {
                 AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                         .setView(dialogWhitelistDomainBinding.getRoot())
                         .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                            String domainToAdd = dialogWhitelistDomainBinding.domainEditText.getText().toString().trim();
+                            Editable domainEditText = dialogWhitelistDomainBinding.domainEditText.getText();
+                            String domainToAdd = (domainEditText != null) ? domainEditText.toString().trim() : "";
                             if (domainToAdd.indexOf('|') == -1) {
                                 if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
                                     if (getActivity() instanceof MainActivity) {
@@ -98,8 +100,8 @@ public class WhitelistFragment extends UserListFragment {
                                 }
                             } else {
                                 // packageName|url
-                                StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                                if (tokens.countTokens() != 2) {
+                                List<String> splittedDomain = Splitter.on('|').omitEmptyStrings().trimResults().splitToList(domainToAdd);
+                                if (splittedDomain.size() != 2) {
                                     if (getActivity() instanceof MainActivity) {
                                         MainActivity mainActivity = (MainActivity) getActivity();
                                         mainActivity.makeSnackbar("Rule not valid. Please check", Snackbar.LENGTH_SHORT)

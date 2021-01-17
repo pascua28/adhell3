@@ -7,6 +7,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
+import com.google.common.base.Splitter;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
 
@@ -113,9 +113,9 @@ public class AppComponentDisabled {
         List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getAll();
         for (AppPermission storedReceiver : storedReceivers) {
             if (storedReceiver.permissionStatus == AppPermission.STATUS_RECEIVER) {
-                StringTokenizer tokenizer = new StringTokenizer(storedReceiver.permissionName, "|");
-                String name = tokenizer.nextToken();
-                String permission = tokenizer.nextToken();
+                List<String> splittedPermission = Splitter.on('|').omitEmptyStrings().trimResults().splitToList(storedReceiver.permissionName);
+                String name = splittedPermission.get(0);
+                String permission = splittedPermission.get(1);
                 receiverNameSet.add(new ReceiversPair(storedReceiver.packageName, name, permission));
             }
         }

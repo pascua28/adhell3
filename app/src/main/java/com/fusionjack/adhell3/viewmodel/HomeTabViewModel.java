@@ -16,13 +16,11 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
@@ -192,26 +190,15 @@ public class HomeTabViewModel extends ViewModel {
     }
 
     public HashMap<String, List<ReportBlockedUrl>> convertBlockedUrls(List<ReportBlockedUrl> reportBlockedUrls) {
-        HashMap<String, List<ReportBlockedUrl>> returnHashMap = new HashMap<>();
-        for (ReportBlockedUrl reportBlockedUrl : reportBlockedUrls) {
-            List<ReportBlockedUrl> newList = returnHashMap.get(reportBlockedUrl.packageName);
-            if (newList == null) {
-                newList = new ArrayList<>();
-                newList.add(reportBlockedUrl);
-                returnHashMap.put(reportBlockedUrl.packageName, newList);
-            } else {
-                newList.add(reportBlockedUrl);
-            }
-        }
-        // Sort HashMap by 'blockDate'
-        LinkedList<HashMap.Entry<String, List<ReportBlockedUrl>>> linkedList = new LinkedList<>(returnHashMap.entrySet());
-        LinkedHashMap<String, List<ReportBlockedUrl>> sortedHashMap = new LinkedHashMap<>();
-        linkedList.sort((list1, list2) ->
-                ((Comparable<Long>) list2.getValue().get(0).blockDate).compareTo(list1.getValue().get(0).blockDate));
-        for (Map.Entry<String, List<ReportBlockedUrl>> entry : linkedList) {
-            sortedHashMap.put(entry.getKey(), entry.getValue());
-        }
-        return sortedHashMap;
+        return reportBlockedUrls.stream()
+                .sorted((o1, o2) -> ((Comparable<Long>) o2.blockDate).compareTo(o1.blockDate))
+                .collect(
+                        Collectors.groupingBy(
+                                ReportBlockedUrl::getPackageName,
+                                LinkedHashMap::new,
+                                Collectors.mapping(reportBlockedUrl -> reportBlockedUrl, Collectors.toList())
+                        )
+                );
     }
 
     public void setReportBlockedUrls() {

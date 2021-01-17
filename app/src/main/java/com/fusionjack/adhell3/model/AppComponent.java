@@ -7,6 +7,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
+import com.google.common.base.Splitter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,14 +15,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 public class AppComponent {
-
-    /*public static List<IComponentInfo> getPermissions(String packageName, String searchText) {
-        List<String> permissionNameList = new ArrayList<>();
-        PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();*/
 
     private static final Comparator<PermissionInfo> PERMISSION_COMPARATOR = Comparator.comparing(PermissionInfo::getName);
     private static final Comparator<ServiceInfo> SERVICE_COMPARATOR = Comparator.comparing(ServiceInfo::getName);
@@ -120,9 +116,9 @@ public class AppComponent {
         AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
         List<AppPermission> storedReceivers = appDatabase.appPermissionDao().getReceivers(packageName);
         for (AppPermission storedReceiver : storedReceivers) {
-            StringTokenizer tokenizer = new StringTokenizer(storedReceiver.permissionName, "|");
-            String name = tokenizer.nextToken();
-            String permission = tokenizer.nextToken();
+            List<String> splitterPermission = Splitter.on('|').omitEmptyStrings().trimResults().splitToList(storedReceiver.permissionName);
+            String name = splitterPermission.get(0);
+            String permission = splitterPermission.get(1);
             receiverNames.add(new ReceiverInfo(packageName, name, permission));
         }
 
