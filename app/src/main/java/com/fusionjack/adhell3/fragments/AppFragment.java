@@ -82,7 +82,7 @@ public abstract class AppFragment extends Fragment {
 
                     @Override
                     public void onSuccess(@NonNull LiveData<List<AppInfo>> liveData) {
-                        liveData.observe(getViewLifecycleOwner(), appList -> {
+                        liveData.observe(AppFragment.this, appList -> {
                             initAppList = appList;
                             if (searchText.isEmpty()) {
                                 updateAppList(appList);
