@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/border">
+    android:background="@drawable/border"
+    android:animateLayoutChanges="true">
 
     <TextView
         android:id="@+id/infoTextView"
@@ -26,4 +27,14 @@
         android:fastScrollEnabled="true"
         android:fastScrollAlwaysVisible="false" />
 
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/loading_animated"
+        android:visibility="visible" />
 </RelativeLayout>

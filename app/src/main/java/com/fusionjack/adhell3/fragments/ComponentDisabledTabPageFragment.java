@@ -1,10 +1,8 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -12,15 +10,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.ExpandableListView;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityDisabledInfoAdapter;
@@ -37,20 +39,27 @@ import com.fusionjack.adhell3.databinding.FragmentAppReceiverDisabledBinding;
 import com.fusionjack.adhell3.databinding.FragmentAppServiceDisabledBinding;
 import com.fusionjack.adhell3.model.ActivityInfo;
 import com.fusionjack.adhell3.model.AppComponentDisabled;
-import com.fusionjack.adhell3.model.ProviderInfo;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
+import com.fusionjack.adhell3.model.ProviderInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.model.ServiceInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppCache;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ComponentDisabledTabPageFragment extends Fragment {
 
@@ -61,7 +70,6 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private static final int PROVIDER_PAGE = 4;
     private static final String ARG_PAGE = "page";
     private int page;
-    private Context context;
     private String searchText;
     private Map<String, Drawable> appIcons;
     private Map<String, String> appNames;
@@ -69,6 +77,8 @@ public class ComponentDisabledTabPageFragment extends Fragment {
     private View view;
     private SearchView searchView;
     private int listViewID;
+
+    private MutableLiveData<Boolean> _loadingVisibility;
 
     public static ComponentDisabledTabPageFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -84,7 +94,6 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         if (getArguments() != null) {
             this.page = getArguments().getInt(ARG_PAGE);
         }
-        this.context = getContext();
         if (this.searchText == null) this.searchText = "";
 
         AppCache appCache = AppCache.getInstance(null);
@@ -115,7 +124,7 @@ public class ComponentDisabledTabPageFragment extends Fragment {
             public boolean onQueryTextChange(String text) {
                 searchText = text;
                 if (searchText.length() > 0) state = null;
-                new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
+                CreateDisabledComponentRxTask();
 
                 return false;
             }
@@ -165,23 +174,41 @@ public class ComponentDisabledTabPageFragment extends Fragment {
                 listViewID = fragmentAppContentProviderDisabledBinding.providerExpandableListView.getId();
                 break;
         }
-        new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
+        CreateDisabledComponentRxTask();
 
         return view;
     }
+
     @Override
-    public void onResume() {
-        super.onResume();
-        new CreateComponentAsyncTask(page, context, searchText, appIcons, appNames, state).execute();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getLoadingBarVisibility().observe(
+                getViewLifecycleOwner(),
+                isVisible -> {
+                    ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
+                    ExpandableListView listView = view.findViewById(listViewID);
+
+                    if (isVisible) {
+                        loadingBar.setVisibility(View.VISIBLE);
+                        listView.setVisibility(View.GONE);
+                    } else {
+                        loadingBar.setVisibility(View.GONE);
+                        listView.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        ExpandableListView listView = ((Activity) context).findViewById(listViewID);
+        ExpandableListView listView = view.findViewById(listViewID);
         state = listView.onSaveInstanceState();
         // Close keyboard
-        ViewCompat.getWindowInsetsController(view).hide(WindowInsetsCompat.Type.ime());
+        WindowInsetsControllerCompat windowInsetsControllerCompat = ViewCompat.getWindowInsetsController(view);
+        if (windowInsetsControllerCompat != null) {
+            windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.ime());
+        }
     }
 
     @Override
@@ -190,233 +217,211 @@ public class ComponentDisabledTabPageFragment extends Fragment {
         super.onDestroyView();
     }
 
-    private static class CreateComponentAsyncTask extends AsyncTask<Void, Void, Map<String, List<IComponentInfo>>> {
-        private final int page;
-        private final WeakReference<Context> contextReference;
-        private final String searchText;
-        private final Map<String, Drawable> appIcons;
-        private final Map<String, String> appNames;
-        private final WeakReference<Parcelable> stateReference;
-
-        CreateComponentAsyncTask(int page, Context context,
-                                 String searchText,
-                                 Map<String, Drawable> appIcons,
-                                 Map<String, String> appNames,
-                                 Parcelable state)
-        {
-            this.page = page;
-            this.contextReference = new WeakReference<>(context);
-            this.searchText = searchText;
-            this.appIcons = appIcons;
-            this.appNames = appNames;
-            this.stateReference = new WeakReference<>(state);
+    private LiveData<Boolean> getLoadingBarVisibility() {
+        if (_loadingVisibility == null) {
+            _loadingVisibility = new MutableLiveData<>();
+            // Set initial value as true
+            updateLoadingBarVisibility(true);
         }
+        return _loadingVisibility;
+    }
 
-        @Override
-        protected Map<String, List<IComponentInfo>> doInBackground(Void... voids) {
-            List<IComponentInfo> list = null;
-            switch (page) {
-                case PERMISSIONS_PAGE:
-                    list = AppComponentDisabled.getDisabledPermissions(searchText);
-                    break;
-                case SERVICES_PAGE:
-                    list = AppComponentDisabled.getDisabledServices(searchText);
-                    break;
-                case RECEIVERS_PAGE:
-                    list = AppComponentDisabled.getDisabledReceivers(searchText);
-                    break;
-                case ACTIVITIES_PAGE:
-                    list = AppComponentDisabled.getDisabledActivities(searchText);
-                    break;
-                case PROVIDER_PAGE:
-                    list = AppComponentDisabled.getDisabledProviders(searchText);
-                    break;
-            }
-            Map<String, List<IComponentInfo>> componentMap = new TreeMap<>(String::compareToIgnoreCase);
-            if (list != null) {
-                for (IComponentInfo componentInfo : list) {
-                    String packageName = componentInfo.getPackageName();
-                    String appName = appNames.get(packageName);
-                    if (appName == null || appName.length() <= 0) appName = packageName;
-                    List<IComponentInfo> tempList;
-                    if (componentMap.get(appName) != null && componentMap.size() > 0)
-                        tempList = componentMap.get(appName);
-                    else
-                        tempList = new ArrayList<>();
-                    if (tempList != null) {
-                        tempList.add(componentInfo);
-                    }
-                    componentMap.put(appName, tempList);
+    private void updateLoadingBarVisibility(boolean isVisible) {
+        if (_loadingVisibility != null) {
+            if ( _loadingVisibility.getValue() != null) {
+                boolean currentState = _loadingVisibility.getValue();
+                if (currentState != isVisible) {
+                    _loadingVisibility.setValue(isVisible);
                 }
-            }
-
-            return componentMap;
-        }
-
-        @Override
-        protected void onPostExecute(Map<String, List<IComponentInfo>> componentInfos) {
-            Context context = contextReference.get();
-            if (context != null) {
-                ComponentDisabledAdapter adapter = null;
-                int listViewId = -1;
-                switch (page) {
-                    case PERMISSIONS_PAGE:
-                        listViewId = R.id.permissionExpandableListView;
-                        adapter = new PermissionDisabledInfoAdapter(context, componentInfos, appIcons);
-                        break;
-                    case SERVICES_PAGE:
-                        listViewId = R.id.serviceExpandableListView;
-                        adapter = new ServiceDisabledInfoAdapter(context, componentInfos, appIcons);
-                        break;
-                    case RECEIVERS_PAGE:
-                        listViewId = R.id.receiverExpandableListView;
-                        adapter = new ReceiverDisabledInfoAdapter(context, componentInfos, appIcons);
-                        break;
-                    case ACTIVITIES_PAGE:
-                        listViewId = R.id.activityExpandableListView;
-                        adapter = new ActivityDisabledInfoAdapter(context, componentInfos, appIcons);
-                        break;
-                    case PROVIDER_PAGE:
-                        listViewId = R.id.providerExpandableListView;
-                        adapter = new ContentProviderDisabledInfoAdapter(context, componentInfos, appIcons);
-                        break;
-                }
-
-                ExpandableListView listView = ((Activity) context).findViewById(listViewId);
-                if (listView != null && adapter != null) {
-                    listView.setAdapter(adapter);
-                    listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
-                        DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(context));
-                        dialogQuestionBinding.titleTextView.setText(R.string.enable_app_component_dialog_title);
-                        dialogQuestionBinding.questionTextView.setText(R.string.enable_app_component_dialog_text);
-                        List<String> groupList = new ArrayList<>(componentInfos.keySet());
-
-                        final String packageName;
-                        String packageNameTmp = "";
-                        final String compName;
-                        String compNameTmp = "";
-                        IComponentInfo component = null;
-
-                        List<IComponentInfo> compList = componentInfos.get(groupList.get(groupPosition));
-                        if (compList != null) {
-                            packageNameTmp = compList.get(childPosition).getPackageName();
-                            component = compList.get(childPosition);
-                        }
-
-                        packageName = packageNameTmp;
-
-                        if (component instanceof PermissionInfo) {
-                            PermissionInfo permissionInfo = (PermissionInfo) component;
-                            compNameTmp = permissionInfo.getName();
-                        }
-                        if (component instanceof ServiceInfo) {
-                            ServiceInfo serviceInfo = (ServiceInfo) component;
-                            compNameTmp = serviceInfo.getName();
-                        }
-                        if (component instanceof ReceiverInfo) {
-                            ReceiverInfo receiverInfo = (ReceiverInfo) component;
-                            compNameTmp = receiverInfo.getName();
-                        }
-                        if (component instanceof ActivityInfo) {
-                            ActivityInfo activityInfo = (ActivityInfo) component;
-                            compNameTmp = activityInfo.getName();
-                        }
-                        if (component instanceof ProviderInfo) {
-                            ProviderInfo providerInfo = (ProviderInfo) component;
-                            compNameTmp = providerInfo.getName();
-                        }
-                        compName = compNameTmp;
-
-                        AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
-                                .setView(dialogQuestionBinding.getRoot())
-                                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                                    ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-                                    if (appPolicy != null) {
-                                        new EnableAppComponentAsyncTask(packageName, compName, page, context, searchText, appIcons, appNames, stateReference.get()).execute();
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.no, null)
-                                .create();
-
-                        alertDialog.show();
-
-                        return false;
-                    });
-
-                    Parcelable state = stateReference.get();
-                    if (state != null) {
-                        listView.onRestoreInstanceState(state);
-                        adapter.notifyDataSetChanged();
-                    }
-                    if (listView.getVisibility() == View.GONE) {
-                        AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                        animation.setDuration(500);
-                        animation.setStartOffset(50);
-                        animation.setFillAfter(true);
-
-                        listView.setVisibility(View.VISIBLE);
-                        listView.startAnimation(animation);
-                    }
-                }
+            } else {
+                _loadingVisibility.setValue(isVisible);
             }
         }
     }
 
-    private static class EnableAppComponentAsyncTask extends AsyncTask<Void, Void, String> {
-        final String packageName;
-        final String compName;
-        final int page;
-        final WeakReference<Context> contextWeakReference;
-        final String searchText;
-        final Map<String, Drawable> appIcons;
-        final Map<String, String> appNames;
-        final Parcelable state;
+    private void CreateDisabledComponentRxTask() {
+        Single.create((SingleOnSubscribe<Map<String, List<IComponentInfo>>>) emitter -> {
+            List<IComponentInfo> resultList = new ArrayList<>();
+            switch (page) {
+                case PERMISSIONS_PAGE:
+                    resultList = AppComponentDisabled.getDisabledPermissions(searchText);
+                    break;
+                case SERVICES_PAGE:
+                    resultList = AppComponentDisabled.getDisabledServices(searchText);
+                    break;
+                case RECEIVERS_PAGE:
+                    resultList = AppComponentDisabled.getDisabledReceivers(searchText);
+                    break;
+                case ACTIVITIES_PAGE:
+                    resultList = AppComponentDisabled.getDisabledActivities(searchText);
+                    break;
+                case PROVIDER_PAGE:
+                    resultList = AppComponentDisabled.getDisabledProviders(searchText);
+                    break;
+            }
+            Map<String, List<IComponentInfo>> componentMap = new TreeMap<>(String::compareToIgnoreCase);
+            for (IComponentInfo componentInfo : resultList) {
+                String packageName = componentInfo.getPackageName();
+                String appName = appNames.get(packageName);
+                if (appName == null || appName.length() <= 0) appName = packageName;
+                List<IComponentInfo> tempList;
+                if (componentMap.get(appName) != null && componentMap.size() > 0)
+                    tempList = componentMap.get(appName);
+                else
+                    tempList = new ArrayList<>();
+                if (tempList != null) {
+                    tempList.add(componentInfo);
+                }
+                componentMap.put(appName, tempList);
+            }
+            emitter.onSuccess(componentMap);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Map<String, List<IComponentInfo>>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        updateLoadingBarVisibility(true);
+                    }
 
-        ApplicationPolicy appPolicy;
-        ComponentName componentName;
+                    @Override
+                    public void onSuccess(@NonNull Map<String, List<IComponentInfo>> componentInfos) {
+                        Context context = getContext();
+                        if (context != null) {
+                            ComponentDisabledAdapter adapter = null;
+                            int listViewId = -1;
+                            switch (page) {
+                                case PERMISSIONS_PAGE:
+                                    listViewId = R.id.permissionExpandableListView;
+                                    adapter = new PermissionDisabledInfoAdapter(context, componentInfos, appIcons);
+                                    break;
+                                case SERVICES_PAGE:
+                                    listViewId = R.id.serviceExpandableListView;
+                                    adapter = new ServiceDisabledInfoAdapter(context, componentInfos, appIcons);
+                                    break;
+                                case RECEIVERS_PAGE:
+                                    listViewId = R.id.receiverExpandableListView;
+                                    adapter = new ReceiverDisabledInfoAdapter(context, componentInfos, appIcons);
+                                    break;
+                                case ACTIVITIES_PAGE:
+                                    listViewId = R.id.activityExpandableListView;
+                                    adapter = new ActivityDisabledInfoAdapter(context, componentInfos, appIcons);
+                                    break;
+                                case PROVIDER_PAGE:
+                                    listViewId = R.id.providerExpandableListView;
+                                    adapter = new ContentProviderDisabledInfoAdapter(context, componentInfos, appIcons);
+                                    break;
+                            }
 
+                            ExpandableListView listView = view.findViewById(listViewId);
+                            if (listView != null && adapter != null) {
+                                listView.setAdapter(adapter);
+                                listView.setOnChildClickListener((ExpandableListView parent, View view, int groupPosition, int childPosition, long id) -> {
+                                    DialogQuestionBinding dialogQuestionBinding = DialogQuestionBinding.inflate(LayoutInflater.from(context));
+                                    dialogQuestionBinding.titleTextView.setText(R.string.enable_app_component_dialog_title);
+                                    dialogQuestionBinding.questionTextView.setText(R.string.enable_app_component_dialog_text);
+                                    List<String> groupList = new ArrayList<>(componentInfos.keySet());
 
-        EnableAppComponentAsyncTask(String packageName,
-                                    String compName,
-                                    int page,
-                                    Context context,
-                                    String searchText,
-                                    Map<String, Drawable> appIcons,
-                                    Map<String, String> appNames,
-                                    Parcelable state) {
-            this.packageName = packageName;
-            this.compName = compName;
-            this.page = page;
-            this.contextWeakReference = new WeakReference<>(context);
-            this.searchText = searchText;
-            this.appIcons = appIcons;
-            this.appNames = appNames;
-            this.state = state;
-        }
+                                    final String packageName;
+                                    String packageNameTmp = "";
+                                    final String compName;
+                                    String compNameTmp = "";
+                                    IComponentInfo component = null;
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+                                    List<IComponentInfo> compList = componentInfos.get(groupList.get(groupPosition));
+                                    if (compList != null) {
+                                        packageNameTmp = compList.get(childPosition).getPackageName();
+                                        component = compList.get(childPosition);
+                                    }
 
-            appPolicy = AdhellFactory.getInstance().getAppPolicy();
-            componentName= new ComponentName(packageName, compName);
-        }
+                                    packageName = packageNameTmp;
 
-        @Override
-        protected String doInBackground(Void... voids) {
+                                    if (component instanceof PermissionInfo) {
+                                        PermissionInfo permissionInfo = (PermissionInfo) component;
+                                        compNameTmp = permissionInfo.getName();
+                                    }
+                                    if (component instanceof ServiceInfo) {
+                                        ServiceInfo serviceInfo = (ServiceInfo) component;
+                                        compNameTmp = serviceInfo.getName();
+                                    }
+                                    if (component instanceof ReceiverInfo) {
+                                        ReceiverInfo receiverInfo = (ReceiverInfo) component;
+                                        compNameTmp = receiverInfo.getName();
+                                    }
+                                    if (component instanceof ActivityInfo) {
+                                        ActivityInfo activityInfo = (ActivityInfo) component;
+                                        compNameTmp = activityInfo.getName();
+                                    }
+                                    if (component instanceof ProviderInfo) {
+                                        ProviderInfo providerInfo = (ProviderInfo) component;
+                                        compNameTmp = providerInfo.getName();
+                                    }
+                                    compName = compNameTmp;
+
+                                    AlertDialog alertDialog = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
+                                            .setView(dialogQuestionBinding.getRoot())
+                                            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                                                ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                                                if (appPolicy != null) {
+                                                    EnableAppComponentRxTask(packageName, compName);
+                                                }
+                                            })
+                                            .setNegativeButton(android.R.string.no, null)
+                                            .create();
+
+                                    alertDialog.show();
+
+                                    return false;
+                                });
+
+                                if (state != null) {
+                                    listView.onRestoreInstanceState(state);
+                                    adapter.notifyDataSetChanged();
+                                }
+                            }
+                        }
+                        updateLoadingBarVisibility(false);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                        updateLoadingBarVisibility(false);
+                    }
+                });
+    }
+
+    private void EnableAppComponentRxTask(String packageName, String compName) {
+        Single.create((SingleOnSubscribe<Boolean>)emitter -> {
+            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+            ComponentName componentName = new ComponentName(packageName, compName);
+            boolean result = false;
             if (appPolicy != null) {
-                boolean success = appPolicy.setApplicationComponentState(componentName, true);
-                if (success) {
+                result = appPolicy.setApplicationComponentState(componentName, true);
+                if (result) {
                     AdhellFactory.getInstance().getAppDatabase().appPermissionDao().delete(packageName, compName);
                 }
             }
-            return "Success";
-        }
+            emitter.onSuccess(result);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                    }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            new CreateComponentAsyncTask(page, contextWeakReference.get(), searchText, appIcons, appNames, state).execute();
-        }
+                    @Override
+                    public void onSuccess(@NonNull Boolean result) {
+                        if (result) {
+                            CreateDisabledComponentRxTask();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 }

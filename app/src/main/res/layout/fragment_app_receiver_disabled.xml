@@ -17,4 +17,14 @@
         android:fastScrollAlwaysVisible="false"
         android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />
 
+    <ProgressBar
+        android:id="@+id/loadingBar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/loading_animated"
+        android:visibility="visible" />
 </RelativeLayout>

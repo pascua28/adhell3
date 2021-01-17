@@ -10,21 +10,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
-import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
+import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
 import com.fusionjack.adhell3.databinding.FragmentAppActivityBinding;
@@ -41,12 +45,20 @@ import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.model.ServiceInfo;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ComponentTabPageFragment extends Fragment {
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
+public class ComponentTabPageFragment extends Fragment {
     private static final int PERMISSIONS_PAGE = 0;
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
@@ -60,6 +72,9 @@ public class ComponentTabPageFragment extends Fragment {
     private SearchView searchView;
     private String searchText;
     private View view;
+    private int listViewID;
+
+    private MutableLiveData<Boolean> _loadingVisibility;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -103,15 +118,14 @@ public class ComponentTabPageFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 return false;
             }
         });
     }
 
     @Override
-    public void onDestroyOptionsMenu()
-    {
+    public void onDestroyOptionsMenu() {
         searchView.setOnQueryTextListener(null);
         searchView = null;
     }
@@ -138,79 +152,194 @@ public class ComponentTabPageFragment extends Fragment {
             case PERMISSIONS_PAGE:
                 FragmentAppPermissionBinding fragmentAppPermissionBinding = FragmentAppPermissionBinding.inflate(inflater);
                 view = fragmentAppPermissionBinding.getRoot();
+                listViewID = fragmentAppPermissionBinding.permissionInfoListView.getId();
                 if (toggleEnabled) {
                     fragmentAppPermissionBinding.permissionInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         PermissionInfoAdapter adapter = (PermissionInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 break;
 
             case SERVICES_PAGE:
                 FragmentAppServiceBinding fragmentAppServiceBinding = FragmentAppServiceBinding.inflate(inflater);
                 view = fragmentAppServiceBinding.getRoot();
+                listViewID = fragmentAppServiceBinding.serviceInfoListView.getId();
                 if (toggleEnabled) {
                     fragmentAppServiceBinding.serviceInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ServiceInfoAdapter adapter = (ServiceInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 break;
 
             case RECEIVERS_PAGE:
                 FragmentAppReceiverBinding fragmentAppReceiverBinding = FragmentAppReceiverBinding.inflate(inflater);
                 view = fragmentAppReceiverBinding.getRoot();
+                listViewID = fragmentAppReceiverBinding.receiverInfoListView.getId();
                 if (toggleEnabled) {
                     fragmentAppReceiverBinding.receiverInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ReceiverInfoAdapter adapter = (ReceiverInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 break;
 
             case ACTIVITIES_PAGE:
                 FragmentAppActivityBinding fragmentAppActivityBinding = FragmentAppActivityBinding.inflate(inflater);
                 view = fragmentAppActivityBinding.getRoot();
+                listViewID = fragmentAppActivityBinding.activityInfoListView.getId();
                 if (toggleEnabled) {
                     fragmentAppActivityBinding.activityInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ActivityInfoAdapter adapter = (ActivityInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 break;
 
             case PROVIDER_PAGE:
                 FragmentAppContentProviderBinding fragmentAppContentProviderBinding = FragmentAppContentProviderBinding.inflate(inflater);
                 view = fragmentAppContentProviderBinding.getRoot();
+                listViewID = fragmentAppContentProviderBinding.providerInfoListView.getId();
                 if (toggleEnabled) {
                     fragmentAppContentProviderBinding.providerInfoListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                         ProviderInfoAdapter adapter = (ProviderInfoAdapter) adView.getAdapter();
                         new SetComponentAsyncTask(page, packageName, adapter.getItem(position), context).execute();
                     });
                 }
-                new CreateComponentAsyncTask(page, packageName, context, searchText).execute();
+                CreateComponentRxTask();
                 break;
-
         }
-
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getLoadingBarVisibility().observe(
+                getViewLifecycleOwner(),
+                isVisible -> {
+                    ProgressBar loadingBar = view.findViewById(R.id.loadingBar);
+                    ListView listView = view.findViewById(listViewID);
+
+                    if (isVisible) {
+                        loadingBar.setVisibility(View.VISIBLE);
+                        listView.setVisibility(View.GONE);
+                    } else {
+                        loadingBar.setVisibility(View.GONE);
+                        listView.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
     }
 
     @Override
     public void onPause() {
         super.onPause();
         // Close keyboard
-        ViewCompat.getWindowInsetsController(view).hide(WindowInsetsCompat.Type.ime());
+        WindowInsetsControllerCompat windowInsetsControllerCompat = ViewCompat.getWindowInsetsController(view);
+        if (windowInsetsControllerCompat != null) {
+            windowInsetsControllerCompat.hide(WindowInsetsCompat.Type.ime());
+        }
     }
 
     @Override
     public void onDestroyView() {
         view = null;
         super.onDestroyView();
+    }
+
+    private LiveData<Boolean> getLoadingBarVisibility() {
+        if (_loadingVisibility == null) {
+            _loadingVisibility = new MutableLiveData<>();
+            // Set initial value as true
+            updateLoadingBarVisibility(true);
+        }
+        return _loadingVisibility;
+    }
+
+    private void updateLoadingBarVisibility(boolean isVisible) {
+        if (_loadingVisibility != null) {
+            if ( _loadingVisibility.getValue() != null) {
+                boolean currentState = _loadingVisibility.getValue();
+                if (currentState != isVisible) {
+                    _loadingVisibility.setValue(isVisible);
+                }
+            } else {
+                _loadingVisibility.setValue(isVisible);
+            }
+        }
+    }
+
+    private void CreateComponentRxTask() {
+        Single.create((SingleOnSubscribe<List<IComponentInfo>>) emitter -> {
+            List<IComponentInfo> resultList = new ArrayList<>();
+            switch (page) {
+                case PERMISSIONS_PAGE:
+                    resultList = AppComponent.getPermissions(packageName, searchText);
+                    break;
+                case SERVICES_PAGE:
+                    resultList = AppComponent.getServices(packageName, searchText);
+                    break;
+                case RECEIVERS_PAGE:
+                    resultList = AppComponent.getReceivers(packageName, searchText);
+                    break;
+                case ACTIVITIES_PAGE:
+                    resultList = AppComponent.getActivities(packageName, searchText);
+                    break;
+                case PROVIDER_PAGE:
+                    resultList = AppComponent.getProviders(packageName, searchText);
+                    break;
+            }
+            emitter.onSuccess(resultList);
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<List<IComponentInfo>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        updateLoadingBarVisibility(true);
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull List<IComponentInfo> componentInfos) {
+                        if (context != null) {
+                            ComponentAdapter adapter = null;
+                            switch (page) {
+                                case PERMISSIONS_PAGE:
+                                    adapter = new PermissionInfoAdapter(context, componentInfos);
+                                    break;
+                                case SERVICES_PAGE:
+                                    adapter = new ServiceInfoAdapter(context, componentInfos);
+                                    break;
+                                case RECEIVERS_PAGE:
+                                    adapter = new ReceiverInfoAdapter(context, componentInfos);
+                                    break;
+                                case ACTIVITIES_PAGE:
+                                    adapter = new ActivityInfoAdapter(context, componentInfos);
+                                    break;
+                                case PROVIDER_PAGE:
+                                    adapter = new ProviderInfoAdapter(context, componentInfos);
+                                    break;
+                            }
+                            ListView listView = view.findViewById(listViewID);
+                            if (listView != null && adapter != null) {
+                                listView.setAdapter(adapter);
+                            }
+                        }
+                        updateLoadingBarVisibility(false);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        LogUtils.error(e.getMessage(), e);
+                        updateLoadingBarVisibility(false);
+                    }
+                });
     }
 
     private static class EnableComponentAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -356,82 +485,6 @@ public class ComponentTabPageFragment extends Fragment {
                 if (listView != null) {
                     if (listView.getAdapter() instanceof ComponentAdapter) {
                         ((ComponentAdapter) listView.getAdapter()).notifyDataSetChanged();
-                    }
-                }
-            }
-        }
-    }
-
-    private static class CreateComponentAsyncTask extends AsyncTask<Void, Void, List<IComponentInfo>> {
-        private final int page;
-        private final String packageName;
-        private final WeakReference<Context> contextReference;
-        private final String searchText;
-
-        CreateComponentAsyncTask(int page, String packageName, Context context, String searchText) {
-            this.page = page;
-            this.packageName = packageName;
-            this.contextReference = new WeakReference<>(context);
-            this.searchText = searchText;
-        }
-
-        @Override
-        protected List<IComponentInfo> doInBackground(Void... voids) {
-            switch (page) {
-                case PERMISSIONS_PAGE:
-                    return AppComponent.getPermissions(packageName, searchText);
-                case SERVICES_PAGE:
-                    return AppComponent.getServices(packageName, searchText);
-                case RECEIVERS_PAGE:
-                    return AppComponent.getReceivers(packageName, searchText);
-                case ACTIVITIES_PAGE:
-                    return AppComponent.getActivities(packageName, searchText);
-                case PROVIDER_PAGE:
-                    return AppComponent.getProviders(packageName, searchText);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<IComponentInfo> componentInfos) {
-            Context context = contextReference.get();
-            if (context != null) {
-                ComponentAdapter adapter = null;
-                int listViewId = -1;
-                switch (page) {
-                    case PERMISSIONS_PAGE:
-                        listViewId = R.id.permissionInfoListView;
-                        adapter = new PermissionInfoAdapter(context, componentInfos);
-                        break;
-                    case SERVICES_PAGE:
-                        listViewId = R.id.serviceInfoListView;
-                        adapter = new ServiceInfoAdapter(context, componentInfos);
-                        break;
-                    case RECEIVERS_PAGE:
-                        listViewId = R.id.receiverInfoListView;
-                        adapter = new ReceiverInfoAdapter(context, componentInfos);
-                        break;
-                    case ACTIVITIES_PAGE:
-                        listViewId = R.id.activityInfoListView;
-                        adapter = new ActivityInfoAdapter(context, componentInfos);
-                        break;
-                    case PROVIDER_PAGE:
-                        listViewId = R.id.providerInfoListView;
-                        adapter = new ProviderInfoAdapter(context, componentInfos);
-                        break;
-                }
-
-                ListView listView = ((Activity) context).findViewById(listViewId);
-                if (listView != null && adapter != null) {
-                    listView.setAdapter(adapter);
-                    if (listView.getVisibility() == View.GONE) {
-                        AlphaAnimation animation = new AlphaAnimation(0f, 1f);
-                        animation.setDuration(500);
-                        animation.setStartOffset(50);
-                        animation.setFillAfter(true);
-
-                        listView.setVisibility(View.VISIBLE);
-                        listView.startAnimation(animation);
                     }
                 }
             }
