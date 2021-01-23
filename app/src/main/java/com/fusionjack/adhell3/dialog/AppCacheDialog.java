@@ -13,34 +13,21 @@ import io.reactivex.CompletableObserver;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 
-public class AppCacheDialog {
-
-    private final WeakReference<Context> contextWeakReference;
-    private ProgressDialog dialog;
+public class AppCacheDialog extends ProgressDialog {
 
     public AppCacheDialog(Context context) {
-        this.contextWeakReference = new WeakReference<>(context);
-        createDialog();
-    }
-
-    private void createDialog() {
-        Context context = contextWeakReference.get();
-        if (context != null) {
-            this.dialog = new ProgressDialog(context);
-            dialog.setCancelable(false);
-        }
+        super(new WeakReference<>(context).get());
+        setCancelable(false);
     }
 
     public void showDialog(String message) {
-        if (dialog != null) {
-            dialog.setMessage(message);
-            dialog.show();
-        }
+        setMessage(message);
+        show();
     }
 
     public void dismissDialog() {
-        if (dialog != null && dialog.isShowing()) {
-            dialog.dismiss();
+        if (isShowing()) {
+            dismiss();
         }
     }
 
