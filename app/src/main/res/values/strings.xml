@@ -93,11 +93,7 @@
         \n\nDo you really want to enable all apps\' components?
     </string>
     <string name="dialog_system_app_components_title">System apps are listed</string>
-    <string name="dialog_system_app_components_info">
-        Be careful when disabling system apps\' permissions, services and receivers.
-        \nSamsung Knox doesn\'t have an API to clear disabled components.
-        \nIf the database is corrupted, you cannot re-enable them and you need to do a factory reset.
-    </string>
+    <string name="dialog_system_app_components_info">Beware when disabling SYSTEM apps\'s services or receivers. You might end up with a factory reset.</string>
     <string name="dialog_toggle_title">Custom DNS for All Apps</string>
     <string name="dialog_toggle_info">
         Do you really want to apply or remove custom DNS for all apps?

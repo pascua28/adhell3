@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -26,6 +27,7 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
+import com.google.android.material.snackbar.Snackbar;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -35,25 +37,23 @@ import io.reactivex.schedulers.Schedulers;
 public class AppComponentFragment extends AppFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT) {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.dialog_system_app_components_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.dialog_system_app_components_info);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, null).show();
-        }
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        return inflateFragment(R.layout.fragment_app_component, inflater, container, AppRepository.Type.COMPONENT, AppFlag.createComponentFlag());
+        View view = inflateFragment(R.layout.fragment_app_component, inflater, container, AppRepository.Type.COMPONENT, AppFlag.createComponentFlag());
+
+        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT) {
+            View rootView = view.findViewById(R.id.appComponentCoordinatorLayout);
+            Snackbar snackbar = Snackbar.make(rootView, R.string.dialog_system_app_components_info, Snackbar.LENGTH_LONG);
+            View snackBarView = snackbar.getView();
+            snackBarView.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.round_corner, null));
+            TextView snackTextView = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
+            snackTextView.setMaxLines(3);
+            snackbar.setDuration(10000);
+            snackbar.setAction("Close", v -> snackbar.dismiss());
+            snackbar.show();
+        }
+
+        return view;
     }
 
     @Override
