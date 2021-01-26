@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
 import android.content.ComponentName;
-import android.os.Environment;
 
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -62,7 +61,7 @@ public final class AppComponentFactory {
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
-        File serviceFile = new File(Environment.getExternalStorageDirectory(), fileName);
+        File serviceFile = FileUtils.toFile(fileName);
         if (!serviceFile.exists()) {
             throw new FileNotFoundException("File name " + fileName + " cannot be found");
         }

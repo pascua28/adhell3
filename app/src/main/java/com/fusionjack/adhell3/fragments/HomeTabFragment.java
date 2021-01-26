@@ -3,7 +3,6 @@ package com.fusionjack.adhell3.fragments;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -43,6 +42,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
@@ -354,7 +354,7 @@ public class HomeTabFragment extends Fragment {
                     .map(domain -> domain.url)
                     .collect(Collectors.toSet());
 
-            File file = new File(Environment.getExternalStorageDirectory(), "adhell_exported_domains.txt");
+            File file = FileUtils.toFile("adhell_exported_domains.txt");
             try (FileWriter writer = new FileWriter(file)) {
                 for (String domain : domains) {
                     writer.write(domain);

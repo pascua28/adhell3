@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.db;
 
-import android.os.Environment;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -19,6 +18,7 @@ import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.google.common.io.Files;
 
@@ -66,7 +66,7 @@ public final class DatabaseFactory {
     }
 
     public void backupDatabase() throws Exception {
-        File file = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
+        File file = FileUtils.toFile(BACKUP_FILENAME);
 
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
@@ -86,14 +86,14 @@ public final class DatabaseFactory {
         }
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
-        File copyFile = new File(Environment.getExternalStorageDirectory(), String.format(BACKUP_COPY_FILENAME, formatter.format(new Date())));
+        File copyFile = FileUtils.toFile(String.format(BACKUP_COPY_FILENAME, formatter.format(new Date())));
         Files.copy(file, copyFile);
     }
 
     public void restoreDatabase() throws Exception {
-        File backupFile = new File(Environment.getExternalStorageDirectory(), BACKUP_FILENAME);
+        File backupFile = FileUtils.toFile(BACKUP_FILENAME);
         if (!backupFile.exists()) {
-            throw new FileNotFoundException("Backup file " + BACKUP_FILENAME + " cannot be found");
+            throw new FileNotFoundException("Backup file " + backupFile.getAbsolutePath() + " cannot be found");
         }
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), StandardCharsets.UTF_8))) {

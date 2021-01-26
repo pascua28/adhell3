@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -23,10 +22,10 @@ public final class LogUtils {
 
     public static String createLogcat() {
         info("Build version: " + BuildConfig.VERSION_NAME);
-        info("Knox API: " + Integer.toString(EnterpriseDeviceManager.getAPILevel()));
-        info("Android API: " + Integer.toString(Build.VERSION.SDK_INT));
+        info("Knox API: " + EnterpriseDeviceManager.getAPILevel());
+        info("Android API: " + Build.VERSION.SDK_INT);
         String filename = String.format("adhell_logcat_%s.txt", System.currentTimeMillis());
-        File logFile = new File(Environment.getExternalStorageDirectory(), filename);
+        File logFile = FileUtils.toFile(filename);
         try {
             Runtime.getRuntime().exec( "logcat -f " + logFile + " | grep com.fusionjack.adhell3");
         } catch (IOException e) {
