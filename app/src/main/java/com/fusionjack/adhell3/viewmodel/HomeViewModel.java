@@ -21,10 +21,6 @@ public class HomeViewModel extends ViewModel {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
     }
 
-    public Single<LiveData<Integer>> getWhiteListAppInfo() {
-        return Single.fromCallable(() -> appDatabase.firewallWhitelistedPackageDao().getSize());
-    }
-
     public Single<LiveData<List<RestrictedPackage>>> getRestrictedInfo() {
         return Single.fromCallable(() -> appDatabase.restrictedPackageDao().getAllAsLiveData());
     }

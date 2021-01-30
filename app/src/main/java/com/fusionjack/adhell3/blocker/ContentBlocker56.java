@@ -37,6 +37,7 @@ public class ContentBlocker56 implements ContentBlocker {
 
     private int blockedDomainCount;
     private int whitelistedDomainCount;
+    private int whiteAppsCount;
 
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
@@ -316,8 +317,9 @@ public class ContentBlocker56 implements ContentBlocker {
 
         // Create domain filter rule for white listed apps
         List<AppInfo> whitelistedApps = appDatabase.applicationInfoDao().getWhitelistedApps();
-        LogUtils.info("Size: " + whitelistedApps.size(), handler);
-        if (whitelistedApps.size() == 0) {
+        this.whiteAppsCount = whitelistedApps.size();
+        LogUtils.info("Size: " + whiteAppsCount, handler);
+        if (whiteAppsCount == 0) {
             return;
         }
 
@@ -423,8 +425,8 @@ public class ContentBlocker56 implements ContentBlocker {
     }
 
     private void storeDomainCountInPreference() {
-        String domainCount = whitelistedDomainCount + "|" + blockedDomainCount;
-        AppPreferences.getInstance().setDomainsCount(domainCount);
+        String domainStatStr = new FirewallUtils.DomainStat(blockedDomainCount, whitelistedDomainCount, whiteAppsCount).toString();
+        AppPreferences.getInstance().setDomainStatStr(domainStatStr);
         AppPreferences.getInstance().setBlockedDomainsCount(blockedDomainCount);
     }
 

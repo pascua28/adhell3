@@ -130,29 +130,14 @@ public final class AppPreferences {
     public Single<SharedPreferenceStringLiveData> getDomainCountLiveData() {
         return Single.fromCallable(() -> {
             FirewallUtils.DomainStat stat = FirewallUtils.getInstance().getDomainStatFromKnox();
-            String countStr = stat.whiteListSize + "|" + stat.blackListSize;
-            return new SharedPreferenceStringLiveData(sharedPreferences, DOMAINS_COUNT, countStr);
+            return new SharedPreferenceStringLiveData(sharedPreferences, DOMAINS_COUNT, stat.toString());
         });
     }
 
-    public void setDomainsCount(String combinedCount) {
+    public void setDomainStatStr(String combinedCount) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(DOMAINS_COUNT, combinedCount);
         editor.apply();
-    }
-
-    public int getWhitelistedDomainCount(String combinedDomainCount) {
-        if (!combinedDomainCount.isEmpty()) {
-            return Integer.parseInt(combinedDomainCount.substring(0, combinedDomainCount.indexOf('|')));
-        }
-        return 0;
-    }
-
-    public int getBlockedDomainCount(String combinedDomainCount) {
-        if (!combinedDomainCount.isEmpty()) {
-            return Integer.parseInt(combinedDomainCount.substring(combinedDomainCount.indexOf('|') + 1));
-        }
-        return 0;
     }
 
     public void setBlockedDomainsCount(int count) {

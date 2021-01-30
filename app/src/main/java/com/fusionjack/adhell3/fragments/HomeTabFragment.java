@@ -161,11 +161,10 @@ public class HomeTabFragment extends Fragment {
 
         // Init info count
         TextView domainInfoTextView = view.findViewById(R.id.domainInfoTextView);
-        TextView whitelistAppInfoTextView = view.findViewById(R.id.whiteListAppInfoTextView);
         TextView firewallInfoTextView = view.findViewById(R.id.firewallInfoTextView);
         TextView disablerInfoTextView = view.findViewById(R.id.disablerInfoTextView);
         TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
-        initInfoCount(domainInfoTextView, whitelistAppInfoTextView, firewallInfoTextView, disablerInfoTextView, appComponentInfoTextView);
+        initInfoCount(domainInfoTextView, firewallInfoTextView, disablerInfoTextView, appComponentInfoTextView);
 
         // Init reported blocked domains
         ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
@@ -247,24 +246,16 @@ public class HomeTabFragment extends Fragment {
         });
     }
 
-    private void initInfoCount(TextView domainInfoTextView, TextView whitelistAppInfoTextView,
-                               TextView firewallInfoTextView, TextView disablerInfoTextView,
-                               TextView appComponentInfoTextView) {
+    private void initInfoCount(TextView domainInfoTextView, TextView firewallInfoTextView,
+                               TextView disablerInfoTextView, TextView appComponentInfoTextView) {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         Consumer<SharedPreferenceStringLiveData> domainCountCallback = liveData ->
-                liveData.observe(getViewLifecycleOwner(), countStr -> {
-                    int blackListSize = AppPreferences.getInstance().getBlockedDomainCount(countStr);
-                    int whiteListSize = AppPreferences.getInstance().getWhitelistedDomainCount(countStr);
+                liveData.observe(getViewLifecycleOwner(), domainStatStr -> {
+                    FirewallUtils.DomainStat stat = FirewallUtils.DomainStat.toDomainStat(domainStatStr);
                     String domainInfo = resources.getString(R.string.domain_info_placeholder);
-                    domainInfoTextView.setText(String.format(domainInfo, blackListSize, whiteListSize));
-                });
-
-        Consumer<LiveData<Integer>> whitelistAppInfoCallback = liveData ->
-                liveData.observe(getViewLifecycleOwner(), size -> {
-                    String whitelistInfo = resources.getString(R.string.whitelist_app_info_placeholder);
-                    whitelistAppInfoTextView.setText(String.format(whitelistInfo, size));
+                    domainInfoTextView.setText(String.format(domainInfo, stat.blackListSize, stat.whiteListSize, stat.whiteAppsSize));
                 });
 
         Consumer<LiveData<List<RestrictedPackage>>> restrictionInfoCallback = liveData ->
@@ -301,7 +292,6 @@ public class HomeTabFragment extends Fragment {
                 });
 
         new RxSingleComputationBuilder().async(AppPreferences.getInstance().getDomainCountLiveData(), domainCountCallback);
-        new RxSingleIoBuilder().async(viewModel.getWhiteListAppInfo(), whitelistAppInfoCallback);
         new RxSingleIoBuilder().async(viewModel.getRestrictedInfo(), restrictionInfoCallback);
         new RxSingleIoBuilder().async(viewModel.getDisablerInfo(), disablerInfoCallback);
         new RxSingleIoBuilder().async(viewModel.getAppComponentInfo(), appComponentInfoCallback);

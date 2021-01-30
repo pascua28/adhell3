@@ -2,6 +2,8 @@ package com.fusionjack.adhell3.utils;
 
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
@@ -20,8 +22,9 @@ import java.util.List;
 
 public final class FirewallUtils {
     private static FirewallUtils instance;
-    private Firewall firewall;
-    private AppDatabase appDatabase;
+
+    private final Firewall firewall;
+    private final AppDatabase appDatabase;
 
     private FirewallUtils() {
         firewall = AdhellFactory.getInstance().getFirewall();
@@ -96,6 +99,7 @@ public final class FirewallUtils {
                 stat.whiteListSize = domainRules.get(0).getAllowDomains().size();
             }
         }
+        stat.whiteAppsSize = appDatabase.applicationInfoDao().getWhitelistedApps().size();
 
         return stat;
     }
@@ -204,14 +208,45 @@ public final class FirewallUtils {
         }
     }
 
-    public class FirewallStat {
+    public static class FirewallStat {
         public int mobileDataSize;
         public int wifiDataSize;
         public int allNetworkSize;
     }
 
-    public class DomainStat {
+    public static class DomainStat {
         public int blackListSize;
         public int whiteListSize;
+        public int whiteAppsSize;
+
+        private static final String DELIMITER = "~";
+
+        public DomainStat() {
+        }
+
+        public DomainStat(int blackListSize, int whiteListSize, int whiteAppsSize) {
+            this.blackListSize = blackListSize;
+            this.whiteListSize = whiteListSize;
+            this.whiteAppsSize = whiteAppsSize;
+        }
+
+        public static DomainStat toDomainStat(String domainStatStr) {
+            DomainStat stat = new DomainStat();
+            if (domainStatStr != null) {
+                String[] array = domainStatStr.split(DELIMITER);
+                if (array != null && array.length == 3) {
+                    stat.blackListSize = Integer.parseInt(array[0]);
+                    stat.whiteListSize = Integer.parseInt(array[1]);
+                    stat.whiteAppsSize = Integer.parseInt(array[2]);
+                }
+            }
+            return stat;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return blackListSize + DELIMITER + whiteListSize + DELIMITER + whiteAppsSize;
+        }
     }
 }
