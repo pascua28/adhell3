@@ -31,10 +31,8 @@ import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
 import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
-import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
@@ -253,18 +251,16 @@ public class HomeTabFragment extends Fragment {
 
         Consumer<SharedPreferenceStringLiveData> domainCountCallback = liveData ->
                 liveData.observe(getViewLifecycleOwner(), domainStatStr -> {
-                    FirewallUtils.DomainStat stat = FirewallUtils.DomainStat.toDomainStat(domainStatStr);
+                    FirewallUtils.DomainStat stat = FirewallUtils.DomainStat.toStat(domainStatStr);
                     String domainInfo = resources.getString(R.string.domain_info_placeholder);
                     domainInfoTextView.setText(String.format(domainInfo, stat.blackListSize, stat.whiteListSize, stat.whiteAppsSize));
                 });
 
-        Consumer<LiveData<List<RestrictedPackage>>> restrictionInfoCallback = liveData ->
-                liveData.observe(getViewLifecycleOwner(), list -> {
-                    long mobileSize = list.stream().filter(info -> info.type.equalsIgnoreCase(DatabaseFactory.MOBILE_RESTRICTED_TYPE)).count();
-                    long wifiSize = list.stream().filter(info -> info.type.equalsIgnoreCase(DatabaseFactory.WIFI_RESTRICTED_TYPE)).count();
-
+        Consumer<SharedPreferenceStringLiveData> firewallCountCallback = liveData ->
+                liveData.observe(getViewLifecycleOwner(), firewallStatStr -> {
+                    FirewallUtils.FirewallStat stat = FirewallUtils.FirewallStat.toStat(firewallStatStr);
                     String firewallInfo = resources.getString(R.string.firewall_rules_info_placeholder);
-                    firewallInfoTextView.setText(String.format(firewallInfo, mobileSize, wifiSize, 0));
+                    firewallInfoTextView.setText(String.format(firewallInfo, stat.mobileDataSize, stat.wifiDataSize, stat.allNetworkSize));
                 });
 
         Consumer<LiveData<Integer>> disablerInfoCallback = liveData ->
@@ -292,7 +288,7 @@ public class HomeTabFragment extends Fragment {
                 });
 
         new RxSingleComputationBuilder().async(AppPreferences.getInstance().getDomainCountLiveData(), domainCountCallback);
-        new RxSingleIoBuilder().async(viewModel.getRestrictedInfo(), restrictionInfoCallback);
+        new RxSingleComputationBuilder().async(AppPreferences.getInstance().getFirewallStatLiveData(), firewallCountCallback);
         new RxSingleIoBuilder().async(viewModel.getDisablerInfo(), disablerInfoCallback);
         new RxSingleIoBuilder().async(viewModel.getAppComponentInfo(), appComponentInfoCallback);
     }

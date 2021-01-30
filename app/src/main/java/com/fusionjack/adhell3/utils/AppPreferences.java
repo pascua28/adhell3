@@ -15,7 +15,8 @@ public final class AppPreferences {
     private static final String DISABLER_TOGGLE = "disablerToggle";
     private static final String APP_COMPONENT_TOGGLE = "appComponentToggle";
 
-    private static final String DOMAINS_COUNT = "domainsCount";
+    private static final String DOMAIN_STAT = "domainStat";
+    private static final String FIREWALL_STAT = "firewallStat";
     private static final String BLOCKED_DOMAINS_COUNT = "blockedDomainsCount";
     private final static String DNS_ALL_APPS_ENABLED = "dnsAllAppsEnabled";
     private static final String DNS1 = "dns1";
@@ -130,13 +131,28 @@ public final class AppPreferences {
     public Single<SharedPreferenceStringLiveData> getDomainCountLiveData() {
         return Single.fromCallable(() -> {
             FirewallUtils.DomainStat stat = FirewallUtils.getInstance().getDomainStatFromKnox();
-            return new SharedPreferenceStringLiveData(sharedPreferences, DOMAINS_COUNT, stat.toString());
+            LogUtils.info("Domain stat from Knox: " + stat.toString());
+            return new SharedPreferenceStringLiveData(sharedPreferences, DOMAIN_STAT, stat.toString());
         });
     }
 
-    public void setDomainStatStr(String combinedCount) {
+    public void setDomainStatStr(String statStr) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(DOMAINS_COUNT, combinedCount);
+        editor.putString(DOMAIN_STAT, statStr);
+        editor.apply();
+    }
+
+    public Single<SharedPreferenceStringLiveData> getFirewallStatLiveData() {
+        return Single.fromCallable(() -> {
+            FirewallUtils.FirewallStat stat = FirewallUtils.getInstance().getFirewallStatFromKnox();
+            LogUtils.info("Firewall stat from Knox: " + stat.toString());
+            return new SharedPreferenceStringLiveData(sharedPreferences, FIREWALL_STAT, stat.toString());
+        });
+    }
+
+    public void setFirewallStatStr(String statStr) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(FIREWALL_STAT, statStr);
         editor.apply();
     }
 

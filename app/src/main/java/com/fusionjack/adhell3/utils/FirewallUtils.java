@@ -146,7 +146,7 @@ public final class FirewallUtils {
                 }
             }
         }
-        return stat;
+        return stat.dividedByTwo();
     }
 
     public List<ReportBlockedUrl> getReportBlockedUrl() {
@@ -209,9 +209,47 @@ public final class FirewallUtils {
     }
 
     public static class FirewallStat {
+        public int allNetworkSize;
         public int mobileDataSize;
         public int wifiDataSize;
-        public int allNetworkSize;
+
+        private static final String DELIMITER = "~";
+
+        public FirewallStat() {
+        }
+
+        public FirewallStat(int allNetworkSize, int mobileDataSize, int wifiDataSize) {
+            this.allNetworkSize = allNetworkSize;
+            this.mobileDataSize = mobileDataSize;
+            this.wifiDataSize = wifiDataSize;
+        }
+
+        public static FirewallStat toStat(String statStr) {
+            FirewallStat stat = new FirewallStat();
+            if (statStr != null) {
+                String[] array = statStr.split(DELIMITER);
+                if (array.length == 3) {
+                    stat.allNetworkSize = Integer.parseInt(array[0]);
+                    stat.mobileDataSize = Integer.parseInt(array[1]);
+                    stat.wifiDataSize = Integer.parseInt(array[2]);
+                }
+            }
+            return stat;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return allNetworkSize + DELIMITER + mobileDataSize + DELIMITER + wifiDataSize;
+        }
+
+        // Knox Firewall stores for both IPv4 and IPv6
+        public FirewallStat dividedByTwo() {
+            if (allNetworkSize > 0) allNetworkSize = allNetworkSize / 2;
+            if (mobileDataSize > 0) mobileDataSize = mobileDataSize / 2;
+            if (wifiDataSize > 0) wifiDataSize = wifiDataSize / 2;
+            return this;
+        }
     }
 
     public static class DomainStat {
@@ -230,11 +268,11 @@ public final class FirewallUtils {
             this.whiteAppsSize = whiteAppsSize;
         }
 
-        public static DomainStat toDomainStat(String domainStatStr) {
+        public static DomainStat toStat(String statStr) {
             DomainStat stat = new DomainStat();
-            if (domainStatStr != null) {
-                String[] array = domainStatStr.split(DELIMITER);
-                if (array != null && array.length == 3) {
+            if (statStr != null) {
+                String[] array = statStr.split(DELIMITER);
+                if (array.length == 3) {
                     stat.blackListSize = Integer.parseInt(array[0]);
                     stat.whiteListSize = Integer.parseInt(array[1]);
                     stat.whiteAppsSize = Integer.parseInt(array[2]);

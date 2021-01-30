@@ -39,6 +39,10 @@ public class ContentBlocker56 implements ContentBlocker {
     private int whitelistedDomainCount;
     private int whiteAppsCount;
 
+    private int allNetworkSize;
+    private int mobileDataSize;
+    private int wifiDataSize;
+
     private ContentBlocker56() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
         this.firewall = AdhellFactory.getInstance().getFirewall();
@@ -73,9 +77,11 @@ public class ContentBlocker56 implements ContentBlocker {
         LogUtils.info("Enabling firewall rules...", handler);
 
         try {
+            resetFirewallCounter();
             processCustomRules();
             processMobileRestrictedApps();
             processWifiRestrictedApps();
+            storeFirewallStatInPreference();
 
             LogUtils.info("\nFirewall rules are enabled.", handler);
 
@@ -97,6 +103,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         LogUtils.info("Disabling firewall rules...", handler);
+        resetFirewallCounter();
 
         // Clear firewall rules
         LogUtils.info("\nClearing firewall rules...", handler);
@@ -110,6 +117,20 @@ public class ContentBlocker56 implements ContentBlocker {
             firewall.enableFirewall(false);
             LogUtils.info("\nKnox firewall is disabled.", handler);
         }
+
+        storeFirewallStatInPreference();
+    }
+
+    private void resetFirewallCounter() {
+        allNetworkSize = 0;
+        mobileDataSize = 0;
+        wifiDataSize = 0;
+    }
+
+    private void storeFirewallStatInPreference() {
+        String statStr = new FirewallUtils.FirewallStat(allNetworkSize, mobileDataSize, wifiDataSize).toString();
+        AppPreferences.getInstance().setFirewallStatStr(statStr);
+        LogUtils.info("Firewall stat: " + statStr);
     }
 
     @Override
@@ -183,9 +204,10 @@ public class ContentBlocker56 implements ContentBlocker {
     }
 
     private void storeDomainCountInPreference() {
-        String domainStatStr = new FirewallUtils.DomainStat(blockedDomainCount, whitelistedDomainCount, whiteAppsCount).toString();
-        AppPreferences.getInstance().setDomainStatStr(domainStatStr);
+        String statStr = new FirewallUtils.DomainStat(blockedDomainCount, whitelistedDomainCount, whiteAppsCount).toString();
+        AppPreferences.getInstance().setDomainStatStr(statStr);
         AppPreferences.getInstance().setBlockedDomainsCount(blockedDomainCount);
+        LogUtils.info("Domain stat: " + statStr);
     }
 
     private void processCustomRules() throws Exception {
@@ -255,15 +277,16 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         LogUtils.info("Custom rule size: " + count, handler);
+        this.allNetworkSize = count;
     }
 
     private void processMobileRestrictedApps() throws Exception {
         LogUtils.info("\nProcessing mobile restricted apps...", handler);
 
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getMobileRestrictedApps();
-        int size = restrictedApps.size();
-        LogUtils.info("Size: " + size, handler);
-        if (size == 0) {
+        this.mobileDataSize = restrictedApps.size();
+        LogUtils.info("Size: " + mobileDataSize, handler);
+        if (mobileDataSize == 0) {
             return;
         }
 
@@ -296,9 +319,9 @@ public class ContentBlocker56 implements ContentBlocker {
         LogUtils.info("\nProcessing wifi restricted apps...", handler);
 
         List<AppInfo> restrictedApps = appDatabase.applicationInfoDao().getWifiRestrictedApps();
-        int size = restrictedApps.size();
-        LogUtils.info("Size: " + size, handler);
-        if (size == 0) {
+        this.wifiDataSize = restrictedApps.size();
+        LogUtils.info("Size: " + wifiDataSize, handler);
+        if (wifiDataSize == 0) {
             return;
         }
 

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
-import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 
 import java.util.List;
@@ -19,10 +18,6 @@ public class HomeViewModel extends ViewModel {
 
     public HomeViewModel() {
         this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
-    }
-
-    public Single<LiveData<List<RestrictedPackage>>> getRestrictedInfo() {
-        return Single.fromCallable(() -> appDatabase.restrictedPackageDao().getAllAsLiveData());
     }
 
     public Single<LiveData<Integer>> getDisablerInfo() {
