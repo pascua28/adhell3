@@ -121,6 +121,7 @@ public class ContentBlocker56 implements ContentBlocker {
         LogUtils.info("Enabling domain rules...", handler);
 
         try {
+            resetDomainCounter();
             processWhitelistedApps();
             processWhitelistedDomains();
             processUserBlockedDomains();
@@ -153,6 +154,7 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         LogUtils.info("Disabling domain rules...", handler);
+        resetDomainCounter();
 
         // Clear domain filter rules
         LogUtils.info("\nClearing domain rules...", handler);
@@ -171,6 +173,19 @@ public class ContentBlocker56 implements ContentBlocker {
         }
 
         AppPreferences.getInstance().resetBlockedDomainsCount();
+        storeDomainCountInPreference();
+    }
+
+    private void resetDomainCounter() {
+        blockedDomainCount = 0;
+        whitelistedDomainCount = 0;
+        whiteAppsCount = 0;
+    }
+
+    private void storeDomainCountInPreference() {
+        String domainStatStr = new FirewallUtils.DomainStat(blockedDomainCount, whitelistedDomainCount, whiteAppsCount).toString();
+        AppPreferences.getInstance().setDomainStatStr(domainStatStr);
+        AppPreferences.getInstance().setBlockedDomainsCount(blockedDomainCount);
     }
 
     private void processCustomRules() throws Exception {
@@ -422,12 +437,6 @@ public class ContentBlocker56 implements ContentBlocker {
             rules.add(new DomainFilterRule(appIdentity, chunk, allowList));
             firewallUtils.addDomainFilterRules(rules, handler);
         }
-    }
-
-    private void storeDomainCountInPreference() {
-        String domainStatStr = new FirewallUtils.DomainStat(blockedDomainCount, whitelistedDomainCount, whiteAppsCount).toString();
-        AppPreferences.getInstance().setDomainStatStr(domainStatStr);
-        AppPreferences.getInstance().setBlockedDomainsCount(blockedDomainCount);
     }
 
     @Override
