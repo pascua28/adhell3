@@ -20,17 +20,14 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import java.util.function.Consumer;
 
 public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
 
@@ -105,46 +102,37 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         ProgressDialog dialog = new ProgressDialog(getContext());
         boolean showDialog = provider.lastUpdated == null;
 
-        DomainRxTaskFactory.selectProvider(isChecked, provider)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<Boolean>() {
-                    @Override
-                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
-                        if (showDialog) {
-                            dialog.setMessage("Loading provider ...");
-                            dialog.show();
-                        }
-                    }
+        Runnable onSubscribeCallback = () -> {
+            if (showDialog) {
+                dialog.setMessage("Loading provider ...");
+                dialog.show();
+            }
+        };
 
-                    @Override
-                    public void onSuccess(@io.reactivex.annotations.NonNull Boolean isValid) {
-                        if (showDialog) {
-                            dialog.dismiss();
-                        }
-                        if (!isValid) {
-                            String message = String.format(Locale.ENGLISH, "The total number of unique domains exceeds the maximum limit of %d",
-                                    AdhellAppIntegrity.BLOCK_URL_LIMIT);
-                            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                        }
-                    }
+        Consumer<Boolean> onSuccessCallback = isValid -> {
+            if (showDialog) {
+                dialog.dismiss();
+            }
+            if (!isValid) {
+                String message = String.format(Locale.ENGLISH, "The total number of unique domains exceeds the maximum limit of %d",
+                        AdhellAppIntegrity.BLOCK_URL_LIMIT);
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        };
 
-                    @Override
-                    public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-                        if (showDialog) {
-                            dialog.dismiss();
-                        }
-                        LogUtils.error(e.getMessage(), e);
-                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+        Runnable onErrorCallback = () -> {
+            if (showDialog) {
+                dialog.dismiss();
+            }
+        };
+
+        new RxSingleIoBuilder()
+                .setShowErrorAlert(getContext())
+                .async(DomainRxTaskFactory.selectProvider(isChecked, provider), onSubscribeCallback, onSuccessCallback, onErrorCallback);
     }
 
     private void deleteProvider(BlockUrlProvider provider) {
-        DomainRxTaskFactory.deleteProvider(provider)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+        new RxCompletableIoBuilder().async(DomainRxTaskFactory.deleteProvider(provider));
     }
 
 }

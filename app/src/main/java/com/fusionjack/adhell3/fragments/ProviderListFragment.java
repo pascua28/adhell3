@@ -26,6 +26,9 @@ import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -33,9 +36,9 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import io.reactivex.CompletableObserver;
-import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
@@ -122,122 +125,48 @@ public class ProviderListFragment extends Fragment {
     }
 
     private void initProviderList(BlockUrlProvidersViewModel model, List<BlockUrlProvider> providerList, BlockUrlProviderAdapter providerAdapter) {
-        model.getBlockUrlProviders()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<LiveData<List<BlockUrlProvider>>>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                    }
-
-                    @Override
-                    public void onSuccess(@NonNull LiveData<List<BlockUrlProvider>> liveData) {
-                        liveData.observe(getViewLifecycleOwner(), _providerList -> {
-                            providerList.clear();
-                            providerList.addAll(_providerList);
-                            providerAdapter.notifyDataSetChanged();
-                        });
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-
-                    }
+        Consumer<LiveData<List<BlockUrlProvider>>> callback = liveData ->
+                liveData.observe(getViewLifecycleOwner(), _providerList -> {
+                    providerList.clear();
+                    providerList.addAll(_providerList);
+                    providerAdapter.notifyDataSetChanged();
                 });
+        new RxSingleIoBuilder().async(model.getBlockUrlProviders(), callback);
     }
 
     private void initDomainCount(BlockUrlProvidersViewModel model, TextView infoTextView) {
-        model.getDomainCount()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<LiveData<Integer>>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                        String strFormat = getResources().getString(R.string.total_unique_domains);
-                        infoTextView.setText(String.format(strFormat, 0));
-                    }
-
-                    @Override
-                    public void onSuccess(@NonNull LiveData<Integer> liveData) {
-                        liveData.observe(getViewLifecycleOwner(), count -> {
-                            String strFormat = context.getResources().getString(R.string.total_unique_domains);
-                            infoTextView.setText(String.format(strFormat, count));
-                        });
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        LogUtils.error(e.getMessage(), e);
-                    }
+        Consumer<LiveData<Integer>> callback = liveData ->
+                liveData.observe(getViewLifecycleOwner(), count -> {
+                    String strFormat = context.getResources().getString(R.string.total_unique_domains);
+                    infoTextView.setText(String.format(strFormat, count));
                 });
+        new RxSingleIoBuilder().async(model.getDomainCount(), callback);
     }
 
     private void addProvider(String providerUrl) {
-        DomainRxTaskFactory.addProvider(providerUrl)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<BlockUrlProvider>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                    }
+        Consumer<BlockUrlProvider> callback = provider ->
+                new RxCompletableComputationBuilder()
+                        .setShowDialog("Loading provider ...", getContext())
+                        .async(DomainRxTaskFactory.loadProvider(provider));
 
-                    @Override
-                    public void onSuccess(@NonNull BlockUrlProvider provider) {
-                        ProgressDialog dialog = new ProgressDialog(context);
-                        DomainRxTaskFactory.loadProvider(provider)
-                                .subscribeOn(Schedulers.computation())
-                                .subscribe(new CompletableObserver() {
-                                    @Override
-                                    public void onSubscribe(@NonNull Disposable d) {
-                                        dialog.setMessage("Loading provider ...");
-                                        dialog.show();
-                                    }
-
-                                    @Override
-                                    public void onComplete() {
-                                        dialog.dismiss();
-                                    }
-
-                                    @Override
-                                    public void onError(@NonNull Throwable e) {
-                                        dialog.dismiss();
-                                        LogUtils.error(e.getMessage(), e);
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        LogUtils.error(e.getMessage(), e);
-                    }
-                });
+        new RxSingleIoBuilder().async(DomainRxTaskFactory.addProvider(providerUrl), callback);
     }
 
     private void updateAllProviders(SwipeRefreshLayout swipeContainer) {
         ProgressDialog dialog = new ProgressDialog(context);
         boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(context);
-        DomainRxTaskFactory.updateAllProviders(hasInternetAccess)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CompletableObserver() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                        swipeContainer.setRefreshing(false);
-                        dialog.setMessage("Updating providers ...");
-                        dialog.show();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        dialog.dismiss();
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        dialog.dismiss();
-                        LogUtils.error(e.getMessage(), e);
-                    }
-                });
+        if (!hasInternetAccess) {
+            swipeContainer.setRefreshing(false);
+            Toast.makeText(getContext(), "There is no internet connection", Toast.LENGTH_LONG).show();
+        } else {
+            Runnable onSubscribeCallback = () -> {
+                swipeContainer.setRefreshing(false);
+                dialog.setMessage("Updating providers ...");
+                dialog.show();
+            };
+            Runnable dismissCallback = dialog::dismiss;
+            new RxCompletableComputationBuilder().async(DomainRxTaskFactory.updateAllProviders(), onSubscribeCallback, dismissCallback, dismissCallback);
+        }
     }
 
 }

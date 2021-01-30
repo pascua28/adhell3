@@ -16,6 +16,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
@@ -67,10 +68,8 @@ public class PermissionInfoAdapter extends ComponentAdapter {
                 checked = true;
             }
             if (!checked) {
-                Completable.fromAction(() -> AppComponentFactory.getInstance().addPermissionToDatabaseIfNotExist(packageName, permissionName))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe();
+                Completable action = Completable.fromAction(() -> AppComponentFactory.getInstance().addPermissionToDatabaseIfNotExist(packageName, permissionName));
+                new RxCompletableIoBuilder().async(action);
             }
             permissionSwitch.setChecked(checked);
 

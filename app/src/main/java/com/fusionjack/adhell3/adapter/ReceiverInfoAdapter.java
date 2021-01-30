@@ -15,6 +15,7 @@ import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
@@ -54,10 +55,8 @@ public class ReceiverInfoAdapter extends ComponentAdapter {
 
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
             if (!state) {
-                Completable.fromAction(() -> AppComponentFactory.getInstance().addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe();
+                Completable action = Completable.fromAction(() -> AppComponentFactory.getInstance().addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission));
+                new RxCompletableIoBuilder().async(action);
             }
             permissionSwitch.setChecked(state);
 

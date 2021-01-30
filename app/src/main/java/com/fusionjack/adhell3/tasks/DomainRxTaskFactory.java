@@ -76,9 +76,7 @@ public class DomainRxTaskFactory {
         });
     }
 
-    public static Completable updateAllProviders(boolean hasInternetAccess) {
-        return Completable.fromAction(() -> {
-            if (hasInternetAccess) AdhellFactory.getInstance().updateAllProviders();
-        });
+    public static Completable updateAllProviders() {
+        return Completable.fromAction(() -> AdhellFactory.getInstance().updateAllProviders());
     }
 }
