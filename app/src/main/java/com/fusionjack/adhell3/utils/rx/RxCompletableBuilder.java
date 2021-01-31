@@ -52,8 +52,7 @@ public class RxCompletableBuilder {
     public void async(Completable observable, Runnable onSubscribeCallback, Runnable onCompletableCallback, Runnable onErrorCallback) {
         Context context = Optional.ofNullable(weakReference).map(WeakReference::get).orElse(null);
         if (showDialog) {
-            ProgressDialog dg = Optional.ofNullable(context).map(ProgressDialog::new).orElse(null);
-            Optional.ofNullable(dg).ifPresent(dialog -> {
+            Optional.ofNullable(context).map(ProgressDialog::new).ifPresent(dialog -> {
                 Runnable onSubscribe = () -> {
                     dialog.setMessage(dialogMessage);
                     dialog.setCancelable(false);

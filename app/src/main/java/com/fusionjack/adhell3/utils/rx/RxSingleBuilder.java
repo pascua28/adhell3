@@ -50,22 +50,21 @@ public class RxSingleBuilder {
         async(observable, EMPTY_RUNNABLE, onCompletableCallback, EMPTY_RUNNABLE);
     }
 
-    public <T> void async(Single<T> observable, Runnable onSubscribeCallback, Consumer<T> onCompletableCallback, Runnable onErrorCallback) {
+    public <T> void async(Single<T> observable, Runnable onSubscribeCallback, Consumer<T> onSuccessCallback, Runnable onErrorCallback) {
         Context context = Optional.ofNullable(weakReference).map(WeakReference::get).orElse(null);
         if (showDialog) {
-            ProgressDialog dg = Optional.ofNullable(context).map(ProgressDialog::new).orElse(null);
-            Optional.ofNullable(dg).ifPresent(dialog -> {
+            Optional.ofNullable(context).map(ProgressDialog::new).ifPresent(dialog -> {
                 Runnable onSubscribe = () -> {
                     dialog.setMessage(dialogMessage);
                     dialog.setCancelable(false);
                     dialog.show();
                 };
-                Consumer<T> onComplete = t -> dialog.dismiss();
+                Consumer<T> onSuccess = t -> dialog.dismiss();
                 Runnable onError = dialog::dismiss;
-                RxFactory.async(observable, scheduler, onSubscribe, onComplete, onError, context);
+                RxFactory.async(observable, scheduler, onSubscribe, onSuccess, onError, context);
             });
         } else {
-            RxFactory.async(observable, scheduler, onSubscribeCallback, onCompletableCallback, onErrorCallback, context);
+            RxFactory.async(observable, scheduler, onSubscribeCallback, onSuccessCallback, onErrorCallback, context);
         }
     }
 
