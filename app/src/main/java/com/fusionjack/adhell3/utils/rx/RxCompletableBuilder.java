@@ -58,9 +58,10 @@ public class RxCompletableBuilder {
                     dialog.setCancelable(false);
                     dialog.show();
                 };
-                Runnable onComplete = dialog::dismiss;
-                Runnable onError = dialog::dismiss;
-                RxFactory.async(observable, scheduler, onSubscribe, onComplete, onError, context);
+                Runnable dismissDialog = () -> {
+                    if (dialog.isShowing()) dialog.dismiss();
+                };
+                RxFactory.async(observable, scheduler, onSubscribe, dismissDialog, dismissDialog, context);
             });
         } else {
             RxFactory.async(observable, scheduler, onSubscribeCallback, onCompletableCallback, onErrorCallback, context);

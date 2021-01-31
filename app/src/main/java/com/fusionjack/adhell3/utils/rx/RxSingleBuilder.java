@@ -59,8 +59,12 @@ public class RxSingleBuilder {
                     dialog.setCancelable(false);
                     dialog.show();
                 };
-                Consumer<T> onSuccess = t -> dialog.dismiss();
-                Runnable onError = dialog::dismiss;
+                Consumer<T> onSuccess = t -> {
+                    if (dialog.isShowing()) dialog.dismiss();
+                };
+                Runnable onError = () -> {
+                    if (dialog.isShowing()) dialog.dismiss();
+                };
                 RxFactory.async(observable, scheduler, onSubscribe, onSuccess, onError, context);
             });
         } else {
