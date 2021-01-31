@@ -27,7 +27,6 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
-import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -37,12 +36,6 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import io.reactivex.CompletableObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
@@ -124,22 +117,36 @@ public class ProviderListFragment extends Fragment {
         return view;
     }
 
+    void safeGuardLiveData(Runnable action) {
+        if (getView() == null) {
+            LogUtils.error("View is null");
+            return;
+        }
+        action.run();
+    }
+
     private void initProviderList(BlockUrlProvidersViewModel model, List<BlockUrlProvider> providerList, BlockUrlProviderAdapter providerAdapter) {
-        Consumer<LiveData<List<BlockUrlProvider>>> callback = liveData ->
+        Consumer<LiveData<List<BlockUrlProvider>>> callback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), _providerList -> {
                     providerList.clear();
                     providerList.addAll(_providerList);
                     providerAdapter.notifyDataSetChanged();
                 });
+            });
+        };
         new RxSingleIoBuilder().async(model.getBlockUrlProviders(), callback);
     }
 
     private void initDomainCount(BlockUrlProvidersViewModel model, TextView infoTextView) {
-        Consumer<LiveData<Integer>> callback = liveData ->
+        Consumer<LiveData<Integer>> callback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), count -> {
                     String strFormat = context.getResources().getString(R.string.total_unique_domains);
                     infoTextView.setText(String.format(strFormat, count));
                 });
+            });
+        };
         new RxSingleIoBuilder().async(model.getDomainCount(), callback);
     }
 

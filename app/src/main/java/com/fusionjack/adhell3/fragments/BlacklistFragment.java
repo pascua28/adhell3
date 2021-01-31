@@ -12,10 +12,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
+import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -23,6 +26,7 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 
 public class BlacklistFragment extends UserListFragment {
 
@@ -34,11 +38,19 @@ public class BlacklistFragment extends UserListFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
 
         UserListViewModel viewModel = new ViewModelProvider(this, new UserListViewModel.BlackListFactory()).get(UserListViewModel.class);
-        viewModel.getItems().observe(getViewLifecycleOwner(), blackItems -> {
-            items.clear();
-            items.addAll(blackItems);
-            adapter.notifyDataSetChanged();
-        });
+
+        Consumer<LiveData<List<String>>> callback = liveData -> {
+            if (getView() == null) {
+                LogUtils.error("View is null");
+                return;
+            }
+            liveData.observe(getViewLifecycleOwner(), blackItems -> {
+                items.clear();
+                items.addAll(blackItems);
+                adapter.notifyDataSetChanged();
+            });
+        };
+        new RxSingleIoBuilder().async(viewModel.getItems(), callback);
 
         ListView blacklistView = view.findViewById(R.id.blackListView);
         blacklistView.setAdapter(adapter);

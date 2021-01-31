@@ -11,23 +11,20 @@ import com.fusionjack.adhell3.db.repository.WhiteListRepository;
 
 import java.util.List;
 
+import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class UserListViewModel extends ViewModel {
-    private LiveData<List<String>> items;
-    private UserListRepository repository;
+    private final UserListRepository repository;
 
     public UserListViewModel(UserListRepository repository) {
         this.repository = repository;
     }
 
-    public LiveData<List<String>> getItems() {
-        if (items == null) {
-            items = repository.getItems();
-        }
-        return items;
+    public Single<LiveData<List<String>>> getItems() {
+        return Single.fromCallable(repository::getItems);
     }
 
     public void addItem(String item, SingleObserver<String> observer) {

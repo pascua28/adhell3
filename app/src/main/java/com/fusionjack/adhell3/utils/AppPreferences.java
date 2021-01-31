@@ -64,8 +64,9 @@ public final class AppPreferences {
         editor.apply();
     }
 
-    public SharedPreferenceBooleanLiveData getAppDisablerLiveData() {
-        return new SharedPreferenceBooleanLiveData(sharedPreferences, DISABLER_TOGGLE, true);
+    public Single<SharedPreferenceBooleanLiveData> getAppDisablerLiveData() {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, DISABLER_TOGGLE, true));
     }
 
     public boolean isAppDisablerToggleEnabled() {
@@ -78,8 +79,9 @@ public final class AppPreferences {
         editor.apply();
     }
 
-    public SharedPreferenceBooleanLiveData getAppComponentLiveData() {
-        return new SharedPreferenceBooleanLiveData(sharedPreferences, APP_COMPONENT_TOGGLE, true);
+    public Single<SharedPreferenceBooleanLiveData> getAppComponentLiveData() {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, APP_COMPONENT_TOGGLE, true));
     }
 
     public boolean isAppComponentToggleEnabled() {

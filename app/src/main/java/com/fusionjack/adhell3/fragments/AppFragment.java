@@ -21,6 +21,7 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
@@ -68,15 +69,20 @@ public abstract class AppFragment extends Fragment {
 
     private void initAppList(AppRepository.Type type) {
         AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
-        Consumer<LiveData<List<AppInfo>>> callback = liveData ->
-                liveData.observe(getViewLifecycleOwner(), appList -> {
-                    initAppList = appList;
-                    if (searchText.isEmpty()) {
-                        updateAppList(appList);
-                    } else {
-                        searchView.setQuery(searchText, true);
-                    }
-                });
+        Consumer<LiveData<List<AppInfo>>> callback = liveData -> {
+            if (getView() == null) {
+                LogUtils.error("View is null");
+                return;
+            }
+            liveData.observe(getViewLifecycleOwner(), appList -> {
+                initAppList = appList;
+                if (searchText.isEmpty()) {
+                    updateAppList(appList);
+                } else {
+                    searchView.setQuery(searchText, true);
+                }
+            });
+        };
         new RxSingleComputationBuilder().async(viewModel.loadAppList(type), callback);
     }
 

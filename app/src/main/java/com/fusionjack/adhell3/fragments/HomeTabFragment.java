@@ -178,13 +178,22 @@ public class HomeTabFragment extends Fragment {
         loadBlockedUrls(null);
     }
 
+    void safeGuardLiveData(Runnable action) {
+        if (getView() == null) {
+            LogUtils.error("View is null");
+            return;
+        }
+        action.run();
+    }
+
     private void initTogglePreferences(TextView domainStatusTextView, SwitchMaterial domainSwitch,
                                        TextView firewallStatusTextView, SwitchMaterial firewallSwitch,
                                        TextView disablerStatusTextView, SwitchMaterial disablerSwitch,
                                        TextView appComponentStatusTextView, SwitchMaterial appComponentSwitch,
                                        TextView infoTextView, SwipeRefreshLayout swipeContainer) {
 
-        Consumer<SharedPreferenceBooleanLiveData> domainRuleCallback = liveData ->
+        Consumer<SharedPreferenceBooleanLiveData> domainRuleCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), state -> {
                     if (contentBlocker == null || !state) {
                         domainStatusTextView.setText(R.string.domain_rules_disabled);
@@ -205,8 +214,11 @@ public class HomeTabFragment extends Fragment {
                         swipeContainer.setVisibility(View.INVISIBLE);
                     }
                 });
+            });
+        };
 
-        Consumer<SharedPreferenceBooleanLiveData> firewallRuleCallback = liveData ->
+        Consumer<SharedPreferenceBooleanLiveData> firewallRuleCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), state -> {
                     if (contentBlocker == null || !state) {
                         firewallStatusTextView.setText(R.string.firewall_rules_disabled);
@@ -216,32 +228,48 @@ public class HomeTabFragment extends Fragment {
                         firewallSwitch.setChecked(true);
                     }
                 });
+            });
+        };
 
-        Single<SharedPreferenceBooleanLiveData> observable = AppPreferences.getInstance().getDomainRuleLiveData(contentBlocker);
-        new RxSingleComputationBuilder().async(observable, domainRuleCallback);
+        Consumer<SharedPreferenceBooleanLiveData> disablerCallback = liveData -> {
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), state -> {
+                    if (state) {
+                        disablerStatusTextView.setText(R.string.app_disabler_enabled);
+                        disablerSwitch.setChecked(true);
+                    } else {
+                        disablerStatusTextView.setText(R.string.app_disabler_disabled);
+                        disablerSwitch.setChecked(false);
+                    }
+                });
+            });
+        };
 
-        observable = AppPreferences.getInstance().getFirewallRuleLiveData(contentBlocker);
-        new RxSingleComputationBuilder().async(observable, firewallRuleCallback);
+        Consumer<SharedPreferenceBooleanLiveData> appComponentCallback = liveData -> {
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), state -> {
+                    if (state) {
+                        appComponentStatusTextView.setText(R.string.app_component_enabled);
+                        appComponentSwitch.setChecked(true);
+                    } else {
+                        appComponentStatusTextView.setText(R.string.app_component_disabled);
+                        appComponentSwitch.setChecked(false);
+                    }
+                });
+            });
+        };
 
-        AppPreferences.getInstance().getAppDisablerLiveData().observe(getViewLifecycleOwner(), state -> {
-            if (state) {
-                disablerStatusTextView.setText(R.string.app_disabler_enabled);
-                disablerSwitch.setChecked(true);
-            } else {
-                disablerStatusTextView.setText(R.string.app_disabler_disabled);
-                disablerSwitch.setChecked(false);
-            }
-        });
+        Single<SharedPreferenceBooleanLiveData> domainRuleObservable = AppPreferences.getInstance().getDomainRuleLiveData(contentBlocker);
+        new RxSingleComputationBuilder().async(domainRuleObservable, domainRuleCallback);
 
-        AppPreferences.getInstance().getAppComponentLiveData().observe(getViewLifecycleOwner(), state -> {
-            if (state) {
-                appComponentStatusTextView.setText(R.string.app_component_enabled);
-                appComponentSwitch.setChecked(true);
-            } else {
-                appComponentStatusTextView.setText(R.string.app_component_disabled);
-                appComponentSwitch.setChecked(false);
-            }
-        });
+        Single<SharedPreferenceBooleanLiveData> firewallRuleObservable = AppPreferences.getInstance().getFirewallRuleLiveData(contentBlocker);
+        new RxSingleComputationBuilder().async(firewallRuleObservable, firewallRuleCallback);
+
+        Single<SharedPreferenceBooleanLiveData> disablerObservable = AppPreferences.getInstance().getAppDisablerLiveData();
+        new RxSingleIoBuilder().async(disablerObservable, disablerCallback);
+
+        Single<SharedPreferenceBooleanLiveData> appComponentObservable = AppPreferences.getInstance().getAppComponentLiveData();
+        new RxSingleIoBuilder().async(appComponentObservable, appComponentCallback);
     }
 
     private void initInfoCount(TextView domainInfoTextView, TextView firewallInfoTextView,
@@ -249,28 +277,38 @@ public class HomeTabFragment extends Fragment {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        Consumer<SharedPreferenceStringLiveData> domainCountCallback = liveData ->
+        Consumer<SharedPreferenceStringLiveData> domainCountCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), domainStatStr -> {
                     FirewallUtils.DomainStat stat = FirewallUtils.DomainStat.toStat(domainStatStr);
                     String domainInfo = resources.getString(R.string.domain_info_placeholder);
                     domainInfoTextView.setText(String.format(domainInfo, stat.blackListSize, stat.whiteListSize, stat.whiteAppsSize));
                 });
+            });
+        };
 
-        Consumer<SharedPreferenceStringLiveData> firewallCountCallback = liveData ->
+        Consumer<SharedPreferenceStringLiveData> firewallCountCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), firewallStatStr -> {
                     FirewallUtils.FirewallStat stat = FirewallUtils.FirewallStat.toStat(firewallStatStr);
                     String firewallInfo = resources.getString(R.string.firewall_rules_info_placeholder);
                     firewallInfoTextView.setText(String.format(firewallInfo, stat.mobileDataSize, stat.wifiDataSize, stat.allNetworkSize));
                 });
+            });
+        };
 
-        Consumer<LiveData<Integer>> disablerInfoCallback = liveData ->
+        Consumer<LiveData<Integer>> disablerInfoCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), disablerSize -> {
                     String disablerInfo = resources.getString(R.string.app_disabler_info_placeholder);
                     boolean enabled = AppPreferences.getInstance().isAppDisablerToggleEnabled();
                     disablerInfoTextView.setText(String.format(disablerInfo, enabled ? disablerSize : 0));
                 });
+            });
+        };
 
-        Consumer<LiveData<List<AppPermission>>> appComponentInfoCallback = liveData ->
+        Consumer<LiveData<List<AppPermission>>> appComponentInfoCallback = liveData -> {
+            safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), list -> {
                     long permissionSize = list.stream().filter(info -> info.permissionStatus == -1).count();
                     long serviceSize = list.stream().filter(info -> info.permissionStatus == 2).count();
@@ -286,6 +324,8 @@ public class HomeTabFragment extends Fragment {
                     }
                     appComponentInfoTextView.setText(info);
                 });
+            });
+        };
 
         new RxSingleComputationBuilder().async(AppPreferences.getInstance().getDomainCountLiveData(), domainCountCallback);
         new RxSingleComputationBuilder().async(AppPreferences.getInstance().getFirewallStatLiveData(), firewallCountCallback);
@@ -297,13 +337,16 @@ public class HomeTabFragment extends Fragment {
         List<ReportBlockedUrl> blockedUrls = new ArrayList<>();
          ReportBlockedUrlAdapter blockedUrlAdapter = new ReportBlockedUrlAdapter(getContext(), blockedUrls);
 
-         Consumer<LiveData<List<ReportBlockedUrl>>> callback = liveData ->
+         Consumer<LiveData<List<ReportBlockedUrl>>> callback = liveData -> {
+             safeGuardLiveData(() -> {
                  liveData.observe(getViewLifecycleOwner(), list -> {
                      blockedUrls.clear();
                      blockedUrls.addAll(list);
                      blockedUrlAdapter.notifyDataSetChanged();
                      infoTextView.setText(String.format("%s%s", resources.getString(R.string.last_day_blocked), list.size()));
                  });
+             });
+         };
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         new RxSingleIoBuilder().async(viewModel.getReportedBlockedDomains(), callback);
