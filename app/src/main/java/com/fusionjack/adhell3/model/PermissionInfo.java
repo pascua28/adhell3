@@ -24,6 +24,7 @@ public class PermissionInfo implements IComponentInfo {
         return packageName;
     }
 
+    @Override
     public String getName() {
         return name;
     }

@@ -17,6 +17,7 @@ public class ServiceInfo implements IComponentInfo {
         return packageName;
     }
 
+    @Override
     public String getName() {
         return name;
     }

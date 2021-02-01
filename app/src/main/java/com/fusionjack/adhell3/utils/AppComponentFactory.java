@@ -91,7 +91,7 @@ public final class AppComponentFactory {
         List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
         deniedPermissions.forEach(permissionName -> addPermissionToDatabaseIfNotExist(packageName, permissionName));
 
-        AppComponent.getServiceNames(packageName).forEach(serviceName -> {
+        AppComponent.getServices(packageName).forEach(serviceName -> {
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
             if (!state) {
                 addServiceToDatabaseIfNotExist(packageName, serviceName);
@@ -115,6 +115,16 @@ public final class AppComponentFactory {
         setPermissionState(state, packageName, permissionName);
     }
 
+    public void toggleServiceState(String packageName, String serviceName) {
+        boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+        setServiceState(!state, packageName, serviceName);
+    }
+
+    public void toggleReceiverState(String packageName, String receiverName, String receiverPermission) {
+        boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+        setReceiverState(!state, packageName, receiverName, receiverPermission);
+    }
+
     // Enable all permissions for the given app
     public void enablePermissions(String packageName) {
         List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
@@ -123,6 +133,30 @@ public final class AppComponentFactory {
             appDatabase.appPermissionDao().deletePermissions(packageName);
         }
         //deniedPermissions.forEach(permissionName -> setPermissionState(state, packageName, permissionName));
+    }
+
+    // Enable all services for the given app
+    public void enableServices(String packageName) {
+        AppComponent.getServices(packageName)
+                .forEach(serviceName -> {
+                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
+                    if (!state) {
+                        setServiceState(true, packageName, serviceName);
+                    }
+                });
+    }
+
+    // Enable all receivers for the given app
+    public void enableReceivers(String packageName) {
+        AppComponent.getReceivers(packageName)
+                .forEach(info -> {
+                    String receiverName = ((ReceiverInfo) info).getName();
+                    String receiverPermission = ((ReceiverInfo) info).getPermission();
+                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
+                    if (!state) {
+                        setReceiverState(true, packageName, receiverName, receiverPermission);
+                    }
+                });
     }
 
     private void setPermissionState(boolean state, String packageName, String permissionName) {
@@ -201,7 +235,7 @@ public final class AppComponentFactory {
 
     // Only services from 'adhell3_services.txt' will be enabled/disabled
     private void setTxtServicesState(boolean state, String packageName, Set<String> serviceNames) {
-        AppComponent.getServiceNames(packageName).stream()
+        AppComponent.getServices(packageName).stream()
                 .filter(serviceNames::contains)
                 .forEach(serviceName -> {
                     boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
@@ -209,22 +243,6 @@ public final class AppComponentFactory {
                         setServiceState(state, packageName, serviceName);
                     }
                 });
-    }
-
-    // Enable all services for the given app
-    public void enableServices(String packageName) {
-        AppComponent.getServiceNames(packageName)
-                .forEach(serviceName -> {
-                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
-                    if (!state) {
-                        setServiceState(true, packageName, serviceName);
-                    }
-                });
-    }
-
-    public void toggleServiceState(String packageName, String serviceName) {
-        boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
-        setServiceState(!state, packageName, serviceName);
     }
 
     private void setServiceState(boolean state, String packageName, String serviceName) {
@@ -292,24 +310,6 @@ public final class AppComponentFactory {
                         setReceiverState(state, packageName, receiverName, receiverPermission);
                     }
                 });
-    }
-
-    // Enable all receivers for the given app
-    public void enableReceivers(String packageName) {
-        AppComponent.getReceivers(packageName)
-                .forEach(info -> {
-                    String receiverName = ((ReceiverInfo) info).getName();
-                    String receiverPermission = ((ReceiverInfo) info).getPermission();
-                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
-                    if (!state) {
-                        setReceiverState(true, packageName, receiverName, receiverPermission);
-                    }
-                });
-    }
-
-    public void toggleReceiverState(String packageName, String receiverName, String receiverPermission) {
-        boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
-        setReceiverState(!state, packageName, receiverName, receiverPermission);
     }
 
     private void setReceiverState(boolean state, String packageName, String receiverName, String receiverPermission) {

@@ -1,7 +1,5 @@
 package com.fusionjack.adhell3.model;
 
-import androidx.annotation.Nullable;
-
 import java.util.Objects;
 
 public class ReceiverInfo implements IComponentInfo {
@@ -23,6 +21,7 @@ public class ReceiverInfo implements IComponentInfo {
         return packageName;
     }
 
+    @Override
     public String getName() {
         return name;
     }

@@ -28,14 +28,23 @@ public interface AppPermissionDao {
     @Query("SELECT * FROM AppPermission")
     List<AppPermission> getAll();
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = -1")
+    LiveData<List<AppPermission>> getPermissionsAsLiveData(String packageName);
+
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :permissionName AND permissionStatus = -1")
     AppPermission getPermission(String packageName, String permissionName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 2")
+    LiveData<List<AppPermission>> getServicesAsLiveData(String packageName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 2")
     List<AppPermission> getServices(String packageName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :serviceName AND permissionStatus = 2")
     AppPermission getService(String packageName, String serviceName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 5")
+    LiveData<List<AppPermission>> getReceiversAsLiveData(String packageName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 5")
     List<AppPermission> getReceivers(String packageName);
