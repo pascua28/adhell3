@@ -21,13 +21,14 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 public class ServiceInfoAdapter extends ComponentAdapter {
 
+    private final boolean toggleIsEnabled;
+
     public ServiceInfoAdapter(@NonNull Context context, @NonNull List<IComponentInfo> componentInfos) {
         super(context, componentInfos);
+        this.toggleIsEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
     }
 
     @NonNull
@@ -44,23 +45,34 @@ public class ServiceInfoAdapter extends ComponentAdapter {
 
         if (componentInfo instanceof ServiceInfo) {
             ServiceInfo serviceInfo = (ServiceInfo) componentInfo;
-            String packageName = serviceInfo.getPackageName();
-            String serviceName = serviceInfo.getName();
-            TextView serviceNameTextView = convertView.findViewById(R.id.serviceNameTextView);
-            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
-            serviceNameTextView.setText(serviceName);
 
+            TextView serviceNameTextView = convertView.findViewById(R.id.serviceNameTextView);
+            TextView servicePackageTextView = convertView.findViewById(R.id.servicePackageTextView);
+            SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
+
+            String serviceName = serviceInfo.getName();
+            int lastIndex = serviceName.lastIndexOf('.');
+            if (lastIndex != -1) {
+                String nameStr = serviceName.substring(lastIndex + 1);
+                String packageStr = serviceName.substring(0, lastIndex);
+                serviceNameTextView.setText(nameStr);
+                servicePackageTextView.setText(packageStr);
+            } else {
+                serviceNameTextView.setText("Unknown");
+                servicePackageTextView.setText(serviceName);
+            }
+
+            String packageName = serviceInfo.getPackageName();
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
             if (!state) {
                 Completable action = Completable.fromAction(() -> AppComponentFactory.getInstance().addServiceToDatabaseIfNotExist(packageName, serviceName));
                 new RxCompletableIoBuilder().async(action);
             }
             permissionSwitch.setChecked(state);
-
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+            permissionSwitch.setEnabled(toggleIsEnabled);
         }
 
         return convertView;
     }
+
 }

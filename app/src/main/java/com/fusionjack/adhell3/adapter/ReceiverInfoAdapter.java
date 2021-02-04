@@ -21,13 +21,14 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 public class ReceiverInfoAdapter extends ComponentAdapter {
 
+    private final boolean toggleIsEnabled;
+
     public ReceiverInfoAdapter(@NonNull Context context, @NonNull List<IComponentInfo> componentInfos) {
         super(context, componentInfos);
+        this.toggleIsEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
     }
 
     @NonNull
@@ -44,15 +45,27 @@ public class ReceiverInfoAdapter extends ComponentAdapter {
 
         if (componentInfo instanceof ReceiverInfo) {
             ReceiverInfo receiverInfo = (ReceiverInfo) componentInfo;
-            String packageName = receiverInfo.getPackageName();
-            String receiverName = receiverInfo.getName();
-            String receiverPermission = receiverInfo.getPermission();
+
             TextView receiverNameTextView = convertView.findViewById(R.id.receiverNameTextView);
+            TextView receiverPackageTextView = convertView.findViewById(R.id.receiverPackageTextView);
             TextView receiverPermissionTextView = convertView.findViewById(R.id.receiverPermissionTextView);
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
-            receiverNameTextView.setText(receiverName);
+
+            String receiverName = receiverInfo.getName();
+            String receiverPermission = receiverInfo.getPermission();
+            int lastIndex = receiverName.lastIndexOf('.');
+            if (lastIndex != -1) {
+                String nameStr = receiverName.substring(lastIndex + 1);
+                String packageStr = receiverName.substring(0, lastIndex);
+                receiverNameTextView.setText(nameStr);
+                receiverPackageTextView.setText(packageStr);
+            } else {
+                receiverNameTextView.setText("Unknown");
+                receiverPackageTextView.setText(receiverName);
+            }
             receiverPermissionTextView.setText(receiverPermission);
 
+            String packageName = receiverInfo.getPackageName();
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
             if (!state) {
                 Completable action = Completable.fromAction(() -> AppComponentFactory.getInstance().addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission));
@@ -60,8 +73,7 @@ public class ReceiverInfoAdapter extends ComponentAdapter {
             }
             permissionSwitch.setChecked(state);
 
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+            permissionSwitch.setEnabled(toggleIsEnabled);
         }
 
         return convertView;

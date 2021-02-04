@@ -14,7 +14,6 @@ import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.PermissionInfo;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
-import com.fusionjack.adhell3.utils.AppPermissionUtils;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -23,17 +22,17 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
 
 public class PermissionInfoAdapter extends ComponentAdapter {
 
     private final ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+    private final boolean toggleIsEnabled;
 
     public PermissionInfoAdapter(@NonNull Context context, @NonNull List<IComponentInfo> componentInfos) {
         super(context, componentInfos);
+        this.toggleIsEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
     }
 
     @NonNull
@@ -56,11 +55,15 @@ public class PermissionInfoAdapter extends ComponentAdapter {
 
             TextView permissionLabelTextView = convertView.findViewById(R.id.permissionLabelTextView);
             TextView permissionNameTextView = convertView.findViewById(R.id.permissionNameTextView);
-            TextView protectionLevelTextView = convertView.findViewById(R.id.protectionLevelTextView);
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
+
+            String prefix = "android.permission.";
+            String name = permissionName;
+            if (name.startsWith(prefix)) {
+                name = name.substring(prefix.length());
+            }
+            permissionNameTextView.setText(name);
             permissionLabelTextView.setText(permissionLabel);
-            permissionNameTextView.setText(permissionName);
-            protectionLevelTextView.setText(AppPermissionUtils.getProtectionLevelLabel(permissionInfo.getLevel()));
 
             boolean checked = false;
             List<String> deniedPermissions = appPolicy.getRuntimePermissions(packageName, PERMISSION_POLICY_STATE_DENY);
@@ -72,9 +75,7 @@ public class PermissionInfoAdapter extends ComponentAdapter {
                 new RxCompletableIoBuilder().async(action);
             }
             permissionSwitch.setChecked(checked);
-
-            boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
-            permissionSwitch.setEnabled(enabled);
+            permissionSwitch.setEnabled(toggleIsEnabled);
         }
 
         return convertView;
