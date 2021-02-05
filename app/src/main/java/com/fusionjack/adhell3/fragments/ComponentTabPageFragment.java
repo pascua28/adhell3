@@ -14,6 +14,7 @@ import android.widget.ListView;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,6 +33,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 
 import java.util.ArrayList;
@@ -39,22 +41,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.SingleOnSubscribe;
 import io.reactivex.functions.Action;
 
 public class ComponentTabPageFragment extends Fragment {
 
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGE_NAME = "packageName";
-    private int pageId;
-    private String packageName;
 
     private static final int UNKNOWN_PAGE = -1;
     private static final int PERMISSIONS_PAGE = 0;
     private static final int SERVICES_PAGE = 1;
     private static final int RECEIVERS_PAGE = 2;
+
+    private int pageId;
+    private String packageName;
+
+    private List<IComponentInfo> adapterAppComponentList;
+    private List<IComponentInfo> initialAppComponentList;
+    private ComponentAdapter adapter;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName) {
         Bundle args = new Bundle();
@@ -70,25 +79,7 @@ public class ComponentTabPageFragment extends Fragment {
         super.onCreate(savedInstanceState);
         this.pageId = Optional.ofNullable(getArguments()).map(bundle -> bundle.getInt(ARG_PAGE)).orElse(UNKNOWN_PAGE);
         this.packageName = getArguments().getString(ARG_PACKAGE_NAME);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.appcomponent_menu, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_enable_all) {
-            enableComponent();
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void enableComponent() {
-        Action action = () -> AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> page.enableAppComponents(packageName));
-        new RxCompletableIoBuilder().async(Completable.fromAction(action));
+        this.adapterAppComponentList = new ArrayList<>();
     }
 
     @Override
@@ -100,8 +91,8 @@ public class ComponentTabPageFragment extends Fragment {
 
             Optional<ListView> listViewOpt = Optional.ofNullable(view.findViewById(page.listViewId));
             listViewOpt.ifPresent(listView -> {
-                List<IComponentInfo> list = new ArrayList<>();
-                page.getAdapter(getContext(), list).ifPresent(adapter -> {
+                page.getAdapter(getContext(), adapterAppComponentList).ifPresent(adapter -> {
+                    this.adapter = adapter;
                     listView.setAdapter(adapter);
 
                     boolean toggleEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
@@ -114,9 +105,10 @@ public class ComponentTabPageFragment extends Fragment {
 
                     Consumer<LiveData<List<AppPermission>>> callback = liveData -> {
                         safeGuardLiveData(() -> {
-                            liveData.observe(getViewLifecycleOwner(), appComponentList -> {
-                                if (list.isEmpty()) {
-                                    list.addAll(page.combineAppComponentList(packageName, appComponentList));
+                            liveData.observe(getViewLifecycleOwner(), dbAppComponentList -> {
+                                if (initialAppComponentList == null) {
+                                    initialAppComponentList = page.combineAppComponentList(packageName, dbAppComponentList);
+                                    adapterAppComponentList.addAll(initialAppComponentList);
                                 }
                                 adapter.notifyDataSetChanged();
                             });
@@ -140,6 +132,64 @@ public class ComponentTabPageFragment extends Fragment {
             return;
         }
         action.run();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.appcomponent_menu, menu);
+        initSearchView(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_enable_all) {
+            enableComponent();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void enableComponent() {
+        Action action = () -> AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> page.enableAppComponents(packageName));
+        new RxCompletableIoBuilder().async(Completable.fromAction(action));
+    }
+
+    private void initSearchView(Menu menu) {
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String text) {
+                if (text.isEmpty()) {
+                    updateAppComponentList(initialAppComponentList);
+                } else {
+                    SingleOnSubscribe<List<IComponentInfo>> source = emitter -> {
+                        List<IComponentInfo> filteredList = initialAppComponentList.stream()
+                                .filter(componentInfo -> {
+                                    String componentName = componentInfo.getName().toLowerCase();
+                                    return componentName.contains(text.toLowerCase());
+                                })
+                                .collect(Collectors.toList());
+                        emitter.onSuccess(filteredList);
+                    };
+                    new RxSingleIoBuilder().async(Single.create(source), list -> updateAppComponentList(list));
+                }
+                return false;
+            }
+        });
+    }
+
+    private void updateAppComponentList(List<IComponentInfo> list) {
+        if (adapter != null) {
+            adapterAppComponentList.clear();
+            adapterAppComponentList.addAll(list);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private static class AppComponentPage {
