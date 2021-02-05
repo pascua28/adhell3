@@ -18,8 +18,8 @@
     <string name="app_component_status">App component is</string>
     <string name="app_component_enabled">App component is enabled</string>
     <string name="app_component_disabled">App component is disabled</string>
-    <string name="app_component_toggle_info">0 permissions, 0 services and 0 receivers are disabled</string>
-    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d services and %3$d receivers are disabled</string>
+    <string name="app_component_toggle_info">0 permissions, 0 activities, 0 services and 0 receivers are disabled</string>
+    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d activities, %3$d services and %4$d receivers are disabled</string>
     <string name="adhell_not_supported">Adhell3 is not yet supported on your device.</string>
     <string name="enable_adhell_title">Enable adhell3</string>
     <string name="enable_adhell_info">
@@ -142,17 +142,17 @@
         Only protection level of \'dangerous\' can be disabled.
         \nDisabling a permission will also disable other permissions from the same group.
     </string>
+    <string name="app_activity_info">
+        Disabling an activity may crash the app.
+        \nIf the disabled activities don\'t appear below, you need to reinstall the app.
+    </string>
     <string name="app_service_info">
         Disabling a service may crash the app.
-        \nOnce the service is disabled, it will be removed from the app.
-        \nSamsung Knox doesn\'t have an API to list disabled services.
-        \nTherefore, if the disabled services don\'t appear below, you need to reinstall the app.
+        \nIf the disabled services don\'t appear below, you need to reinstall the app.
     </string>
     <string name="app_receiver_info">
         Disabling a receiver may crash the app.
-        \nOnce the receiver is disabled, it will be removed from the app.
-        \nSamsung Knox doesn\'t have an API to list disabled receivers.
-        \nTherefore, if the disabled receivers don\'t appear below, you need to reinstall the app.
+        \nIf the disabled receivers don\'t appear below, you need to reinstall the app.
     </string>
     <string name="backup">Backup</string>
     <string name="uninstall">Uninstall</string>
@@ -187,6 +187,7 @@
     <string name="no_internet_connection_dialog_title">No Internet Connection</string>
     <string name="version">Version %1$s</string>
     <string name="permission_fragment_title">Permissions</string>
+    <string name="activity_fragment_title">Activities</string>
     <string name="service_fragment_title">Services</string>
     <string name="receiver_fragment_title">Receivers</string>
     <string name="dialog_set_dns_title">Set DNS</string>

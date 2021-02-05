@@ -21,6 +21,9 @@ public class AppPermission {
     public static final int STATUS_PERMISSION = -1;
 
     @Ignore
+    public static final int STATUS_ACTIVITY = 1;
+
+    @Ignore
     public static final int STATUS_SERVICE = 2;
 
     @Ignore

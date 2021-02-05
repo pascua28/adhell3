@@ -22,6 +22,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
@@ -57,8 +58,9 @@ public class ComponentTabPageFragment extends Fragment {
 
     private static final int UNKNOWN_PAGE = -1;
     private static final int PERMISSIONS_PAGE = 0;
-    private static final int SERVICES_PAGE = 1;
-    private static final int RECEIVERS_PAGE = 2;
+    private static final int ACTIVITIES_PAGE = 1;
+    private static final int SERVICES_PAGE = 2;
+    private static final int RECEIVERS_PAGE = 3;
 
     private int pageId;
     private String packageName;
@@ -227,6 +229,9 @@ public class ComponentTabPageFragment extends Fragment {
                 case PERMISSIONS_PAGE:
                     page = createPermissionPage(pageId);
                     break;
+                case ACTIVITIES_PAGE:
+                    page = createActivityPage(pageId);
+                    break;
                 case SERVICES_PAGE:
                     page = createServicePage(pageId);
                     break;
@@ -241,6 +246,13 @@ public class ComponentTabPageFragment extends Fragment {
             AppComponentPage page = new AppComponentPage(pageId);
             page.layoutId = R.layout.fragment_app_permission;
             page.listViewId = R.id.permissionInfoListView;
+            return page;
+        }
+
+        private static AppComponentPage createActivityPage(int pageId) {
+            AppComponentPage page = new AppComponentPage(pageId);
+            page.layoutId = R.layout.fragment_app_activity;
+            page.listViewId = R.id.activityInfoListView;
             return page;
         }
 
@@ -262,6 +274,8 @@ public class ComponentTabPageFragment extends Fragment {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
                     return "permissions";
+                case ACTIVITIES_PAGE:
+                    return "activities";
                 case SERVICES_PAGE:
                     return "services";
                 case RECEIVERS_PAGE:
@@ -275,6 +289,9 @@ public class ComponentTabPageFragment extends Fragment {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
                     adapter = new PermissionInfoAdapter(context, list);
+                    break;
+                case ACTIVITIES_PAGE:
+                    adapter = new ActivityInfoAdapter(context, list);
                     break;
                 case SERVICES_PAGE:
                     adapter = new ServiceInfoAdapter(context, list);
@@ -292,6 +309,9 @@ public class ComponentTabPageFragment extends Fragment {
                 case PERMISSIONS_PAGE:
                     observable = viewModel.getPermissions(packageName);
                     break;
+                case ACTIVITIES_PAGE:
+                    observable = viewModel.getActivities(packageName);
+                    break;
                 case SERVICES_PAGE:
                     observable = viewModel.getServices(packageName);
                     break;
@@ -306,6 +326,9 @@ public class ComponentTabPageFragment extends Fragment {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
                     AppComponentFactory.getInstance().togglePermissionState(packageName, info.getName());
+                    break;
+                case ACTIVITIES_PAGE:
+                    AppComponentFactory.getInstance().toggleActivityState(packageName, info.getName());
                     break;
                 case SERVICES_PAGE:
                     AppComponentFactory.getInstance().toggleServiceState(packageName, info.getName());
@@ -322,6 +345,9 @@ public class ComponentTabPageFragment extends Fragment {
                 case PERMISSIONS_PAGE:
                     AppComponentFactory.getInstance().enablePermissions(packageName);
                     break;
+                case ACTIVITIES_PAGE:
+                    AppComponentFactory.getInstance().enableActivities(packageName);
+                    break;
                 case SERVICES_PAGE:
                     AppComponentFactory.getInstance().enableServices(packageName);
                     break;
@@ -335,6 +361,8 @@ public class ComponentTabPageFragment extends Fragment {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
                     return AppComponent.combinePermissionsList(packageName, appComponentList);
+                case ACTIVITIES_PAGE:
+                    return AppComponent.combineActivitiesList(packageName, appComponentList);
                 case SERVICES_PAGE:
                     return AppComponent.combineServicesList(packageName, appComponentList);
                 case RECEIVERS_PAGE:

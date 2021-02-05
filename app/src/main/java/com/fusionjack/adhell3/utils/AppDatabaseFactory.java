@@ -214,6 +214,7 @@ public final class AppDatabaseFactory {
             boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
             if (enabled) {
                 String packageName = app.packageName;
+                AppComponentFactory.getInstance().disableTxtActivities(packageName);
                 AppComponentFactory.getInstance().disableTxtServices(packageName);
                 AppComponentFactory.getInstance().disableTxtReceivers(packageName);
                 AppComponentFactory.getInstance().checkAppComponentConsistency(packageName);

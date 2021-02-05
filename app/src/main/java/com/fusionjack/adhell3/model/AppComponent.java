@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -25,6 +26,17 @@ public class AppComponent {
 
     public static List<IComponentInfo> combinePermissionsList(String packageName, List<AppPermission> appComponentList) {
         return getPermissions(packageName);
+    }
+
+    public static List<IComponentInfo> combineActivitiesList(String packageName, List<AppPermission> appComponentList) {
+        Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
+        combinedList.addAll(appComponentList.stream()
+                .map(appComponent -> new com.fusionjack.adhell3.model.ActivityInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList()));
+        combinedList.addAll(getActivitiesFromSystem(packageName).stream()
+                .map(serviceName -> new com.fusionjack.adhell3.model.ActivityInfo(packageName, serviceName))
+                .collect(Collectors.toList()));
+        return new ArrayList<>(combinedList);
     }
 
     public static List<IComponentInfo> combineServicesList(String packageName, List<AppPermission> appComponentList) {
@@ -85,6 +97,21 @@ public class AppComponent {
         return permissionList;
     }
 
+    public static Set<String> getActivities(String packageName) {
+        Set<String> activityNameSet = new TreeSet<>();
+
+        // Disabled activities won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedActivities = appDatabase.appPermissionDao().getActivities(packageName);
+        for (AppPermission storedActivity : storedActivities) {
+            activityNameSet.add(storedActivity.permissionName);
+        }
+
+        activityNameSet.addAll(getActivitiesFromSystem(packageName));
+
+        return activityNameSet;
+    }
+
     public static Set<String> getServices(String packageName) {
         Set<String> serviceNameSet = new TreeSet<>();
 
@@ -116,6 +143,21 @@ public class AppComponent {
         receiverNames.addAll(getReceiversFromSystem(packageName));
 
         return new ArrayList<>(receiverNames);
+    }
+
+    private static List<String> getActivitiesFromSystem(String packageName) {
+        List<String> list = new ArrayList<>();
+        try {
+            PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            if (packageInfo != null) {
+                Optional.ofNullable(packageInfo.activities).ifPresent(activities -> {
+                    Arrays.stream(activities).forEach(activityInfo -> list.add(activityInfo.name));
+                });
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+        return list;
     }
 
     private static List<String> getServicesFromSystem(String packageName) {

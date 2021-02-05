@@ -23,6 +23,10 @@ public class AppComponentViewModel extends ViewModel {
         return Single.fromCallable(() -> appDatabase.appPermissionDao().getPermissionsAsLiveData(packageName));
     }
 
+    public Single<LiveData<List<AppPermission>>> getActivities(String packageName) {
+        return Single.fromCallable(() -> appDatabase.appPermissionDao().getActivitiesAsLiveData(packageName));
+    }
+
     public Single<LiveData<List<AppPermission>>> getServices(String packageName) {
         return Single.fromCallable(() -> appDatabase.appPermissionDao().getServicesAsLiveData(packageName));
     }

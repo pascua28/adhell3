@@ -13,15 +13,6 @@ import java.util.List;
 @Dao
 public interface AppPermissionDao {
 
-    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = -1")
-    LiveData<Integer> getPermissionSize();
-
-    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 2")
-    LiveData<Integer> getServiceSize();
-
-    @Query("SELECT COUNT(*) FROM AppPermission WHERE permissionStatus = 5")
-    LiveData<Integer> getReceiverSize();
-
     @Query("SELECT * FROM AppPermission")
     LiveData<List<AppPermission>> getAllAsLiveData();
 
@@ -33,6 +24,15 @@ public interface AppPermissionDao {
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :permissionName AND permissionStatus = -1")
     AppPermission getPermission(String packageName, String permissionName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 1")
+    LiveData<List<AppPermission>> getActivitiesAsLiveData(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 1")
+    List<AppPermission> getActivities(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :activityName AND permissionStatus = 1")
+    AppPermission getActivity(String packageName, String activityName);
 
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 2")
     LiveData<List<AppPermission>> getServicesAsLiveData(String packageName);
@@ -66,12 +66,6 @@ public interface AppPermissionDao {
 
     @Query("DELETE FROM AppPermission WHERE permissionStatus = -1 AND packageName = :packageName")
     void deletePermissions(String packageName);
-
-    @Query("DELETE FROM AppPermission WHERE permissionStatus = 2 AND packageName = :packageName")
-    void deleteServices(String packageName);
-
-    @Query("DELETE FROM AppPermission WHERE permissionStatus = 5 AND packageName = :packageName")
-    void deleteReceivers(String packageName);
 
     @Query("DELETE FROM AppPermission")
     void deleteAll();

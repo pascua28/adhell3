@@ -9,14 +9,16 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.ComponentTabPageFragment;
 
 public class ComponentPagerAdapter extends FragmentPagerAdapter {
-    private static final int PAGE_COUNT = 3;
-    private String tabTitles[];
-    private String packageName;
+    private static final int PAGE_COUNT = 4;
+
+    private final String[] tabTitles;
+    private final String packageName;
 
     public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
         super(fm);
         tabTitles = new String[] {
                 context.getString(R.string.permission_fragment_title),
+                context.getString(R.string.activity_fragment_title),
                 context.getString(R.string.service_fragment_title),
                 context.getString(R.string.receiver_fragment_title)};
 

@@ -69,6 +69,11 @@ import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.functions.Action;
 
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PERMISSION;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_RECEIVER;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_SERVICE;
+
 public class HomeTabFragment extends Fragment {
 
     private FragmentManager fragmentManager;
@@ -310,17 +315,18 @@ public class HomeTabFragment extends Fragment {
         Consumer<LiveData<List<AppPermission>>> appComponentInfoCallback = liveData -> {
             safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), list -> {
-                    long permissionSize = list.stream().filter(info -> info.permissionStatus == -1).count();
-                    long serviceSize = list.stream().filter(info -> info.permissionStatus == 2).count();
-                    long receiverSize = list.stream().filter(info -> info.permissionStatus == 5).count();
+                    long permissionSize = list.stream().filter(info -> info.permissionStatus == STATUS_PERMISSION).count();
+                    long activitySize = list.stream().filter(info -> info.permissionStatus == STATUS_ACTIVITY).count();
+                    long serviceSize = list.stream().filter(info -> info.permissionStatus == STATUS_SERVICE).count();
+                    long receiverSize = list.stream().filter(info -> info.permissionStatus == STATUS_RECEIVER).count();
 
                     String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
                     boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
                     String info;
                     if (enabled) {
-                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
+                        info = String.format(appComponentInfo, permissionSize, activitySize, serviceSize, receiverSize);
                     } else {
-                        info = String.format(appComponentInfo, 0, 0, 0);
+                        info = String.format(appComponentInfo, 0, 0, 0, 0);
                     }
                     appComponentInfoTextView.setText(info);
                 });

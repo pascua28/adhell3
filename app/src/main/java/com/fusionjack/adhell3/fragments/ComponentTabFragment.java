@@ -15,6 +15,7 @@ public class ComponentTabFragment extends TabFragment {
 
     private final int[] imageResId = {
             R.drawable.ic_permission,
+            R.drawable.icon_activity,
             R.drawable.ic_service,
             R.drawable.ic_receiver
     };
@@ -38,9 +39,8 @@ public class ComponentTabFragment extends TabFragment {
         }
 
         ComponentPagerAdapter adapter = new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName);
-        View view = inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 3, imageResId, 0);
 
-        return view;
+        return inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 4, imageResId, 0);
     }
 
 }
