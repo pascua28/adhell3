@@ -17,7 +17,8 @@ public class ComponentTabFragment extends TabFragment {
             R.drawable.ic_permission,
             R.drawable.icon_activity,
             R.drawable.ic_service,
-            R.drawable.ic_receiver
+            R.drawable.ic_receiver,
+            R.drawable.icon_conten_provider
     };
 
     @Override
@@ -40,7 +41,7 @@ public class ComponentTabFragment extends TabFragment {
 
         ComponentPagerAdapter adapter = new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName);
 
-        return inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 4, imageResId, 0);
+        return inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 5, imageResId, 0);
     }
 
 }

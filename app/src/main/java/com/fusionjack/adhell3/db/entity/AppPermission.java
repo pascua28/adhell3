@@ -29,6 +29,9 @@ public class AppPermission {
     @Ignore
     public static final int STATUS_RECEIVER = 5;
 
+    @Ignore
+    public static final int STATUS_PROVIDER = 3;
+
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     public long id;

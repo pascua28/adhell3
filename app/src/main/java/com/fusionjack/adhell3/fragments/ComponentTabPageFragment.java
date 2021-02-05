@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
+import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
@@ -61,6 +62,7 @@ public class ComponentTabPageFragment extends Fragment {
     private static final int ACTIVITIES_PAGE = 1;
     private static final int SERVICES_PAGE = 2;
     private static final int RECEIVERS_PAGE = 3;
+    private static final int CONTENT_PROVIDERS_PAGE = 4;
 
     private int pageId;
     private String packageName;
@@ -238,6 +240,8 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     page = createReceiverPage(pageId);
                     break;
+                case CONTENT_PROVIDERS_PAGE:
+                    page = createProviderPage(pageId);
             }
             return Optional.ofNullable(page);
         }
@@ -270,6 +274,13 @@ public class ComponentTabPageFragment extends Fragment {
             return page;
         }
 
+        private static AppComponentPage createProviderPage(int pageId) {
+            AppComponentPage page = new AppComponentPage(pageId);
+            page.layoutId = R.layout.fragment_app_provider;
+            page.listViewId = R.id.providerInfoListView;
+            return page;
+        }
+
         String getName() {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
@@ -280,6 +291,8 @@ public class ComponentTabPageFragment extends Fragment {
                     return "services";
                 case RECEIVERS_PAGE:
                     return "receivers";
+                case CONTENT_PROVIDERS_PAGE:
+                    return "content providers";
             }
             return "";
         }
@@ -298,6 +311,9 @@ public class ComponentTabPageFragment extends Fragment {
                     break;
                 case RECEIVERS_PAGE:
                     adapter = new ReceiverInfoAdapter(context, list);
+                    break;
+                case CONTENT_PROVIDERS_PAGE:
+                    adapter = new ProviderInfoAdapter(context, list);
                     break;
             }
             return Optional.ofNullable(adapter);
@@ -318,6 +334,8 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     observable = viewModel.getReceivers(packageName);
                     break;
+                case CONTENT_PROVIDERS_PAGE:
+                    observable = viewModel.getProviders(packageName);
             }
             return Optional.ofNullable(observable);
         }
@@ -337,6 +355,9 @@ public class ComponentTabPageFragment extends Fragment {
                     ReceiverInfo receiverInfo = (ReceiverInfo) info;
                     AppComponentFactory.getInstance().toggleReceiverState(packageName, receiverInfo.getName(), receiverInfo.getPermission());
                     break;
+                case CONTENT_PROVIDERS_PAGE:
+                    AppComponentFactory.getInstance().toggleProviderState(packageName, info.getName());
+                    break;
             }
         }
 
@@ -354,6 +375,8 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     AppComponentFactory.getInstance().enableReceivers(packageName);
                     break;
+                case CONTENT_PROVIDERS_PAGE:
+                    AppComponentFactory.getInstance().enableProviders(packageName);
             }
         }
 
@@ -367,6 +390,8 @@ public class ComponentTabPageFragment extends Fragment {
                     return AppComponent.combineServicesList(packageName, appComponentList);
                 case RECEIVERS_PAGE:
                     return AppComponent.combineReceiversList(packageName, appComponentList);
+                case CONTENT_PROVIDERS_PAGE:
+                    return AppComponent.combineProvidersList(packageName, appComponentList);
                 default:
                     return Collections.emptyList();
             }

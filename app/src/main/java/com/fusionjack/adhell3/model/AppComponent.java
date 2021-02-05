@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.model;
 
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
@@ -61,6 +60,17 @@ public class AppComponent {
                 })
                 .collect(Collectors.toList()));
         combinedList.addAll(getReceiversFromSystem(packageName));
+        return new ArrayList<>(combinedList);
+    }
+
+    public static List<IComponentInfo> combineProvidersList(String packageName, List<AppPermission> appComponentList) {
+        Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
+        combinedList.addAll(appComponentList.stream()
+                .map(appComponent -> new ProviderInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList()));
+        combinedList.addAll(getProvidersFromSystem(packageName).stream()
+                .map(providerName -> new ProviderInfo(packageName, providerName))
+                .collect(Collectors.toList()));
         return new ArrayList<>(combinedList);
     }
 
@@ -145,6 +155,21 @@ public class AppComponent {
         return new ArrayList<>(receiverNames);
     }
 
+    public static Set<String> getProviders(String packageName) {
+        Set<String> providerNameSet = new TreeSet<>();
+
+        // Disabled services won't be appear in the package manager anymore
+        AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        List<AppPermission> storedProviders = appDatabase.appPermissionDao().getProviders(packageName);
+        for (AppPermission storedProvider : storedProviders) {
+            providerNameSet.add(storedProvider.permissionName);
+        }
+
+        providerNameSet.addAll(getProvidersFromSystem(packageName));
+
+        return providerNameSet;
+    }
+
     private static List<String> getActivitiesFromSystem(String packageName) {
         List<String> list = new ArrayList<>();
         try {
@@ -166,12 +191,9 @@ public class AppComponent {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SERVICES);
             if (packageInfo != null) {
-                android.content.pm.ServiceInfo[] services = packageInfo.services;
-                if (services != null) {
-                    for (android.content.pm.ServiceInfo serviceInfo : services) {
-                        list.add(serviceInfo.name);
-                    }
-                }
+                Optional.ofNullable(packageInfo.services).ifPresent(services -> {
+                    Arrays.stream(services).forEach(serviceInfo -> list.add(serviceInfo.name));
+                });
             }
         } catch (PackageManager.NameNotFoundException ignored) {
         }
@@ -184,12 +206,26 @@ public class AppComponent {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
             PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_RECEIVERS);
             if (packageInfo != null) {
-                ActivityInfo[] receivers = packageInfo.receivers;
-                if (receivers != null) {
-                    for (ActivityInfo activityInfo : receivers) {
-                        list.add(new ReceiverInfo(packageName, activityInfo.name, activityInfo.permission));
-                    }
-                }
+                Optional.ofNullable(packageInfo.receivers).ifPresent(receivers -> {
+                    Arrays.stream(receivers).forEach(receiverInfo -> {
+                        list.add(new ReceiverInfo(packageName, receiverInfo.name, receiverInfo.permission));
+                    });
+                });
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+        return list;
+    }
+
+    private static List<String> getProvidersFromSystem(String packageName) {
+        List<String> list = new ArrayList<>();
+        try {
+            PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PROVIDERS);
+            if (packageInfo != null) {
+                Optional.ofNullable(packageInfo.providers).ifPresent(providers -> {
+                    Arrays.stream(providers).forEach(providerInfo -> list.add(providerInfo.name));
+                });
             }
         } catch (PackageManager.NameNotFoundException ignored) {
         }

@@ -52,6 +52,15 @@ public interface AppPermissionDao {
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :receiverPairName AND permissionStatus = 5")
     AppPermission getReceiver(String packageName, String receiverPairName);
 
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 3")
+    LiveData<List<AppPermission>> getProvidersAsLiveData(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = 3")
+    List<AppPermission> getProviders(String packageName);
+
+    @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionName = :providerName AND permissionStatus = 3")
+    AppPermission getProvider(String packageName, String providerName);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(AppPermission appPermission);
 

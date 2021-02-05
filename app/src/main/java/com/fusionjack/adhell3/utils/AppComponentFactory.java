@@ -31,6 +31,7 @@ public final class AppComponentFactory {
     private static final String ACTIVITY_FILENAME = "adhell3_activities.txt";
     private static final String SERVICE_FILENAME = "adhell3_services.txt";
     private static final String RECEIVER_FILENAME = "adhell3_receivers.txt";
+    private static final String PROVIDER_FILENAME = "adhell3_providers.txt";
     private static AppComponentFactory instance;
 
     private final ApplicationPolicy appPolicy;
@@ -105,6 +106,13 @@ public final class AppComponentFactory {
                 addReceiverToDatabaseIfNotExist(packageName, receiverName, receiverPermission);
             }
         });
+
+        AppComponent.getProviders(packageName).forEach(activityName -> {
+            boolean state = AdhellFactory.getInstance().getComponentState(packageName, activityName);
+            if (!state) {
+                addProviderToDatabaseIfNotExist(packageName, activityName);
+            }
+        });
     }
 
     public void togglePermissionState(String packageName, String permissionName) {
@@ -126,6 +134,11 @@ public final class AppComponentFactory {
     public void toggleReceiverState(String packageName, String receiverName, String receiverPermission) {
         boolean state = AdhellFactory.getInstance().getComponentState(packageName, receiverName);
         setReceiverState(!state, packageName, receiverName, receiverPermission);
+    }
+
+    public void toggleProviderState(String packageName, String providerName) {
+        boolean state = AdhellFactory.getInstance().getComponentState(packageName, providerName);
+        setProviderState(!state, packageName, providerName);
     }
 
     // Enable all permissions for the given app
@@ -173,6 +186,17 @@ public final class AppComponentFactory {
                 });
     }
 
+    // Enable all content providers for the given app
+    public void enableProviders(String packageName) {
+        AppComponent.getProviders(packageName)
+                .forEach(providerName -> {
+                    boolean state = AdhellFactory.getInstance().getComponentState(packageName, providerName);
+                    if (!state) {
+                        setProviderState(true, packageName, providerName);
+                    }
+                });
+    }
+
     private void setPermissionState(boolean state, String packageName, String permissionName) {
         int errorCode = AdhellFactory.getInstance().setAppPermission(packageName, Collections.singletonList(permissionName), state);
         if (errorCode == ApplicationPolicy.ERROR_NONE) {
@@ -210,10 +234,12 @@ public final class AppComponentFactory {
                 enableTxtActivities();
                 enableTxtServices();
                 enableTxtReceivers();
+                enableTxtProviders();
             } else {
                 disableTxtActivities();
                 disableTxtServices();
                 disableTxtReceivers();
+                disableTxtProviders();
             }
             emitter.onSuccess("Success!");
         });
@@ -431,5 +457,71 @@ public final class AppComponentFactory {
 
     private String buildReceiverPair(String receiverName, String receiverPermission) {
         return receiverName + "|" + receiverPermission;
+    }
+
+    // Enable providers from 'adhell3_providers.txt' for all apps
+    private void enableTxtProviders() {
+        Set<String> providerNames = readTxtComponent(PROVIDER_FILENAME);
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            String packageName = app.packageName;
+            setTxtProvidersState(true, packageName, providerNames);
+        }
+    }
+
+    // Disable providers from 'adhell3_providers.txt' for all apps
+    private void disableTxtProviders() {
+        Set<String> providerNames = readTxtComponent(PROVIDER_FILENAME);
+        List<AppInfo> apps = appDatabase.applicationInfoDao().getUserAndDisabledApps();
+        for (AppInfo app : apps) {
+            setTxtProvidersState(false, app.packageName, providerNames);
+        }
+    }
+
+    // Disable providers from 'adhell3_providers.txt' for the given app
+    public void disableTxtProviders(String packageName) {
+        Set<String> providerNames = readTxtComponent(PROVIDER_FILENAME);
+        setTxtProvidersState(false, packageName, providerNames);
+    }
+
+    // Only providers from 'adhell3_providers.txt' will be enabled/disabled
+    private void setTxtProvidersState(boolean state, String packageName, Set<String> providerNames) {
+        AppComponent.getProviders(packageName).stream()
+                .filter(providerNames::contains)
+                .forEach(providerName -> {
+                    boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, providerName);
+                    if (state != currentState) {
+                        setProviderState(state, packageName, providerName);
+                    }
+                });
+    }
+
+    private void setProviderState(boolean state, String packageName, String providerName) {
+        ComponentName activityCompName = new ComponentName(packageName, providerName);
+        boolean success = appPolicy.setApplicationComponentState(activityCompName, state);
+        if (success) {
+            if (state) {
+                appDatabase.appPermissionDao().delete(packageName, providerName);
+            } else {
+                addProviderToDatabaseIfNotExist(packageName, providerName);
+            }
+        }
+    }
+
+    public void addProviderToDatabaseIfNotExist(String packageName, String providerName) {
+        AppPermission provider = appDatabase.appPermissionDao().getProvider(packageName, providerName);
+        if (provider == null) {
+            LogUtils.info("Adding content provider name '" + packageName + "|" + providerName + "' to database.");
+            insertProviderToDatabase(packageName, providerName);
+        }
+    }
+
+    private void insertProviderToDatabase(String packageName, String providerName) {
+        AppPermission appProvider = new AppPermission();
+        appProvider.packageName = packageName;
+        appProvider.permissionName = providerName;
+        appProvider.permissionStatus = AppPermission.STATUS_PROVIDER;
+        appProvider.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+        appDatabase.appPermissionDao().insert(appProvider);
     }
 }

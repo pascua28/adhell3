@@ -217,6 +217,7 @@ public final class AppDatabaseFactory {
                 AppComponentFactory.getInstance().disableTxtActivities(packageName);
                 AppComponentFactory.getInstance().disableTxtServices(packageName);
                 AppComponentFactory.getInstance().disableTxtReceivers(packageName);
+                AppComponentFactory.getInstance().disableTxtProviders(packageName);
                 AppComponentFactory.getInstance().checkAppComponentConsistency(packageName);
             }
         });

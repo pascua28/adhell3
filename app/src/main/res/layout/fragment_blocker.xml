@@ -156,6 +156,15 @@
             android:text="@string/app_component_toggle_info"
             android:textSize="12sp"/>
 
+        <TextView
+            android:id="@+id/appComponentInfo2TextView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/appComponentInfoTextView"
+            android:layout_toStartOf="@id/appComponentSwitch"
+            android:text="@string/app_component_toggle_info2"
+            android:textSize="12sp"/>
+
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/appComponentSwitch"
             android:layout_width="wrap_content"

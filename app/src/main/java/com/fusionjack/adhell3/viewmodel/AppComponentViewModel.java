@@ -35,4 +35,8 @@ public class AppComponentViewModel extends ViewModel {
         return Single.fromCallable(() -> appDatabase.appPermissionDao().getReceiversAsLiveData(packageName));
     }
 
+    public Single<LiveData<List<AppPermission>>> getProviders(String packageName) {
+        return Single.fromCallable(() -> appDatabase.appPermissionDao().getProvidersAsLiveData(packageName));
+    }
+
 }

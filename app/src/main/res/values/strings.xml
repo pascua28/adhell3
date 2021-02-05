@@ -18,8 +18,10 @@
     <string name="app_component_status">App component is</string>
     <string name="app_component_enabled">App component is enabled</string>
     <string name="app_component_disabled">App component is disabled</string>
-    <string name="app_component_toggle_info">0 permissions, 0 activities, 0 services and 0 receivers are disabled</string>
-    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d activities, %3$d services and %4$d receivers are disabled</string>
+    <string name="app_component_toggle_info">0 permissions, 0 services and 0 receivers are disabled</string>
+    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d services and %3$d receivers are disabled</string>
+    <string name="app_component_toggle_info2">0 activities and 0 providers are disabled</string>
+    <string name="app_component_toggle_info_placeholder2">%1$d activities and %2$d providers are disabled</string>
     <string name="adhell_not_supported">Adhell3 is not yet supported on your device.</string>
     <string name="enable_adhell_title">Enable adhell3</string>
     <string name="enable_adhell_info">
@@ -85,13 +87,13 @@
     </string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">
-        This will enable all apps\' permissions, services and receivers.
+        This will enable all apps\' components.
         \nSamsung Knox doesn\'t have an API to clear disabled components.
         \nTherefore, if they are still disabled after this operation, you need to uninstall adhell3 to enable them.
         \n\nDo you really want to enable all apps\' components?
     </string>
     <string name="dialog_system_app_components_title">System apps are listed</string>
-    <string name="dialog_system_app_components_info">Beware when disabling SYSTEM apps\' services or receivers. You might end up with a factory reset!</string>
+    <string name="dialog_system_app_components_info">Beware when disabling SYSTEM apps\' components. You might end up with a factory reset!</string>
     <string name="dialog_toggle_title">Custom DNS for All Apps</string>
     <string name="dialog_toggle_info">
         Do you really want to apply or remove custom DNS for all apps?
@@ -135,7 +137,7 @@
         \nToggle Domain rules to apply changes.
     </string>
     <string name="app_component_info">
-        Disable app components (permissions, services and receivers).
+        Disable app components (permissions, activities, services, receivers and providers).
         \nIf app component toggle is enabled, changes take effect immediately.
     </string>
     <string name="app_permission_info">
@@ -153,6 +155,10 @@
     <string name="app_receiver_info">
         Disabling a receiver may crash the app.
         \nIf the disabled receivers don\'t appear below, you need to reinstall the app.
+    </string>
+    <string name="app_content_provider_info">
+        Disabling a content provider may crash the app.
+        \nIf the disabled content providers don\'t appear below, you need to reinstall the app.
     </string>
     <string name="backup">Backup</string>
     <string name="uninstall">Uninstall</string>
@@ -190,6 +196,7 @@
     <string name="activity_fragment_title">Activities</string>
     <string name="service_fragment_title">Services</string>
     <string name="receiver_fragment_title">Receivers</string>
+    <string name="content_provider_fragment_title">Providers</string>
     <string name="dialog_set_dns_title">Set DNS</string>
     <string name="dialog_set_dns_info">
         Set primary and secondary DNS.
@@ -266,10 +273,10 @@
         \nAdhell3 is licensed under a <a href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License.</a>
     </string>
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
-    <string name="dialog_appcomponent_batch_summary">The services and receivers defined in adhell3_services.txt and adhell3_receivers.txt will be used.
-        \nDo you want to enable or disable those services and receivers?</string>
-    <string name="dialog_appcomponent_enable_summary">Enabling services and receivers, please wait …</string>
-    <string name="dialog_appcomponent_disable_summary">Disabling services and receivers, please wait …</string>
+    <string name="dialog_appcomponent_batch_summary">The apps\' components defined in adhell3_*.txt will be used.
+        \nDo you want to enable or disable those apps\' components?</string>
+    <string name="dialog_appcomponent_enable_summary">Enabling apps\' components, please wait …</string>
+    <string name="dialog_appcomponent_disable_summary">Disabling apps\' components, please wait …</string>
     <string name="button_enable">Enable</string>
     <string name="button_disable">Disable</string>
     <string name="menu_enable_all">Enable all</string>

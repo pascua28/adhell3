@@ -70,6 +70,7 @@ import io.reactivex.SingleOnSubscribe;
 import io.reactivex.functions.Action;
 
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PROVIDER;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PERMISSION;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_RECEIVER;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_SERVICE;
@@ -167,7 +168,8 @@ public class HomeTabFragment extends Fragment {
         TextView firewallInfoTextView = view.findViewById(R.id.firewallInfoTextView);
         TextView disablerInfoTextView = view.findViewById(R.id.disablerInfoTextView);
         TextView appComponentInfoTextView = view.findViewById(R.id.appComponentInfoTextView);
-        initInfoCount(domainInfoTextView, firewallInfoTextView, disablerInfoTextView, appComponentInfoTextView);
+        TextView appComponentInfo2TextView = view.findViewById(R.id.appComponentInfo2TextView);
+        initInfoCount(domainInfoTextView, firewallInfoTextView, disablerInfoTextView, appComponentInfoTextView, appComponentInfo2TextView);
 
         // Init reported blocked domains
         ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
@@ -277,8 +279,8 @@ public class HomeTabFragment extends Fragment {
         new RxSingleIoBuilder().async(appComponentObservable, appComponentCallback);
     }
 
-    private void initInfoCount(TextView domainInfoTextView, TextView firewallInfoTextView,
-                               TextView disablerInfoTextView, TextView appComponentInfoTextView) {
+    private void initInfoCount(TextView domainInfoTextView, TextView firewallInfoTextView, TextView disablerInfoTextView,
+                               TextView appComponentInfoTextView, TextView appComponentInfo2TextView) {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
@@ -319,16 +321,27 @@ public class HomeTabFragment extends Fragment {
                     long activitySize = list.stream().filter(info -> info.permissionStatus == STATUS_ACTIVITY).count();
                     long serviceSize = list.stream().filter(info -> info.permissionStatus == STATUS_SERVICE).count();
                     long receiverSize = list.stream().filter(info -> info.permissionStatus == STATUS_RECEIVER).count();
+                    long providerSize = list.stream().filter(info -> info.permissionStatus == STATUS_PROVIDER).count();
 
-                    String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
                     boolean enabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
+
                     String info;
+                    String appComponentInfo = resources.getString(R.string.app_component_toggle_info_placeholder);
                     if (enabled) {
-                        info = String.format(appComponentInfo, permissionSize, activitySize, serviceSize, receiverSize);
+                        info = String.format(appComponentInfo, permissionSize, serviceSize, receiverSize);
                     } else {
-                        info = String.format(appComponentInfo, 0, 0, 0, 0);
+                        info = String.format(appComponentInfo, 0, 0, 0);
                     }
                     appComponentInfoTextView.setText(info);
+
+                    String info2;
+                    String appComponentInfo2 = resources.getString(R.string.app_component_toggle_info_placeholder2);
+                    if (enabled) {
+                        info2 = String.format(appComponentInfo2, activitySize, providerSize);
+                    } else {
+                        info2 = String.format(appComponentInfo2, 0, 0);
+                    }
+                    appComponentInfo2TextView.setText(info2);
                 });
             });
         };
