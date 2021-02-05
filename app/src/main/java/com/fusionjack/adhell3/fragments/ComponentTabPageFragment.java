@@ -10,10 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -144,14 +146,32 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_enable_all) {
-            enableComponent();
+            enableAllComponents();
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void enableComponent() {
-        Action action = () -> AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> page.enableAppComponents(packageName));
-        new RxCompletableIoBuilder().async(Completable.fromAction(action));
+    private void enableAllComponents() {
+        AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> {
+            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            String titlePlaceholder = getResources().getString(R.string.enable_apps_component_dialog_title);
+            titleTextView.setText(String.format(titlePlaceholder, page.getName()));
+
+            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+            String questionPlaceholder = getResources().getString(R.string.enable_apps_component_dialog_text);
+            questionTextView.setText(String.format(questionPlaceholder, page.getName()));
+
+            new AlertDialog.Builder(getContext())
+                    .setView(dialogView)
+                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                        Action action = () -> page.enableAppComponents(packageName);
+                        new RxCompletableIoBuilder().async(Completable.fromAction(action));
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+        });
     }
 
     private void initSearchView(Menu menu) {
@@ -236,6 +256,18 @@ public class ComponentTabPageFragment extends Fragment {
             page.layoutId = R.layout.fragment_app_receiver;
             page.listViewId = R.id.receiverInfoListView;
             return page;
+        }
+
+        String getName() {
+            switch (pageId) {
+                case PERMISSIONS_PAGE:
+                    return "permissions";
+                case SERVICES_PAGE:
+                    return "services";
+                case RECEIVERS_PAGE:
+                    return "receivers";
+            }
+            return "";
         }
 
         Optional<ComponentAdapter> getAdapter(Context context, List<IComponentInfo> list) {
