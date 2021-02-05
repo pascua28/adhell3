@@ -27,6 +27,8 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
 
+import static com.fusionjack.adhell3.db.repository.AppRepository.Type.UNKNOWN;
+
 public class AppTabPageFragment extends AppFragment {
     private static final String ARG_PAGE = "page";
     private int page;
@@ -45,12 +47,9 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
+    protected AppRepository.Type getType() {
         this.page = getArguments().getInt(ARG_PAGE);
-
-        AppRepository.Type type;
+        AppRepository.Type type = UNKNOWN;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
                 type = AppRepository.Type.DISABLER;
@@ -67,28 +66,30 @@ public class AppTabPageFragment extends AppFragment {
             case WHITELIST_PAGE:
                 type = AppRepository.Type.WHITELISTED;
                 break;
-
-            default:
-                type = AppRepository.Type.DISABLER;
-                break;
         }
+        return type;
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
 
         View view = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
-                view = inflateFragment(R.layout.fragment_package_disabler, inflater, container, type, AppFlag.createDisablerFlag());
+                view = inflateFragment(R.layout.fragment_package_disabler, inflater, container, AppFlag.createDisablerFlag());
                 break;
 
             case MOBILE_RESTRICTER_PAGE:
-                view = inflateFragment(R.layout.fragment_mobile_restricter, inflater, container, type, AppFlag.createMobileRestrictedFlag());
+                view = inflateFragment(R.layout.fragment_mobile_restricter, inflater, container, AppFlag.createMobileRestrictedFlag());
                 break;
 
             case WIFI_RESTRICTER_PAGE:
-                view = inflateFragment(R.layout.fragment_wifi_restricter, inflater, container, type, AppFlag.createWifiRestrictedFlag());
+                view = inflateFragment(R.layout.fragment_wifi_restricter, inflater, container, AppFlag.createWifiRestrictedFlag());
                 break;
 
             case WHITELIST_PAGE:
-                view = inflateFragment(R.layout.fragment_whitelisted_app, inflater, container, type, AppFlag.createWhitelistedFlag());
+                view = inflateFragment(R.layout.fragment_whitelisted_app, inflater, container, AppFlag.createWhitelistedFlag());
                 break;
         }
         return view;

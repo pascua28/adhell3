@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
@@ -36,12 +37,26 @@ import io.reactivex.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
 
+    private boolean warningIsShown;
+
+    @Override
+    protected AppRepository.Type getType() {
+        return AppRepository.Type.COMPONENT;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.warningIsShown = false;
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        View view = inflateFragment(R.layout.fragment_app_component, inflater, container, AppRepository.Type.COMPONENT, AppFlag.createComponentFlag());
 
-        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT) {
+        View view = inflateFragment(R.layout.fragment_app_component, inflater, container, AppFlag.createComponentFlag());
+
+        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !warningIsShown) {
             View rootView = view.findViewById(R.id.appComponentCoordinatorLayout);
             Snackbar snackbar = Snackbar.make(rootView, R.string.dialog_system_app_components_info, Snackbar.LENGTH_LONG);
             View snackBarView = snackbar.getView();
@@ -51,6 +66,7 @@ public class AppComponentFragment extends AppFragment {
             snackbar.setDuration(10000);
             snackbar.setAction("Close", v -> snackbar.dismiss());
             snackbar.show();
+            warningIsShown = true;
         }
 
         return view;

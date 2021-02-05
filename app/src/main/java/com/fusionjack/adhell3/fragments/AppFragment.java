@@ -49,18 +49,22 @@ public abstract class AppFragment extends Fragment {
         super.onCreate(savedInstanceState);
         this.context = getContext();
         this.searchText = "";
+        this.adapterAppList = new ArrayList<>();
+
+        AppRepository.Type type = getType();
+        this.adapter = new AppInfoAdapter(adapterAppList, type, context);
+
+        initAppList(type);
     }
 
-    protected View inflateFragment(int fragmentViewId, LayoutInflater inflater, ViewGroup container, AppRepository.Type type, AppFlag flag) {
+    protected abstract AppRepository.Type getType();
+
+    protected View inflateFragment(int fragmentViewId, LayoutInflater inflater, ViewGroup container, AppFlag flag) {
         View view = inflater.inflate(fragmentViewId, container, false);
 
         ListView listView = view.findViewById(flag.getLayout());
-        this.adapterAppList = new ArrayList<>();
-        this.adapter = new AppInfoAdapter(adapterAppList, type, context);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view2, position, id) -> listOnItemClickListener(parent, view2, position, id, flag));
-
-        initAppList(type);
 
         return view;
     }
@@ -70,20 +74,26 @@ public abstract class AppFragment extends Fragment {
     private void initAppList(AppRepository.Type type) {
         AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
         Consumer<LiveData<List<AppInfo>>> callback = liveData -> {
-            if (getView() == null) {
-                LogUtils.error("View is null");
-                return;
-            }
-            liveData.observe(getViewLifecycleOwner(), appList -> {
-                initAppList = appList;
-                if (searchText.isEmpty()) {
-                    updateAppList(appList);
-                } else {
-                    searchView.setQuery(searchText, true);
-                }
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), appList -> {
+                    initAppList = appList;
+                    if (searchText.isEmpty()) {
+                        updateAppList(appList);
+                    } else {
+                        searchView.setQuery(searchText, true);
+                    }
+                });
             });
         };
         new RxSingleComputationBuilder().async(viewModel.loadAppList(type), callback);
+    }
+
+    private void safeGuardLiveData(Runnable action) {
+        if (getView() == null) {
+            LogUtils.error("View is null");
+            return;
+        }
+        action.run();
     }
 
     private void updateAppList(List<AppInfo> list) {

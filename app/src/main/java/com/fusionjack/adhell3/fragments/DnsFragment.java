@@ -42,9 +42,14 @@ import io.reactivex.schedulers.Schedulers;
 public class DnsFragment extends AppFragment {
 
     @Override
+    protected AppRepository.Type getType() {
+        return AppRepository.Type.DNS;
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        View view = inflateFragment(R.layout.fragment_dns, inflater, container, AppRepository.Type.DNS, AppFlag.createDnsFlag());
+        View view = inflateFragment(R.layout.fragment_dns, inflater, container, AppFlag.createDnsFlag());
 
         FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);
         FloatingActionButton actionSetDns = view.findViewById(R.id.action_set_dns);

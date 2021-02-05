@@ -20,7 +20,8 @@ public class AppRepository {
         WIFI_RESTRICTED,
         WHITELISTED,
         COMPONENT,
-        DNS
+        DNS,
+        UNKNOWN
     }
 
     public Single<LiveData<List<AppInfo>>> loadAppList(Type type) {
