@@ -362,7 +362,8 @@ public class HomeTabFragment extends Fragment {
                      blockedUrls.clear();
                      blockedUrls.addAll(list);
                      blockedUrlAdapter.notifyDataSetChanged();
-                     infoTextView.setText(String.format("%s%s", resources.getString(R.string.last_day_blocked), list.size()));
+                     String blockedDomainInfo = resources.getString(R.string.last_day_blocked);
+                     infoTextView.setText(String.format(blockedDomainInfo, BuildConfig.BLOCKED_DOMAIN_DURATION_UI, list.size()));
                  });
              });
          };
@@ -398,11 +399,11 @@ public class HomeTabFragment extends Fragment {
 
     private void exportDomain() {
         Action exportDomain = () -> {
-            Set<String> domains = FirewallUtils.getInstance().getReportBlockedUrl().stream()
+            Set<String> domains = FirewallUtils.getInstance().getReportBlockedUrlLastXHours().stream()
                     .map(domain -> domain.url)
                     .collect(Collectors.toSet());
 
-            File file = FileUtils.toFile("adhell_exported_domains.txt");
+            File file = FileUtils.toFile("adhell3_exported_domains.txt");
             try (FileWriter writer = new FileWriter(file)) {
                 for (String domain : domains) {
                     writer.write(domain);
@@ -552,7 +553,7 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void loadBlockedUrls(SwipeRefreshLayout swipeContainer) {
-        Action action = () -> FirewallUtils.getInstance().getReportBlockedUrl();
+        Action action = () -> FirewallUtils.getInstance().getReportBlockedUrlLastXHours();
         Runnable callback = () -> {
             if (swipeContainer != null) {
                 swipeContainer.setRefreshing(false);

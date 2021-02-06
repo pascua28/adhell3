@@ -104,7 +104,7 @@
     <string name="package_disabler_fragment_title">Disable Apps</string>
     <string name="apps_management_bottombar_title">Apps</string>
     <string name="domains_bottombar_title">Domains</string>
-    <string name="last_day_blocked">Domains blocked in past 72 hours:&#160;</string>
+    <string name="last_day_blocked">Domains blocked in past %1$d hours: %2$d</string>
     <string name="check_input_dns">Invalid DNS format.</string>
     <string name="changed_dns">DNS addresses have been set. Toggle Domain rules to apply changes.</string>
     <string name="restored_dns">DNS has been restored to defaults. Toggle Domain rules to apply changes.</string>

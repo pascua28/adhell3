@@ -7,6 +7,7 @@ import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.FirewallUtils;
 
 import java.util.List;
 
@@ -29,7 +30,8 @@ public class HomeViewModel extends ViewModel {
     }
 
     public Single<LiveData<List<ReportBlockedUrl>>> getReportedBlockedDomains() {
-        return Single.fromCallable(() -> appDatabase.reportBlockedUrlDao().getReportBlockUrlAsLiveData());
+        return Single.fromCallable(() ->
+                appDatabase.reportBlockedUrlDao().getReportBlockUrlAfterAsLiveData(FirewallUtils.getInstance().last_x_hours_ui()));
     }
 
 }

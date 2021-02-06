@@ -18,6 +18,8 @@ android {
         def appPropsFile = file('app.properties')
         def packageName = ""
         def domainLimit = "15000"
+        def blockedDomainDurationUi = "24"
+        def blockedDomainDurationDb = "72"
         def domainPrefix = "false"
         def sklKey = ""
         def disableApps = "false"
@@ -33,6 +35,12 @@ android {
             }
             if (appProps['domain.limit'] != null) {
                 domainLimit = appProps['domain.limit']
+            }
+            if (appProps['blockedDomain.duration.ui'] != null) {
+                blockedDomainDurationUi = appProps['blockedDomain.duration.ui']
+            }
+            if (appProps['blockedDomain.duration.db'] != null) {
+                blockedDomainDurationDb = appProps['blockedDomain.duration.db']
             }
             if (appProps['skl.key'] != null) {
                 sklKey = appProps['skl.key']
@@ -61,6 +69,8 @@ android {
         versionName "3.2." + buildNumber
 
         buildConfigField("int", "DOMAIN_LIMIT", domainLimit)
+        buildConfigField("int", "BLOCKED_DOMAIN_DURATION_UI", blockedDomainDurationUi)
+        buildConfigField("int", "BLOCKED_DOMAIN_DURATION_DB", blockedDomainDurationDb)
         buildConfigField("boolean", "DOMAIN_PREFIX", domainPrefix)
         buildConfigField("String", "SKL_KEY", '"' + sklKey + '"')
         buildConfigField("boolean", "DISABLE_APPS", disableApps)

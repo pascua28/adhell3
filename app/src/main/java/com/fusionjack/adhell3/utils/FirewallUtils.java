@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
+import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
@@ -18,7 +19,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class FirewallUtils {
     private static FirewallUtils instance;
@@ -149,7 +153,8 @@ public final class FirewallUtils {
         return stat.dividedByTwo();
     }
 
-    public List<ReportBlockedUrl> getReportBlockedUrl() {
+
+    public List<ReportBlockedUrl> getReportBlockedUrlLastXHours() {
         List<ReportBlockedUrl> reportBlockedUrls = new ArrayList<>();
         if (firewall == null) {
             return reportBlockedUrls;
@@ -161,8 +166,7 @@ public final class FirewallUtils {
             return reportBlockedUrls;
         }
 
-        long time = tree_days();
-        appDatabase.reportBlockedUrlDao().deleteBefore(time);
+        appDatabase.reportBlockedUrlDao().deleteBefore(last_x_hours_db());
 
         ReportBlockedUrl lastBlockedUrl = appDatabase.reportBlockedUrlDao().getLastBlockedDomain();
         long lastBlockedTimestamp = 0;
@@ -179,12 +183,18 @@ public final class FirewallUtils {
         }
         appDatabase.reportBlockedUrlDao().insertAll(reportBlockedUrls);
 
-        return appDatabase.reportBlockedUrlDao().getReportBlockUrlBetween(time, System.currentTimeMillis());
+        return appDatabase.reportBlockedUrlDao().getReportBlockUrlAfter(last_x_hours_ui());
     }
 
-    private long tree_days() {
+    public long last_x_hours_ui() {
         final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -3);
+        cal.add(Calendar.HOUR_OF_DAY, -BuildConfig.BLOCKED_DOMAIN_DURATION_UI);
+        return cal.getTimeInMillis();
+    }
+
+    private long last_x_hours_db() {
+        final Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -BuildConfig.BLOCKED_DOMAIN_DURATION_DB);
         return cal.getTimeInMillis();
     }
 
