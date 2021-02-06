@@ -19,10 +19,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class FirewallUtils {
     private static FirewallUtils instance;
@@ -153,6 +150,9 @@ public final class FirewallUtils {
         return stat.dividedByTwo();
     }
 
+    public List<ReportBlockedUrl> getReportBlockedUrls() {
+        return appDatabase.reportBlockedUrlDao().getAll();
+    }
 
     public List<ReportBlockedUrl> getReportBlockedUrlLastXHours() {
         List<ReportBlockedUrl> reportBlockedUrls = new ArrayList<>();

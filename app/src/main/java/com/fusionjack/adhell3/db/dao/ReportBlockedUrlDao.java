@@ -25,6 +25,9 @@ public interface ReportBlockedUrlDao {
     @Query("SELECT * FROM ReportBlockedUrl WHERE blockDate > :startDate ORDER BY _id DESC")
     LiveData<List<ReportBlockedUrl>> getReportBlockUrlAfterAsLiveData(long startDate);
 
+    @Query("SELECT * FROM ReportBlockedUrl ORDER BY blockDate DESC")
+    List<ReportBlockedUrl> getAll();
+
     @Query("SELECT * FROM ReportBlockedUrl WHERE blockDate > :startDate ORDER BY _id DESC")
     List<ReportBlockedUrl> getReportBlockUrlAfter(long startDate);
 

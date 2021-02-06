@@ -59,7 +59,8 @@
         Edit DNS only if you know the issues it can cause.
         \nToggle Domain rules to apply changes.
     </string>
-    <string name="export_domains_title">Export Domains</string>
+    <string name="dump_domains_title">Dump Domains In Database</string>
+    <string name="export_domains_title">Export Unique Domains</string>
     <string name="blacklist_info">
         Blacklist domains or define firewall denial rules.
         \nToggle Domain rules to apply domain changes.

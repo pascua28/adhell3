@@ -56,9 +56,11 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -121,11 +123,18 @@ public class HomeTabFragment extends Fragment {
         }
 
         FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
-        FloatingActionButton actionAddWhiteDomain = view.findViewById(R.id.action_export_domains);
-        actionAddWhiteDomain.setIcon(R.drawable.ic_export_domain);
-        actionAddWhiteDomain.setOnClickListener(v -> {
+        FloatingActionButton actionExportDomain = view.findViewById(R.id.action_export_domains);
+        actionExportDomain.setIcon(R.drawable.ic_export_domain);
+        actionExportDomain.setOnClickListener(v -> {
             domainFloatMenu.collapse();
-            exportDomain();
+            exportDomains();
+        });
+
+        FloatingActionButton actionDumpDomain = view.findViewById(R.id.action_dump_domains);
+        actionDumpDomain.setIcon(R.drawable.icon_dump_domains);
+        actionDumpDomain.setOnClickListener(v -> {
+            domainFloatMenu.collapse();
+            dumpDomains();
         });
 
         // Init main toggles
@@ -397,8 +406,30 @@ public class HomeTabFragment extends Fragment {
         new RxCompletableIoBuilder().async(Completable.fromAction(addToWhiteList));
     }
 
-    private void exportDomain() {
-        Action exportDomain = () -> {
+    private void dumpDomains() {
+        Action dumpDomains = () -> {
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.ENGLISH);
+            File file = FileUtils.toFile("adhell3_dumped_domains.txt");
+            List<ReportBlockedUrl> reports = FirewallUtils.getInstance().getReportBlockedUrls();
+            try (FileWriter writer = new FileWriter(file)) {
+                for (ReportBlockedUrl report : reports) {
+                    String line = String.format("%-75s %-100s %s", report.packageName, report.url, dateFormatter.format(report.blockDate));
+                    writer.write(line);
+                    writer.write(System.lineSeparator());
+                }
+            }
+        };
+
+        Runnable callback = () ->
+                Toast.makeText(getContext(), "Blocked domains have been dumped!", Toast.LENGTH_LONG).show();
+
+        new RxCompletableComputationBuilder()
+                .showErrorAlert(getContext())
+                .async(Completable.fromAction(dumpDomains), callback);
+    }
+
+    private void exportDomains() {
+        Action exportDomains = () -> {
             Set<String> domains = FirewallUtils.getInstance().getReportBlockedUrlLastXHours().stream()
                     .map(domain -> domain.url)
                     .collect(Collectors.toSet());
@@ -417,7 +448,7 @@ public class HomeTabFragment extends Fragment {
 
         new RxCompletableIoBuilder()
                 .showErrorAlert(getContext())
-                .async(Completable.fromAction(exportDomain), callback);
+                .async(Completable.fromAction(exportDomains), callback);
     }
 
     private void toggleAppDisabler() {
