@@ -20,13 +20,15 @@ import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
+
+import toan.android.floatingactionmenu.FloatingActionButton;
+import toan.android.floatingactionmenu.FloatingActionsMenu;
+import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 public class WhitelistFragment extends UserListFragment {
 
@@ -70,6 +72,17 @@ public class WhitelistFragment extends UserListFragment {
         });
 
         FloatingActionsMenu whiteFloatMenu = view.findViewById(R.id.whitelist_actions);
+        whiteFloatMenu.attachToListView(whiteListView, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                whiteFloatMenu.setVisibleWithAnimation(true);
+            }
+            @Override
+            public void onScrollUp() {
+                whiteFloatMenu.setVisibleWithAnimation(false);
+            }
+        });
+
         FloatingActionButton actionAddWhiteDomain = view.findViewById(R.id.action_add_domain);
         actionAddWhiteDomain.setIcon(R.drawable.ic_add_domain);
         actionAddWhiteDomain.setOnClickListener(v -> {

@@ -26,8 +26,6 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.List;
 
@@ -38,6 +36,9 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import toan.android.floatingactionmenu.FloatingActionButton;
+import toan.android.floatingactionmenu.FloatingActionsMenu;
+import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 public class DnsFragment extends AppFragment {
 
@@ -49,11 +50,23 @@ public class DnsFragment extends AppFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        View view = inflateFragment(R.layout.fragment_dns, inflater, container, AppFlag.createDnsFlag());
+        AppFlag flag = AppFlag.createDnsFlag();
+        View view = inflateFragment(R.layout.fragment_dns, inflater, container, flag);
 
         FloatingActionsMenu dnsFloatMenu = view.findViewById(R.id.dns_actions);
+        ListView listView = view.findViewById(flag.getLayout());
+        dnsFloatMenu.attachToListView(listView, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                dnsFloatMenu.setVisibleWithAnimation(true);
+            }
+            @Override
+            public void onScrollUp() {
+                dnsFloatMenu.setVisibleWithAnimation(false);
+            }
+        });
+
         FloatingActionButton actionSetDns = view.findViewById(R.id.action_set_dns);
-        actionSetDns.setIcon(R.drawable.ic_add_dns);
         actionSetDns.setOnClickListener(v -> {
             dnsFloatMenu.collapse();
 
@@ -69,8 +82,6 @@ public class DnsFragment extends AppFragment {
             new AlertDialog.Builder(context)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        AppFlag appFlag = AppFlag.createDnsFlag();
-                        ListView listView = view.findViewById(appFlag.getLayout());
                         setDns(primaryDnsEditText.getText().toString(), secondaryDnsEditText.getText().toString(), listView);
                     })
                     .setNegativeButton(android.R.string.no, null).show();

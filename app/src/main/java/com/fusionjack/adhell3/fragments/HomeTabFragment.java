@@ -50,8 +50,6 @@ import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.HomeViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
@@ -70,6 +68,9 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.functions.Action;
+import toan.android.floatingactionmenu.FloatingActionButton;
+import toan.android.floatingactionmenu.FloatingActionsMenu;
+import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PROVIDER;
@@ -122,21 +123,6 @@ public class HomeTabFragment extends Fragment {
             view.findViewById(R.id.appComponentLayout).setVisibility(View.GONE);
         }
 
-        FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
-        FloatingActionButton actionExportDomain = view.findViewById(R.id.action_export_domains);
-        actionExportDomain.setIcon(R.drawable.ic_export_domain);
-        actionExportDomain.setOnClickListener(v -> {
-            domainFloatMenu.collapse();
-            exportDomains();
-        });
-
-        FloatingActionButton actionDumpDomain = view.findViewById(R.id.action_dump_domains);
-        actionDumpDomain.setIcon(R.drawable.icon_dump_domains);
-        actionDumpDomain.setOnClickListener(v -> {
-            domainFloatMenu.collapse();
-            dumpDomains();
-        });
-
         // Init main toggles
         SwitchMaterial domainSwitch = view.findViewById(R.id.domainRulesSwitch);
         TextView domainStatusTextView = view.findViewById(R.id.domainStatusTextView);
@@ -183,6 +169,30 @@ public class HomeTabFragment extends Fragment {
         // Init reported blocked domains
         ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
         initBlockedDomainsView(blockedDomainsListView, blockedDomainInfoTextView);
+
+        FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
+        domainFloatMenu.attachToListView(blockedDomainsListView, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                domainFloatMenu.setVisibleWithAnimation(true);
+            }
+            @Override
+            public void onScrollUp() {
+                domainFloatMenu.setVisibleWithAnimation(false);
+            }
+        });
+
+        FloatingActionButton actionExportDomain = view.findViewById(R.id.action_export_domains);
+        actionExportDomain.setOnClickListener(v -> {
+            domainFloatMenu.collapse();
+            exportDomains();
+        });
+
+        FloatingActionButton actionDumpDomain = view.findViewById(R.id.action_dump_domains);
+        actionDumpDomain.setOnClickListener(v -> {
+            domainFloatMenu.collapse();
+            dumpDomains();
+        });
 
         return view;
     }

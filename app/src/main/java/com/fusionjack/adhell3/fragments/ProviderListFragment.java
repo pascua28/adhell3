@@ -29,13 +29,15 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import toan.android.floatingactionmenu.FloatingActionButton;
+import toan.android.floatingactionmenu.FloatingActionsMenu;
+import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CONTENT_PAGE;
 
@@ -95,8 +97,18 @@ public class ProviderListFragment extends Fragment {
         );
 
         FloatingActionsMenu providerFloatMenu = view.findViewById(R.id.provider_actions);
+        providerFloatMenu.attachToListView(providerListView, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                providerFloatMenu.setVisibleWithAnimation(true);
+            }
+            @Override
+            public void onScrollUp() {
+                providerFloatMenu.setVisibleWithAnimation(true);
+            }
+        });
+
         FloatingActionButton actionAddProvider = view.findViewById(R.id.action_add_provider);
-        actionAddProvider.setIcon(R.drawable.ic_add_provider);
         actionAddProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_add_provider, container, false);

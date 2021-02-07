@@ -20,13 +20,15 @@ import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
+
+import toan.android.floatingactionmenu.FloatingActionButton;
+import toan.android.floatingactionmenu.FloatingActionsMenu;
+import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 public class BlacklistFragment extends UserListFragment {
 
@@ -56,8 +58,8 @@ public class BlacklistFragment extends UserListFragment {
         blacklistView.setAdapter(adapter);
         blacklistView.setOnItemClickListener((parent, view1, position, id) -> {
             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_domain_firewall_dialog_title);
+            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+            titleTextView.setText(R.string.delete_domain_firewall_dialog_title);
             TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
             questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
 
@@ -71,8 +73,18 @@ public class BlacklistFragment extends UserListFragment {
         });
 
         FloatingActionsMenu blackFloatMenu = view.findViewById(R.id.blacklist_actions);
+        blackFloatMenu.attachToListView(blacklistView, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                blackFloatMenu.setVisibleWithAnimation(true);
+            }
+            @Override
+            public void onScrollUp() {
+                blackFloatMenu.setVisibleWithAnimation(false);
+            }
+        });
+
         FloatingActionButton actionAddBlackDomain = view.findViewById(R.id.action_add_domain);
-        actionAddBlackDomain.setIcon(R.drawable.ic_add_domain);
         actionAddBlackDomain.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
@@ -91,7 +103,6 @@ public class BlacklistFragment extends UserListFragment {
         });
 
         FloatingActionButton actionAddFirewallRule = view.findViewById(R.id.action_add_firewall_rule);
-        actionAddFirewallRule.setIcon(R.drawable.ic_add_firewall);
         actionAddFirewallRule.setOnClickListener(v -> {
             blackFloatMenu.collapse();
             View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
