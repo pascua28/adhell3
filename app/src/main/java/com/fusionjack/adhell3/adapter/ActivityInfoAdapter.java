@@ -51,16 +51,8 @@ public class ActivityInfoAdapter extends ComponentAdapter {
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
 
             String activityName = activityInfo.getName();
-            int lastIndex = activityName.lastIndexOf('.');
-            if (lastIndex != -1) {
-                String nameStr = activityName.substring(lastIndex + 1);
-                String packageStr = activityName.substring(0, lastIndex);
-                activityNameTextView.setText(nameStr);
-                activityPackageTextView.setText(packageStr);
-            } else {
-                activityNameTextView.setText("Unknown");
-                activityPackageTextView.setText(activityName);
-            }
+            activityNameTextView.setText(getNamePart(activityName));
+            activityPackageTextView.setText(getPackagePart(activityName));
 
             String packageName = activityInfo.getPackageName();
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, activityName);

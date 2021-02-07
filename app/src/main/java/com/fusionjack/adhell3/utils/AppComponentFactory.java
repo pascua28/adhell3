@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -63,7 +64,10 @@ public final class AppComponentFactory {
                 new InputStreamReader(new FileInputStream(serviceFile), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                lines.add(line.trim());
+                String trimmedLine = line.trim();
+                if (!trimmedLine.isEmpty()) {
+                    lines.add(trimmedLine);
+                }
             }
         }
 
@@ -113,6 +117,35 @@ public final class AppComponentFactory {
                 addProviderToDatabaseIfNotExist(packageName, activityName);
             }
         });
+    }
+
+    public void appendActivityNameToFile(String activityName) throws IOException {
+        appendComponentNameToFile(activityName, ACTIVITY_FILENAME);
+    }
+
+    public void appendServiceNameToFile(String serviceName) throws IOException {
+        appendComponentNameToFile(serviceName, SERVICE_FILENAME);
+    }
+
+    public void appendReceiverNameToFile(String receiverName) throws IOException {
+        int indexOfPipe = receiverName.indexOf('|');
+        if (indexOfPipe != -1) {
+            receiverName = receiverName.substring(0, indexOfPipe);
+        }
+        appendComponentNameToFile(receiverName, RECEIVER_FILENAME);
+    }
+
+    public void appendProviderNameToFile(String providerName) throws IOException {
+        appendComponentNameToFile(providerName, PROVIDER_FILENAME);
+    }
+
+    private void appendComponentNameToFile(String componentName, String fileName) throws IOException {
+        File file = FileUtils.toFile(fileName);
+        boolean fileExist = file.exists();
+        try (FileWriter writer = new FileWriter(file, true)) {
+            if (fileExist) writer.write(System.lineSeparator());
+            writer.write(componentName);
+        }
     }
 
     public void togglePermissionState(String packageName, String permissionName) {

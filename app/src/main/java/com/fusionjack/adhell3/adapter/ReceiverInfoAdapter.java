@@ -52,17 +52,9 @@ public class ReceiverInfoAdapter extends ComponentAdapter {
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
 
             String receiverName = receiverInfo.getName();
+            receiverNameTextView.setText(getNamePart(receiverName));
+            receiverPackageTextView.setText(getPackagePart(receiverName));
             String receiverPermission = receiverInfo.getPermission();
-            int lastIndex = receiverName.lastIndexOf('.');
-            if (lastIndex != -1) {
-                String nameStr = receiverName.substring(lastIndex + 1);
-                String packageStr = receiverName.substring(0, lastIndex);
-                receiverNameTextView.setText(nameStr);
-                receiverPackageTextView.setText(packageStr);
-            } else {
-                receiverNameTextView.setText("Unknown");
-                receiverPackageTextView.setText(receiverName);
-            }
             receiverPermissionTextView.setText(receiverPermission);
 
             String packageName = receiverInfo.getPackageName();

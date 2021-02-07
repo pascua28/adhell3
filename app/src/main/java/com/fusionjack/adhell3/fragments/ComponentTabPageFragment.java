@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
@@ -40,6 +41,7 @@ import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -106,6 +108,19 @@ public class ComponentTabPageFragment extends Fragment {
                         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                             Action action = () -> page.toggleAppComponent(packageName, adapter.getItem(position));
                             new RxCompletableIoBuilder().async(Completable.fromAction(action));
+                        });
+                        listView.setOnItemLongClickListener((parent, view1, position, id) -> {
+                            if (page.pageId == PERMISSIONS_PAGE) {
+                                return true;
+                            }
+                            String componentName = adapter.getItem(position).getName();
+                            Action action = () -> page.appendComponentNameToFile(componentName);
+                            String message = "'" + adapter.getNamePart(componentName) + "' is inserted to file";
+                            Runnable callback = () -> Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                            new RxCompletableIoBuilder()
+                                    .showErrorAlert(getContext())
+                                    .async(Completable.fromAction(action), callback);
+                            return true;
                         });
                     }
 
@@ -338,6 +353,23 @@ public class ComponentTabPageFragment extends Fragment {
                     observable = viewModel.getProviders(packageName);
             }
             return Optional.ofNullable(observable);
+        }
+
+        void appendComponentNameToFile(String componentName) throws IOException {
+            switch (pageId) {
+                case ACTIVITIES_PAGE:
+                    AppComponentFactory.getInstance().appendActivityNameToFile(componentName);
+                    break;
+                case SERVICES_PAGE:
+                    AppComponentFactory.getInstance().appendServiceNameToFile(componentName);
+                    break;
+                case RECEIVERS_PAGE:
+                    AppComponentFactory.getInstance().appendReceiverNameToFile(componentName);
+                    break;
+                case CONTENT_PROVIDERS_PAGE:
+                    AppComponentFactory.getInstance().appendProviderNameToFile(componentName);
+                    break;
+            }
         }
 
         void toggleAppComponent(String packageName, IComponentInfo info) {

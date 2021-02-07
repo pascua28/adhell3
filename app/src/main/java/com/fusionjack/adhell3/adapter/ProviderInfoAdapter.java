@@ -51,16 +51,8 @@ public class ProviderInfoAdapter extends ComponentAdapter {
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
 
             String providerName = providerInfo.getName();
-            int lastIndex = providerName.lastIndexOf('.');
-            if (lastIndex != -1) {
-                String nameStr = providerName.substring(lastIndex + 1);
-                String packageStr = providerName.substring(0, lastIndex);
-                providerNameTextView.setText(nameStr);
-                providerPackageTextView.setText(packageStr);
-            } else {
-                providerNameTextView.setText("Unknown");
-                providerPackageTextView.setText(providerName);
-            }
+            providerNameTextView.setText(getNamePart(providerName));
+            providerPackageTextView.setText(getPackagePart(providerName));
 
             String packageName = providerInfo.getPackageName();
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, providerName);

@@ -51,16 +51,8 @@ public class ServiceInfoAdapter extends ComponentAdapter {
             SwitchMaterial permissionSwitch = convertView.findViewById(R.id.switchDisable);
 
             String serviceName = serviceInfo.getName();
-            int lastIndex = serviceName.lastIndexOf('.');
-            if (lastIndex != -1) {
-                String nameStr = serviceName.substring(lastIndex + 1);
-                String packageStr = serviceName.substring(0, lastIndex);
-                serviceNameTextView.setText(nameStr);
-                servicePackageTextView.setText(packageStr);
-            } else {
-                serviceNameTextView.setText("Unknown");
-                servicePackageTextView.setText(serviceName);
-            }
+            serviceNameTextView.setText(getNamePart(serviceName));
+            servicePackageTextView.setText(getPackagePart(serviceName));
 
             String packageName = serviceInfo.getPackageName();
             boolean state = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
