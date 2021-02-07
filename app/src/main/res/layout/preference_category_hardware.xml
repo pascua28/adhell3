@@ -7,5 +7,5 @@
     android:textStyle="bold"
     android:textSize="20sp"
     android:drawablePadding="5dp"
-    app:drawableStartCompat="@drawable/icon_hardware"
+    app:drawableStartCompat="@drawable/ic_hardware"
     app:drawableTint="@color/colorText" />

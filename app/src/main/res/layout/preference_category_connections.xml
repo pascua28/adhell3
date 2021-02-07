@@ -7,5 +7,5 @@
     android:textStyle="bold"
     android:textSize="20sp"
     android:drawablePadding="5dp"
-    app:drawableStartCompat="@drawable/icon_connections"
+    app:drawableStartCompat="@drawable/ic_connections"
     app:drawableTint="@color/colorText" />

@@ -15,10 +15,10 @@ public class ComponentTabFragment extends TabFragment {
 
     private final int[] imageResId = {
             R.drawable.ic_permission,
-            R.drawable.icon_activity,
+            R.drawable.ic_activity,
             R.drawable.ic_service,
             R.drawable.ic_receiver,
-            R.drawable.icon_conten_provider
+            R.drawable.ic_provider
     };
 
     @Override
