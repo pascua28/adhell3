@@ -43,6 +43,12 @@ Backup the content of the database on internal storage so that later it can be u
 - DNS per application basis<br/>
 Set custom DNS for selected apps. Only user apps are supported.
 
+- Manage apps' components<br/>
+Disable permissions, services, receivers, activities and content providers for for any app (System apps are not shown by default).
+
+- Restrictions<br/>
+Turn off google crash report, account sync or disallow camera and microphone! These are only few examples
+
 ## Building APK
 - Download the script from https://gitlab.com/fusionjack/adhell3-scripts
 - Follow the instruction in the README
@@ -75,6 +81,10 @@ An ability to disable app's permissions, services and receivers. Only user apps 
 
 ### Override default host with your own compiled host
 * Put `default.host` in `app.properties`, e.g. `default.host=https://gitlab.com/fusionjack/hosts/raw/master/hosts`
+
+### Change default log duration
+* Put `blockedDomain.duration.ui` in `app.properties`, to change number of domains in last x hours that are shown in home tab log e.g. `blockedDomain.duration.ui=48`
+* Put `blockedDomain.duration.db`, to change number of domains in last x hours that will be stored in database which can be dumped into text file e.g. `blockedDomain.duration.db=168`
 
 ## Credits
 * Adhell3 is based on FiendFyre's Adhell2 which is heavily modified by me.<br/>
