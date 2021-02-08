@@ -40,11 +40,10 @@ public class OtherTabFragment extends TabFragment {
             parentActivity.getSupportActionBar().setHomeButtonEnabled(false);
             parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         }
-        setHasOptionsMenu(true);
 
         OtherPagerAdapter adapter = new OtherPagerAdapter(getChildFragmentManager(), getContext());
         int offset = BuildConfig.APP_COMPONENT ? 0 : 1;
-        View view = inflateFragment(R.layout.fragment_others, inflater, container, adapter, 4, imageResId, offset);
+        View view = inflateFragment(R.layout.fragment_others, inflater, container, adapter, 1, imageResId, offset);
 
         TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
         if (viewpagerPosition != null && viewpagerPosition.equalsIgnoreCase("Settings")) {

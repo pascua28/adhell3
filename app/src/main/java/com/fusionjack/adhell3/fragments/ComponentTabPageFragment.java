@@ -25,8 +25,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ActivityInfoAdapter;
 import com.fusionjack.adhell3.adapter.ComponentAdapter;
-import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.PermissionInfoAdapter;
+import com.fusionjack.adhell3.adapter.ProviderInfoAdapter;
 import com.fusionjack.adhell3.adapter.ReceiverInfoAdapter;
 import com.fusionjack.adhell3.adapter.ServiceInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -58,25 +58,27 @@ public class ComponentTabPageFragment extends Fragment {
 
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGE_NAME = "packageName";
+    private static final String ARG_DISABLED_COMPONENT_MODE = "isDisabledComponentMode";
 
-    private static final int UNKNOWN_PAGE = -1;
     private static final int PERMISSIONS_PAGE = 0;
     private static final int ACTIVITIES_PAGE = 1;
     private static final int SERVICES_PAGE = 2;
     private static final int RECEIVERS_PAGE = 3;
-    private static final int CONTENT_PROVIDERS_PAGE = 4;
+    private static final int PROVIDERS_PAGE = 4;
 
     private int pageId;
     private String packageName;
+    private boolean isDisabledComponentMode;
 
     private List<IComponentInfo> adapterAppComponentList;
     private List<IComponentInfo> initialAppComponentList;
     private ComponentAdapter adapter;
 
-    public static ComponentTabPageFragment newInstance(int page, String packageName) {
+    public static ComponentTabPageFragment newInstance(int page, String packageName, boolean isDisabledComponentMode) {
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         args.putString(ARG_PACKAGE_NAME, packageName);
+        args.putBoolean(ARG_DISABLED_COMPONENT_MODE, isDisabledComponentMode);
         ComponentTabPageFragment fragment = new ComponentTabPageFragment();
         fragment.setArguments(args);
         return fragment;
@@ -85,15 +87,18 @@ public class ComponentTabPageFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.pageId = Optional.ofNullable(getArguments()).map(bundle -> bundle.getInt(ARG_PAGE)).orElse(UNKNOWN_PAGE);
-        this.packageName = getArguments().getString(ARG_PACKAGE_NAME);
+        setHasOptionsMenu(true);
+        Optional.ofNullable(getArguments()).ifPresent(bundle -> {
+            this.pageId = bundle.getInt(ARG_PAGE);
+            this.packageName = bundle.getString(ARG_PACKAGE_NAME);
+            this.isDisabledComponentMode = bundle.getBoolean(ARG_DISABLED_COMPONENT_MODE);
+        });
+        this.initialAppComponentList = Collections.emptyList();
         this.adapterAppComponentList = new ArrayList<>();
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
         return AppComponentPage.toAppComponentPage(pageId).map(page -> {
             View view = inflater.inflate(page.layoutId, container, false);
 
@@ -127,8 +132,12 @@ public class ComponentTabPageFragment extends Fragment {
                     Consumer<LiveData<List<AppPermission>>> callback = liveData -> {
                         safeGuardLiveData(() -> {
                             liveData.observe(getViewLifecycleOwner(), dbAppComponentList -> {
-                                if (initialAppComponentList == null) {
-                                    initialAppComponentList = page.combineAppComponentList(packageName, dbAppComponentList);
+                                if (initialAppComponentList.isEmpty()) {
+                                    if (isDisabledComponentMode) {
+                                        initialAppComponentList = page.convertDbAppComponentList(packageName, dbAppComponentList);
+                                    } else {
+                                        initialAppComponentList = page.combineAppComponentList(packageName, dbAppComponentList);
+                                    }
                                     adapterAppComponentList.addAll(initialAppComponentList);
                                 }
                                 adapter.notifyDataSetChanged();
@@ -157,9 +166,10 @@ public class ComponentTabPageFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.appcomponent_menu, menu);
-        initSearchView(menu);
+        if (menu.size() == 0) {
+            inflater.inflate(R.menu.appcomponent_menu, menu);
+            initSearchView(menu);
+        }
     }
 
     @Override
@@ -255,7 +265,7 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     page = createReceiverPage(pageId);
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     page = createProviderPage(pageId);
             }
             return Optional.ofNullable(page);
@@ -306,7 +316,7 @@ public class ComponentTabPageFragment extends Fragment {
                     return "services";
                 case RECEIVERS_PAGE:
                     return "receivers";
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     return "content providers";
             }
             return "";
@@ -327,7 +337,7 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     adapter = new ReceiverInfoAdapter(context, list);
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     adapter = new ProviderInfoAdapter(context, list);
                     break;
             }
@@ -349,7 +359,7 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     observable = viewModel.getReceivers(packageName);
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     observable = viewModel.getProviders(packageName);
             }
             return Optional.ofNullable(observable);
@@ -366,7 +376,7 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     AppComponentFactory.getInstance().appendReceiverNameToFile(componentName);
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     AppComponentFactory.getInstance().appendProviderNameToFile(componentName);
                     break;
             }
@@ -387,7 +397,7 @@ public class ComponentTabPageFragment extends Fragment {
                     ReceiverInfo receiverInfo = (ReceiverInfo) info;
                     AppComponentFactory.getInstance().toggleReceiverState(packageName, receiverInfo.getName(), receiverInfo.getPermission());
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     AppComponentFactory.getInstance().toggleProviderState(packageName, info.getName());
                     break;
             }
@@ -407,23 +417,40 @@ public class ComponentTabPageFragment extends Fragment {
                 case RECEIVERS_PAGE:
                     AppComponentFactory.getInstance().enableReceivers(packageName);
                     break;
-                case CONTENT_PROVIDERS_PAGE:
+                case PROVIDERS_PAGE:
                     AppComponentFactory.getInstance().enableProviders(packageName);
             }
         }
 
-        List<IComponentInfo> combineAppComponentList(String packageName, List<AppPermission> appComponentList) {
+        List<IComponentInfo> combineAppComponentList(String packageName, List<AppPermission> dbAppComponentList) {
             switch (pageId) {
                 case PERMISSIONS_PAGE:
-                    return AppComponent.combinePermissionsList(packageName, appComponentList);
+                    return AppComponent.getPermissions(packageName);
                 case ACTIVITIES_PAGE:
-                    return AppComponent.combineActivitiesList(packageName, appComponentList);
+                    return AppComponent.combineActivitiesList(packageName, dbAppComponentList);
                 case SERVICES_PAGE:
-                    return AppComponent.combineServicesList(packageName, appComponentList);
+                    return AppComponent.combineServicesList(packageName, dbAppComponentList);
                 case RECEIVERS_PAGE:
-                    return AppComponent.combineReceiversList(packageName, appComponentList);
-                case CONTENT_PROVIDERS_PAGE:
-                    return AppComponent.combineProvidersList(packageName, appComponentList);
+                    return AppComponent.combineReceiversList(packageName, dbAppComponentList);
+                case PROVIDERS_PAGE:
+                    return AppComponent.combineProvidersList(packageName, dbAppComponentList);
+                default:
+                    return Collections.emptyList();
+            }
+        }
+
+        List<IComponentInfo> convertDbAppComponentList(String packageName, List<AppPermission> dbAppComponentList) {
+            switch (pageId) {
+                case PERMISSIONS_PAGE:
+                    return AppComponent.toPermissionInfoList(packageName, dbAppComponentList);
+                case ACTIVITIES_PAGE:
+                    return AppComponent.toActivityInfoList(packageName, dbAppComponentList);
+                case SERVICES_PAGE:
+                    return AppComponent.toServiceInfoList(packageName, dbAppComponentList);
+                case RECEIVERS_PAGE:
+                    return AppComponent.toReceiverInfoList(packageName, dbAppComponentList);
+                case PROVIDERS_PAGE:
+                    return AppComponent.toProviderInfoList(packageName, dbAppComponentList);
                 default:
                     return Collections.emptyList();
             }

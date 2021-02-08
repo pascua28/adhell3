@@ -27,6 +27,7 @@ import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -40,7 +41,8 @@ public abstract class AppFragment extends Fragment {
     private String searchText;
     private SearchView searchView;
 
-    private List<AppInfo> initAppList;
+    private List<AppInfo> currentAppList;
+    private List<AppInfo> initialAppList;
     private List<AppInfo> adapterAppList;
     private AppInfoAdapter adapter;
 
@@ -49,6 +51,8 @@ public abstract class AppFragment extends Fragment {
         super.onCreate(savedInstanceState);
         this.context = getContext();
         this.searchText = "";
+        this.currentAppList = Collections.emptyList();
+        this.initialAppList = Collections.emptyList();
         this.adapterAppList = new ArrayList<>();
 
         AppRepository.Type type = getType();
@@ -76,11 +80,12 @@ public abstract class AppFragment extends Fragment {
         Consumer<LiveData<List<AppInfo>>> callback = liveData -> {
             safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), appList -> {
-                    initAppList = appList;
+                    this.initialAppList = appList;
+                    this.currentAppList = appList;
                     if (searchText.isEmpty()) {
-                        updateAppList(appList);
+                        updateAppList(currentAppList);
                     } else {
-                        searchView.setQuery(searchText, true);
+                        searchView.setQuery(searchText, false);
                     }
                 });
             });
@@ -96,6 +101,16 @@ public abstract class AppFragment extends Fragment {
         action.run();
     }
 
+    protected void setCurrentAppList(List<AppInfo> newList) {
+        this.currentAppList = newList;
+        updateAppList(currentAppList);
+    }
+
+    protected void restoreAppList() {
+        this.currentAppList = initialAppList;
+        updateAppList(currentAppList);
+    }
+
     private void updateAppList(List<AppInfo> list) {
         adapterAppList.clear();
         adapterAppList.addAll(list);
@@ -104,7 +119,6 @@ public abstract class AppFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@androidx.annotation.NonNull Menu menu, @androidx.annotation.NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.app_menu, menu);
         initSearchView(menu);
     }
@@ -122,10 +136,10 @@ public abstract class AppFragment extends Fragment {
             public boolean onQueryTextChange(String text) {
                 searchText = text;
                 if (text.isEmpty()) {
-                    updateAppList(initAppList);
+                    updateAppList(currentAppList);
                 } else {
                     SingleOnSubscribe<List<AppInfo>> source = emitter -> {
-                        List<AppInfo> filteredList = initAppList.stream()
+                        List<AppInfo> filteredList = currentAppList.stream()
                                 .filter(appInfo -> {
                                     String appName = appInfo.appName.toLowerCase();
                                     String packageName = appInfo.packageName.toLowerCase();

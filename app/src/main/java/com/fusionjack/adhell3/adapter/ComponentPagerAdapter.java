@@ -13,9 +13,10 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
 
     private final String[] tabTitles;
     private final String packageName;
+    private final boolean isDisabledComponentMode;
 
-    public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName) {
-        super(fm);
+    public ComponentPagerAdapter(FragmentManager fm, Context context, String packageName, boolean isDisabledComponentMode) {
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[] {
                 context.getString(R.string.permission_fragment_title),
                 context.getString(R.string.activity_fragment_title),
@@ -25,11 +26,12 @@ public class ComponentPagerAdapter extends FragmentPagerAdapter {
         };
 
         this.packageName = packageName;
+        this.isDisabledComponentMode = isDisabledComponentMode;
     }
 
     @Override
     public Fragment getItem(int position) {
-        return ComponentTabPageFragment.newInstance(position, packageName);
+        return ComponentTabPageFragment.newInstance(position, packageName, isDisabledComponentMode);
     }
 
     @Override

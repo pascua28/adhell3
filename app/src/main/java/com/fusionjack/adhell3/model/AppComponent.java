@@ -23,55 +23,87 @@ public class AppComponent {
 
     private static final Comparator<IComponentInfo> APP_COMPONENT_COMPARATOR = Comparator.comparing(IComponentInfo::getName);
 
-    public static List<IComponentInfo> combinePermissionsList(String packageName, List<AppPermission> appComponentList) {
-        return getPermissions(packageName);
+    public static List<IComponentInfo> toPermissionInfoList(String packageName, List<AppPermission> appComponentList) {
+        return appComponentList.stream()
+                .map(appComponent -> toPermissionInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList());
     }
 
-    public static List<IComponentInfo> combineActivitiesList(String packageName, List<AppPermission> appComponentList) {
+    private static PermissionInfo toPermissionInfo(String packageName, String permissionName) {
+        PermissionInfo permissionInfo = PermissionInfo.EMPTY_PERMISSION;
+        try {
+            PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
+            android.content.pm.PermissionInfo info = packageManager.getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
+            if (AppPermissionUtils.isDangerousLevel(info.protectionLevel)) {
+                CharSequence description = info.loadDescription(packageManager);
+                permissionInfo = new PermissionInfo(permissionName, description, info.protectionLevel, packageName);
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+        return permissionInfo;
+    }
+
+    public static List<IComponentInfo> combineActivitiesList(String packageName, List<AppPermission> dbAppComponentList) {
         Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
-        combinedList.addAll(appComponentList.stream()
-                .map(appComponent -> new com.fusionjack.adhell3.model.ActivityInfo(packageName, appComponent.permissionName))
-                .collect(Collectors.toList()));
+        combinedList.addAll(toActivityInfoList(packageName, dbAppComponentList));
         combinedList.addAll(getActivitiesFromSystem(packageName).stream()
                 .map(serviceName -> new com.fusionjack.adhell3.model.ActivityInfo(packageName, serviceName))
                 .collect(Collectors.toList()));
         return new ArrayList<>(combinedList);
     }
 
-    public static List<IComponentInfo> combineServicesList(String packageName, List<AppPermission> appComponentList) {
+    public static List<IComponentInfo> toActivityInfoList(String packageName, List<AppPermission> appComponentList) {
+        return appComponentList.stream()
+                .map(appComponent -> new com.fusionjack.adhell3.model.ActivityInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList());
+    }
+
+    public static List<IComponentInfo> combineServicesList(String packageName, List<AppPermission> dbAppComponentList) {
         Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
-        combinedList.addAll(appComponentList.stream()
-                .map(appComponent -> new ServiceInfo(packageName, appComponent.permissionName))
-                .collect(Collectors.toList()));
+        combinedList.addAll(toServiceInfoList(packageName, dbAppComponentList));
         combinedList.addAll(getServicesFromSystem(packageName).stream()
                 .map(serviceName -> new ServiceInfo(packageName, serviceName))
                 .collect(Collectors.toList()));
         return new ArrayList<>(combinedList);
     }
 
-    public static List<IComponentInfo> combineReceiversList(String packageName, List<AppPermission> appComponentList) {
+    public static List<IComponentInfo> toServiceInfoList(String packageName, List<AppPermission> appComponentList) {
+        return appComponentList.stream()
+                .map(appComponent -> new ServiceInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList());
+    }
+
+    public static List<IComponentInfo> combineReceiversList(String packageName, List<AppPermission> dbAppComponentList) {
         Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
-        combinedList.addAll(appComponentList.stream()
+        combinedList.addAll(toReceiverInfoList(packageName, dbAppComponentList));
+        combinedList.addAll(getReceiversFromSystem(packageName));
+        return new ArrayList<>(combinedList);
+    }
+
+    public static List<IComponentInfo> toReceiverInfoList(String packageName, List<AppPermission> dbAppComponentList) {
+        return dbAppComponentList.stream()
                 .map(appComponent -> {
                     StringTokenizer tokenizer = new StringTokenizer(appComponent.permissionName, "|");
                     String name = tokenizer.nextToken();
                     String permission = tokenizer.nextToken();
                     return new ReceiverInfo(packageName, name, permission);
                 })
-                .collect(Collectors.toList()));
-        combinedList.addAll(getReceiversFromSystem(packageName));
-        return new ArrayList<>(combinedList);
+                .collect(Collectors.toList());
     }
 
-    public static List<IComponentInfo> combineProvidersList(String packageName, List<AppPermission> appComponentList) {
+    public static List<IComponentInfo> combineProvidersList(String packageName, List<AppPermission> dbAppComponentList) {
         Set<IComponentInfo> combinedList = new TreeSet<>(APP_COMPONENT_COMPARATOR);
-        combinedList.addAll(appComponentList.stream()
-                .map(appComponent -> new ProviderInfo(packageName, appComponent.permissionName))
-                .collect(Collectors.toList()));
+        combinedList.addAll(toProviderInfoList(packageName, dbAppComponentList));
         combinedList.addAll(getProvidersFromSystem(packageName).stream()
                 .map(providerName -> new ProviderInfo(packageName, providerName))
                 .collect(Collectors.toList()));
         return new ArrayList<>(combinedList);
+    }
+
+    public static List<IComponentInfo> toProviderInfoList(String packageName, List<AppPermission> dbAppComponentList) {
+        return dbAppComponentList.stream()
+                .map(appComponent -> new ProviderInfo(packageName, appComponent.permissionName))
+                .collect(Collectors.toList());
     }
 
     public static List<IComponentInfo> getPermissions(String packageName) {
@@ -84,18 +116,7 @@ public class AppComponent {
                 String[] permissions = packageInfo.requestedPermissions;
                 if (permissions != null) {
                     permissionList = Arrays.stream(permissions)
-                            .map(permissionName -> {
-                                PermissionInfo permissionInfo = PermissionInfo.EMPTY_PERMISSION;
-                                try {
-                                    android.content.pm.PermissionInfo info = packageManager.getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
-                                    if (AppPermissionUtils.isDangerousLevel(info.protectionLevel)) {
-                                        CharSequence description = info.loadDescription(packageManager);
-                                        permissionInfo = new PermissionInfo(permissionName, description, info.protectionLevel, packageName);
-                                    }
-                                } catch (PackageManager.NameNotFoundException ignored) {
-                                }
-                                return permissionInfo;
-                            })
+                            .map(permissionName -> toPermissionInfo(packageName, permissionName))
                             .filter(info -> !info.equals(PermissionInfo.EMPTY_PERMISSION))
                             .sorted(APP_COMPONENT_COMPARATOR)
                             .collect(Collectors.toList());

@@ -172,7 +172,7 @@
     <string name="whitelist_url_fragment_title">Whitelist</string>
     <string name="provider_url_fragment_title">Providers</string>
     <string name="list_url_fragment_title">List</string>
-    <string name="app_component_fragment_title">App Component</string>
+    <string name="app_component_fragment_title">Components</string>
     <string name="dns_fragment_title">DNS</string>
     <string name="restrictions_fragment_title">Restrictions</string>
     <string name="settings_fragment_title">Settings</string>
@@ -282,4 +282,6 @@
     <string name="button_disable">Disable</string>
     <string name="menu_enable_all">Enable all</string>
     <string name="menu_batch">Batch operation</string>
+    <string name="menu_show_disabled_only">Show disabled only</string>
+    <string name="menu_show_all">Show all</string>
 </resources>

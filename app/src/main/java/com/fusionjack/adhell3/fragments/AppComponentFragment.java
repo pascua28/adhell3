@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
@@ -28,7 +29,13 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
+import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -37,7 +44,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
 
-    private boolean warningIsShown;
+    private boolean isWarningShown;
+    private boolean isDisabledComponentMode;
 
     @Override
     protected AppRepository.Type getType() {
@@ -47,16 +55,17 @@ public class AppComponentFragment extends AppFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.warningIsShown = false;
+        setHasOptionsMenu(true);
+
+        this.isWarningShown = false;
+        this.isDisabledComponentMode = false;
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
         View view = inflateFragment(R.layout.fragment_app_component, inflater, container, AppFlag.createComponentFlag());
 
-        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !warningIsShown) {
+        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !isWarningShown) {
             View rootView = view.findViewById(R.id.appComponentCoordinatorLayout);
             Snackbar snackbar = Snackbar.make(rootView, R.string.dialog_system_app_components_info, Snackbar.LENGTH_LONG);
             View snackBarView = snackbar.getView();
@@ -66,7 +75,7 @@ public class AppComponentFragment extends AppFragment {
             snackbar.setDuration(10000);
             snackbar.setAction("Close", v -> snackbar.dismiss());
             snackbar.show();
-            warningIsShown = true;
+            isWarningShown = true;
         }
 
         return view;
@@ -77,36 +86,68 @@ public class AppComponentFragment extends AppFragment {
         AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
 
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+
         Bundle bundle = new Bundle();
         AppInfo appInfo = adapter.getItem(position);
         bundle.putString("packageName", appInfo.packageName);
         bundle.putString("appName", appInfo.appName);
+        bundle.putBoolean("isDisabledComponentMode", isDisabledComponentMode);
         ComponentTabFragment fragment = new ComponentTabFragment();
         fragment.setArguments(bundle);
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-        fragmentTransaction.addToBackStack("appComponents");
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.appcomponent_tab_menu, menu);
-        initSearchView(menu);
+        if (menu.size() == 0) {
+            inflater.inflate(R.menu.appcomponent_tab_menu, menu);
+            initSearchView(menu);
+            Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_enable_all:
-                enableAllAppComponents();
-                break;
-            case R.id.action_batch:
-                batchOperation();
-                break;
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_enable_all) {
+            enableAllAppComponents();
+        } else if (itemId == R.id.action_batch) {
+            batchOperation();
+        } else if (itemId == R.id.action_show_disabled_only) {
+            toggleDisabledOnlyMode(item);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void initDisabledOnlyMenu(MenuItem item) {
+        if (isDisabledComponentMode) {
+            item.setTitle(R.string.menu_show_all);
+            item.setIcon(R.drawable.ic_show_all);
+            showDisabledOnly();
+        } else {
+            item.setTitle(R.string.menu_show_disabled_only);
+            item.setIcon(R.drawable.ic_show_disabled_only);
+        }
+    }
+
+    private void toggleDisabledOnlyMode(MenuItem item) {
+        isDisabledComponentMode = !isDisabledComponentMode;
+        initDisabledOnlyMenu(item);
+        if (isDisabledComponentMode) {
+            showDisabledOnly();
+        } else {
+            restoreAppList();
+        }
+    }
+
+    private void showDisabledOnly() {
+        AppComponentViewModel viewModel = new ViewModelProvider(this).get(AppComponentViewModel.class);
+        Consumer<List<AppInfo>> callback = this::setCurrentAppList;
+        new RxSingleIoBuilder().async(viewModel.getDisabledComponentApps(), callback);
     }
 
     private void batchOperation() {
