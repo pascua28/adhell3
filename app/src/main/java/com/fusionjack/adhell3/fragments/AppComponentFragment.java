@@ -1,7 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,9 +26,9 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
-import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 import com.google.android.material.snackbar.Snackbar;
@@ -225,12 +224,15 @@ public class AppComponentFragment extends AppFragment {
         questionTextView.setText(R.string.dialog_enable_components_info);
         new AlertDialog.Builder(context)
                 .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                        AsyncTask.execute(() -> {
-                            AdhellFactory.getInstance().setAppComponentState(true);
-                            AdhellFactory.getInstance().getAppDatabase().appPermissionDao().deleteAll();
-                        })
-                )
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                    Runnable callback = () -> {
+                        if (isDisabledComponentMode) {
+                            showDisabledOnly();
+                        }
+                    };
+                    AppComponentViewModel viewModel = new ViewModelProvider(this).get(AppComponentViewModel.class);
+                    new RxCompletableIoBuilder().async(viewModel.enableAllAppComponents(), callback);
+                })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 }

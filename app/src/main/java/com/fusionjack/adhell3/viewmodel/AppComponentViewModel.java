@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public class AppComponentViewModel extends ViewModel {
@@ -50,6 +51,13 @@ public class AppComponentViewModel extends ViewModel {
 
     public Single<List<Integer>> getComponentTypes(String packageName) {
         return Single.fromCallable(() -> appDatabase.appPermissionDao().getComponentTypes(packageName));
+    }
+
+    public Completable enableAllAppComponents() {
+        return Completable.fromAction(() -> {
+            AdhellFactory.getInstance().setAppComponentState(true);
+            AdhellFactory.getInstance().getAppDatabase().appPermissionDao().deleteAll();
+        });
     }
 
     public Single<List<AppInfo>> getDisabledComponentApps() {
