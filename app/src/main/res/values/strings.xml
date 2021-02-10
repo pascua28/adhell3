@@ -15,11 +15,11 @@
     <string name="app_disabler_disabled">App disabler is disabled</string>
     <string name="app_disabler_info">0 apps are disabled</string>
     <string name="app_disabler_info_placeholder">%1$d apps are disabled</string>
-    <string name="app_component_status">App component is</string>
-    <string name="app_component_enabled">App component is enabled</string>
-    <string name="app_component_disabled">App component is disabled</string>
-    <string name="app_component_toggle_info">0 permissions, 0 services and 0 receivers are disabled</string>
-    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d services and %3$d receivers are disabled</string>
+    <string name="app_component_status">App components are</string>
+    <string name="app_component_enabled">App components are enabled</string>
+    <string name="app_component_disabled">App components are disabled</string>
+    <string name="app_component_toggle_info">0 permissions, 0 services, 0 receivers,</string>
+    <string name="app_component_toggle_info_placeholder">%1$d permissions, %2$d services, %3$d receivers,</string>
     <string name="app_component_toggle_info2">0 activities and 0 providers are disabled</string>
     <string name="app_component_toggle_info_placeholder2">%1$d activities and %2$d providers are disabled</string>
     <string name="adhell_not_supported">Adhell3 is not yet supported on your device.</string>
