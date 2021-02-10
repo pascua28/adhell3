@@ -18,6 +18,9 @@ import androidx.room.PrimaryKey;
 public class AppPermission {
 
     @Ignore
+    public static final int UNKNOWN_TYPE = -2;
+
+    @Ignore
     public static final int STATUS_PERMISSION = -1;
 
     @Ignore
@@ -47,4 +50,16 @@ public class AppPermission {
 
     @ColumnInfo(name = "policyPackageId")
     public String policyPackageId;
+
+    // TwentyNine78's component types compatibility
+    @Ignore private static final int ACTIVITY_TYPE = 8;
+    @Ignore private static final int PROVIDER_TYPE = 11;
+
+    @Ignore
+    public static int convertType(int type) {
+        if (type == STATUS_PERMISSION || type == STATUS_ACTIVITY || type == STATUS_SERVICE || type == STATUS_RECEIVER || type == STATUS_PROVIDER) return type;
+        if (type == ACTIVITY_TYPE) return STATUS_ACTIVITY;
+        if (type == PROVIDER_TYPE) return STATUS_PROVIDER;
+        return UNKNOWN_TYPE;
+    }
 }

@@ -403,9 +403,14 @@ public final class DatabaseFactory {
             reader.endObject();
 
             if (installedPackageNames.contains(packageName)) {
-                AppPermissionInfo appComponentInfo = new AppPermissionInfo(packageName, permissionName, permissionStatus);
-                Set<AppPermissionInfo> appComponentInfos = appComponentMap.computeIfAbsent(packageName, f -> new HashSet<>());
-                appComponentInfos.add(appComponentInfo);
+                permissionStatus = AppPermission.convertType(permissionStatus);
+                if (permissionStatus == AppPermission.UNKNOWN_TYPE) {
+                    LogUtils.info("Unknown type '" + permissionStatus + "' for '" + packageName + "'");
+                } else {
+                    AppPermissionInfo appComponentInfo = new AppPermissionInfo(packageName, permissionName, permissionStatus);
+                    Set<AppPermissionInfo> appComponentInfos = appComponentMap.computeIfAbsent(packageName, f -> new HashSet<>());
+                    appComponentInfos.add(appComponentInfo);
+                }
             }
         }
         reader.endArray();
