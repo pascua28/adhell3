@@ -26,11 +26,14 @@ public class ComponentTabFragment extends TabFragment {
         String packageName = "";
         String appName = "";
         boolean isDisabledComponentMode = false;
+        int[] pages = new int[0];
+
         Bundle bundle = getArguments();
         if (bundle != null) {
             packageName = bundle.getString("packageName");
             appName = bundle.getString("appName");
             isDisabledComponentMode = bundle.getBoolean("isDisabledComponentMode");
+            pages = bundle.getIntArray("pages");
         }
 
         getActivity().setTitle(appName.isEmpty() ? "App Component" : appName);
@@ -41,7 +44,7 @@ public class ComponentTabFragment extends TabFragment {
             parentActivity.getSupportActionBar().setDisplayShowCustomEnabled(false);
         }
 
-        ComponentPagerAdapter adapter = new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName, isDisabledComponentMode);
+        ComponentPagerAdapter adapter = new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName, isDisabledComponentMode, pages);
 
         return inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 1, imageResId, 0);
     }

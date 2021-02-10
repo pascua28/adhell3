@@ -22,6 +22,9 @@ public interface AppPermissionDao {
     @Query("SELECT DISTINCT(packageName) FROM AppPermission")
     List<String> getApps();
 
+    @Query("SELECT DISTINCT(permissionStatus) FROM AppPermission WHERE packageName = :packageName")
+    List<Integer> getComponentTypes(String packageName);
+
     @Query("SELECT * FROM AppPermission WHERE packageName = :packageName AND permissionStatus = -1")
     LiveData<List<AppPermission>> getPermissionsAsLiveData(String packageName);
 

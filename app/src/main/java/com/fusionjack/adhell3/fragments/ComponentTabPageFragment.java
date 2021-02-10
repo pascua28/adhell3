@@ -54,12 +54,19 @@ import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.functions.Action;
 
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PERMISSION;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PROVIDER;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_RECEIVER;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_SERVICE;
+
 public class ComponentTabPageFragment extends Fragment {
 
     private static final String ARG_PAGE = "page";
     private static final String ARG_PACKAGE_NAME = "packageName";
     private static final String ARG_DISABLED_COMPONENT_MODE = "isDisabledComponentMode";
 
+    private static final int UNKNOWN_PAGE = -1;
     private static final int PERMISSIONS_PAGE = 0;
     private static final int ACTIVITIES_PAGE = 1;
     private static final int SERVICES_PAGE = 2;
@@ -82,6 +89,29 @@ public class ComponentTabPageFragment extends Fragment {
         ComponentTabPageFragment fragment = new ComponentTabPageFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public static int[] toPages(List<Integer> componentType) {
+        LogUtils.info("componentType from database: " + componentType);
+        return componentType.stream()
+                .mapToInt(type -> {
+                    switch (type) {
+                        case STATUS_PERMISSION:
+                            return PERMISSIONS_PAGE;
+                        case STATUS_ACTIVITY:
+                            return ACTIVITIES_PAGE;
+                        case STATUS_SERVICE:
+                            return SERVICES_PAGE;
+                        case STATUS_RECEIVER:
+                            return RECEIVERS_PAGE;
+                        case STATUS_PROVIDER:
+                            return PROVIDERS_PAGE;
+                        default:
+                            return UNKNOWN_PAGE;
+                    }})
+                .filter(page -> page != UNKNOWN_PAGE)
+                .sorted()
+                .toArray();
     }
 
     @Override

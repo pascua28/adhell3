@@ -29,10 +29,12 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -84,21 +86,37 @@ public class AppComponentFragment extends AppFragment {
     @Override
     protected void listOnItemClickListener(AdapterView<?> adView, View view2, int position, long id, AppFlag appFlag) {
         AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
-
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-
-        Bundle bundle = new Bundle();
         AppInfo appInfo = adapter.getItem(position);
-        bundle.putString("packageName", appInfo.packageName);
-        bundle.putString("appName", appInfo.appName);
-        bundle.putBoolean("isDisabledComponentMode", isDisabledComponentMode);
-        ComponentTabFragment fragment = new ComponentTabFragment();
-        fragment.setArguments(bundle);
 
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragmentContainer, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Consumer<List<Integer>> callback = dbTypes -> {
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+
+            Bundle bundle = new Bundle();
+            bundle.putString("packageName", appInfo.packageName);
+            bundle.putString("appName", appInfo.appName);
+            bundle.putBoolean("isDisabledComponentMode", isDisabledComponentMode);
+
+            if (dbTypes != null) {
+                int[] pages = ComponentTabPageFragment.toPages(dbTypes);
+                LogUtils.info("pages: " + Arrays.toString(pages));
+                bundle.putIntArray("pages", pages);
+            }
+
+            ComponentTabFragment fragment = new ComponentTabFragment();
+            fragment.setArguments(bundle);
+
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentContainer, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        };
+
+        if (isDisabledComponentMode) {
+            AppComponentViewModel viewModel = new ViewModelProvider(this).get(AppComponentViewModel.class);
+            new RxSingleIoBuilder().async(viewModel.getComponentTypes(appInfo.packageName), callback);
+        } else {
+            callback.accept(null);
+        }
     }
 
     @Override

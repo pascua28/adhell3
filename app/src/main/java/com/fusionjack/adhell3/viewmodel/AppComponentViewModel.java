@@ -48,6 +48,10 @@ public class AppComponentViewModel extends ViewModel {
         return Single.fromCallable(() -> appDatabase.appPermissionDao().getProvidersAsLiveData(packageName));
     }
 
+    public Single<List<Integer>> getComponentTypes(String packageName) {
+        return Single.fromCallable(() -> appDatabase.appPermissionDao().getComponentTypes(packageName));
+    }
+
     public Single<List<AppInfo>> getDisabledComponentApps() {
         return Single.fromCallable(() ->
                 appDatabase.appPermissionDao().getApps().stream()
