@@ -25,6 +25,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -76,12 +77,8 @@ public class ProviderListFragment extends Fragment {
 
         providerListView.setOnItemClickListener((parent, view1, position, id) -> {
             BlockUrlProvider provider = (BlockUrlProvider) parent.getItemAtPosition(position);
-            List<Fragment> fragments = getFragmentManager().getFragments();
-            for (Fragment fragment : fragments) {
-                if (fragment instanceof ProviderContentFragment) {
-                    ((ProviderContentFragment) fragment).setProviderId(provider.id);
-                }
-            }
+            AppPreferences.getInstance().setCurrentProviderId(provider.id);
+
             TabLayout tabLayout = getParentFragment().getActivity().findViewById(R.id.sliding_tabs);
             if (tabLayout != null) {
                 TabLayout.Tab tab = tabLayout.getTabAt(PROVIDER_CONTENT_PAGE);

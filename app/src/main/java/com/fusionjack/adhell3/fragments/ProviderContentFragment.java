@@ -1,12 +1,6 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,48 +10,122 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.BlockUrlUtils;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.lang.ref.WeakReference;
+import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
+import com.fusionjack.adhell3.viewmodel.ProviderViewModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import io.reactivex.Single;
+import io.reactivex.SingleOnSubscribe;
 
 public class ProviderContentFragment extends Fragment {
 
     private String searchText;
-    private Long providerId;
 
-    public void setProviderId(Long providerId) {
-        this.providerId = providerId;
-        new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
-    }
+    private TextView totalUrlsTextView;
+    private SwipeRefreshLayout swipeContainer;
+
+    private List<String> initialList;
+    private List<String> adapterList;
+    private ArrayAdapter<String> adapter;
+
+    private boolean isInProgress;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
         this.searchText = "";
-        this.providerId = null;
+        this.initialList = Collections.emptyList();
+        this.adapterList = new ArrayList<>();
+        this.adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, adapterList);
+
+        this.isInProgress = false;
+        AppPreferences.getInstance().resetCurrentProviderId();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_show_blocked_urls, container, false);
-        new LoadBlockedUrlAsyncTask(getContext(), providerId).execute();
 
-        SwipeRefreshLayout swipeContainer = view.findViewById(R.id.providerListSwipeContainer);
-        swipeContainer.setOnRefreshListener(() -> {
-            providerId = null;
-            new LoadBlockedUrlAsyncTask(getContext(), null).execute();
-        });
+        ListView listView = view.findViewById(R.id.blocked_url_list);
+        listView.setAdapter(adapter);
+
+        this.totalUrlsTextView = view.findViewById(R.id.total_blocked_urls);
+        setTotalCount();
+
+        this.swipeContainer = view.findViewById(R.id.providerListSwipeContainer);
+        swipeContainer.setOnRefreshListener(() -> loadList(ProviderViewModel.ALL_PROVIDERS));
 
         return view;
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onResume() {
+        super.onResume();
+        if (!isInProgress) {
+            long providerId = AppPreferences.getInstance().getCurrentProviderId();
+            loadList(providerId);
+        }
+    }
+
+    private void loadList(long providerId) {
+        LogUtils.info("Loading list with provider id: " + providerId);
+        Consumer<List<String>> urlCallback = list -> {
+            LogUtils.info("List size:" + list.size());
+            safeGuard(() -> {
+                isInProgress = false;
+                initialList = list;
+                updateList(initialList);
+            });
+        };
+        Runnable onSubscribedCallBack = () -> {
+            isInProgress = true;
+            if (swipeContainer.isRefreshing()) swipeContainer.setRefreshing(false);
+            AppPreferences.getInstance().setCurrentProviderId(providerId);
+        };
+
+        ProviderViewModel viewModel = new ViewModelProvider(this).get(ProviderViewModel.class);
+        new RxSingleComputationBuilder().async(viewModel.getUrls(providerId), onSubscribedCallBack, urlCallback, () -> {});
+    }
+
+    void safeGuard(Runnable action) {
+        if (getView() == null) {
+            LogUtils.error("View is null");
+            return;
+        }
+        action.run();
+    }
+
+    private void updateList(List<String> newList) {
+        adapterList.clear();
+        adapterList.addAll(newList);
+        adapter.notifyDataSetChanged();
+        setTotalCount();
+    }
+
+    private void setTotalCount() {
+        String totalUrlsPlaceholder = getResources().getString(R.string.total_domains_placeholder);
+        totalUrlsTextView.setText(String.format(totalUrlsPlaceholder, adapterList.size()));
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.search_menu, menu);
 
@@ -77,89 +145,19 @@ public class ProviderContentFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String text) {
                 searchText = text;
-                new FilterUrlAsyncTask(text, providerId, getContext()).execute();
+                if (text.isEmpty()) {
+                    updateList(initialList);
+                } else {
+                    SingleOnSubscribe<List<String>> source = emitter -> {
+                        List<String> filteredList = adapterList.stream()
+                                .filter(url -> url.toLowerCase().contains(text.toLowerCase()))
+                                .collect(Collectors.toList());
+                        emitter.onSuccess(filteredList);
+                    };
+                    new RxSingleIoBuilder().async(Single.create(source), list -> updateList(list));
+                }
                 return false;
             }
         });
-    }
-
-    private static class LoadBlockedUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
-        private WeakReference<Context> contextReference;
-        private AppDatabase appDatabase;
-        private Long providerId;
-
-        LoadBlockedUrlAsyncTask(Context context, Long providerId) {
-            this.contextReference = new WeakReference<>(context);
-            this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            this.providerId = providerId;
-        }
-
-        @Override
-        protected List<String> doInBackground(Void... o) {
-            return providerId == null ?
-                    BlockUrlUtils.getAllBlockedUrls(appDatabase) :
-                    BlockUrlUtils.getBlockedUrls(providerId, appDatabase);
-        }
-
-        @Override
-        protected void onPostExecute(List<String> blockedUrls) {
-            Context context = contextReference.get();
-            if (context != null) {
-                ListView listView = ((Activity)context).findViewById(R.id.blocked_url_list);
-                if (listView != null) {
-                    ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, blockedUrls);
-                    listView.setAdapter(itemsAdapter);
-                }
-
-                SwipeRefreshLayout swipeContainer = ((Activity) context).findViewById(R.id.providerListSwipeContainer);
-                if (swipeContainer != null) {
-                    swipeContainer.setRefreshing(false);
-                }
-
-                TextView totalBlockedUrls = ((Activity)context).findViewById(R.id.total_blocked_urls);
-                if (totalBlockedUrls != null) {
-                    totalBlockedUrls.setText(String.format("%s%s",
-                            context.getString(R.string.total_domains), String.valueOf(blockedUrls.size())));
-                }
-            }
-        }
-    }
-
-    private static class FilterUrlAsyncTask extends AsyncTask<Void, Void, List<String>> {
-        private WeakReference<Context> contextReference;
-        private AppDatabase appDatabase;
-        private String text;
-        private Long providerId;
-
-        FilterUrlAsyncTask(String text, Long providerId, Context context) {
-            this.text = text;
-            this.providerId = providerId;
-            this.contextReference = new WeakReference<>(context);
-            this.appDatabase = AdhellFactory.getInstance().getAppDatabase();
-        }
-
-        @Override
-        protected List<String> doInBackground(Void... o) {
-            final String filterText = '%' + text + '%';
-            if (providerId == null) {
-                return text.isEmpty() ? BlockUrlUtils.getAllBlockedUrls(appDatabase) :
-                        BlockUrlUtils.getFilteredBlockedUrls(filterText, appDatabase);
-            }
-            return text.isEmpty() ? BlockUrlUtils.getBlockedUrls(providerId, appDatabase) :
-                    BlockUrlUtils.getFilteredBlockedUrls(filterText, providerId, appDatabase);
-        }
-
-        @Override
-        protected void onPostExecute(List<String> list) {
-            Context context = contextReference.get();
-            if (context != null) {
-                ListView listView = ((Activity)context).findViewById(R.id.blocked_url_list);
-                if (listView != null) {
-                    ArrayAdapter<String> itemsAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
-                    listView.setAdapter(itemsAdapter);
-                    itemsAdapter.notifyDataSetChanged();
-                }
-            }
-        }
     }
 }

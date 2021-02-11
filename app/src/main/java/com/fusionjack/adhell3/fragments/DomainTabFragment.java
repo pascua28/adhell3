@@ -34,7 +34,7 @@ public class DomainTabFragment extends TabFragment {
         setHasOptionsMenu(true);
 
         DomainPagerAdapter adapter = new DomainPagerAdapter(getChildFragmentManager(), getContext());
-        View view = inflateFragment(R.layout.fragment_domains, inflater, container, adapter, 4, imageResId, 0);
+        View view = inflateFragment(R.layout.fragment_domains, inflater, container, adapter, 1, imageResId, 0);
 
         // Select provider list tab as default
         TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);

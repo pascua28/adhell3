@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.utils;
 import android.content.SharedPreferences;
 
 import com.fusionjack.adhell3.blocker.ContentBlocker;
+import com.fusionjack.adhell3.viewmodel.ProviderViewModel;
 
 import io.reactivex.Single;
 
@@ -22,6 +23,7 @@ public final class AppPreferences {
     private static final String DNS1 = "dns1";
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
+    private static final String CURRENT_PROVIDER_ID = "currentProviderId";
 
     private AppPreferences() {
         sharedPreferences = AdhellFactory.getInstance().getSharedPreferences();
@@ -32,6 +34,22 @@ public final class AppPreferences {
             instance = new AppPreferences();
         }
         return instance;
+    }
+
+    public long getCurrentProviderId() {
+        return sharedPreferences.getLong(CURRENT_PROVIDER_ID, ProviderViewModel.ALL_PROVIDERS);
+    }
+
+    public void resetCurrentProviderId() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(CURRENT_PROVIDER_ID);
+        editor.apply();
+    }
+
+    public void setCurrentProviderId(long providerId) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(CURRENT_PROVIDER_ID, providerId);
+        editor.apply();
     }
 
     public Single<SharedPreferenceBooleanLiveData> getDomainRuleLiveData(ContentBlocker contentBlocker) {

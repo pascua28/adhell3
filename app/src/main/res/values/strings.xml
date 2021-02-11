@@ -120,7 +120,8 @@
     <string name="mobile_restricter_fragment_title">Mobile Data</string>
     <string name="wifi_restricter_fragment_title">Wi-Fi Data</string>
     <string name="enabled_all_apps">Enabling all apps…</string>
-    <string name="total_domains">Total domains:&#160;</string>
+    <string name="total_domains">Total domains: 0</string>
+    <string name="total_domains_placeholder">Total domains: %1$d</string>
     <string name="package_disabler_info">
         Disabling system apps may cause the device to malfunction.
         \nIf app disabler toggle is enabled, changes take effect immediately.
