@@ -25,7 +25,7 @@ android {
         def disableApps = "false"
         def appComponent = "false"
         def showSystemAppComponent = "false"
-        def defaultHost = "https://gitlab.com/fusionjack/hosts/raw/master/hosts"
+        def defaultHost = "https://gitlab.com/fusionjack/adhell3-hosts/-/raw/master/hosts"
 
         if (appPropsFile.exists()) {
             Properties appProps = new Properties()

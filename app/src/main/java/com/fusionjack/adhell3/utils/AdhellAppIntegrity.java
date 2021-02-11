@@ -122,30 +122,30 @@ public class AdhellAppIntegrity {
     }
 
     public void checkAdhellStandardPackage() {
-        BlockUrlProvider blockUrlProvider =
-                appDatabase.blockUrlProviderDao().getByUrl(ADHELL_STANDARD_PACKAGE);
+        BlockUrlProvider blockUrlProvider = appDatabase.blockUrlProviderDao().getByUrl(ADHELL_STANDARD_PACKAGE);
         if (blockUrlProvider != null) {
             return;
         }
 
         // Remove existing default
-        if (appDatabase.blockUrlProviderDao().getDefault().size() > 0) {
+        if (appDatabase.blockUrlProviderDao().getDefaultSize() > 0) {
             appDatabase.blockUrlProviderDao().deleteDefault();
         }
 
         // Add the default package
         blockUrlProvider = new BlockUrlProvider();
         blockUrlProvider.url = ADHELL_STANDARD_PACKAGE;
-        blockUrlProvider.lastUpdated = new Date();
+        blockUrlProvider.lastUpdated = null;
         blockUrlProvider.deletable = false;
         blockUrlProvider.selected = true;
         blockUrlProvider.policyPackageId = DEFAULT_POLICY_ID;
-        long ids[] = appDatabase.blockUrlProviderDao().insertAll(blockUrlProvider);
+        long[] ids = appDatabase.blockUrlProviderDao().insertAll(blockUrlProvider);
         blockUrlProvider.id = ids[0];
         List<BlockUrl> blockUrls;
         try {
             blockUrls = BlockUrlUtils.loadBlockUrls(blockUrlProvider);
             blockUrlProvider.count = blockUrls.size();
+            blockUrlProvider.lastUpdated = new Date();
             LogUtils.info( "Number of urls to insert: " + blockUrlProvider.count);
             // Save url provider
             appDatabase.blockUrlProviderDao().updateBlockUrlProviders(blockUrlProvider);

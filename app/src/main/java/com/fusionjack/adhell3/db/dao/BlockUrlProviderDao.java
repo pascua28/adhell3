@@ -48,8 +48,8 @@ public interface BlockUrlProviderDao {
     @Delete
     void delete(BlockUrlProvider blockUrlProvider);
 
-    @Query("SELECT * FROM BlockUrlProviders WHERE deletable = 0")
-    List<BlockUrlProvider> getDefault();
+    @Query("SELECT COUNT(*) FROM BlockUrlProviders WHERE deletable = 0")
+    int getDefaultSize();
 
     @Query("DELETE FROM BlockUrlProviders WHERE deletable = 0")
     void deleteDefault();
