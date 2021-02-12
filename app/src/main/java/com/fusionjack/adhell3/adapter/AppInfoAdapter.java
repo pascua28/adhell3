@@ -12,15 +12,15 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.cache.AppCache;
+import com.fusionjack.adhell3.cache.AppCacheInfo;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
-import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Map;
 
 public class AppInfoAdapter extends BaseAdapter {
 
@@ -28,9 +28,7 @@ public class AppInfoAdapter extends BaseAdapter {
     private final WeakReference<Context> contextReference;
     private final AppRepository.Type appType;
 
-    private final Map<String, Drawable> appIcons;
-    private final Map<String, String> versionNames;
-
+    private final AppCache appCache;
     private final Drawable defaultIcon;
 
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, Context context) {
@@ -38,10 +36,7 @@ public class AppInfoAdapter extends BaseAdapter {
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
 
-        AppCache appCache = AppCache.getInstance();
-        this.appIcons = appCache.getIcons();
-        this.versionNames = appCache.getVersionNames();
-
+        this.appCache = AppCache.getInstance();
         this.defaultIcon = ContextCompat.getDrawable(contextReference.get(), android.R.drawable.sym_def_app_icon);
     }
 
@@ -100,21 +95,18 @@ public class AppInfoAdapter extends BaseAdapter {
                 holder.switchH.setVisibility(View.GONE);
             case DNS:
                 boolean isDnsNotEmpty = AppPreferences.getInstance().isDnsNotEmpty();
-                if (isDnsNotEmpty) {
-                    holder.switchH.setEnabled(true);
-                } else {
-                    holder.switchH.setEnabled(false);
-                }
+                holder.switchH.setEnabled(isDnsNotEmpty);
                 checked = appInfo.hasCustomDns;
                 break;
         }
         holder.switchH.setChecked(checked);
 
+        AppCacheInfo appCacheInfo = appCache.getAppCacheInfo(appInfo.packageName);
         String info = appInfo.system ? "System" : "User";
-        String versionName = versionNames.get(appInfo.packageName);
-        holder.infoH.setText(String.format("%s (%s)", info, versionName == null ? "0.0.0" : versionName));
+        String versionName = appCacheInfo.getAppVersion();
+        holder.infoH.setText(String.format("%s (%s)", info, versionName));
 
-        Drawable icon = appIcons.get(appInfo.packageName);
+        Drawable icon = appCacheInfo.getDrawable();
         if (icon == null) {
             icon = defaultIcon;
         }

@@ -14,18 +14,17 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.cache.AppCache;
+import com.fusionjack.adhell3.cache.AppCacheInfo;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
-import com.fusionjack.adhell3.utils.AppCache;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
-    private final Map<String, Drawable> appIcons;
-    private final Map<String, String> appNames;
 
+    private final AppCache appCache;
     private final Drawable defaultIcon;
 
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
@@ -33,10 +32,7 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull List<ReportBlockedUrl> objects) {
         super(context, 0, objects);
 
-        AppCache appCache = AppCache.getInstance();
-        this.appNames = appCache.getNames();
-        this.appIcons = appCache.getIcons();
-
+        this.appCache = AppCache.getInstance();
         this.defaultIcon = ContextCompat.getDrawable(getContext(), android.R.drawable.sym_def_app_icon);
     }
 
@@ -56,13 +52,14 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
         TextView blockedDomainUrlTextView = convertView.findViewById(R.id.blockedDomainUrlTextView);
         TextView blockedDomainTimeTextView = convertView.findViewById(R.id.blockedDomainTimeTextView);
 
-        String appName = appNames.get(reportBlockedUrl.packageName);
-        Drawable icon = appIcons.get(reportBlockedUrl.packageName);
+        AppCacheInfo appCacheInfo = appCache.getAppCacheInfo(reportBlockedUrl.packageName);
+        String appName = appCacheInfo.getAppName();
+        Drawable icon = appCacheInfo.getDrawable();
         if (icon == null) {
             icon = defaultIcon;
         }
         blockedDomainIconImageView.setImageDrawable(icon);
-        blockedDomainAppNameTextView.setText(appName == null ? "(unknown)" : appName);
+        blockedDomainAppNameTextView.setText(appName);
         blockedDomainUrlTextView.setText(reportBlockedUrl.url);
         blockedDomainTimeTextView.setText(dateFormatter.format(reportBlockedUrl.blockDate));
 

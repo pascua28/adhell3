@@ -3,11 +3,13 @@ package com.fusionjack.adhell3.utils;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
+import com.fusionjack.adhell3.cache.AppCache;
+import com.fusionjack.adhell3.cache.AppCacheInfo;
+import com.fusionjack.adhell3.cache.AppCacheResult;
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.DatabaseFactory;
 import com.fusionjack.adhell3.db.entity.AppInfo;
@@ -258,12 +260,12 @@ public final class AppDatabaseFactory {
         return appInfo;
     }
 
-    public static Single<AppInfoResult> getInstalledApps() {
+    public static Single<AppCacheResult> getInstalledApps() {
         return Single.fromCallable(AppDatabaseFactory::fetchInstalledApps);
     }
 
-    private static AppInfoResult fetchInstalledApps() throws Exception {
-        AppInfoResult result = new AppInfoResult();
+    private static AppCacheResult fetchInstalledApps() throws Exception {
+        AppCacheResult result = new AppCacheResult();
         processAppsInParallel(result, false);
 
         return result;
@@ -289,7 +291,7 @@ public final class AppDatabaseFactory {
         appDatabase.appPermissionDao().deleteAll();
     }
 
-    private static void processAppsInParallel(AppInfoResult result, boolean insertToDatabase) throws Exception {
+    private static void processAppsInParallel(AppCacheResult result, boolean insertToDatabase) throws Exception {
         PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
         List<ApplicationInfo> installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
 
@@ -297,13 +299,11 @@ public final class AppDatabaseFactory {
         ExecutorService executorService = Executors.newFixedThreadPool(cpuCount);
 
         List<AppExecutor> appExecutors = chunkInstalledApps(installedApps, cpuCount, insertToDatabase);
-        List<Future<AppInfoResult>> futures = executorService.invokeAll(appExecutors);
-        for (Future<AppInfoResult> future : futures) {
-            AppInfoResult chunkResult = future.get(60, TimeUnit.SECONDS);
+        List<Future<AppCacheResult>> futures = executorService.invokeAll(appExecutors);
+        for (Future<AppCacheResult> future : futures) {
+            AppCacheResult chunkResult = future.get(60, TimeUnit.SECONDS);
             if (result != null) {
-                result.addAppIcons(chunkResult.getAppsIcons());
-                result.addAppNames(chunkResult.getAppsNames());
-                result.addVersionNames(chunkResult.getVersionNames());
+                result.merge(chunkResult);
             }
         }
 
@@ -330,7 +330,7 @@ public final class AppDatabaseFactory {
         return appExecutors;
     }
 
-    private static class AppExecutor implements Callable<AppInfoResult> {
+    private static class AppExecutor implements Callable<AppCacheResult> {
         private final List<ApplicationInfo> apps;
         private final boolean insertToDatabase;
         private long appId;
@@ -342,34 +342,17 @@ public final class AppDatabaseFactory {
         }
 
         @Override
-        public AppInfoResult call() {
+        public AppCacheResult call() {
             AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
             String ownPackageName = App.get().getApplicationContext().getPackageName();
-            PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
 
-            AppInfoResult appInfoResult = new AppInfoResult();
+            AppCacheResult appCacheResult = new AppCacheResult();
             for (ApplicationInfo app : apps) {
                 String packageName = app.packageName;
                 if (packageName.equals(ownPackageName)) {
                     continue;
                 }
-
-                Drawable icon;
-                try {
-                    icon = packageManager.getApplicationIcon(packageName);
-                } catch (PackageManager.NameNotFoundException e) {
-                    icon = null;
-                }
-                appInfoResult.addAppIcon(packageName, icon);
-
-                String appName = packageManager.getApplicationLabel(app).toString();
-                appInfoResult.addAppName(packageName, appName);
-
-                try {
-                    PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
-                    appInfoResult.addVersionName(packageName, packageInfo.versionName);
-                } catch (PackageManager.NameNotFoundException ignore) {
-                }
+                appCacheResult.addAppCacheInfo(packageName, AppCacheInfo.toAppCacheInfo(app));
             }
 
             if (insertToDatabase) {
@@ -380,7 +363,7 @@ public final class AppDatabaseFactory {
                 appDatabase.applicationInfoDao().insertAll(appsInfo);
             }
 
-            return appInfoResult;
+            return appCacheResult;
         }
     }
 }
