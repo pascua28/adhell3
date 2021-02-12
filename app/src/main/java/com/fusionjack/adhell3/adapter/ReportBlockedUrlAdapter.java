@@ -15,14 +15,12 @@ import androidx.core.content.ContextCompat;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
-import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-import io.reactivex.CompletableObserver;
 
 public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
     private final Map<String, Drawable> appIcons;
@@ -30,13 +28,12 @@ public class ReportBlockedUrlAdapter extends ArrayAdapter<ReportBlockedUrl> {
 
     private final Drawable defaultIcon;
 
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
 
     public ReportBlockedUrlAdapter(@NonNull Context context, @NonNull List<ReportBlockedUrl> objects) {
         super(context, 0, objects);
 
-        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
-        AppCache appCache = AppCache.getInstance(observer);
+        AppCache appCache = AppCache.getInstance();
         this.appNames = appCache.getNames();
         this.appIcons = appCache.getIcons();
 

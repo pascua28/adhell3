@@ -37,6 +37,7 @@ import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -73,8 +74,8 @@ import toan.android.floatingactionmenu.FloatingActionsMenu;
 import toan.android.floatingactionmenu.ScrollDirectionListener;
 
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
-import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PROVIDER;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PERMISSION;
+import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PROVIDER;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_RECEIVER;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_SERVICE;
 
@@ -82,9 +83,9 @@ public class HomeTabFragment extends Fragment {
 
     private FragmentManager fragmentManager;
     private AppCompatActivity parentActivity;
+    private ReportBlockedUrlAdapter blockedUrlAdapter;
 
     private ContentBlocker contentBlocker;
-
     private Resources resources;
 
     @Override
@@ -200,8 +201,12 @@ public class HomeTabFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        checkDatabaseIntegrity();
-        loadBlockedUrls(null);
+        Runnable callback = () -> {
+            blockedUrlAdapter.notifyDataSetChanged();
+            checkDatabaseIntegrity();
+            loadBlockedUrls(null);
+        };
+        AppCache.getInstance().cacheApps(getContext(), callback);
     }
 
     void safeGuardLiveData(Runnable action) {
@@ -216,7 +221,7 @@ public class HomeTabFragment extends Fragment {
                                        TextView firewallStatusTextView, SwitchMaterial firewallSwitch,
                                        TextView disablerStatusTextView, SwitchMaterial disablerSwitch,
                                        TextView appComponentStatusTextView, SwitchMaterial appComponentSwitch,
-                                       TextView infoTextView, SwipeRefreshLayout swipeContainer) {
+                                       TextView blockedDomainInfoTextView, SwipeRefreshLayout blockedDomainSwipeContainer) {
 
         Consumer<SharedPreferenceBooleanLiveData> domainRuleCallback = liveData -> {
             safeGuardLiveData(() -> {
@@ -230,14 +235,14 @@ public class HomeTabFragment extends Fragment {
                     }
 
                     if (state) {
-                        infoTextView.setVisibility(View.VISIBLE);
-                        swipeContainer.setVisibility(View.VISIBLE);
-                        swipeContainer.setOnRefreshListener(() ->
-                                loadBlockedUrls(swipeContainer)
+                        blockedDomainInfoTextView.setVisibility(View.VISIBLE);
+                        blockedDomainSwipeContainer.setVisibility(View.VISIBLE);
+                        blockedDomainSwipeContainer.setOnRefreshListener(() ->
+                                loadBlockedUrls(blockedDomainSwipeContainer)
                         );
                     } else {
-                        infoTextView.setVisibility(View.INVISIBLE);
-                        swipeContainer.setVisibility(View.INVISIBLE);
+                        blockedDomainInfoTextView.setVisibility(View.INVISIBLE);
+                        blockedDomainSwipeContainer.setVisibility(View.INVISIBLE);
                     }
                 });
             });
@@ -373,22 +378,7 @@ public class HomeTabFragment extends Fragment {
 
     private void initBlockedDomainsView(ListView blockedDomainsListView, TextView infoTextView) {
         List<ReportBlockedUrl> blockedUrls = new ArrayList<>();
-         ReportBlockedUrlAdapter blockedUrlAdapter = new ReportBlockedUrlAdapter(getContext(), blockedUrls);
-
-         Consumer<LiveData<List<ReportBlockedUrl>>> callback = liveData -> {
-             safeGuardLiveData(() -> {
-                 liveData.observe(getViewLifecycleOwner(), list -> {
-                     blockedUrls.clear();
-                     blockedUrls.addAll(list);
-                     blockedUrlAdapter.notifyDataSetChanged();
-                     String blockedDomainInfo = resources.getString(R.string.last_day_blocked);
-                     infoTextView.setText(String.format(blockedDomainInfo, BuildConfig.BLOCKED_DOMAIN_DURATION_UI, list.size()));
-                 });
-             });
-         };
-
-        HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
-        new RxSingleIoBuilder().async(viewModel.getReportedBlockedDomains(), callback);
+        this.blockedUrlAdapter = new ReportBlockedUrlAdapter(getContext(), blockedUrls);
 
         blockedDomainsListView.setAdapter(blockedUrlAdapter);
         blockedDomainsListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
@@ -405,6 +395,21 @@ public class HomeTabFragment extends Fragment {
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });
+
+        Consumer<LiveData<List<ReportBlockedUrl>>> callback = liveData -> {
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), list -> {
+                    blockedUrls.clear();
+                    blockedUrls.addAll(list);
+                    blockedUrlAdapter.notifyDataSetChanged();
+                    String blockedDomainInfo = resources.getString(R.string.last_day_blocked);
+                    infoTextView.setText(String.format(blockedDomainInfo, BuildConfig.BLOCKED_DOMAIN_DURATION_UI, list.size()));
+                });
+            });
+        };
+
+        HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        new RxSingleIoBuilder().async(viewModel.getReportedBlockedDomains(), callback);
     }
 
     private void addBlockedUrlToWhitelist(String blockedUrl) {

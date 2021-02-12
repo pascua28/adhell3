@@ -200,7 +200,7 @@ public final class AppDatabaseFactory {
         List<ApplicationInfo> newApps = diff.getNewApps();
         newApps.forEach(app -> {
             // Add app's icon, name and version name to AppCache
-            AppCache.inject(app);
+            AppCache.getInstance().inject(app);
 
             // Add new app to app database
             long lastId = appDatabase.applicationInfoDao().getLastAppId();

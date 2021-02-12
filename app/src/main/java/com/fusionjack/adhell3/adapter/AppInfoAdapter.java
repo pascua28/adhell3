@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
-import com.fusionjack.adhell3.dialog.AppCacheDialog;
 import com.fusionjack.adhell3.utils.AppCache;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -22,8 +21,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
-
-import io.reactivex.CompletableObserver;
 
 public class AppInfoAdapter extends BaseAdapter {
 
@@ -41,8 +38,7 @@ public class AppInfoAdapter extends BaseAdapter {
         this.contextReference = new WeakReference<>(context);
         this.appType = appType;
 
-        CompletableObserver observer = AppCacheDialog.createObserver(context, this);
-        AppCache appCache = AppCache.getInstance(observer);
+        AppCache appCache = AppCache.getInstance();
         this.appIcons = appCache.getIcons();
         this.versionNames = appCache.getVersionNames();
 
