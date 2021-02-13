@@ -1,15 +1,17 @@
 package com.fusionjack.adhell3.viewmodel;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.annotation.NonNull;
 
 import com.fusionjack.adhell3.db.repository.BlackListRepository;
 import com.fusionjack.adhell3.db.repository.UserListRepository;
 import com.fusionjack.adhell3.db.repository.WhiteListRepository;
+import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -27,11 +29,30 @@ public class UserListViewModel extends ViewModel {
         return Single.fromCallable(repository::getItems);
     }
 
+    public Single<String> addItemObservable(String item) {
+        return repository.addItem(item);
+    }
+
     public void addItem(String item, SingleObserver<String> observer) {
         repository.addItem(item)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
+    }
+
+    public void validateDomain(String domainStr) {
+        String domainToAdd = domainStr.trim().toLowerCase();
+        if (domainToAdd.indexOf('|') == -1) {
+            if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                throw new IllegalArgumentException("Url not valid. Please check");
+            }
+        } else {
+            // packageName|url
+            StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
+            if (tokens.countTokens() != 2) {
+                throw new IllegalArgumentException("Rule not valid. Please check");
+            }
+        }
     }
 
     public void removeItem(String item, SingleObserver<String> observer) {

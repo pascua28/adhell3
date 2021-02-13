@@ -30,14 +30,12 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ReportBlockedUrlAdapter;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.blocker.ContentBlocker56;
-import com.fusionjack.adhell3.db.AppDatabase;
+import com.fusionjack.adhell3.cache.AppCache;
 import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
-import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.dialogfragment.FirewallDialogFragment;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.cache.AppCache;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -51,13 +49,13 @@ import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.HomeViewModel;
+import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -391,7 +389,7 @@ public class HomeTabFragment extends Fragment {
             new AlertDialog.Builder(getContext())
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        String blockedUrl = blockedUrls.get(position).url;
+                        ReportBlockedUrl blockedUrl = blockedUrls.get(position);
                         addBlockedUrlToWhitelist(blockedUrl);
                     })
                     .setNegativeButton(android.R.string.no, null).show();
@@ -418,13 +416,11 @@ public class HomeTabFragment extends Fragment {
         new RxCompletableComputationBuilder().async(Completable.fromAction(action), callback);
     }
 
-    private void addBlockedUrlToWhitelist(String blockedUrl) {
-        Action addToWhiteList = () -> {
-            WhiteUrl whiteUrl = new WhiteUrl(blockedUrl, new Date());
-            AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-            appDatabase.whiteUrlDao().insert(whiteUrl);
-        };
-        new RxCompletableIoBuilder().async(Completable.fromAction(addToWhiteList));
+    private void addBlockedUrlToWhitelist(ReportBlockedUrl blockedUrl) {
+        UserListViewModel viewModel = new ViewModelProvider(this, new UserListViewModel.WhiteListFactory()).get(UserListViewModel.class);
+        String domainToAdd = blockedUrl.packageName + "|" + blockedUrl.url;
+        Consumer<String> callback = str -> Toast.makeText(getContext(), "Selected domain added to the whitelist", Toast.LENGTH_LONG).show();
+        new RxSingleIoBuilder().async(viewModel.addItemObservable(domainToAdd), callback);
     }
 
     private void dumpDomains() {

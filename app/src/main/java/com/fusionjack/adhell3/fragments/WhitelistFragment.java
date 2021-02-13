@@ -16,14 +16,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.function.Consumer;
 
 import toan.android.floatingactionmenu.FloatingActionButton;
@@ -92,21 +90,13 @@ public class WhitelistFragment extends UserListFragment {
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                         EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
-                        if (domainToAdd.indexOf('|') == -1) {
-                            if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                                Toast.makeText(this.getContext(), "Url not valid. Please check", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                        } else {
-                            // packageName|url
-                            StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-                            if (tokens.countTokens() != 2) {
-                                Toast.makeText(this.getContext(), "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+                        String domainToAdd = domainEditText.getText().toString();
+                        try {
+                            viewModel.validateDomain(domainToAdd);
+                            viewModel.addItem(domainToAdd, addObserver);
+                        } catch (IllegalArgumentException e) {
+                            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                        viewModel.addItem(domainToAdd, addObserver);
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });
