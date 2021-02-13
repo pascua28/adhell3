@@ -3,13 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/search"
         android:title="Search"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
         android:id="@+id/action_enable_all"
         android:icon="@drawable/ic_enable_all"
         android:title="Enable All"
-        app:showAsAction="always">
-        <menu></menu>
+        app:showAsAction="ifRoom">
     </item>
 </menu>

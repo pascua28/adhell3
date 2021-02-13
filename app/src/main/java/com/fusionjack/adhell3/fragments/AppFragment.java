@@ -119,11 +119,13 @@ public abstract class AppFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@androidx.annotation.NonNull Menu menu, @androidx.annotation.NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.app_menu, menu);
-        initSearchView(menu);
+        if (menu.size() == 0) {
+            inflater.inflate(R.menu.app_menu, menu);
+            initSearchView(menu);
+        }
     }
 
-    protected void initSearchView(Menu menu) {
+    private void initSearchView(Menu menu) {
         searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

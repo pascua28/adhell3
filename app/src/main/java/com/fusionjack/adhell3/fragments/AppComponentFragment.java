@@ -120,11 +120,11 @@ public class AppComponentFragment extends AppFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        if (menu.size() == 0) {
-            inflater.inflate(R.menu.appcomponent_tab_menu, menu);
-            initSearchView(menu);
-            Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
-        }
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.removeItem(R.id.action_enable_all);
+
+        inflater.inflate(R.menu.appcomponent_tab_menu, menu);
+        Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
     }
 
     @Override
