@@ -154,16 +154,15 @@ public final class FirewallUtils {
         return appDatabase.reportBlockedUrlDao().getAll();
     }
 
-    public List<ReportBlockedUrl> getReportBlockedUrlLastXHours() {
-        List<ReportBlockedUrl> reportBlockedUrls = new ArrayList<>();
+    public void fetchReportBlockedUrlLastXHours() {
         if (firewall == null) {
-            return reportBlockedUrls;
+            return;
         }
 
         List<String> packageNames = appDatabase.applicationInfoDao().getAllPackageNames();
         List<DomainFilterReport> reports = firewall.getDomainFilterReport(packageNames);
         if (reports == null) {
-            return reportBlockedUrls;
+            return;
         }
 
         appDatabase.reportBlockedUrlDao().deleteBefore(last_x_hours_db());
@@ -174,6 +173,7 @@ public final class FirewallUtils {
             lastBlockedTimestamp = lastBlockedUrl.blockDate / 1000;
         }
 
+        List<ReportBlockedUrl> reportBlockedUrls = new ArrayList<>();
         for (DomainFilterReport b : reports) {
             if (b.getTimeStamp() > lastBlockedTimestamp) {
                 ReportBlockedUrl reportBlockedUrl =
@@ -182,7 +182,10 @@ public final class FirewallUtils {
             }
         }
         appDatabase.reportBlockedUrlDao().insertAll(reportBlockedUrls);
+    }
 
+    public List<ReportBlockedUrl> getReportBlockedUrlLastXHours() {
+        fetchReportBlockedUrlLastXHours();
         return appDatabase.reportBlockedUrlDao().getReportBlockUrlAfter(last_x_hours_ui());
     }
 

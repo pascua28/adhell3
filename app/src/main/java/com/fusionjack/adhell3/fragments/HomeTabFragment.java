@@ -169,7 +169,7 @@ public class HomeTabFragment extends Fragment {
 
         // Init reported blocked domains
         ListView blockedDomainsListView = view.findViewById(R.id.blockedDomainsListView);
-        initBlockedDomainsView(blockedDomainsListView, blockedDomainInfoTextView);
+        initBlockedDomainsView(blockedDomainsListView, blockedDomainInfoTextView, blockedDomainSwipeContainer);
 
         FloatingActionsMenu domainFloatMenu = view.findViewById(R.id.domain_actions);
         domainFloatMenu.attachToListView(blockedDomainsListView, new ScrollDirectionListener() {
@@ -202,9 +202,8 @@ public class HomeTabFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Runnable callback = () -> {
-            blockedUrlAdapter.notifyDataSetChanged();
+            triggerReportedBlockedUrls(() -> blockedUrlAdapter.notifyDataSetChanged());
             checkDatabaseIntegrity();
-            loadBlockedUrls(null);
         };
         AppCache.getInstance().cacheApps(getContext(), callback);
     }
@@ -237,9 +236,6 @@ public class HomeTabFragment extends Fragment {
                     if (state) {
                         blockedDomainInfoTextView.setVisibility(View.VISIBLE);
                         blockedDomainSwipeContainer.setVisibility(View.VISIBLE);
-                        blockedDomainSwipeContainer.setOnRefreshListener(() ->
-                                loadBlockedUrls(blockedDomainSwipeContainer)
-                        );
                     } else {
                         blockedDomainInfoTextView.setVisibility(View.INVISIBLE);
                         blockedDomainSwipeContainer.setVisibility(View.INVISIBLE);
@@ -376,7 +372,12 @@ public class HomeTabFragment extends Fragment {
         new RxSingleIoBuilder().async(viewModel.getAppComponentInfo(), appComponentInfoCallback);
     }
 
-    private void initBlockedDomainsView(ListView blockedDomainsListView, TextView infoTextView) {
+    private void initBlockedDomainsView(ListView blockedDomainsListView, TextView infoTextView, SwipeRefreshLayout swipeContainer) {
+        Runnable swipeCallback = () -> swipeContainer.setRefreshing(false);
+        swipeContainer.setOnRefreshListener(() ->
+                triggerReportedBlockedUrls(swipeCallback)
+        );
+
         List<ReportBlockedUrl> blockedUrls = new ArrayList<>();
         this.blockedUrlAdapter = new ReportBlockedUrlAdapter(getContext(), blockedUrls);
 
@@ -410,6 +411,11 @@ public class HomeTabFragment extends Fragment {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         new RxSingleIoBuilder().async(viewModel.getReportedBlockedDomains(), callback);
+    }
+
+    private void triggerReportedBlockedUrls(Runnable callback) {
+        Action action = () -> FirewallUtils.getInstance().fetchReportBlockedUrlLastXHours();
+        new RxCompletableComputationBuilder().async(Completable.fromAction(action), callback);
     }
 
     private void addBlockedUrlToWhitelist(String blockedUrl) {
@@ -596,16 +602,6 @@ public class HomeTabFragment extends Fragment {
             }
         };
         new RxSingleComputationBuilder().async(AppDatabaseFactory.detectNewOrDeletedApps(), callback);
-    }
-
-    private void loadBlockedUrls(SwipeRefreshLayout swipeContainer) {
-        Action action = () -> FirewallUtils.getInstance().getReportBlockedUrlLastXHours();
-        Runnable callback = () -> {
-            if (swipeContainer != null) {
-                swipeContainer.setRefreshing(false);
-            }
-        };
-        new RxCompletableComputationBuilder().async(Completable.fromAction(action), callback);
     }
 
 }
