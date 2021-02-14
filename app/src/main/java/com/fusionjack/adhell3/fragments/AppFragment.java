@@ -22,7 +22,9 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
@@ -49,7 +51,6 @@ public abstract class AppFragment extends Fragment {
     private List<AppInfo> adapterAppList;
     private AppInfoAdapter adapter;
 
-    private boolean hideSystem;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,12 +61,12 @@ public abstract class AppFragment extends Fragment {
         this.initialAppList = Collections.emptyList();
         this.restoredAppList = Collections.emptyList();
         this.adapterAppList = new ArrayList<>();
-        this.hideSystem = false;
 
         AppRepository.Type type = getType();
         this.adapter = new AppInfoAdapter(adapterAppList, type, context);
 
         initAppList(type);
+        initHideSystemApps();
     }
 
     protected abstract AppRepository.Type getType();
@@ -89,16 +90,37 @@ public abstract class AppFragment extends Fragment {
                 liveData.observe(getViewLifecycleOwner(), appList -> {
                     this.initialAppList = appList;
                     this.restoredAppList = appList;
-                    this.currentAppList = appList;
-                    if (searchText.isEmpty()) {
-                        updateAppList(currentAppList);
-                    } else {
-                        searchView.setQuery(searchText, true);
-                    }
+                    showOrHideSystemApps();
                 });
             });
         };
         new RxSingleComputationBuilder().async(viewModel.loadAppList(type), callback);
+    }
+
+    private void initHideSystemApps() {
+        Consumer<SharedPreferenceBooleanLiveData> callback = liveData -> {
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), hideSystem -> {
+                    showOrHideSystemApps();
+                });
+            });
+        };
+        Single<SharedPreferenceBooleanLiveData> liveData = AppPreferences.getInstance().getHideSystemAppsLiveData();
+        new RxSingleIoBuilder().async(liveData, callback);
+    }
+
+    private void showOrHideSystemApps() {
+        boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
+        if (hideSystem) {
+            this.currentAppList = filterList(restoredAppList);
+        } else {
+            this.currentAppList = restoredAppList;
+        }
+        if (searchText.isEmpty()) {
+            updateAppList(currentAppList);
+        } else {
+            searchView.setQuery(searchText, true);
+        }
     }
 
     private void safeGuardLiveData(Runnable action) {
@@ -128,6 +150,7 @@ public abstract class AppFragment extends Fragment {
     }
 
     private void initHideSystemMenu(MenuItem item) {
+        boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
         if (hideSystem) {
             item.setTitle(R.string.menu_show_system);
             item.setIcon(R.drawable.ic_show_system);
@@ -138,18 +161,13 @@ public abstract class AppFragment extends Fragment {
     }
 
     private void toggleHideSystem(MenuItem item) {
-        hideSystem = !hideSystem;
+        boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
+        AppPreferences.getInstance().setHideSystemApps(!hideSystem);
         initHideSystemMenu(item);
-
-        if (hideSystem) {
-            this.currentAppList = filterList(restoredAppList);
-        } else {
-            this.currentAppList = restoredAppList;
-        }
-        updateAppList(currentAppList);
     }
 
     private List<AppInfo> filterList(List<AppInfo> list) {
+        boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
         if (hideSystem) {
             return list.stream()
                     .filter(appInfo -> !appInfo.system)

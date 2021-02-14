@@ -24,6 +24,7 @@ public final class AppPreferences {
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
     private static final String CURRENT_PROVIDER_ID = "currentProviderId";
+    private static final String HIDE_SYSTEM_APPS = "hideSystemApps";
 
     private AppPreferences() {
         sharedPreferences = AdhellFactory.getInstance().getSharedPreferences();
@@ -34,6 +35,21 @@ public final class AppPreferences {
             instance = new AppPreferences();
         }
         return instance;
+    }
+
+    public Single<SharedPreferenceBooleanLiveData> getHideSystemAppsLiveData() {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, HIDE_SYSTEM_APPS, false));
+    }
+
+    public boolean isHideSystemApps() {
+        return sharedPreferences.getBoolean(HIDE_SYSTEM_APPS, false);
+    }
+
+    public void setHideSystemApps(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(HIDE_SYSTEM_APPS, enabled);
+        editor.apply();
     }
 
     public long getCurrentProviderId() {
