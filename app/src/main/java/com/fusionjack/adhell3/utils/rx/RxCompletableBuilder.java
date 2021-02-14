@@ -57,11 +57,17 @@ public class RxCompletableBuilder {
                     dialog.setMessage(dialogMessage);
                     dialog.setCancelable(false);
                     dialog.show();
+                    onSubscribeCallback.run();
                 };
-                Runnable dismissDialog = () -> {
+                Runnable onComplete = () -> {
                     if (dialog.isShowing()) dialog.dismiss();
+                    onCompletableCallback.run();
                 };
-                RxFactory.async(observable, scheduler, onSubscribe, dismissDialog, dismissDialog, context);
+                Runnable onError = () -> {
+                    if (dialog.isShowing()) dialog.dismiss();
+                    onErrorCallback.run();
+                };
+                RxFactory.async(observable, scheduler, onSubscribe, onComplete, onError, context);
             });
         } else {
             RxFactory.async(observable, scheduler, onSubscribeCallback, onCompletableCallback, onErrorCallback, context);

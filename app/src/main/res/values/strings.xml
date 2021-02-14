@@ -81,11 +81,9 @@
         \nDomain rule format for a specific app:
         \n\tpackageName|domain
     </string>
-    <string name="dialog_add_provider_title">Add Provider</string>
-    <string name="dialog_add_provider_info">
-        Remote: https://adaway.org/hosts.txt
-        \nInternal: file:///mnt/sdcard/hosts.txt
-    </string>
+    <string name="dialog_add_remote_provider_title">Add Remote Provider</string>
+    <string name="dialog_add_local_provider_title">Add Local Hosts File</string>
+    <string name="dialog_add_local_provider_info">Auto load hosts files that starts with \'hosts*\' from \'adhell3\' directory</string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">
         This will enable all apps\' components.
@@ -203,6 +201,12 @@
     <string name="dialog_set_dns_info">
         Set primary and secondary DNS.
         \nLeave it empty to restore to default.
+    </string>
+    <string name="dialog_local_hosts_title">Hosts files</string>
+    <string name="dialog_local_hosts_info">
+        Select a hosts file.
+        \nThe file should be located in adhell3 directory and its file name should start with hosts*.
+        \nOnly the first 5 files are listed.
     </string>
 
     <string name="google_category">Google</string>
