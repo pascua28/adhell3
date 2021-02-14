@@ -5,10 +5,29 @@
         android:title="Search"
         app:showAsAction="ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
     <item
-        android:id="@+id/action_enable_all"
-        android:icon="@drawable/ic_enable_all"
-        android:title="Enable All"
+        android:id="@+id/action_options"
+        android:icon="@drawable/ic_more_vertical_24dp"
+        android:title="Options"
         app:showAsAction="ifRoom">
+
+        <menu>
+            <item
+                android:id="@+id/action_enable_all"
+                android:icon="@drawable/ic_enable_all"
+                android:title="Enable all"
+                app:showAsAction="ifRoom">
+            </item>
+
+            <item
+                android:id="@+id/action_hide_system"
+                android:icon="@drawable/ic_hide_system"
+                android:title="Hide system"
+                app:showAsAction="ifRoom">
+            </item>
+        </menu>
+
     </item>
+
 </menu>

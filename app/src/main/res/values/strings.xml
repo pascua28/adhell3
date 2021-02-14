@@ -285,4 +285,6 @@
     <string name="menu_batch">Batch operation</string>
     <string name="menu_show_disabled_only">Show disabled only</string>
     <string name="menu_show_all">Show all</string>
+    <string name="menu_hide_system">Hide system apps</string>
+    <string name="menu_show_system">Show system apps</string>
 </resources>

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -121,10 +122,14 @@ public class AppComponentFragment extends AppFragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        menu.removeItem(R.id.action_enable_all);
 
-        inflater.inflate(R.menu.appcomponent_tab_menu, menu);
-        Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
+        Optional.ofNullable(menu.findItem(R.id.action_options)).ifPresent(item -> {
+            SubMenu subMenu = item.getSubMenu();
+            subMenu.add(0, R.id.action_batch, Menu.NONE, R.string.menu_batch);
+            subMenu.add(0, R.id.action_show_disabled_only, Menu.NONE, R.string.menu_show_disabled_only);
+            Optional.ofNullable(menu.findItem(R.id.action_batch)).ifPresent(it -> it.setIcon(R.drawable.ic_batch));
+            Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
+        });
     }
 
     @Override

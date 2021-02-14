@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
@@ -23,6 +24,7 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.tasks.ToggleAppInfoRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
@@ -71,9 +73,13 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
 
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = null;
         switch (page) {
             case PACKAGE_DISABLER_PAGE:
@@ -97,7 +103,7 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     protected void listOnItemClickListener(AdapterView<?> adView, View view2, int position, long id, AppFlag appFlag) {
-        if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
+        if (AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
             ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
         }

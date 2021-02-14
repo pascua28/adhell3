@@ -9,12 +9,14 @@ import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.AppTabPageFragment;
 
+import io.reactivex.annotations.NonNull;
+
 public class AppPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 4;
-    private String tabTitles[];
+    private final String[] tabTitles;
 
     public AppPagerAdapter(FragmentManager fm, Context context) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[] {
                 context.getString(R.string.package_disabler_fragment_title),
                 context.getString(R.string.mobile_restricter_fragment_title),
@@ -22,13 +24,14 @@ public class AppPagerAdapter extends FragmentPagerAdapter {
                 context.getString(R.string.whitelist_fragment_title) };
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return AppTabPageFragment.newInstance(BuildConfig.DISABLE_APPS ? position : position + 1);
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
     }
 
