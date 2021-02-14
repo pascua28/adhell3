@@ -1,5 +1,7 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -25,6 +28,7 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
@@ -36,8 +40,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.SingleOnSubscribe;
+import io.reactivex.functions.Action;
 
 public abstract class AppFragment extends Fragment {
 
@@ -50,7 +55,6 @@ public abstract class AppFragment extends Fragment {
     private List<AppInfo> initialAppList;
     private List<AppInfo> adapterAppList;
     private AppInfoAdapter adapter;
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,6 +81,17 @@ public abstract class AppFragment extends Fragment {
         ListView listView = view.findViewById(flag.getLayout());
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view2, position, id) -> listOnItemClickListener(parent, view2, position, id, flag));
+        listView.setOnItemLongClickListener((adView, view1, position, id) -> {
+            Runnable callback = () -> Toast.makeText(getContext(), "Package name is copied to clipboard", Toast.LENGTH_LONG).show();
+            Action action = () -> {
+                String packageName = adapter.getItem(position).packageName;
+                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("adhell3_app_package_name", packageName);
+                clipboard.setPrimaryClip(clip);
+            };
+            new RxCompletableIoBuilder().async(Completable.fromAction(action), callback);
+            return true;
+        });
 
         return view;
     }
