@@ -109,7 +109,7 @@ public class ProviderListFragment extends Fragment {
             }
             @Override
             public void onScrollUp() {
-                providerFloatMenu.setVisibleWithAnimation(true);
+                providerFloatMenu.setVisibleWithAnimation(false);
             }
         });
 

@@ -26,6 +26,15 @@
         android:singleLine="true"
         android:text="2597" />
 
+    <TextView
+        android:id="@+id/lastUpdatedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_below="@+id/blockUrlProviderTextView"
+        android:layout_toEndOf="@+id/blockUrlCountTextView"
+        android:text="2017-06-30 16:00:00" />
+
     <CheckBox
         android:id="@+id/urlProviderCheckBox"
         android:layout_width="wrap_content"
@@ -44,14 +53,5 @@
         android:contentDescription="@string/delete_url"
         app:tint="@color/colorAccent"
         android:src="@drawable/ic_delete" />
-
-    <TextView
-        android:id="@+id/lastUpdatedTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_below="@+id/blockUrlProviderTextView"
-        android:layout_toEndOf="@+id/blockUrlCountTextView"
-        android:text="2017-06-30 16:00:00" />
 
 </RelativeLayout>

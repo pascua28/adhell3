@@ -54,8 +54,6 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         CheckBox urlProviderCheckBox = convertView.findViewById(R.id.urlProviderCheckBox);
         ImageView deleteUrlImageView = convertView.findViewById(R.id.deleteUrlProviderImageView);
         TextView lastUpdatedTextView = convertView.findViewById(R.id.lastUpdatedTextView);
-        urlProviderCheckBox.setTag(position);
-        deleteUrlImageView.setTag(position);
 
         blockUrlProviderTextView.setText(blockUrlProvider.url);
         blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
@@ -63,15 +61,13 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         Date lastUpdated = blockUrlProvider.lastUpdated;
         urlProviderCheckBox.setChecked(blockUrlProvider.selected);
         urlProviderCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            int position2 = (Integer) buttonView.getTag();
-            BlockUrlProvider provider = getItem(position2);
+            BlockUrlProvider provider = getItem(position);
             selectProvider(isChecked, provider);
         });
 
         lastUpdatedTextView.setText(lastUpdated == null ? "Never" : dateFormatter.format(lastUpdated));
-        if (!blockUrlProvider.deletable) {
-            deleteUrlImageView.setVisibility(View.GONE);
-        }
+
+        deleteUrlImageView.setVisibility(blockUrlProvider.deletable ? View.VISIBLE : View.INVISIBLE);
         deleteUrlImageView.setOnClickListener(imageView -> {
             View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, parent, false);
             TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
@@ -82,8 +78,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             new AlertDialog.Builder(getContext())
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        int position2 = (Integer) imageView.getTag();
-                        BlockUrlProvider provider = getItem(position2);
+                        BlockUrlProvider provider = getItem(position);
                         deleteProvider(provider);
                     })
                     .setNegativeButton(android.R.string.no, null).show();
