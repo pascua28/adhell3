@@ -103,7 +103,7 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     protected void listOnItemClickListener(AdapterView<?> adView, View view2, int position, long id, AppFlag appFlag) {
-        if (AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
+        if (page != PACKAGE_DISABLER_PAGE || AppPreferences.getInstance().isAppDisablerToggleEnabled()) {
             AppInfoAdapter adapter = (AppInfoAdapter) adView.getAdapter();
             ToggleAppInfoRxTask.run(adapter.getItem(position), appFlag, adapter);
         }

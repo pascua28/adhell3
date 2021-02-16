@@ -16,8 +16,10 @@ import com.fusionjack.adhell3.cache.AppCache;
 import com.fusionjack.adhell3.cache.AppCacheInfo;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
+import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -31,6 +33,10 @@ public class AppInfoAdapter extends BaseAdapter {
     private final AppCache appCache;
     private final Drawable defaultIcon;
 
+    private final ApplicationPolicy appPolicy;
+    private final int runningColor;
+    private final int textColor;
+
     public AppInfoAdapter(List<AppInfo> appInfoList, AppRepository.Type appType, Context context) {
         this.applicationInfoList = appInfoList;
         this.contextReference = new WeakReference<>(context);
@@ -38,6 +44,10 @@ public class AppInfoAdapter extends BaseAdapter {
 
         this.appCache = AppCache.getInstance();
         this.defaultIcon = ContextCompat.getDrawable(contextReference.get(), android.R.drawable.sym_def_app_icon);
+
+        this.appPolicy = AdhellFactory.getInstance().getAppPolicy();
+        this.runningColor = ContextCompat.getColor(context, R.color.colorAccent);
+        this.textColor = ContextCompat.getColor(context, R.color.colorText);
     }
 
     @Override
@@ -100,6 +110,11 @@ public class AppInfoAdapter extends BaseAdapter {
                 break;
         }
         holder.switchH.setChecked(checked);
+
+        boolean isRunning = appPolicy.isApplicationRunning(appInfo.packageName);
+        holder.nameH.setTextColor(isRunning ? runningColor : textColor);
+        holder.packageH.setTextColor(isRunning ? runningColor : textColor);
+        holder.infoH.setTextColor(isRunning ? runningColor : textColor);
 
         AppCacheInfo appCacheInfo = appCache.getAppCacheInfo(appInfo.packageName);
         String info = appInfo.system ? "System" : "User";
