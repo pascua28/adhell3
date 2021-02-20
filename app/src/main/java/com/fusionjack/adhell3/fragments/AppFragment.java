@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -81,17 +83,8 @@ public abstract class AppFragment extends Fragment {
         ListView listView = view.findViewById(flag.getLayout());
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view2, position, id) -> listOnItemClickListener(parent, view2, position, id, flag));
-        listView.setOnItemLongClickListener((adView, view1, position, id) -> {
-            Runnable callback = () -> Toast.makeText(getContext(), "Package name is copied to clipboard", Toast.LENGTH_LONG).show();
-            Action action = () -> {
-                String packageName = adapter.getItem(position).packageName;
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("adhell3_app_package_name", packageName);
-                clipboard.setPrimaryClip(clip);
-            };
-            new RxCompletableIoBuilder().async(Completable.fromAction(action), callback);
-            return true;
-        });
+
+        registerForContextMenu(listView);
 
         return view;
     }
@@ -144,6 +137,54 @@ public abstract class AppFragment extends Fragment {
             return;
         }
         action.run();
+    }
+
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        AppInfo appInfo = adapter.getItem(info.position);
+        if (menu.size() == 0) {
+            if (!appInfo.system) {
+                menu.add(0, R.id.action_stop_app, Menu.NONE, R.string.menu_stop_app);
+            }
+            menu.add(0, R.id.action_copy_clipboard, Menu.NONE, R.string.menu_copy_package_name_to_clipboard);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        AppInfo appInfo = adapter.getItem(info.position);
+        if (item.getItemId() == R.id.action_stop_app) {
+            stopApp(appInfo);
+            return true;
+        } else if (item.getItemId() == R.id.action_copy_clipboard) {
+            copyToClipboard(appInfo.packageName);
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private void stopApp(AppInfo appInfo) {
+        Consumer<Boolean> callback = success -> {
+            if (success) {
+                Toast.makeText(getContext(), "App has been stopped", Toast.LENGTH_LONG).show();
+                adapter.notifyDataSetChanged();
+            }
+        };
+        AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
+        new RxSingleIoBuilder().async(viewModel.stopApp(appInfo), callback);
+    }
+
+    private void copyToClipboard(String packageName) {
+        Runnable callback = () -> Toast.makeText(getContext(), "Package name is copied to clipboard", Toast.LENGTH_LONG).show();
+        Action action = () -> {
+            ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("adhell3_app_package_name", packageName);
+            clipboard.setPrimaryClip(clip);
+        };
+        new RxCompletableIoBuilder().async(Completable.fromAction(action), callback);
     }
 
     @Override
