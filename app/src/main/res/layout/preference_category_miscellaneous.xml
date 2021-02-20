@@ -6,6 +6,7 @@
     android:padding="@dimen/text_margin"
     android:textStyle="bold"
     android:textSize="20sp"
+    android:textColor="@color/colorAccent"
     android:drawablePadding="5dp"
     app:drawableStartCompat="@drawable/ic_miscellaneous"
-    app:drawableTint="@color/colorText" />
+    app:drawableTint="@color/colorAccent" />

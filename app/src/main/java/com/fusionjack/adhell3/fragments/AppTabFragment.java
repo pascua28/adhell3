@@ -13,8 +13,6 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 
-import static com.fusionjack.adhell3.fragments.AppTabPageFragment.PACKAGE_DISABLER_PAGE;
-
 public class AppTabFragment extends TabFragment {
 
     private final int[] imageResId = {
@@ -40,7 +38,7 @@ public class AppTabFragment extends TabFragment {
         View view = inflateFragment(R.layout.fragment_apps, inflater, container, adapter, 4, imageResId, offset);
 
         TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
-        TabLayout.Tab tab = tabLayout.getTabAt(PACKAGE_DISABLER_PAGE);
+        TabLayout.Tab tab = tabLayout.getTabAt(0);
         if (tab != null) {
             tab.select();
         }

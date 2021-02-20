@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:descendantFocusability="blocksDescendants">
 
     <TextView
@@ -9,8 +10,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/deleteUrlProviderImageView"
         android:layout_toStartOf="@+id/deleteUrlProviderImageView"
         android:layout_margin="5dp"
         android:text="https://adaway.org/hosts.txt" />
@@ -33,7 +32,6 @@
         android:layout_height="24dp"
         android:layout_margin="5dp"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_centerVertical="true"/>
 
     <ImageView
@@ -41,22 +39,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:layout_toLeftOf="@+id/urlProviderCheckBox"
         android:layout_toStartOf="@+id/urlProviderCheckBox"
         android:layout_centerVertical="true"
         android:contentDescription="@string/delete_url"
-        android:tint="@color/colorRed"
+        app:tint="@color/colorAccent"
         android:src="@drawable/ic_delete" />
 
     <TextView
         android:id="@+id/lastUpdatedTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
         android:layout_below="@+id/blockUrlProviderTextView"
         android:layout_toEndOf="@+id/blockUrlCountTextView"
-        android:layout_toRightOf="@+id/blockUrlCountTextView"
         android:text="2017-06-30 16:00:00" />
 
 </RelativeLayout>

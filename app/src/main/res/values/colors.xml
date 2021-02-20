@@ -10,8 +10,6 @@
     <color name="colorSelector">@color/colorPrimaryDark</color>
     <color name="colorFab">@color/colorAccent</color>
     <color name="colorButton">@color/colorAccent</color>
-    <color name="colorBottomNavSelected">@color/colorAccent</color>
-    <color name="colorBottomNavUnselected">@android:color/black</color>
     <color name="colorRed">#F44336</color>
     <color name="colorSnackbar">#cccccc</color>
 </resources>

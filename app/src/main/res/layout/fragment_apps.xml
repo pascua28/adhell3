@@ -12,7 +12,11 @@
         android:layout_height="wrap_content"
         style="@style/ManagementTabLayout"
         app:tabMode="fixed"
-        app:tabGravity="fill"/>
+        app:tabGravity="fill"
+        app:tabIconTint="@color/tab_color_selector"
+        app:tabIndicatorColor="@color/colorAccent"
+        app:tabSelectedTextColor="@color/colorAccent"
+        app:tabTextColor="@color/colorText" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewpager"

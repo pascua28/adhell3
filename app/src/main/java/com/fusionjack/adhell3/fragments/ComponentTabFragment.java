@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.ComponentPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 
 public class ComponentTabFragment extends TabFragment {
 
@@ -46,7 +47,14 @@ public class ComponentTabFragment extends TabFragment {
 
         ComponentPagerAdapter adapter = new ComponentPagerAdapter(getChildFragmentManager(), getContext(), packageName, isDisabledComponentMode, pages);
 
-        return inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 1, imageResId, 0);
+        View view = inflateFragment(R.layout.fragment_app_component_tabs, inflater, container, adapter, 1, imageResId, 0);
+
+        TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
+        TabLayout.Tab tab = tabLayout.getTabAt(0);
+        if (tab != null) {
+            tab.select();
+        }
+        return view;
     }
 
 }

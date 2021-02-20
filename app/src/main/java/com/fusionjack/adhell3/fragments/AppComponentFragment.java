@@ -29,6 +29,7 @@ import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.UiUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
@@ -130,6 +131,8 @@ public class AppComponentFragment extends AppFragment {
             Optional.ofNullable(menu.findItem(R.id.action_batch)).ifPresent(it -> it.setIcon(R.drawable.ic_batch));
             Optional.ofNullable(menu.findItem(R.id.action_show_disabled_only)).ifPresent(this::initDisabledOnlyMenu);
         });
+
+        UiUtils.setMenuIconColor(menu, getContext());
     }
 
     @Override
@@ -154,6 +157,7 @@ public class AppComponentFragment extends AppFragment {
             item.setTitle(R.string.menu_show_disabled_only);
             item.setIcon(R.drawable.ic_show_disabled_only);
         }
+        UiUtils.tintMenuIcon(item, getContext());
     }
 
     private void toggleDisabledOnlyMode(MenuItem item) {

@@ -21,8 +21,8 @@
         android:layout_alignParentBottom="true"
         app:labelVisibilityMode="labeled"
         android:background="@color/colorPrimary"
-        app:itemIconTint="@color/nav_item_state_list"
-        app:itemTextColor="@color/nav_item_state_list"
+        app:itemIconTint="@color/tab_color_selector"
+        app:itemTextColor="@color/tab_color_selector"
         app:menu="@menu/bottombar_menu"/>
 
 </RelativeLayout>

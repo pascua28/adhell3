@@ -30,6 +30,7 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
+import com.fusionjack.adhell3.utils.UiUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -191,6 +192,7 @@ public abstract class AppFragment extends Fragment {
     public void onCreateOptionsMenu(@androidx.annotation.NonNull Menu menu, @androidx.annotation.NonNull MenuInflater inflater) {
         if (menu.size() == 0) {
             inflater.inflate(R.menu.app_menu, menu);
+            UiUtils.setMenuIconColor(menu, getContext());
             Optional.ofNullable(menu.findItem(R.id.action_hide_system)).ifPresent(this::initHideSystemMenu);
             initSearchView(menu);
         }
@@ -214,6 +216,7 @@ public abstract class AppFragment extends Fragment {
             item.setTitle(R.string.menu_hide_system);
             item.setIcon(R.drawable.ic_hide_system);
         }
+        UiUtils.tintMenuIcon(item, getContext());
     }
 
     private void toggleHideSystem(MenuItem item) {
@@ -278,5 +281,6 @@ public abstract class AppFragment extends Fragment {
                 return false;
             }
         });
+        UiUtils.setSearchIconColor(searchView, getContext());
     }
 }

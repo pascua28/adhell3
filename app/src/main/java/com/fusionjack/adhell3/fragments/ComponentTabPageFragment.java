@@ -36,6 +36,7 @@ import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.UiUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -198,6 +199,7 @@ public class ComponentTabPageFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         if (menu.size() == 0) {
             inflater.inflate(R.menu.appcomponent_menu, menu);
+            UiUtils.setMenuIconColor(menu, getContext());
             initSearchView(menu);
         }
     }
@@ -261,6 +263,7 @@ public class ComponentTabPageFragment extends Fragment {
                 return false;
             }
         });
+        UiUtils.setSearchIconColor(searchView, getContext());
     }
 
     private void updateAppComponentList(List<IComponentInfo> list) {

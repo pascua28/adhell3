@@ -46,16 +46,14 @@ public class OtherTabFragment extends TabFragment {
         View view = inflateFragment(R.layout.fragment_others, inflater, container, adapter, 1, imageResId, offset);
 
         TabLayout tabLayout = view.findViewById(R.id.sliding_tabs);
+        TabLayout.Tab tab;
         if (viewpagerPosition != null && viewpagerPosition.equalsIgnoreCase("Settings")) {
-            TabLayout.Tab tab = tabLayout.getTabAt(SETTINGS_PAGE);
-            if (tab != null) {
-                tab.select();
-            }
+            tab = tabLayout.getTabAt(SETTINGS_PAGE);
         } else {
-            TabLayout.Tab tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
-            if (tab != null) {
-                tab.select();
-            }
+            tab = tabLayout.getTabAt(APP_COMPONENT_PAGE);
+        }
+        if (tab != null) {
+            tab.select();
         }
 
         return view;
