@@ -20,7 +20,7 @@ import io.reactivex.Single;
 
 public class AppComponentViewModel extends ViewModel {
 
-    private static final Comparator<AppInfo> DISABLED_COMPONENTS_COMPARATOR = Comparator.comparing(info -> info.appName);
+    private static final Comparator<AppInfo> DISABLED_COMPONENTS_COMPARATOR = Comparator.comparing(info -> info.appName, String.CASE_INSENSITIVE_ORDER);
     private static final int APP_MASK = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
 
     private final AppDatabase appDatabase;
