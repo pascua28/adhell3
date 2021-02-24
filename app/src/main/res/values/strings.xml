@@ -273,10 +273,17 @@
         \n
         \nScript to build apk:
         \n<a href="https://gitlab.com/fusionjack/adhell3-scripts">https://gitlab.com/fusionjack/adhell3-scripts</a>
+        \n
         \nSource code:
         \n<a href="https://gitlab.com/fusionjack/adhell3">https://gitlab.com/fusionjack/adhell3</a>
         \n
         \nAdhell3 is licensed under a <a href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License.</a>
+    </string>
+    <string name="about_sub_content">
+        \nBuild version: %1$s
+        \nBuild date: %2$s
+        \nKnox API: %3$d
+        \nAndroid API: %4$d
     </string>
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
     <string name="dialog_appcomponent_batch_summary">The apps\' components defined in adhell3_*.txt will be used.

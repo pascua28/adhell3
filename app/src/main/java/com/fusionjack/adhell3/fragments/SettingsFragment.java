@@ -2,6 +2,7 @@ package com.fusionjack.adhell3.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
@@ -30,6 +32,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.samsung.android.knox.EnterpriseDeviceManager;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private Context context;
@@ -177,12 +180,22 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
 
             case ABOUT_PREFERENCE: {
-                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-                TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-                titlTextView.setText(R.string.about_title);
-                TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-                questionTextView.setText(R.string.about_content);
-                questionTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_about, (ViewGroup) getView(), false);
+                TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+                titleTextView.setText(R.string.about_title);
+
+                TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
+                infoTextView.setText(R.string.about_content);
+                infoTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
+                String subInfoPlaceholder = getResources().getString(R.string.about_sub_content);
+                String subInfo = String.format(subInfoPlaceholder,
+                        BuildConfig.VERSION_NAME, BuildConfig.BUILD_DATE,
+                        EnterpriseDeviceManager.getAPILevel(), Build.VERSION.SDK_INT);
+
+                TextView subInfoTextView = dialogView.findViewById(R.id.subInfoTextView);
+                subInfoTextView.setText(subInfo);
+
                 new AlertDialog.Builder(context)
                         .setView(dialogView)
                         .setPositiveButton(android.R.string.yes, null).show();

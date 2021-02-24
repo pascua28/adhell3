@@ -6,11 +6,13 @@ android {
     defaultConfig {
         def buildPropsFile = file('build.properties')
         def buildNumber
+        def buildDate
 
         if (buildPropsFile.canRead()) {
             Properties buildProps = new Properties()
             buildProps.load(new FileInputStream(buildPropsFile))
-            buildNumber = buildProps['build.number'].toInteger()
+            buildNumber = buildProps['build.number']
+            buildDate = buildProps['build.date']
         } else {
             throw new FileNotFoundException("Could not read build.properties!")
         }
@@ -68,6 +70,7 @@ android {
         versionCode 1
         versionName "3.2." + buildNumber
 
+        buildConfigField("String", "BUILD_DATE", '"' + buildDate + '"')
         buildConfigField("int", "DOMAIN_LIMIT", domainLimit)
         buildConfigField("int", "BLOCKED_DOMAIN_DURATION_UI", blockedDomainDurationUi)
         buildConfigField("int", "BLOCKED_DOMAIN_DURATION_DB", blockedDomainDurationDb)
