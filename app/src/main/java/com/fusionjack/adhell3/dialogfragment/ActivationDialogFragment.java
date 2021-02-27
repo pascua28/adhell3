@@ -8,10 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+
+import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.HomeTabFragment;
@@ -27,94 +30,29 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.functions.Action;
 
 
 public class ActivationDialogFragment extends DialogFragment {
-    private DeviceAdminInteractor deviceAdminInteractor;
-    private Completable knoxKeyObservable;
-    private CompletableObserver knoxKeyObserver;
-    private BroadcastReceiver receiver;
+
+    public static final String DIALOG_TAG = "activation_dialog";
+
     private Button turnOnAdminButton;
     private Button activateKnoxButton;
     private SharedPreferences sharedPreferences;
     private EditText knoxKeyEditText;
 
-    public static final String DIALOG_TAG = "activation_dialog";
+    private final DeviceAdminInteractor deviceAdminInteractor;
+    private final BroadcastReceiver receiver;
 
     public ActivationDialogFragment() {
-        deviceAdminInteractor = DeviceAdminInteractor.getInstance();
-
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-
-                if (KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS.equals(action)) {
-                    int errorCode = intent.getIntExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
-                    if (errorCode == KnoxEnterpriseLicenseManager.ERROR_NONE) {
-                        handleResult(intent, context);
-                    } else {
-                        handleError(intent, context, errorCode);
-                    }
-                }
-
-                if (EnterpriseLicenseManager.ACTION_LICENSE_STATUS.equals(action)) {
-                    int errorCode = intent.getIntExtra(EnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
-                    if (errorCode == EnterpriseLicenseManager.ERROR_NONE) {
-                        handleResult(intent, context);
-                    } else  {
-                        handleError(intent, context, errorCode);
-                    }
-                }
-            }
-        };
-
-        knoxKeyObservable = Completable.create(emmiter -> {
-            try {
-                emmiter.onComplete();
-            } catch (Throwable e) {
-                emmiter.onError(e);
-            }
-        });
-
-        knoxKeyObserver = new CompletableObserver() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                IntentFilter filter = new IntentFilter();
-                filter.addAction(KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS);
-                filter.addAction(EnterpriseLicenseManager.ACTION_LICENSE_STATUS);
-                getActivity().registerReceiver(receiver, filter);
-            }
-
-            @Override
-            public void onComplete() {
-                boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
-                if (knoxEnabled) {
-                    try {
-                        deviceAdminInteractor.deactivateKnoxKey(sharedPreferences, getContext());
-                    } catch (Exception ex) {
-                        Toast.makeText(getContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
-                        setLicenseState(true);
-                    }
-                } else {
-                    deviceAdminInteractor.activateKnoxKey(sharedPreferences, getContext());
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                getActivity().unregisterReceiver(receiver);
-                setLicenseState(false);
-            }
-        };
+        this.deviceAdminInteractor = DeviceAdminInteractor.getInstance();
+        this.receiver = createReceiver();
     }
 
     @Override
@@ -125,6 +63,16 @@ public class ActivationDialogFragment extends DialogFragment {
         if (dialog != null) {
             int width = (int)(getResources().getDisplayMetrics().widthPixels * 0.9);
             dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        boolean adminActive = deviceAdminInteractor.isAdminActive();
+        if (adminActive) {
+            setAdminState(true);
+            boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
+            setLicenseState(knoxEnabled);
+        } else {
+            setAdminState(false);
+            disableActiveButton();
         }
     }
 
@@ -139,7 +87,6 @@ public class ActivationDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@androidx.annotation.NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.dialog_fragment_activation, container);
 
         turnOnAdminButton = view.findViewById(R.id.turnOnAdminButton);
@@ -149,65 +96,86 @@ public class ActivationDialogFragment extends DialogFragment {
         String knoxKey = deviceAdminInteractor.getKnoxKey(sharedPreferences);
         knoxKeyEditText.setText(knoxKey);
 
-        turnOnAdminButton.setOnClickListener(v ->
-                deviceAdminInteractor.forceEnableAdmin(this.getActivity())
-        );
-
-        activateKnoxButton.setOnClickListener(v -> {
-            deviceAdminInteractor.setKnoxKey(sharedPreferences, knoxKeyEditText.getText().toString());
-
-            disableActiveButton();
-            boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
-            if (knoxEnabled) {
-                activateKnoxButton.setText(R.string.deactivating_knox_license);
-            } else {
-                activateKnoxButton.setText(R.string.activating_knox_license);
-            }
-
-            knoxKeyObservable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(knoxKeyObserver);
-        });
+        turnOnAdminButton.setOnClickListener(v -> deviceAdminInteractor.forceEnableAdmin(getContext()));
+        activateKnoxButton.setOnClickListener(v -> activeOrDeactivateLicense());
 
         Button backupButton = view.findViewById(R.id.backupButton);
-        backupButton.setOnClickListener(v -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.backup_database_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.backup_database_dialog_text);
-
-            new AlertDialog.Builder(getContext())
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                            new BackupDatabaseRxTask(getActivity()).run()
-                    )
-                    .setNegativeButton(android.R.string.no, null).show();
-        });
+        backupButton.setOnClickListener(v -> backupDatabase());
 
         Button deleteButton = view.findViewById(R.id.deleteButton);
-        deleteButton.setOnClickListener(v -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_app_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_app_dialog_text);
-
-            Context context = getContext();
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                            AdhellFactory.uninstall(context, this))
-                    .setNegativeButton(android.R.string.no, null).show();
-        });
+        deleteButton.setOnClickListener(v -> deleteAdhell3());
 
         return view;
     }
 
-    private void handleResult(Intent intent, Context context) {
-        getActivity().unregisterReceiver(receiver);
+    private void activeOrDeactivateLicense() {
+        disableActiveButton();
+        deviceAdminInteractor.setKnoxKey(sharedPreferences, knoxKeyEditText.getText().toString());
 
+        boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
+        LogUtils.info("Knox is " + (knoxEnabled ? "enabled" : "disabled"));
+        activateKnoxButton.setText(knoxEnabled ? R.string.deactivating_knox_license : R.string.activating_knox_license);
+
+        Action action = () -> {
+            if (knoxEnabled) {
+                try {
+                    deviceAdminInteractor.deactivateKnoxKey(sharedPreferences, getContext());
+                } catch (Exception ex) {
+                    setLicenseState(true);
+                    LogUtils.error(ex.getMessage(), ex);
+                }
+            } else {
+                deviceAdminInteractor.activateKnoxKey(sharedPreferences, getContext());
+            }
+        };
+
+        Runnable onSubscribe = () -> {
+            LogUtils.info("Registering receiver ...");
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS);
+            App.get().getApplicationContext().registerReceiver(receiver, filter);
+        };
+
+        new RxCompletableIoBuilder().async(Completable.fromAction(action), onSubscribe, () -> {}, () -> {});
+    }
+
+    private BroadcastReceiver createReceiver() {
+        return new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                LogUtils.info("BroadcastReceiver - Intent action name: " + action);
+
+                if (KnoxEnterpriseLicenseManager.ACTION_LICENSE_STATUS.equals(action)) {
+                    int errorCode = intent.getIntExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
+                    LogUtils.info("KnoxEnterpriseLicenseManager - Error code: " + errorCode);
+                    if (errorCode == KnoxEnterpriseLicenseManager.ERROR_NONE) {
+                        handleResult(intent, context);
+                    } else {
+                        handleError(intent, context, errorCode);
+                    }
+                }
+
+                if (EnterpriseLicenseManager.ACTION_LICENSE_STATUS.equals(action)) {
+                    int errorCode = intent.getIntExtra(EnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
+                    LogUtils.info("EnterpriseLicenseManager - Error code: " + errorCode);
+                    if (errorCode == EnterpriseLicenseManager.ERROR_NONE) {
+                        handleResult(intent, context);
+                    } else  {
+                        handleError(intent, context, errorCode);
+                    }
+                }
+
+                try {
+                    LogUtils.info("Unregistering receiver ...");
+                    App.get().getApplicationContext().unregisterReceiver(receiver);
+                } catch (Exception ignored) {
+                }
+            }
+        };
+    }
+
+    private void handleResult(Intent intent, Context context) {
         int result_type = intent.getIntExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_RESULT_TYPE, -1);
         if (result_type != -1) {
             if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_ACTIVATION) {
@@ -215,11 +183,7 @@ public class ActivationDialogFragment extends DialogFragment {
                 LogUtils.info("License activated");
                 Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
                 dismiss();
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                fragmentManager
-                        .beginTransaction()
-                        .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
-                        .commit();
+                showHomeTab();
             } else if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_DEACTIVATION) {
                 setLicenseState(false);
                 LogUtils.info("License deactivated");
@@ -244,9 +208,18 @@ public class ActivationDialogFragment extends DialogFragment {
         }
     }
 
-    private void handleError(Intent intent, Context context, int errorCode) {
-        getActivity().unregisterReceiver(receiver);
+    private void showHomeTab() {
+        FragmentActivity activity = getActivity();
+        if (activity != null) {
+            FragmentManager fragmentManager = activity.getSupportFragmentManager();
+            fragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
+                    .commit();
+        }
+    }
 
+    private void handleError(Intent intent, Context context, int errorCode) {
         if (intent != null) {
             String status = intent.getStringExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_STATUS);
             if (status == null || status.isEmpty()) {
@@ -261,22 +234,34 @@ public class ActivationDialogFragment extends DialogFragment {
         LogUtils.error( "License activation failed");
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        boolean adminActive = deviceAdminInteractor.isAdminActive();
-        if (adminActive) {
-            setAdminState(true);
-            boolean knoxEnabled = deviceAdminInteractor.isKnoxEnabled(getContext());
-            if (knoxEnabled) {
-                setLicenseState(true);
-            } else {
-                setLicenseState(false);
-            }
-        } else {
-            setAdminState(false);
-            disableActiveButton();
-        }
+    private void backupDatabase() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.backup_database_dialog_title);
+        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+        questionTextView.setText(R.string.backup_database_dialog_text);
+
+        new AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
+                        new BackupDatabaseRxTask(getContext()).run()
+                )
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private void deleteAdhell3() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
+        titlTextView.setText(R.string.delete_app_dialog_title);
+        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+        questionTextView.setText(R.string.delete_app_dialog_text);
+
+        Context context = getContext();
+        new AlertDialog.Builder(context)
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
+                        AdhellFactory.uninstall(context, this))
+                .setNegativeButton(android.R.string.no, null).show();
     }
 
     private void setAdminState(boolean enabled) {
