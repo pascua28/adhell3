@@ -1,15 +1,9 @@
 package com.fusionjack.adhell3;
 
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +11,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.fragments.AppTabFragment;
@@ -29,18 +29,19 @@ import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
 
 public class MainActivity extends AppCompatActivity {
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
+
     private FragmentManager fragmentManager;
-    private ActivationDialogFragment activationDialogFragment;
-    private AlertDialog passwordDialog;
-    private BottomNavigationView bottomBar;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
-    private String themeChange;
+
+    private AlertDialog passwordDialog;
+    private ActivationDialogFragment activationDialogFragment;
 
     @Override
     public void onBackPressed() {
@@ -61,28 +62,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences  mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-            getDelegate().setDefaultNightMode(getDelegate().MODE_NIGHT_YES);
-        }
-        else {
-            getDelegate().setDefaultNightMode(getDelegate().MODE_NIGHT_NO);
-        }
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isNightMode = sharedPreferences.getBoolean(SET_NIGHT_MODE_PREFERENCE, false);
+        AppCompatDelegate.setDefaultNightMode(isNightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
-        themeChange = getIntent().getStringExtra("settingsFragment");
 
         // Remove elevation shadow of ActionBar
         getSupportActionBar().setElevation(0);
 
         // Change status bar icon tint based on theme
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            View decor = getWindow().getDecorView();
-            if (!mPrefs.getBoolean(SET_NIGHT_MODE_PREFERENCE, false)) {
-                decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-            } else {
-                decor.setSystemUiVisibility(0);
-            }
-        }
+        View decor = getWindow().getDecorView();
+        decor.setSystemUiVisibility(isNightMode ? 0 : View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         // Set the crash handler to log crash's stack trace into a file
         if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashHandler)) {
@@ -103,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        bottomBar = findViewById(R.id.bottomBar);
+        BottomNavigationView bottomBar = findViewById(R.id.bottomBar);
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             onTabSelected(item.getItemId());
             return true;
@@ -112,10 +103,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                fragmentManager.popBackStack();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            fragmentManager.popBackStack();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -140,41 +130,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LogUtils.info("Destroying activity");
+        passwordDialog = null;
+        activationDialogFragment = null;
+        LogUtils.info("onDestroy()");
     }
 
     private void onTabSelected(int tabId) {
-        LogUtils.info( "Tab '" + tabId + "' is selected");
         fragmentManager.popBackStack(BACK_STACK_TAB_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
         Fragment replacing;
-        switch (tabId) {
-            case R.id.homeTab:
-                selectedTabId = R.id.homeTab;
-                replacing = new HomeTabFragment();
-                break;
-            case R.id.appsManagementTab:
-                selectedTabId = R.id.appsManagementTab;
-                replacing = new AppTabFragment();
-                break;
-            case R.id.domainsTab:
-                selectedTabId = R.id.domainsTab;
-                replacing = new DomainTabFragment();
-                break;
-            case R.id.othersTab:
-                selectedTabId = R.id.othersTab;
-                replacing = new OtherTabFragment();
-                if(themeChange != null){
-                    if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)){
-                        Bundle bundle = new Bundle();
-                        bundle.putString("viewpager_position", "Settings");
-                        replacing.setArguments(bundle);
-                    }
-                }
-                break;
-            default:
-                selectedTabId = -1;
-                replacing = new HomeTabFragment();
+        if (tabId == R.id.homeTab) {
+            selectedTabId = R.id.homeTab;
+            replacing = new HomeTabFragment();
+            LogUtils.info( "Home tab is selected");
+        } else if (tabId == R.id.appsManagementTab) {
+            selectedTabId = R.id.appsManagementTab;
+            replacing = new AppTabFragment();
+            LogUtils.info( "App tab is selected");
+        } else if (tabId == R.id.domainsTab) {
+            selectedTabId = R.id.domainsTab;
+            replacing = new DomainTabFragment();
+            LogUtils.info( "Domain tab is selected");
+        } else if (tabId == R.id.othersTab) {
+            selectedTabId = R.id.othersTab;
+            replacing = new OtherTabFragment();
+            LogUtils.info( "Other tab is selected");
+        } else {
+            selectedTabId = -1;
+            replacing = new HomeTabFragment();
         }
+
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, replacing)
                 .addToBackStack(BACK_STACK_TAB_TAG)
@@ -204,12 +189,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (!DeviceAdminInteractor.getInstance().isKnoxEnabled(this)) {
             LogUtils.info( "Knox is disabled, showing activation dialog");
-            LogUtils.info( "Check if internet connection exists");
             boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(this);
             if (!hasInternetAccess) {
                 AdhellFactory.getInstance().createNoInternetConnectionDialog(this);
-            }
-            if (!isActivationDialogVisible()) {
+            } else if (!isActivationDialogVisible()) {
                 activationDialogFragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
             }
             return false;
@@ -217,19 +200,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Select the Home tab manually if nothing is selected
         if (selectedTabId == -1) {
-            if (themeChange != null) {
-                if (themeChange.matches(SET_NIGHT_MODE_PREFERENCE)){
-                    bottomBar.setSelectedItemId(R.id.othersTab);
-                    onTabSelected(R.id.othersTab);
-
-                }
-                else {
-                    onTabSelected(R.id.homeTab);
-                }
-            }
-            else {
-                onTabSelected(R.id.homeTab);
-            }
+            onTabSelected(R.id.homeTab);
         }
 
         return true;
