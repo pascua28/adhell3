@@ -1,8 +1,11 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -14,6 +17,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -39,7 +44,8 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.FileUtils;
+import com.fusionjack.adhell3.utils.DocumentFileUtils;
+import com.fusionjack.adhell3.utils.DocumentFileWriter;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
@@ -52,8 +58,6 @@ import com.fusionjack.adhell3.viewmodel.HomeViewModel;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +89,15 @@ public class HomeTabFragment extends Fragment {
 
     private ContentBlocker contentBlocker;
     private Resources resources;
+
+    private final ActivityResultLauncher<Uri> openDocumentTreeLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
+        LogUtils.info("Picked folder: " + result);
+        if (result != null) {
+            getContext().grantUriPermission(getContext().getPackageName(), result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContext().getContentResolver().takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            AppPreferences.getInstance().setAdhell3FolderUri(result.toString());
+        }
+    });
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -199,6 +212,30 @@ public class HomeTabFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        String uri = AppPreferences.getInstance().getAdhell3FolderUri();
+        if (uri == null || !DocumentFileUtils.hasAccess(Uri.parse(uri))) {
+            showStoragePermissionDialog();
+        } else {
+            cacheApps();
+        }
+    }
+
+    private void showStoragePermissionDialog() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        titleTextView.setText(R.string.dialog_storage_permission_title);
+        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+        questionTextView.setText(R.string.dialog_storage_permission_summary);
+        new AlertDialog.Builder(getContext())
+                .setView(dialogView)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                    openDocumentTreeLauncher.launch(Uri.fromFile(Environment.getExternalStorageDirectory()));
+                })
+                .setNegativeButton(android.R.string.no, (dialog, which) -> cacheApps())
+                .show();
+    }
+
+    private void cacheApps() {
         Runnable callback = () -> {
             triggerReportedBlockedUrls(() -> blockedUrlAdapter.notifyDataSetChanged());
             checkDatabaseIntegrity();
@@ -206,7 +243,7 @@ public class HomeTabFragment extends Fragment {
         AppCache.getInstance().cacheApps(getContext(), callback);
     }
 
-    void safeGuardLiveData(Runnable action) {
+    private void safeGuardLiveData(Runnable action) {
         if (getView() == null) {
             LogUtils.error("View is null");
             return;
@@ -426,13 +463,11 @@ public class HomeTabFragment extends Fragment {
     private void dumpDomains() {
         Action dumpDomains = () -> {
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.ENGLISH);
-            File file = FileUtils.toFile("adhell3_dumped_domains.txt");
             List<ReportBlockedUrl> reports = FirewallUtils.getInstance().getReportBlockedUrls();
-            try (FileWriter writer = new FileWriter(file)) {
+            try (DocumentFileWriter writer = DocumentFileWriter.overrideMode("adhell3_dumped_domains.txt")) {
                 for (ReportBlockedUrl report : reports) {
                     String line = String.format("%-75s %-100s %s", report.packageName, report.url, dateFormatter.format(report.blockDate));
                     writer.write(line);
-                    writer.write(System.lineSeparator());
                 }
             }
         };
@@ -451,11 +486,9 @@ public class HomeTabFragment extends Fragment {
                     .map(domain -> domain.url)
                     .collect(Collectors.toSet());
 
-            File file = FileUtils.toFile("adhell3_exported_domains.txt");
-            try (FileWriter writer = new FileWriter(file)) {
+            try (DocumentFileWriter writer = DocumentFileWriter.overrideMode("adhell3_exported_domains.txt")) {
                 for (String domain : domains) {
                     writer.write(domain);
-                    writer.write(System.lineSeparator());
                 }
             }
         };

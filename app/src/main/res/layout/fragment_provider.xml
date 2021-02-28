@@ -66,7 +66,7 @@
             fab:fab_icon="@drawable/ic_local_provider"
             fab:fab_colorNormal="@color/colorFab"
             fab:fab_colorPressed="@color/colorFab"
-            fab:fab_title="@string/dialog_add_local_provider_title"/>
+            fab:fab_title="@string/dialog_add_hosts_file_title"/>
 
     </toan.android.floatingactionmenu.FloatingActionsMenu>
 

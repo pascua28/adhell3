@@ -9,8 +9,6 @@ import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -27,19 +25,14 @@ public final class LogUtils {
     private LogUtils() {
     }
 
-    public static String createLogcat() {
+    public static String createLogcat() throws Exception {
         info("Build version: " + BuildConfig.VERSION_NAME);
         info("Knox API: " + EnterpriseDeviceManager.getAPILevel());
         info("Android API: " + Build.VERSION.SDK_INT);
         String filename = String.format("adhell_logcat_%s.txt", now());
-        File logFile = FileUtils.toFile(filename);
-        try {
-            String ownPackageName = App.get().getApplicationContext().getPackageName();
-            Runtime.getRuntime().exec( "logcat -f " + logFile + " | grep " + ownPackageName);
-        } catch (IOException e) {
-            error(e.getMessage(), e);
-            return "";
-        }
+        String ownPackageName = App.get().getApplicationContext().getPackageName();
+        Process logcatProcess = Runtime.getRuntime().exec( "logcat -d | grep " + ownPackageName);
+        DocumentFileUtils.dumpToFile(logcatProcess.getInputStream(), filename);
         return filename;
     }
 

@@ -11,6 +11,8 @@ public final class AppPreferences {
     private static AppPreferences instance;
     private final SharedPreferences sharedPreferences;
 
+    private static final String ADHELL3_FOLDER = "adhell3Folder";
+
     private static final String DOMAIN_RULE_TOGGLE = "domainRuleToggle";
     private static final String FIREWALL_RULE_TOGGLE = "firewallRuleToggle";
     private static final String DISABLER_TOGGLE = "disablerToggle";
@@ -35,6 +37,16 @@ public final class AppPreferences {
             instance = new AppPreferences();
         }
         return instance;
+    }
+
+    public String getAdhell3FolderUri() {
+        return sharedPreferences.getString(ADHELL3_FOLDER, null);
+    }
+
+    public void setAdhell3FolderUri(String uri) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(ADHELL3_FOLDER, uri);
+        editor.apply();
     }
 
     public Single<SharedPreferenceBooleanLiveData> getHideSystemAppsLiveData() {

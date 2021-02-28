@@ -42,7 +42,6 @@ import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -398,7 +397,7 @@ public class ComponentTabPageFragment extends Fragment {
             return Optional.ofNullable(observable);
         }
 
-        void appendComponentNameToFile(String componentName) throws IOException {
+        void appendComponentNameToFile(String componentName) throws Exception {
             switch (pageId) {
                 case ACTIVITIES_PAGE:
                     AppComponentFactory.getInstance().appendActivityNameToFile(componentName);

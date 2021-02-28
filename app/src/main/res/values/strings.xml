@@ -82,8 +82,14 @@
         \n\tpackageName|domain
     </string>
     <string name="dialog_add_remote_provider_title">Add Remote Provider</string>
-    <string name="dialog_add_local_provider_title">Add Local Hosts File</string>
-    <string name="dialog_add_local_provider_info">Auto load hosts files that starts with \'hosts*\' from \'adhell3\' directory</string>
+    <string name="dialog_add_hosts_file_title">Add Hosts File</string>
+    <string name="dialog_add_hosts_file_info">
+        To add hosts file from a cloud storage, you need to install the cloud provider app.
+        \nYou will find the cloud providers listed on the left hand side of the file picker.
+        \n
+        \nTo refresh the hosts file from a cloud storage:
+        \nYou need first to refresh the folder in the cloud provider app and then swipe down the provider list.
+    </string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">
         This will enable all apps\' components.
@@ -99,6 +105,9 @@
         \nApplying custom DNS to all apps might cause your internet connection to malfunction.
     </string>
     <string name="dialog_add_to_whitelist_question">Add the selected domain to your whitelist?</string>
+    <string name="dialog_storage_permission_title">Storage permission needed</string>
+    <string name="dialog_storage_permission_summary">Adhell3 needs a storage access to function properly.
+        \nPick a folder where Adhell3 will read or write files from it.</string>
     <string name="home_bottombar_title" translatable="false">Home</string>
     <string name="package_disabler_fragment_title">Disable Apps</string>
     <string name="apps_management_bottombar_title">Apps</string>

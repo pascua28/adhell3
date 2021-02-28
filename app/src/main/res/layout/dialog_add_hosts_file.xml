@@ -9,29 +9,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="20dp"
-        android:text="@string/dialog_add_local_provider_title"
+        android:text="@string/dialog_add_hosts_file_title"
         android:textStyle="bold"
         android:textSize="20sp" />
 
-    <CheckBox
-        android:id="@+id/autoLoadCheckBox"
+    <TextView
+        android:id="@+id/infoTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/dialog_add_local_provider_info" />
-
-    <EditText
-        android:id="@+id/filePathEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:inputType="textUri"
-        android:hint="/storage/emulated/0/adhell3/hosts"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        android:text="@string/dialog_add_hosts_file_info" />
 
 </LinearLayout>

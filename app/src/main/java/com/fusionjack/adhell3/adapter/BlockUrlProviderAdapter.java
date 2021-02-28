@@ -2,9 +2,11 @@ package com.fusionjack.adhell3.adapter;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -20,6 +22,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.PathUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
@@ -55,7 +58,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         ImageView deleteUrlImageView = convertView.findViewById(R.id.deleteUrlProviderImageView);
         TextView lastUpdatedTextView = convertView.findViewById(R.id.lastUpdatedTextView);
 
-        blockUrlProviderTextView.setText(blockUrlProvider.url);
+        blockUrlProviderTextView.setText(getPath(blockUrlProvider.url));
         blockUrlCountTextView.setText(String.valueOf(blockUrlProvider.count));
 
         Date lastUpdated = blockUrlProvider.lastUpdated;
@@ -85,6 +88,13 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
         });
 
         return convertView;
+    }
+
+    private String getPath(String uriStr) {
+        if (URLUtil.isContentUrl(uriStr)) {
+            return PathUtils.getPath(Uri.parse(uriStr));
+        }
+        return uriStr;
     }
 
     private void selectProvider(boolean isChecked, BlockUrlProvider provider) {

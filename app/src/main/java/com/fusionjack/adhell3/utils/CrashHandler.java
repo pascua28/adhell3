@@ -19,7 +19,10 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
-        LogUtils.createLogcat();
+        try {
+            LogUtils.createLogcat();
+        } catch (Exception ignored) {
+        }
         defaultHandler.uncaughtException(thread, throwable);
     }
 }

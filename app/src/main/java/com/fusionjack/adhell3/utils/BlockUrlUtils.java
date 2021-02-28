@@ -1,24 +1,20 @@
 package com.fusionjack.adhell3.utils;
 
 import android.os.Handler;
+import android.webkit.URLUtil;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
-
-import android.webkit.URLUtil;
 
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -41,14 +37,13 @@ public class BlockUrlUtils {
     private static final Pattern emptyLinePattern = Pattern.compile("(?im)^\\s*");
 
     @NonNull
-    public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException, URISyntaxException {
+    public static List<BlockUrl> loadBlockUrls(BlockUrlProvider blockUrlProvider) throws IOException {
         Date start = new Date();
 
         // Read the host source and convert it to string
-        String hostFileStr = "";
-        if (URLUtil.isFileUrl(blockUrlProvider.url)) {
-            File file = new File(new URI(blockUrlProvider.url));
-            hostFileStr = Files.asCharSource(file, Charsets.UTF_8).read();
+        String hostFileStr;
+        if (URLUtil.isContentUrl(blockUrlProvider.url)) {
+            hostFileStr = DocumentFileUtils.readFileUri(blockUrlProvider.url);
         } else {
             URL urlProviderUrl = new URL(blockUrlProvider.url);
             URLConnection connection = urlProviderUrl.openConnection();

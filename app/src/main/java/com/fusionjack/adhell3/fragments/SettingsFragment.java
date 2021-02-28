@@ -32,7 +32,12 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.samsung.android.knox.EnterpriseDeviceManager;
+
+import java.util.function.Consumer;
+
+import io.reactivex.Single;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private Context context;
@@ -160,13 +165,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CREATE_LOGCAT_PREFERENCE: {
-                String filename = LogUtils.createLogcat();
-                if (filename.isEmpty()) {
-                    Toast.makeText(context, R.string.logcat_not_created, Toast.LENGTH_LONG).show();
-                } else {
-                    String message = context.getResources().getString(R.string.logcat_created);
+                Consumer<String> callback = filename -> {
+                    String message = getResources().getString(R.string.logcat_created);
                     Toast.makeText(context, String.format(message, filename), Toast.LENGTH_LONG).show();
-                }
+                };
+                new RxSingleIoBuilder()
+                        .setShowErrorAlert(context)
+                        .async(Single.fromCallable(LogUtils::createLogcat), callback);
                 break;
             }
             case CHANGE_KEY_PREFERENCE: {

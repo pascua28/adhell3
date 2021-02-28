@@ -2,6 +2,8 @@ package com.fusionjack.adhell3.utils;
 
 import android.content.ComponentName;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import com.fusionjack.adhell3.db.AppDatabase;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -10,16 +12,15 @@ import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import io.reactivex.Single;
@@ -54,19 +55,21 @@ public final class AppComponentFactory {
     }
 
     private Set<String> getFileContent(String fileName) throws IOException {
-        File serviceFile = FileUtils.toFile(fileName);
-        if (!serviceFile.exists()) {
+        DocumentFile file = DocumentFileUtils.findFile(fileName);
+        if (file == null) {
             throw new FileNotFoundException("File name " + fileName + " cannot be found");
         }
 
         Set<String> lines = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(serviceFile), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String trimmedLine = line.trim();
-                if (!trimmedLine.isEmpty()) {
-                    lines.add(trimmedLine);
+        Optional<InputStream> in = DocumentFileUtils.getInputStreamFrom(file);
+        if (in.isPresent()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in.get(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String trimmedLine = line.trim();
+                    if (!trimmedLine.isEmpty()) {
+                        lines.add(trimmedLine);
+                    }
                 }
             }
         }
@@ -119,15 +122,15 @@ public final class AppComponentFactory {
         });
     }
 
-    public void appendActivityNameToFile(String activityName) throws IOException {
+    public void appendActivityNameToFile(String activityName) throws Exception {
         appendComponentNameToFile(activityName, ACTIVITY_FILENAME);
     }
 
-    public void appendServiceNameToFile(String serviceName) throws IOException {
+    public void appendServiceNameToFile(String serviceName) throws Exception {
         appendComponentNameToFile(serviceName, SERVICE_FILENAME);
     }
 
-    public void appendReceiverNameToFile(String receiverName) throws IOException {
+    public void appendReceiverNameToFile(String receiverName) throws Exception {
         int indexOfPipe = receiverName.indexOf('|');
         if (indexOfPipe != -1) {
             receiverName = receiverName.substring(0, indexOfPipe);
@@ -135,15 +138,12 @@ public final class AppComponentFactory {
         appendComponentNameToFile(receiverName, RECEIVER_FILENAME);
     }
 
-    public void appendProviderNameToFile(String providerName) throws IOException {
+    public void appendProviderNameToFile(String providerName) throws Exception {
         appendComponentNameToFile(providerName, PROVIDER_FILENAME);
     }
 
-    private void appendComponentNameToFile(String componentName, String fileName) throws IOException {
-        File file = FileUtils.toFile(fileName);
-        boolean fileExist = file.exists();
-        try (FileWriter writer = new FileWriter(file, true)) {
-            if (fileExist) writer.write(System.lineSeparator());
+    private void appendComponentNameToFile(String componentName, String fileName) throws Exception {
+        try (DocumentFileWriter writer = DocumentFileWriter.appendMode(fileName)) {
             writer.write(componentName);
         }
     }

@@ -2,17 +2,19 @@ package com.fusionjack.adhell3.fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -27,7 +29,6 @@ import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.FileUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
@@ -35,15 +36,10 @@ import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.BlockUrlProvidersViewModel;
 import com.google.android.material.tabs.TabLayout;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.functions.Action;
 import toan.android.floatingactionmenu.FloatingActionButton;
 import toan.android.floatingactionmenu.FloatingActionsMenu;
 import toan.android.floatingactionmenu.ScrollDirectionListener;
@@ -53,6 +49,15 @@ import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_CO
 public class ProviderListFragment extends Fragment {
     private Context context;
     private FragmentActivity activity;
+
+    private final ActivityResultLauncher<String[]> openDocumentLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), result -> {
+        LogUtils.info("Picked file: " + result);
+        if (result != null) {
+            getContext().grantUriPermission(getContext().getPackageName(), result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContext().getContentResolver().takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            addProvider(result.toString());
+        }
+    });
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -134,35 +139,11 @@ public class ProviderListFragment extends Fragment {
         FloatingActionButton actionAddLocalProvider = view.findViewById(R.id.action_add_local_provider);
         actionAddLocalProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
-
-            View dialogView = inflater.inflate(R.layout.dialog_add_local_provider, container, false);
-            EditText filePathEditText = dialogView.findViewById(R.id.filePathEditText);
-            CheckBox checkBox = dialogView.findViewById(R.id.autoLoadCheckBox);
-            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> filePathEditText.setEnabled(!isChecked));
-
+            View dialogView = inflater.inflate(R.layout.dialog_add_hosts_file, container, false);
             new AlertDialog.Builder(context)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        if (checkBox.isChecked()) {
-                            Consumer<Integer> callback = size -> {
-                                if (size == 0) {
-                                    Toast.makeText(getContext(), "No hosts file found!", Toast.LENGTH_LONG).show();
-                                }
-                            };
-                            SingleOnSubscribe<Integer> source = emitter -> {
-                                List<File> files = FileUtils.getHostsFiles();
-                                files.forEach(file -> addProvider("file://" + file.getAbsolutePath()));
-                                emitter.onSuccess(files.size());
-                            };
-                            new RxSingleIoBuilder().async(Single.create(source), callback);
-                        } else {
-                            Action action = () -> {
-                                String filePath = filePathEditText.getText().toString();
-                                if (!filePath.startsWith("file://")) filePath = "file://" + filePath;
-                                addProvider(filePath);
-                            };
-                            new RxCompletableIoBuilder().async(Completable.fromAction(action));
-                        }
+                        openDocumentLauncher.launch(new String[] {"text/plain"});
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         });

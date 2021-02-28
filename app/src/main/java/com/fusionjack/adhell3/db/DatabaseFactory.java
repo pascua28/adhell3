@@ -5,6 +5,7 @@ import android.util.JsonWriter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.entity.AppPermission;
@@ -18,16 +19,15 @@ import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.FileUtils;
+import com.fusionjack.adhell3.utils.DocumentFileWriter;
+import com.fusionjack.adhell3.utils.DocumentFileUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.google.common.io.Files;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public final class DatabaseFactory {
@@ -66,64 +67,70 @@ public final class DatabaseFactory {
     }
 
     public void backupDatabase() throws Exception {
-        File file = FileUtils.toFile(BACKUP_FILENAME);
-
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
-            writer.setIndent("  ");
-            writer.beginObject();
-            writeWhitelistedPackages(writer, appDatabase);
-            writeDisabledPackages(writer, appDatabase);
-            writeRestrictedPackages(writer, appDatabase);
-            writeAppComponent(writer, appDatabase);
-            writeBlockUrlProviders(writer, appDatabase);
-            writeUserBlockUrls(writer, appDatabase);
-            writeWhiteUrls(writer, appDatabase);
-            writeCustomDNS(writer, appDatabase);
-            writer.endObject();
-        } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
-            throw e;
+        try (DocumentFileWriter docWriter = DocumentFileWriter.overrideMode(BACKUP_FILENAME)) {
+            Optional<OutputStream> out = docWriter.getOutputStream();
+            if (out.isPresent()) {
+                try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(out.get(), StandardCharsets.UTF_8))) {
+                    writer.setIndent("  ");
+                    writer.beginObject();
+                    writeWhitelistedPackages(writer, appDatabase);
+                    writeDisabledPackages(writer, appDatabase);
+                    writeRestrictedPackages(writer, appDatabase);
+                    writeAppComponent(writer, appDatabase);
+                    writeBlockUrlProviders(writer, appDatabase);
+                    writeUserBlockUrls(writer, appDatabase);
+                    writeWhiteUrls(writer, appDatabase);
+                    writeCustomDNS(writer, appDatabase);
+                    writer.endObject();
+                } catch (Exception e) {
+                    LogUtils.error(e.getMessage(), e);
+                    throw e;
+                }
+            }
         }
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
-        File copyFile = FileUtils.toFile(String.format(BACKUP_COPY_FILENAME, formatter.format(new Date())));
-        Files.copy(file, copyFile);
+        String newFileName = String.format(BACKUP_COPY_FILENAME, formatter.format(new Date()));
+        DocumentFileUtils.copyFile(BACKUP_FILENAME, newFileName);
     }
 
     public void restoreDatabase() throws Exception {
-        File backupFile = FileUtils.toFile(BACKUP_FILENAME);
-        if (!backupFile.exists()) {
-            throw new FileNotFoundException("Backup file " + backupFile.getAbsolutePath() + " cannot be found");
+        DocumentFile backupFile = DocumentFileUtils.findFile(BACKUP_FILENAME);
+        if (backupFile == null) {
+            throw new FileNotFoundException("Backup file '" + BACKUP_FILENAME + "' cannot be found");
         }
 
-        try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(backupFile), StandardCharsets.UTF_8))) {
-            reader.beginObject();
-            while (reader.hasNext()) {
-                String name = reader.nextName();
-                if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
-                    readWhitelistedPackages(reader);
-                } else if (name.equalsIgnoreCase("DisabledPackage")) {
-                    readDisabledPackages(reader);
-                } else if (name.equalsIgnoreCase("RestrictedPackage")) {
-                    readRestrictedPackages(reader);
-                } else if (name.equalsIgnoreCase("AppPermission")) {
-                    readAppComponent(reader);
-                } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
-                    readBlockUrlProviders(reader);
-                } else if (name.equalsIgnoreCase("UserBlockUrl")) {
-                    readUserBlockUrls(reader);
-                } else if (name.equalsIgnoreCase("WhiteUrl")) {
-                    readWhiteUrls(reader);
-                } else if (name.equalsIgnoreCase("DnsPackage")) {
-                    readDnsPackages(reader);
-                } else if (name.equalsIgnoreCase("DnsAddresses")) {
-                    readDnsAddresses(reader);
+        Optional<InputStream> in = DocumentFileUtils.getInputStreamFrom(backupFile);
+        if (in.isPresent()) {
+            try (JsonReader reader = new JsonReader(new InputStreamReader(in.get(), StandardCharsets.UTF_8))) {
+                reader.beginObject();
+                while (reader.hasNext()) {
+                    String name = reader.nextName();
+                    if (name.equalsIgnoreCase("FirewallWhitelistedPackage")) {
+                        readWhitelistedPackages(reader);
+                    } else if (name.equalsIgnoreCase("DisabledPackage")) {
+                        readDisabledPackages(reader);
+                    } else if (name.equalsIgnoreCase("RestrictedPackage")) {
+                        readRestrictedPackages(reader);
+                    } else if (name.equalsIgnoreCase("AppPermission")) {
+                        readAppComponent(reader);
+                    } else if (name.equalsIgnoreCase("BlockUrlProvider")) {
+                        readBlockUrlProviders(reader);
+                    } else if (name.equalsIgnoreCase("UserBlockUrl")) {
+                        readUserBlockUrls(reader);
+                    } else if (name.equalsIgnoreCase("WhiteUrl")) {
+                        readWhiteUrls(reader);
+                    } else if (name.equalsIgnoreCase("DnsPackage")) {
+                        readDnsPackages(reader);
+                    } else if (name.equalsIgnoreCase("DnsAddresses")) {
+                        readDnsAddresses(reader);
+                    }
                 }
+                reader.endObject();
+            } catch (Exception e) {
+                LogUtils.error(e.getMessage(), e);
+                throw e;
             }
-            reader.endObject();
-        } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
-            throw e;
         }
     }
 
