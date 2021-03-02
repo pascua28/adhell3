@@ -31,7 +31,6 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
-import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 
 import io.reactivex.Completable;
@@ -156,16 +155,6 @@ public class ActivationDialogFragment extends DialogFragment {
                     }
                 }
 
-                if (EnterpriseLicenseManager.ACTION_LICENSE_STATUS.equals(action)) {
-                    int errorCode = intent.getIntExtra(EnterpriseLicenseManager.EXTRA_LICENSE_ERROR_CODE, -1);
-                    LogUtils.info("EnterpriseLicenseManager - Error code: " + errorCode);
-                    if (errorCode == EnterpriseLicenseManager.ERROR_NONE) {
-                        handleResult(intent, context);
-                    } else  {
-                        handleError(intent, context, errorCode);
-                    }
-                }
-
                 try {
                     LogUtils.info("Unregistering receiver ...");
                     App.get().getApplicationContext().unregisterReceiver(receiver);
@@ -191,21 +180,6 @@ public class ActivationDialogFragment extends DialogFragment {
                 setCancelable(false);
             }
         }
-
-        result_type = intent.getIntExtra(EnterpriseLicenseManager.EXTRA_LICENSE_RESULT_TYPE, -1);
-        if (result_type != -1) {
-            if (result_type == EnterpriseLicenseManager.LICENSE_RESULT_TYPE_ACTIVATION) {
-                setLicenseState(true);
-                LogUtils.info("License activated");
-                Toast.makeText(context, "License activated", Toast.LENGTH_LONG).show();
-                dismiss();
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                fragmentManager
-                        .beginTransaction()
-                        .replace(R.id.fragmentContainer, new HomeTabFragment(), HomeTabFragment.class.getCanonicalName())
-                        .commit();
-            }
-        }
     }
 
     private void showHomeTab() {
@@ -222,9 +196,6 @@ public class ActivationDialogFragment extends DialogFragment {
     private void handleError(Intent intent, Context context, int errorCode) {
         if (intent != null) {
             String status = intent.getStringExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_STATUS);
-            if (status == null || status.isEmpty()) {
-                status = intent.getStringExtra(EnterpriseLicenseManager.EXTRA_LICENSE_STATUS);
-            }
             LogUtils.error("Status: " + status + ". Error code: " + errorCode);
             Toast.makeText(context, "Status: " + status + ". Error code: " + errorCode, Toast.LENGTH_LONG).show();
         }

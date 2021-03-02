@@ -1,13 +1,13 @@
 package com.fusionjack.adhell3.dagger.module;
 
 import android.content.Context;
+
 import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.dagger.scope.AdhellApplicationScope;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
-import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 import com.samsung.android.knox.net.firewall.Firewall;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
@@ -23,23 +23,10 @@ public class EnterpriseModule {
     @AdhellApplicationScope
     KnoxEnterpriseLicenseManager providesKnoxEnterpriseLicenseManager(Context appContext) {
         try {
-            LogUtils.info( "Trying to get EnterpriseLicenseManager");
+            LogUtils.info( "Trying to get KnoxEnterpriseLicenseManager");
             return KnoxEnterpriseLicenseManager.getInstance(appContext);
         } catch (Throwable e) {
-            LogUtils.error( "Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
-        }
-        return null;
-    }
-
-    @Nullable
-    @Provides
-    @AdhellApplicationScope
-    EnterpriseLicenseManager providesEnterpriseLicenseManager(Context appContext) {
-        try {
-            LogUtils.info( "Trying to get EnterpriseLicenseManager");
-            return EnterpriseLicenseManager.getInstance(appContext);
-        } catch (Throwable e) {
-            LogUtils.error( "Failed to get EnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
+            LogUtils.error( "Failed to get KnoxEnterpriseLicenseManager. So it seems that Knox is not supported on this device", e);
         }
         return null;
     }

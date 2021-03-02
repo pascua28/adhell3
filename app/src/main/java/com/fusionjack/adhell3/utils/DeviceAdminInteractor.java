@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+
 import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
-import com.samsung.android.knox.license.EnterpriseLicenseManager;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 
 import java.io.File;
@@ -38,10 +38,6 @@ public final class DeviceAdminInteractor {
     @Nullable
     @Inject
     KnoxEnterpriseLicenseManager knoxEnterpriseLicenseManager;
-
-    @Nullable
-    @Inject
-    EnterpriseLicenseManager enterpriseLicenseManager;
 
     @Nullable
     @Inject
@@ -91,30 +87,19 @@ public final class DeviceAdminInteractor {
     public void activateKnoxKey(SharedPreferences sharedPreferences, Context context) {
         String knoxKey = getKnoxKey(sharedPreferences);
         if (knoxKey != null) {
-            if (knoxKey.startsWith("KLM")) {
-                activateKLMKey(context, knoxKey);
-            } else {
-                activateELMKey(context, knoxKey);
-            }
+            activateKLMKey(context, knoxKey);
         }
     }
 
-    public void deactivateKnoxKey(SharedPreferences sharedPreferences, Context context) throws Exception {
+    public void deactivateKnoxKey(SharedPreferences sharedPreferences, Context context) {
         String knoxKey = getKnoxKey(sharedPreferences);
         if (knoxKey != null) {
-            if (!knoxKey.startsWith("KLM")) {
-                throw new Exception("You cannot deactivate ELM key");
-            }
             KnoxEnterpriseLicenseManager.getInstance(context).deActivateLicense(knoxKey);
         }
     }
 
     private void activateKLMKey(Context context, String key) {
         KnoxEnterpriseLicenseManager.getInstance(context).activateLicense(key);
-    }
-
-    private void activateELMKey(Context context, String key) {
-        EnterpriseLicenseManager.getInstance(context).activateLicense(key);
     }
 
     /**
@@ -181,8 +166,8 @@ public final class DeviceAdminInteractor {
     }
 
     private boolean isKnoxSupported() {
-        if (knoxEnterpriseLicenseManager == null || enterpriseLicenseManager == null) {
-            LogUtils.info( "Knox is not supported: knoxEnterpriseLicenseManager or enterpriseLicenseManager is null");
+        if (knoxEnterpriseLicenseManager == null) {
+            LogUtils.info( "Knox is not supported: knoxEnterpriseLicenseManager is null");
             return false;
         }
         LogUtils.info( "Knox is supported");
