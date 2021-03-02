@@ -1,10 +1,10 @@
 # Announcement
-The generation of KPE and ELM license key is now limited only for KPP partner account. <br/>
+The generation of KPE license key is now limited only for KPP partner account. <br/>
 Therefore, if you don't already have a working license key you cannot activate Adhell3. <br/>
 
 # Disclaimer
 Adhell3 is merely an app that is using the Samsung Knox SDK APIs. <br/>
-In order to use these APIs, the Knox SDK and a KPE or ELM license key are needed. <br/>
+In order to use these APIs, the Knox SDK and a KPE license key are needed. <br/>
 These are Samsung's properties which are not available in this repository and therefore they need to be downloaded and obtained by the developer after accepting the agreement with by Samsung. <br/>
 I am only making adhell3 available as a source code project. When a developer assembles/compiles an apk from this project, the developer is then responsible for how that apk and the proprietary material it contains will be used and distributed. I don't take any responsibilities for any damages caused by this app. <br/>
 
@@ -29,9 +29,7 @@ Example: Block the domain `graph.facebook.com` systemwide, but allows it for Fac
     `com.facebook.orca|graph.facebook.com`
 
 - Support local host source<br/>
-A domains lists (provider) file can be located in internal or external storage on your device.<br/>
-For example:<br/>
-    `file:///mnt/sdcard/hosts.txt`, `file:///storage/FFFF-FFFF/hosts.txt`, etc.
+A domains lists (provider) file can be located in internal, external storage on your device or picked from some cloud providers.<br/>
 
 - Show the content of host source<br/>
 Show the list of all potentially blocked domains from all active host sources combined.<br/>
