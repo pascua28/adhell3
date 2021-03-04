@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import io.reactivex.Single;
+import io.reactivex.Completable;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_NONE;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
@@ -261,8 +261,8 @@ public final class AppComponentFactory {
         appDatabase.appPermissionDao().insert(appPermission);
     }
 
-    public Single<String> processAppComponentInBatch(boolean enabled) {
-        return Single.create(emitter -> {
+    public Completable processAppComponentInBatch(boolean enabled) {
+        return Completable.fromAction(() -> {
             if (enabled) {
                 enableTxtActivities();
                 enableTxtServices();
@@ -274,7 +274,6 @@ public final class AppComponentFactory {
                 disableTxtReceivers();
                 disableTxtProviders();
             }
-            emitter.onSuccess("Success!");
         });
     }
 

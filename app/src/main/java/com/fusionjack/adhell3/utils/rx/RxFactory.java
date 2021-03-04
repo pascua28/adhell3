@@ -17,18 +17,18 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 
-public final class RxFactory {
+final class RxFactory {
 
     private RxFactory() {
     }
 
-    public static void async(Completable observable, Scheduler scheduler, Runnable onSubscribeCallback, Runnable onCompleteCallback, Runnable onErrorCallback, Context context) {
+    static void async(Completable observable, Scheduler scheduler, Runnable onSubscribeCallback, Runnable onCompleteCallback, Runnable onErrorCallback, Context context) {
         observable.subscribeOn(scheduler)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(completableObserver(onSubscribeCallback, onCompleteCallback, onErrorCallback, context));
     }
 
-    public static CompletableObserver completableObserver(Runnable onSubscribeCallback, Runnable onCompleteCallback, Runnable onErrorCallback, Context context) {
+    private static CompletableObserver completableObserver(Runnable onSubscribeCallback, Runnable onCompleteCallback, Runnable onErrorCallback, Context context) {
         return new CompletableObserver() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
@@ -54,13 +54,13 @@ public final class RxFactory {
         };
     }
 
-    public static <T> void async(Single<T> observable, Scheduler scheduler, Runnable onSubscribeCallback, Consumer<T> onSuccessCallback, Runnable onErrorCallback, Context context) {
+    static <T> void async(Single<T> observable, Scheduler scheduler, Runnable onSubscribeCallback, Consumer<T> onSuccessCallback, Runnable onErrorCallback, Context context) {
         observable.subscribeOn(scheduler)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(singleObserver(onSubscribeCallback, onSuccessCallback, onErrorCallback, context));
     }
 
-    public static <T> SingleObserver<T> singleObserver(Runnable onSubscribeCallback, Consumer<T> onSuccessCallback, Runnable onErrorCallback, Context context) {
+    private static <T> SingleObserver<T> singleObserver(Runnable onSubscribeCallback, Consumer<T> onSuccessCallback, Runnable onErrorCallback, Context context) {
         return new SingleObserver<T>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {

@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,11 +38,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 public class AppComponentFragment extends AppFragment {
 
@@ -183,44 +177,18 @@ public class AppComponentFragment extends AppFragment {
         TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
         questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
 
-        ProgressDialog progressDialog = new ProgressDialog(context);
-        progressDialog.setCancelable(false);
-
-        SingleObserver<String> observer = new SingleObserver<String>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-            }
-
-            @Override
-            public void onSuccess(@NonNull String s) {
-                progressDialog.dismiss();
-                Toast.makeText(context, s, Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                progressDialog.dismiss();
-                Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        };
-
+        Runnable callback = () -> Toast.makeText(getContext(), "Success", Toast.LENGTH_LONG).show();
         new AlertDialog.Builder(context)
                 .setView(dialogView)
                 .setPositiveButton(R.string.button_enable, (dialog, whichButton) -> {
-                    progressDialog.setMessage(getString(R.string.dialog_appcomponent_enable_summary));
-                    progressDialog.show();
-                    AppComponentFactory.getInstance().processAppComponentInBatch(true)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(observer);
+                    new RxCompletableIoBuilder()
+                            .setShowDialog(getString(R.string.dialog_appcomponent_enable_summary), getContext())
+                            .async(AppComponentFactory.getInstance().processAppComponentInBatch(true), callback);
                 })
                 .setNegativeButton(R.string.button_disable, (dialog, whichButton) -> {
-                    progressDialog.setMessage(getString(R.string.dialog_appcomponent_disable_summary));
-                    progressDialog.show();
-                    AppComponentFactory.getInstance().processAppComponentInBatch(false)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(observer);
+                    new RxCompletableIoBuilder()
+                            .setShowDialog(getString(R.string.dialog_appcomponent_disable_summary), getContext())
+                            .async(AppComponentFactory.getInstance().processAppComponentInBatch(false), callback);
                 })
                 .setNeutralButton(android.R.string.no, null).show();
     }
