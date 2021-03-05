@@ -24,6 +24,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.HostsFileDialog;
 import com.fusionjack.adhell3.utils.dialog.PasswordDialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         passwordDialog = null;
         activationDialogFragment = null;
+        HostsFileDialog.destroy();
         LogUtils.info("onDestroy()");
     }
 

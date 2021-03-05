@@ -41,15 +41,22 @@ public final class LayoutDialogBuilder {
     }
 
     public void show(Consumer<View> onPositiveButton, Runnable onNegativeButton) {
+        AlertDialog dialog = create(onPositiveButton, onNegativeButton);
+        if (dialog != null) {
+            dialog.show();
+            DialogBuilder.styleDialog(dialog);
+        }
+    }
+
+    public AlertDialog create(Consumer<View> onPositiveButton, Runnable onNegativeButton) {
         if (dialogView != null) {
-            AlertDialog dialog = new AlertDialog.Builder(view.getContext(), R.style.DialogStyle)
+            return new AlertDialog.Builder(view.getContext(), R.style.DialogStyle)
                     .setView(dialogView)
                     .setPositiveButton(android.R.string.yes, (d, whichButton) -> onPositiveButton.accept(dialogView))
                     .setNegativeButton(android.R.string.no, (d, whichButton) -> onNegativeButton.run())
                     .create();
-            dialog.show();
-            DialogBuilder.styleDialog(dialog);
         }
+        return null;
     }
 
 }

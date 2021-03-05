@@ -84,11 +84,9 @@
     <string name="dialog_add_remote_provider_title">Add Remote Provider</string>
     <string name="dialog_add_hosts_file_title">Add Hosts File</string>
     <string name="dialog_add_hosts_file_info">
-        To add hosts file from a cloud storage, you need to install the cloud provider app.
-        \nYou will find the cloud providers listed on the left hand side of the file picker.
-        \n
-        \nTo refresh the hosts file from a cloud storage:
-        \nYou need first to refresh the folder in the cloud provider app and then swipe down the provider list.
+        Adding hosts file from a cloud storage will require cloud provider app.
+        \nTo access cloud providers click on "three short lines" on the top left corner of the file picker.
+        \nTo refresh the hosts file from cloud storage, files in the cloud provider app must be refreshed first.
     </string>
     <string name="dialog_enable_components_title">Enable All Components</string>
     <string name="dialog_enable_components_info">

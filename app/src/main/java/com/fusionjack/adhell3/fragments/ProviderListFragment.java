@@ -28,6 +28,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.HostsFileDialog;
 import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
@@ -137,9 +138,8 @@ public class ProviderListFragment extends Fragment {
         FloatingActionButton actionAddLocalProvider = view.findViewById(R.id.action_add_local_provider);
         actionAddLocalProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
-            new LayoutDialogBuilder(getView())
-                    .setLayout(R.layout.dialog_add_hosts_file)
-                    .show(dialogView -> openDocumentLauncher.launch(new String[] {"text/plain"}));
+            Consumer<View> onPositiveButton = dialogView -> openDocumentLauncher.launch(new String[] {"text/plain"});
+            HostsFileDialog.getInstance(getView(), onPositiveButton).show();
         });
 
         return view;

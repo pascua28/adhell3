@@ -111,7 +111,7 @@ public final class QuestionDialogBuilder {
                 .setView(dialogView)
                 .setPositiveButton(positiveButtonText, (dialog, whichButton) -> onPositiveButton.run())
                 .setNegativeButton(negativeButtonText, (dialog, whichButton) -> onNegativeButton.run());
-        if (onNeutralButton != null && neutralButtonText != EMPTY_ID) {
+        if (neutralButtonText != EMPTY_ID) {
             builder.setNeutralButton(neutralButtonText, (dialog, whichButton) -> onNeutralButton.run());
         }
 
