@@ -77,7 +77,7 @@ public class RestoreDatabaseRxTask implements Runnable {
                     @Override
                     public void onComplete() {
                         dialog.dismiss();
-                        DialogBuilder.showDialog(R.string.info, "Restore database is finished.\nGo to 'Home' tab and turn on Knox functionality.", context);
+                        DialogBuilder.showDialog(R.string.info, R.string.restore_database_finished, context);
                     }
                 });
     }
