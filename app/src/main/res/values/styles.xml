@@ -65,6 +65,7 @@
     <style name="DialogStyle" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="android:background">@drawable/border</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:backgroundDimEnabled">true</item>
     </style>
 
 </resources>
