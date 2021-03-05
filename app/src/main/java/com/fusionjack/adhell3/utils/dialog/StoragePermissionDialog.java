@@ -31,6 +31,7 @@ public final class StoragePermissionDialog {
     public void show() {
         if (dialog != null && !dialog.isShowing()) {
             dialog.show();
+            DialogBuilder.styleDialog(dialog);
         }
     }
 

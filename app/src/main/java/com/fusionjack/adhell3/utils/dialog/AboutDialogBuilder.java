@@ -40,8 +40,11 @@ public final class AboutDialogBuilder {
         TextView subInfoTextView = dialogView.findViewById(R.id.subInfoTextView);
         subInfoTextView.setText(subInfo);
 
-        new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(context, R.style.DialogStyle)
                 .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, null).show();
+                .setPositiveButton(android.R.string.yes, null)
+                .create();
+        dialog.show();
+        DialogBuilder.styleDialog(dialog);
     }
 }

@@ -62,4 +62,8 @@
         <item name="android:minHeight">42dp</item>
     </style>
 
+    <style name="DialogStyle" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:background">@drawable/border</item>
+    </style>
+
 </resources>

@@ -27,7 +27,7 @@ public final class PasswordDialogBuilder {
         Context context = view.getContext();
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_enter_password, (ViewGroup) view, false);
 
-        AlertDialog passwordDialog = new AlertDialog.Builder(context)
+        AlertDialog passwordDialog = new AlertDialog.Builder(context, R.style.DialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(android.R.string.yes, null)
                 .setCancelable(false)
@@ -66,9 +66,9 @@ public final class PasswordDialogBuilder {
         Context context = view.getContext();
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_set_password, (ViewGroup) view, false);
 
-        new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(context, R.style.DialogStyle)
                 .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                .setPositiveButton(android.R.string.yes, (d, whichButton) -> {
                     EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
                     String password = passwordEditText.getText().toString();
                     if (!password.isEmpty()) {
@@ -82,9 +82,12 @@ public final class PasswordDialogBuilder {
                         infoTextView.setText(R.string.dialog_empty_password);
                     }
                 })
-                .setNegativeButton(android.R.string.no, (dialog, whichButton) -> onNegativeButton.run())
+                .setNegativeButton(android.R.string.no, (d, whichButton) -> onNegativeButton.run())
                 .setCancelable(false)
-                .show();
+                .create();
+
+        dialog.show();
+        DialogBuilder.styleDialog(dialog);
     }
 
 }

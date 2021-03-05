@@ -11,7 +11,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
@@ -25,9 +24,11 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -70,21 +71,26 @@ public class DnsFragment extends AppFragment {
         actionSetDns.setOnClickListener(v -> {
             dnsFloatMenu.collapse();
 
-            View dialogView = inflater.inflate(R.layout.dialog_set_dns, container, false);
-            EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
-            EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
-            if (AppPreferences.getInstance().isDnsNotEmpty()) {
-                primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
-                secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
-            }
-            primaryDnsEditText.requestFocus();
+            Consumer<View> onCustomize = dialogView -> {
+                EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
+                EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
+                if (AppPreferences.getInstance().isDnsNotEmpty()) {
+                    primaryDnsEditText.setText(AppPreferences.getInstance().getDns1());
+                    secondaryDnsEditText.setText(AppPreferences.getInstance().getDns2());
+                }
+                primaryDnsEditText.requestFocus();
+            };
 
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        setDns(primaryDnsEditText.getText().toString(), secondaryDnsEditText.getText().toString(), listView);
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Consumer<View> onPositiveButton = dialogView -> {
+                EditText primaryDnsEditText = dialogView.findViewById(R.id.primaryDnsEditText);
+                EditText secondaryDnsEditText = dialogView.findViewById(R.id.secondaryDnsEditText);
+                setDns(primaryDnsEditText.getText().toString(), secondaryDnsEditText.getText().toString(), listView);
+            };
+
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_set_dns)
+                    .customize(onCustomize)
+                    .show(onPositiveButton);
         });
 
         return view;

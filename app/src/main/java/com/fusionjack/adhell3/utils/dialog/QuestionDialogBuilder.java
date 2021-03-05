@@ -33,7 +33,7 @@ public final class QuestionDialogBuilder {
         this.questionId = EMPTY_ID;
         this.positiveButtonText = android.R.string.yes;
         this.negativeButtonText = android.R.string.no;
-        this.neutralButtonText = android.R.string.no;
+        this.neutralButtonText = EMPTY_ID;
     }
 
     public QuestionDialogBuilder setTitle(@StringRes int titleId) {
@@ -83,6 +83,7 @@ public final class QuestionDialogBuilder {
         AlertDialog dialog = create(onPositiveButton, onNegativeButton, onNeutralButton);
         if (dialog != null) {
             dialog.show();
+            DialogBuilder.styleDialog(dialog);
         }
     }
 
@@ -106,11 +107,11 @@ public final class QuestionDialogBuilder {
             questionTextView.setText(questionId);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.DialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(positiveButtonText, (dialog, whichButton) -> onPositiveButton.run())
                 .setNegativeButton(negativeButtonText, (dialog, whichButton) -> onNegativeButton.run());
-        if (onNeutralButton != null && onNeutralButton != EMPTY_RUNNABLE) {
+        if (onNeutralButton != null && neutralButtonText != EMPTY_ID) {
             builder.setNeutralButton(neutralButtonText, (dialog, whichButton) -> onNeutralButton.run());
         }
 
