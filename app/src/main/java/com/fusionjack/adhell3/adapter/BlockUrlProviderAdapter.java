@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.adapter;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -21,8 +20,8 @@ import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
-import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.PathUtils;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
@@ -95,20 +94,7 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             return;
         }
 
-        ProgressDialog dialog = new ProgressDialog(getContext());
-        boolean showDialog = provider.lastUpdated == null;
-
-        Runnable onSubscribeCallback = () -> {
-            if (showDialog) {
-                dialog.setMessage("Loading provider ...");
-                dialog.show();
-            }
-        };
-
         Consumer<Boolean> onSuccessCallback = isValid -> {
-            if (showDialog) {
-                dialog.dismiss();
-            }
             if (!isValid) {
                 String message = String.format(Locale.ENGLISH, "The total number of unique domains exceeds the maximum limit of %d",
                         AdhellAppIntegrity.BLOCK_URL_LIMIT);
@@ -116,15 +102,14 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
             }
         };
 
-        Runnable onErrorCallback = () -> {
-            if (showDialog) {
-                dialog.dismiss();
-            }
-        };
-
-        new RxSingleIoBuilder()
-                .setShowErrorAlert(getContext())
-                .async(DomainRxTaskFactory.selectProvider(isChecked, provider), onSubscribeCallback, onSuccessCallback, onErrorCallback);
+        if (isChecked) {
+            new RxSingleIoBuilder()
+                    .setShowDialog("Loading provider ...", getContext())
+                    .async(DomainRxTaskFactory.selectProvider(isChecked, provider), onSuccessCallback);
+        } else {
+            new RxSingleIoBuilder()
+                    .async(DomainRxTaskFactory.selectProvider(isChecked, provider), onSuccessCallback);
+        }
     }
 
     private void deleteProvider(BlockUrlProvider provider) {

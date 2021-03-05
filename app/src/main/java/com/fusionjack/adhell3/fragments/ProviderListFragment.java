@@ -1,6 +1,5 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,8 +27,8 @@ import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -192,7 +191,6 @@ public class ProviderListFragment extends Fragment {
     }
 
     private void updateAllProviders(SwipeRefreshLayout swipeContainer) {
-        ProgressDialog dialog = new ProgressDialog(context);
         boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(context);
         if (!hasInternetAccess) {
             swipeContainer.setRefreshing(false);
@@ -200,11 +198,11 @@ public class ProviderListFragment extends Fragment {
         } else {
             Runnable onSubscribeCallback = () -> {
                 swipeContainer.setRefreshing(false);
-                dialog.setMessage("Updating providers ...");
-                dialog.show();
             };
-            Runnable dismissCallback = dialog::dismiss;
-            new RxCompletableComputationBuilder().async(DomainRxTaskFactory.updateAllProviders(), onSubscribeCallback, dismissCallback, dismissCallback);
+            Runnable emptyCallback = () -> {};
+            new RxCompletableComputationBuilder()
+                    .setShowDialog("Updating providers ...", getContext())
+                    .async(DomainRxTaskFactory.updateAllProviders(), onSubscribeCallback, emptyCallback, emptyCallback);
         }
     }
 

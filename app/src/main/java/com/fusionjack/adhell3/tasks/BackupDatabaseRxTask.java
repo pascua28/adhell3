@@ -1,9 +1,6 @@
 package com.fusionjack.adhell3.tasks;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-
-import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.DatabaseFactory;
@@ -18,19 +15,9 @@ import io.reactivex.functions.Action;
 public class BackupDatabaseRxTask implements Runnable {
 
     private final WeakReference<Context> contextWeakReference;
-    private ProgressDialog dialog;
 
     public BackupDatabaseRxTask(Context context) {
         this.contextWeakReference = new WeakReference<>(context);
-        createDialog();
-    }
-
-    private void createDialog() {
-        Context context = contextWeakReference.get();
-        if (context != null) {
-            this.dialog = new ProgressDialog(context);
-            dialog.setCancelable(false);
-        }
     }
 
     @Override
@@ -40,22 +27,11 @@ public class BackupDatabaseRxTask implements Runnable {
             return;
         }
 
-        Runnable onSubscribeCallback = () -> {
-            dialog.setMessage("Backing up database ...");
-            dialog.show();
-        };
-
-        Runnable onCompleteCallback = () -> {
-            dialog.dismiss();
-            DialogBuilder.showDialog(R.string.info, "Backup database is finished.", context);
-        };
-
-        Runnable onErrorCallback = () -> dialog.dismiss();
-
+        Runnable onCompleteCallback = () -> DialogBuilder.showDialog(R.string.info, "Backup database is finished.", context);
         Action action = () -> DatabaseFactory.getInstance().backupDatabase();
 
         new RxCompletableIoBuilder()
-                .showErrorAlert(context)
-                .async(Completable.fromAction(action), onSubscribeCallback, onCompleteCallback, onErrorCallback);
+                .setShowDialog("Backing up database ...", context)
+                .async(Completable.fromAction(action), onCompleteCallback);
     }
 }
