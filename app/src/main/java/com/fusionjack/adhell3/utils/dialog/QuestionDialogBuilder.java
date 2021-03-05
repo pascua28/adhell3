@@ -80,32 +80,41 @@ public final class QuestionDialogBuilder {
     }
 
     public void show(Runnable onPositiveButton, Runnable onNegativeButton, Runnable onNeutralButton) {
-        if (view != null && view.getContext() != null) {
-            Context context = view.getContext();
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) view, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-
-            if (titleId == EMPTY_ID) {
-                titleTextView.setText(title);
-            } else {
-                titleTextView.setText(titleId);
-            }
-            if (questionId == EMPTY_ID) {
-                questionTextView.setText(question);
-            } else {
-                questionTextView.setText(questionId);
-            }
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(positiveButtonText, (dialog, whichButton) -> onPositiveButton.run())
-                    .setNegativeButton(negativeButtonText, (dialog, whichButton) -> onNegativeButton.run());
-            if (onNegativeButton != EMPTY_RUNNABLE) {
-                    builder.setNeutralButton(neutralButtonText, (dialog, whichButton) -> onNeutralButton.run());
-            }
-            builder.show();
+        AlertDialog dialog = create(onPositiveButton, onNegativeButton, onNeutralButton);
+        if (dialog != null) {
+            dialog.show();
         }
+    }
+
+    public AlertDialog create(Runnable onPositiveButton, Runnable onNegativeButton, Runnable onNeutralButton) {
+        if (view == null || view.getContext() == null) {
+            return null;
+        }
+        Context context = view.getContext();
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) view, false);
+        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
+        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+
+        if (titleId == EMPTY_ID) {
+            titleTextView.setText(title);
+        } else {
+            titleTextView.setText(titleId);
+        }
+        if (questionId == EMPTY_ID) {
+            questionTextView.setText(question);
+        } else {
+            questionTextView.setText(questionId);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setView(dialogView)
+                .setPositiveButton(positiveButtonText, (dialog, whichButton) -> onPositiveButton.run())
+                .setNegativeButton(negativeButtonText, (dialog, whichButton) -> onNegativeButton.run());
+        if (onNeutralButton != null && onNeutralButton != EMPTY_RUNNABLE) {
+            builder.setNeutralButton(neutralButtonText, (dialog, whichButton) -> onNeutralButton.run());
+        }
+
+        return builder.create();
     }
 
 }

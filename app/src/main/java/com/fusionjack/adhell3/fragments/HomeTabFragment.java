@@ -43,13 +43,14 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.DocumentFileUtils;
 import com.fusionjack.adhell3.utils.DocumentFileWriter;
 import com.fusionjack.adhell3.utils.FirewallUtils;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
 import com.fusionjack.adhell3.utils.SharedPreferenceStringLiveData;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
+import com.fusionjack.adhell3.utils.dialog.StoragePermissionDialog;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
@@ -220,13 +221,16 @@ public class HomeTabFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        StoragePermissionDialog.destroy();
+    }
+
     private void showStoragePermissionDialog() {
         Runnable onPositiveButton = () -> openDocumentTreeLauncher.launch(Uri.fromFile(Environment.getExternalStorageDirectory()));
         Runnable onNegativeButton = this::cacheApps;
-        new QuestionDialogBuilder(getView())
-                .setTitle(R.string.dialog_storage_permission_title)
-                .setQuestion(R.string.dialog_storage_permission_summary)
-                .show(onPositiveButton, onNegativeButton);
+        StoragePermissionDialog.getInstance(getView(), onPositiveButton, onNegativeButton).show();
     }
 
     private void cacheApps() {
