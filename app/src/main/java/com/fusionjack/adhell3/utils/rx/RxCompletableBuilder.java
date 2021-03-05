@@ -2,6 +2,10 @@ package com.fusionjack.adhell3.utils.rx;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+
+import com.fusionjack.adhell3.R;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -52,11 +56,12 @@ public class RxCompletableBuilder {
     public void async(Completable observable, Runnable onSubscribeCallback, Runnable onCompletableCallback, Runnable onErrorCallback) {
         Context context = Optional.ofNullable(weakReference).map(WeakReference::get).orElse(null);
         if (showDialog) {
-            Optional.ofNullable(context).map(ProgressDialog::new).ifPresent(dialog -> {
+            Optional.ofNullable(context).map(ctx -> new ProgressDialog(ctx, R.style.DialogStyle)).ifPresent(dialog -> {
                 Runnable onSubscribe = () -> {
                     dialog.setMessage(dialogMessage);
                     dialog.setCancelable(false);
                     dialog.show();
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     onSubscribeCallback.run();
                 };
                 Runnable onComplete = () -> {

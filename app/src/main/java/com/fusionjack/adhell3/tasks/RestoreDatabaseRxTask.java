@@ -2,6 +2,8 @@ package com.fusionjack.adhell3.tasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.AdhellFactory;
@@ -31,7 +33,7 @@ public class RestoreDatabaseRxTask implements Runnable {
     private void createDialog() {
         Context context = contextWeakReference.get();
         if (context != null) {
-            this.dialog = new ProgressDialog(context);
+            this.dialog = new ProgressDialog(context, R.style.DialogStyle);
             dialog.setCancelable(false);
         }
     }
@@ -59,6 +61,7 @@ public class RestoreDatabaseRxTask implements Runnable {
                     public void onSubscribe(@NonNull Disposable d) {
                         dialog.setMessage("Restoring database, please wait ...");
                         dialog.show();
+                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     }
 
                     @Override
