@@ -10,11 +10,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Message;
+import android.util.Patterns;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AlertDialog;
-import android.util.Patterns;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
@@ -28,6 +27,7 @@ import com.fusionjack.adhell3.db.entity.BlockUrl;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.receiver.CustomDeviceAdminReceiver;
+import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
@@ -118,18 +118,11 @@ public final class AdhellFactory {
     public void createNotSupportedDialog(Context context) {
         String knoxIsSupported = "Knox Enterprise License Manager is " + (knoxEnterpriseLicenseManager == null ? "not available" : "available");
         String knoxApiLevel = "Knox API Level: " + EnterpriseDeviceManager.getAPILevel();
-        new AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.not_supported_dialog_title))
-                .setMessage(knoxIsSupported + "\n" + knoxApiLevel)
-                .show();
+        DialogBuilder.showDialog(R.string.not_supported_dialog_title, knoxIsSupported + "\n" + knoxApiLevel, context);
     }
 
     public void createNoInternetConnectionDialog(Context context) {
-        new AlertDialog.Builder(context)
-                .setIcon(R.drawable.ic_error)
-                .setTitle(context.getString(R.string.no_internet_connection_dialog_title))
-                .setMessage(context.getString(R.string.no_internet_connection))
-                .show();
+        DialogBuilder.showDialog(R.string.no_internet_connection_dialog_title, R.string.no_internet_connection, context);
     }
 
     public void setAppComponentToggle(boolean enabled) {

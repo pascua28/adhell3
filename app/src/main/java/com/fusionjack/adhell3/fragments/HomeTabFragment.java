@@ -21,7 +21,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -44,6 +43,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.AppDiff;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.DocumentFileUtils;
 import com.fusionjack.adhell3.utils.DocumentFileWriter;
 import com.fusionjack.adhell3.utils.FirewallUtils;
@@ -221,18 +221,12 @@ public class HomeTabFragment extends Fragment {
     }
 
     private void showStoragePermissionDialog() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_storage_permission_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_storage_permission_summary);
-        new AlertDialog.Builder(getContext())
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    openDocumentTreeLauncher.launch(Uri.fromFile(Environment.getExternalStorageDirectory()));
-                })
-                .setNegativeButton(android.R.string.no, (dialog, which) -> cacheApps())
-                .show();
+        Runnable onPositiveButton = () -> openDocumentTreeLauncher.launch(Uri.fromFile(Environment.getExternalStorageDirectory()));
+        Runnable onNegativeButton = this::cacheApps;
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.dialog_storage_permission_title)
+                .setQuestion(R.string.dialog_storage_permission_summary)
+                .show(onPositiveButton, onNegativeButton);
     }
 
     private void cacheApps() {
@@ -418,18 +412,14 @@ public class HomeTabFragment extends Fragment {
 
         blockedDomainsListView.setAdapter(blockedUrlAdapter);
         blockedDomainsListView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, blockedDomainsListView, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.dialog_whitelist_domain_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.dialog_add_to_whitelist_question);
-            new AlertDialog.Builder(getContext())
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        ReportBlockedUrl blockedUrl = blockedUrls.get(position);
-                        addBlockedUrlToWhitelist(blockedUrl);
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Runnable onPositiveButton = () -> {
+                ReportBlockedUrl blockedUrl = blockedUrls.get(position);
+                addBlockedUrlToWhitelist(blockedUrl);
+            };
+            new QuestionDialogBuilder(getView())
+                    .setTitle(R.string.dialog_whitelist_domain_title)
+                    .setQuestion(R.string.dialog_add_to_whitelist_question)
+                    .show(onPositiveButton);
         });
 
         Consumer<LiveData<List<ReportBlockedUrl>>> callback = liveData -> {

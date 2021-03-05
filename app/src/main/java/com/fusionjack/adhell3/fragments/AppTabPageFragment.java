@@ -1,33 +1,28 @@
 package com.fusionjack.adhell3.fragments;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
-import com.fusionjack.adhell3.db.AppDatabase;
-import com.fusionjack.adhell3.db.DatabaseFactory;
-import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.tasks.ToggleAppInfoRxTask;
-import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.LogUtils;
-import com.samsung.android.knox.application.ApplicationPolicy;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
+import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
+import com.fusionjack.adhell3.viewmodel.AppViewModel;
 
-import java.util.List;
+import io.reactivex.Completable;
 
 import static com.fusionjack.adhell3.db.repository.AppRepository.Type.UNKNOWN;
 
@@ -50,24 +45,27 @@ public class AppTabPageFragment extends AppFragment {
 
     @Override
     protected AppRepository.Type getType() {
-        this.page = getArguments().getInt(ARG_PAGE);
         AppRepository.Type type = UNKNOWN;
-        switch (page) {
-            case PACKAGE_DISABLER_PAGE:
-                type = AppRepository.Type.DISABLER;
-                break;
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            this.page = bundle.getInt(ARG_PAGE);
+            switch (page) {
+                case PACKAGE_DISABLER_PAGE:
+                    type = AppRepository.Type.DISABLER;
+                    break;
 
-            case MOBILE_RESTRICTER_PAGE:
-                type = AppRepository.Type.MOBILE_RESTRICTED;
-                break;
+                case MOBILE_RESTRICTER_PAGE:
+                    type = AppRepository.Type.MOBILE_RESTRICTED;
+                    break;
 
-            case WIFI_RESTRICTER_PAGE:
-                type = AppRepository.Type.WIFI_RESTRICTED;
-                break;
+                case WIFI_RESTRICTER_PAGE:
+                    type = AppRepository.Type.WIFI_RESTRICTED;
+                    break;
 
-            case WHITELIST_PAGE:
-                type = AppRepository.Type.WHITELISTED;
-                break;
+                case WHITELIST_PAGE:
+                    type = AppRepository.Type.WHITELISTED;
+                    break;
+            }
         }
         return type;
     }
@@ -118,61 +116,34 @@ public class AppTabPageFragment extends AppFragment {
     }
 
     private void enableAllPackages() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.enable_apps_dialog_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.enable_apps_dialog_text);
+        Runnable onPositiveButton = () -> {
+            Runnable callback = () -> Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
+            new RxCompletableIoBuilder().async(Completable.fromAction(this::enableRespectiveApps), callback);
+        };
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.enable_apps_dialog_title)
+                .setQuestion(R.string.enable_apps_dialog_text)
+                .show(onPositiveButton);
+    }
 
-        new AlertDialog.Builder(context)
-            .setView(dialogView)
-            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                Toast.makeText(getContext(), getString(R.string.enabled_all_apps), Toast.LENGTH_SHORT).show();
-                AsyncTask.execute(() -> {
-                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
-                    switch (page) {
-                        case PACKAGE_DISABLER_PAGE:
-                            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
-                            List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();
-                            for (AppInfo app : disabledAppList) {
-                                app.disabled = false;
-                                if (appPolicy != null) {
-                                    appPolicy.setEnableApplication(app.packageName);
-                                }
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.disabledPackageDao().deleteAll();
-                            break;
+    private void enableRespectiveApps() {
+        AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
+        switch (page) {
+            case PACKAGE_DISABLER_PAGE:
+                viewModel.enableAllDisablerApps();
+                break;
 
-                        case MOBILE_RESTRICTER_PAGE:
-                            List<AppInfo> mobileAppList = appDatabase.applicationInfoDao().getMobileRestrictedApps();
-                            for (AppInfo app : mobileAppList) {
-                                app.mobileRestricted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.MOBILE_RESTRICTED_TYPE);
-                            break;
+            case MOBILE_RESTRICTER_PAGE:
+                viewModel.enableAllMobileApps();
+                break;
 
-                        case WIFI_RESTRICTER_PAGE:
-                            List<AppInfo> wifiAppList = appDatabase.applicationInfoDao().getWifiRestrictedApps();
-                            for (AppInfo app : wifiAppList) {
-                                app.wifiRestricted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.restrictedPackageDao().deleteByType(DatabaseFactory.WIFI_RESTRICTED_TYPE);
-                            break;
+            case WIFI_RESTRICTER_PAGE:
+                viewModel.enableAllWifiApps();
+                break;
 
-                        case WHITELIST_PAGE:
-                            List<AppInfo> whitelistedAppList = appDatabase.applicationInfoDao().getWhitelistedApps();
-                            for (AppInfo app : whitelistedAppList) {
-                                app.adhellWhitelisted = false;
-                                appDatabase.applicationInfoDao().update(app);
-                            }
-                            appDatabase.firewallWhitelistedPackageDao().deleteAll();
-                            break;
-                    }
-                });
-            })
-            .setNegativeButton(android.R.string.no, null).show();
+            case WHITELIST_PAGE:
+                viewModel.enableAllWhitelistApps();
+                break;
+        }
     }
 }

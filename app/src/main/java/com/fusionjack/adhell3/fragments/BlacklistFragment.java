@@ -7,17 +7,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.BlockUrlPatternsMatch;
+import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 
@@ -57,19 +57,14 @@ public class BlacklistFragment extends UserListFragment {
         ListView blacklistView = view.findViewById(R.id.blackListView);
         blacklistView.setAdapter(adapter);
         blacklistView.setOnItemClickListener((parent, view1, position, id) -> {
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-            titleTextView.setText(R.string.delete_domain_firewall_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_domain_firewall_dialog_text);
-
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        String item = (String) parent.getItemAtPosition(position);
-                        viewModel.removeItem(item, deleteObserver);
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Runnable onPositiveButton = () -> {
+                String item = (String) parent.getItemAtPosition(position);
+                viewModel.removeItem(item, deleteObserver);
+            };
+            new QuestionDialogBuilder(getView())
+                    .setTitle(R.string.delete_domain_firewall_dialog_title)
+                    .setQuestion(R.string.delete_domain_firewall_dialog_text)
+                    .show(onPositiveButton);
         });
 
         FloatingActionsMenu blackFloatMenu = view.findViewById(R.id.blacklist_actions);
@@ -87,38 +82,36 @@ public class BlacklistFragment extends UserListFragment {
         FloatingActionButton actionAddBlackDomain = view.findViewById(R.id.action_add_domain);
         actionAddBlackDomain.setOnClickListener(v -> {
             blackFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_blacklist_domain, container, false);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
-                        if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
-                            Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
-                        } else {
-                            viewModel.addItem(domainToAdd, addObserver);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Consumer<View> onPositiveButton = dialogView -> {
+                EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                String domainToAdd = domainEditText.getText().toString().trim().toLowerCase();
+                if (!BlockUrlPatternsMatch.isUrlValid(domainToAdd)) {
+                    Toast.makeText(context, "Url not valid. Please check", Toast.LENGTH_SHORT).show();
+                } else {
+                    viewModel.addItem(domainToAdd, addObserver);
+                }
+            };
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_blacklist_domain)
+                    .show(onPositiveButton);
         });
 
         FloatingActionButton actionAddFirewallRule = view.findViewById(R.id.action_add_firewall_rule);
         actionAddFirewallRule.setOnClickListener(v -> {
             blackFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_blacklist_rule, container, false);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
-                        String ruleToAdd = ruleEditText.getText().toString().trim().toLowerCase();
-                        StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
-                        if (tokens.countTokens() != 3) {
-                            Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
-                        } else {
-                            viewModel.addItem(ruleToAdd, addObserver);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Consumer<View> onPositiveButton = dialogView -> {
+                EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
+                String ruleToAdd = ruleEditText.getText().toString().trim().toLowerCase();
+                StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
+                if (tokens.countTokens() != 3) {
+                    Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
+                } else {
+                    viewModel.addItem(ruleToAdd, addObserver);
+                }
+            };
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_blacklist_rule)
+                    .show(onPositiveButton);
         });
 
         return view;

@@ -5,7 +5,9 @@ import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.DatabaseFactory;
+import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 
 import java.lang.ref.WeakReference;
@@ -45,10 +47,7 @@ public class BackupDatabaseRxTask implements Runnable {
 
         Runnable onCompleteCallback = () -> {
             dialog.dismiss();
-            new AlertDialog.Builder(context)
-                    .setTitle("Info")
-                    .setMessage("Backup database is finished.")
-                    .show();
+            DialogBuilder.showDialog(R.string.info, "Backup database is finished.", context);
         };
 
         Runnable onErrorCallback = () -> dialog.dismiss();

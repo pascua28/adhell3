@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -27,6 +26,7 @@ import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.UiUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
@@ -171,45 +171,39 @@ public class AppComponentFragment extends AppFragment {
     }
 
     private void batchOperation() {
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_appcomponent_batch_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_appcomponent_batch_summary);
-
         Runnable callback = () -> Toast.makeText(getContext(), "Success", Toast.LENGTH_LONG).show();
-        new AlertDialog.Builder(context)
-                .setView(dialogView)
-                .setPositiveButton(R.string.button_enable, (dialog, whichButton) -> {
-                    new RxCompletableIoBuilder()
-                            .setShowDialog(getString(R.string.dialog_appcomponent_enable_summary), getContext())
-                            .async(AppComponentFactory.getInstance().processAppComponentInBatch(true), callback);
-                })
-                .setNegativeButton(R.string.button_disable, (dialog, whichButton) -> {
-                    new RxCompletableIoBuilder()
-                            .setShowDialog(getString(R.string.dialog_appcomponent_disable_summary), getContext())
-                            .async(AppComponentFactory.getInstance().processAppComponentInBatch(false), callback);
-                })
-                .setNeutralButton(android.R.string.no, null).show();
+        Runnable onPositiveButton = () -> {
+            new RxCompletableIoBuilder()
+                    .setShowDialog(getString(R.string.dialog_appcomponent_enable_summary), getContext())
+                    .async(AppComponentFactory.getInstance().processAppComponentInBatch(true), callback);
+        };
+        Runnable onNegativeButton = () -> {
+            new RxCompletableIoBuilder()
+                    .setShowDialog(getString(R.string.dialog_appcomponent_disable_summary), getContext())
+                    .async(AppComponentFactory.getInstance().processAppComponentInBatch(false), callback);
+        };
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.dialog_appcomponent_batch_title)
+                .setQuestion(R.string.dialog_appcomponent_batch_summary)
+                .setPositiveButtonText(R.string.button_enable)
+                .setNegativeButtonText(R.string.button_disable)
+                .setNeutralButtonText(android.R.string.no)
+                .show(onPositiveButton, onNegativeButton);
     }
 
     private void enableAllAppComponents() {
-        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.dialog_enable_components_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_enable_components_info);
-        new AlertDialog.Builder(context)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                    Runnable callback = () -> {
-                        if (isDisabledComponentMode) {
-                            showDisabledOnly();
-                        }
-                    };
-                    AppComponentViewModel viewModel = new ViewModelProvider(this).get(AppComponentViewModel.class);
-                    new RxCompletableIoBuilder().async(viewModel.enableAllAppComponents(), callback);
-                })
-                .setNegativeButton(android.R.string.no, null).show();
+        Runnable onPositiveButton = () -> {
+            Runnable callback = () -> {
+                if (isDisabledComponentMode) {
+                    showDisabledOnly();
+                }
+            };
+            AppComponentViewModel viewModel = new ViewModelProvider(this).get(AppComponentViewModel.class);
+            new RxCompletableIoBuilder().async(viewModel.enableAllAppComponents(), callback);
+        };
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.dialog_enable_components_title)
+                .setQuestion(R.string.dialog_enable_components_info)
+                .show(onPositiveButton);
     }
 }

@@ -3,11 +3,11 @@ package com.fusionjack.adhell3.tasks;
 import android.app.ProgressDialog;
 import android.content.Context;
 
-import androidx.appcompat.app.AlertDialog;
-
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 
 import java.lang.ref.WeakReference;
 
@@ -70,19 +70,13 @@ public class RestoreDatabaseRxTask implements Runnable {
                     public void onError(@NonNull Throwable e) {
                         dialog.dismiss();
                         LogUtils.error(e.getMessage(), e);
-                        new AlertDialog.Builder(context)
-                                .setTitle("Error")
-                                .setMessage(e.getMessage())
-                                .show();
+                        DialogBuilder.showDialog(R.string.error, e.getMessage(), context);
                     }
 
                     @Override
                     public void onComplete() {
                         dialog.dismiss();
-                        new AlertDialog.Builder(context)
-                                .setTitle("Info")
-                                .setMessage("Restore database is finished.\nGo to 'Home' tab and turn on Knox functionality.")
-                                .show();
+                        DialogBuilder.showDialog(R.string.info, "Restore database is finished.\nGo to 'Home' tab and turn on Knox functionality.", context);
                     }
                 });
     }

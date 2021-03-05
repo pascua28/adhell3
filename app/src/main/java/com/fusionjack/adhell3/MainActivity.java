@@ -4,12 +4,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -28,7 +24,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.fusionjack.adhell3.utils.dialog.PasswordDialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
@@ -83,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         activationDialogFragment = new ActivationDialogFragment();
         activationDialogFragment.setCancelable(false);
-        passwordDialog = createPasswordDialog();
+        passwordDialog = PasswordDialogBuilder.showEnterPassword(findViewById(android.R.id.content), this::isKnoxValid);
 
         // Early exit if the device doesn't support Knox
         if (!DeviceAdminInteractor.getInstance().isSupported()) {
@@ -210,37 +206,5 @@ public class MainActivity extends AppCompatActivity {
         Fragment activationDialog = getSupportFragmentManager().findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
         return activationDialog != null;
     }
-
-    private AlertDialog createPasswordDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_enter_password, findViewById(android.R.id.content), false);
-        AlertDialog passwordDialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, null)
-                .setCancelable(false)
-                .create();
-
-        passwordDialog.setOnShowListener(dialogInterface -> {
-            Button button = passwordDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            button.setOnClickListener(view -> {
-                EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
-                String password = passwordEditText.getText().toString();
-                try {
-                    TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
-                    String passwordHash = AppPreferences.getInstance().getPasswordHash();
-                    if (PasswordStorage.verifyPassword(password, passwordHash)) {
-                        infoTextView.setText(R.string.dialog_enter_password_summary);
-                        passwordEditText.setText("");
-                        passwordDialog.dismiss();
-                        isKnoxValid();
-                    } else {
-                        infoTextView.setText(R.string.dialog_wrong_password);
-                    }
-                } catch (PasswordStorage.CannotPerformOperationException | PasswordStorage.InvalidHashException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        return passwordDialog;
-    }
+    
 }

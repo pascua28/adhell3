@@ -4,7 +4,9 @@ import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 
 import java.util.function.Consumer;
 
@@ -45,10 +47,7 @@ final class RxFactory {
                 onErrorCallback.run();
                 LogUtils.error(e.getMessage(), e);
                 if (context != null) {
-                    new AlertDialog.Builder(context)
-                            .setTitle("Error")
-                            .setMessage(e.getMessage())
-                            .show();
+                    DialogBuilder.showDialog(R.string.error, e.getMessage(), context);
                 }
             }
         };
@@ -77,10 +76,7 @@ final class RxFactory {
                 onErrorCallback.run();
                 LogUtils.error(e.getMessage(), e);
                 if (context != null) {
-                    new AlertDialog.Builder(context)
-                            .setTitle("Error")
-                            .setMessage(e.getMessage())
-                            .show();
+                    DialogBuilder.showDialog(R.string.error, e.getMessage(), context);
                 }
             }
         };

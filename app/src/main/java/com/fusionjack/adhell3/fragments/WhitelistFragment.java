@@ -7,16 +7,16 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.UserListViewModel;
 
@@ -54,19 +54,14 @@ public class WhitelistFragment extends UserListFragment {
         ListView whiteListView = view.findViewById(R.id.whiteListView);
         whiteListView.setAdapter(adapter);
         whiteListView.setOnItemClickListener((parent, view1, position, id) -> {
-            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_domain_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_domain_dialog_text);
-
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        String item = (String) parent.getItemAtPosition(position);
-                        viewModel.removeItem(item, deleteObserver);
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Runnable onPositiveButton = () -> {
+                String item = (String) parent.getItemAtPosition(position);
+                viewModel.removeItem(item, deleteObserver);
+            };
+            new QuestionDialogBuilder(getView())
+                    .setTitle(R.string.delete_domain_dialog_title)
+                    .setQuestion(R.string.delete_domain_dialog_text)
+                    .show(onPositiveButton);
         });
 
         FloatingActionsMenu whiteFloatMenu = view.findViewById(R.id.whitelist_actions);
@@ -85,21 +80,21 @@ public class WhitelistFragment extends UserListFragment {
         actionAddWhiteDomain.setIcon(R.drawable.ic_add_domain);
         actionAddWhiteDomain.setOnClickListener(v -> {
             whiteFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_whitelist_domain, container, false);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
-                        String domainToAdd = domainEditText.getText().toString();
-                        try {
-                            viewModel.validateDomain(domainToAdd);
-                            viewModel.addItem(domainToAdd, addObserver);
-                        } catch (IllegalArgumentException e) {
-                            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Consumer<View> onPositiveButton = dialogView -> {
+                EditText domainEditText = dialogView.findViewById(R.id.domainEditText);
+                String domainToAdd = domainEditText.getText().toString();
+                try {
+                    viewModel.validateDomain(domainToAdd);
+                    viewModel.addItem(domainToAdd, addObserver);
+                } catch (IllegalArgumentException e) {
+                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            };
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_whitelist_domain)
+                    .show(onPositiveButton);
         });
+
         return view;
     }
 }

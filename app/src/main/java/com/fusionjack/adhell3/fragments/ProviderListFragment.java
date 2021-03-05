@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
@@ -29,6 +28,7 @@ import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.dialog.LayoutDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
@@ -121,31 +121,26 @@ public class ProviderListFragment extends Fragment {
         FloatingActionButton actionAddRemoteProvider = view.findViewById(R.id.action_add_remote_provider);
         actionAddRemoteProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_add_remote_provider, container, false);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        EditText urlEditText = dialogView.findViewById(R.id.urlEditText);
-                        String providerUrl = urlEditText.getText().toString();
-                        if (URLUtil.isValidUrl(providerUrl)) {
-                            addProvider(providerUrl);
-                        } else {
-                            Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            Consumer<View> onPositiveButton = dialogView -> {
+                EditText urlEditText = dialogView.findViewById(R.id.urlEditText);
+                String providerUrl = urlEditText.getText().toString();
+                if (URLUtil.isValidUrl(providerUrl)) {
+                    addProvider(providerUrl);
+                } else {
+                    Toast.makeText(getContext(), "Url is invalid", Toast.LENGTH_LONG).show();
+                }
+            };
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_add_remote_provider)
+                    .show(onPositiveButton);
         });
 
         FloatingActionButton actionAddLocalProvider = view.findViewById(R.id.action_add_local_provider);
         actionAddLocalProvider.setOnClickListener(v -> {
             providerFloatMenu.collapse();
-            View dialogView = inflater.inflate(R.layout.dialog_add_hosts_file, container, false);
-            new AlertDialog.Builder(context)
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        openDocumentLauncher.launch(new String[] {"text/plain"});
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            new LayoutDialogBuilder(getView())
+                    .setLayout(R.layout.dialog_add_hosts_file)
+                    .show(dialogView -> openDocumentLauncher.launch(new String[] {"text/plain"}));
         });
 
         return view;

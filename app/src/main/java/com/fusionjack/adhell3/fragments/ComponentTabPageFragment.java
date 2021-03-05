@@ -10,13 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -35,6 +33,7 @@ import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.UiUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
@@ -213,24 +212,20 @@ public class ComponentTabPageFragment extends Fragment {
 
     private void enableAllComponents() {
         AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
+            Runnable onPositiveButton = () -> {
+                Action action = () -> page.enableAppComponents(packageName);
+                new RxCompletableIoBuilder().async(Completable.fromAction(action));
+            };
 
-            TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
             String titlePlaceholder = getResources().getString(R.string.enable_apps_component_dialog_title);
-            titleTextView.setText(String.format(titlePlaceholder, page.getName()));
-
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
+            String title = String.format(titlePlaceholder, page.getName());
             String questionPlaceholder = getResources().getString(R.string.enable_apps_component_dialog_text);
-            questionTextView.setText(String.format(questionPlaceholder, page.getName()));
+            String question = String.format(questionPlaceholder, page.getName());
 
-            new AlertDialog.Builder(getContext())
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        Action action = () -> page.enableAppComponents(packageName);
-                        new RxCompletableIoBuilder().async(Completable.fromAction(action));
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .show();
+            new QuestionDialogBuilder(getView())
+                    .setTitle(title)
+                    .setQuestion(question)
+                    .show(onPositiveButton);
         });
     }
 

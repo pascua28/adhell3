@@ -13,11 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -29,6 +27,7 @@ import com.fusionjack.adhell3.fragments.HomeTabFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
@@ -206,33 +205,17 @@ public class ActivationDialogFragment extends DialogFragment {
     }
 
     private void backupDatabase() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.backup_database_dialog_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.backup_database_dialog_text);
-
-        new AlertDialog.Builder(getContext())
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                        new BackupDatabaseRxTask(getContext()).run()
-                )
-                .setNegativeButton(android.R.string.no, null).show();
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.backup_database_dialog_title)
+                .setQuestion(R.string.backup_database_dialog_text)
+                .show(() -> new BackupDatabaseRxTask(getContext()).run());
     }
 
     private void deleteAdhell3() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.delete_app_dialog_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.delete_app_dialog_text);
-
-        Context context = getContext();
-        new AlertDialog.Builder(context)
-                .setView(dialogView)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                        AdhellFactory.uninstall(context, this))
-                .setNegativeButton(android.R.string.no, null).show();
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.delete_app_dialog_title)
+                .setQuestion(R.string.delete_app_dialog_text)
+                .show(() -> AdhellFactory.uninstall(getContext(), this));
     }
 
     private void setAdminState(boolean enabled) {

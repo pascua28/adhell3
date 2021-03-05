@@ -15,13 +15,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.db.entity.BlockUrlProvider;
 import com.fusionjack.adhell3.tasks.DomainRxTaskFactory;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.PathUtils;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -72,19 +72,10 @@ public class BlockUrlProviderAdapter extends ArrayAdapter<BlockUrlProvider> {
 
         deleteUrlImageView.setVisibility(blockUrlProvider.deletable ? View.VISIBLE : View.INVISIBLE);
         deleteUrlImageView.setOnClickListener(imageView -> {
-            View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, parent, false);
-            TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-            titlTextView.setText(R.string.delete_provider_dialog_title);
-            TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-            questionTextView.setText(R.string.delete_provider_dialog_text);
-
-            new AlertDialog.Builder(getContext())
-                    .setView(dialogView)
-                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                        BlockUrlProvider provider = getItem(position);
-                        deleteProvider(provider);
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            new QuestionDialogBuilder(parent)
+                    .setTitle(R.string.delete_provider_dialog_title)
+                    .setQuestion(R.string.delete_provider_dialog_text)
+                    .show(() -> deleteProvider(getItem(position)));
         });
 
         return convertView;

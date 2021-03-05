@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +25,7 @@ import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 
 import java.util.List;
 
@@ -138,43 +138,39 @@ public class DnsFragment extends AppFragment {
     }
 
     private void toggleAllApps() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_question, (ViewGroup) getView(), false);
-        TextView titlTextView = dialogView.findViewById(R.id.titleTextView);
-        titlTextView.setText(R.string.dialog_toggle_title);
-        TextView questionTextView = dialogView.findViewById(R.id.questionTextView);
-        questionTextView.setText(R.string.dialog_toggle_info);
-        new AlertDialog.Builder(context)
-            .setView(dialogView)
-            .setPositiveButton(android.R.string.yes, (dialog, whichButton) ->
-                Completable.fromAction(() -> {
-                    AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
+        Runnable onPositiveButton = () -> {
+            Completable.fromAction(() -> {
+                AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();
 
-                    boolean isAllEnabled = AppPreferences.getInstance().isDnsAllAppsEnabled();
-                    if (isAllEnabled) {
-                        List<AppInfo> dnsApps = appDatabase.applicationInfoDao().getDnsApps();
-                        for (AppInfo app : dnsApps) {
-                            app.hasCustomDns = false;
-                            appDatabase.applicationInfoDao().update(app);
-                        }
-                        appDatabase.dnsPackageDao().deleteAll();
-                    } else {
-                        appDatabase.dnsPackageDao().deleteAll();
-                        List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
-                        for (AppInfo app : userApps) {
-                            app.hasCustomDns = true;
-                            appDatabase.applicationInfoDao().update(app);
-                            DnsPackage dnsPackage = new DnsPackage();
-                            dnsPackage.packageName = app.packageName;
-                            dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
-                            appDatabase.dnsPackageDao().insert(dnsPackage);
-                        }
+                boolean isAllEnabled = AppPreferences.getInstance().isDnsAllAppsEnabled();
+                if (isAllEnabled) {
+                    List<AppInfo> dnsApps = appDatabase.applicationInfoDao().getDnsApps();
+                    for (AppInfo app : dnsApps) {
+                        app.hasCustomDns = false;
+                        appDatabase.applicationInfoDao().update(app);
                     }
+                    appDatabase.dnsPackageDao().deleteAll();
+                } else {
+                    appDatabase.dnsPackageDao().deleteAll();
+                    List<AppInfo> userApps = appDatabase.applicationInfoDao().getUserApps();
+                    for (AppInfo app : userApps) {
+                        app.hasCustomDns = true;
+                        appDatabase.applicationInfoDao().update(app);
+                        DnsPackage dnsPackage = new DnsPackage();
+                        dnsPackage.packageName = app.packageName;
+                        dnsPackage.policyPackageId = AdhellAppIntegrity.DEFAULT_POLICY_ID;
+                        appDatabase.dnsPackageDao().insert(dnsPackage);
+                    }
+                }
 
-                    AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
-                })
-                        .subscribeOn(Schedulers.io())
-                        .subscribe()
-            )
-            .setNegativeButton(android.R.string.no, null).show();
+                AppPreferences.getInstance().setDnsAllApps(!isAllEnabled);
+            })
+                    .subscribeOn(Schedulers.io())
+                    .subscribe();
+        };
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.dialog_toggle_title)
+                .setQuestion(R.string.dialog_toggle_info)
+                .show(onPositiveButton);
     }
 }
