@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
@@ -24,8 +23,8 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.EnterPasswordDialog;
 import com.fusionjack.adhell3.utils.dialog.HostsFileDialog;
-import com.fusionjack.adhell3.utils.dialog.PasswordDialogBuilder;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_PREFERENCE;
@@ -37,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
 
-    private AlertDialog passwordDialog;
     private ActivationDialogFragment activationDialogFragment;
 
     @Override
@@ -80,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         activationDialogFragment = new ActivationDialogFragment();
         activationDialogFragment.setCancelable(false);
-        passwordDialog = PasswordDialogBuilder.showEnterPassword(findViewById(android.R.id.content), this::isKnoxValid);
 
         // Early exit if the device doesn't support Knox
         if (!DeviceAdminInteractor.getInstance().isSupported()) {
@@ -112,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // Show password dialog if password has been set and wait until the user enter the password
-        if (isPasswordShowing()) {
+        if (showPasswordDialog()) {
             return;
         }
 
@@ -127,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        passwordDialog = null;
+        EnterPasswordDialog.destroy();
         activationDialogFragment = null;
         HostsFileDialog.destroy();
         LogUtils.info("onDestroy()");
@@ -164,13 +161,10 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private boolean isPasswordShowing() {
+    private boolean showPasswordDialog() {
         String passwordHash = AppPreferences.getInstance().getPasswordHash();
         if (!passwordHash.isEmpty()) {
-            if (!passwordDialog.isShowing()) {
-                LogUtils.info( "Showing password dialog");
-                passwordDialog.show();
-            }
+            EnterPasswordDialog.getInstance(findViewById(android.R.id.content), this::isKnoxValid).show();
             return true;
         }
         return false;

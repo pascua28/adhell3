@@ -20,10 +20,10 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
-import com.fusionjack.adhell3.utils.dialog.AboutDialogBuilder;
-import com.fusionjack.adhell3.utils.dialog.PasswordDialogBuilder;
-import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.AboutDialog;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
+import com.fusionjack.adhell3.utils.dialog.SetPasswordDialog;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
 import java.util.function.Consumer;
@@ -76,7 +76,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             case SET_PASSWORD_PREFERENCE: {
                 PreferenceManager preferenceManager = getPreferenceManager();
                 if (preferenceManager.getSharedPreferences().getBoolean(SET_PASSWORD_PREFERENCE, false)) {
-                    PasswordDialogBuilder.showSetPassword(getView(), () -> ((SwitchPreference) preference).setChecked(false));
+                    SetPasswordDialog.show(getView(), () -> ((SwitchPreference) preference).setChecked(false));
                 } else {
                     AppPreferences.getInstance().resetPassword();
                 }
@@ -121,7 +121,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
 
             case ABOUT_PREFERENCE: {
-                AboutDialogBuilder.show(getView());
+                AboutDialog.show(getView());
                 break;
             }
         }
