@@ -23,17 +23,10 @@
     <string name="app_component_toggle_info2">0 activities and 0 providers are disabled</string>
     <string name="app_component_toggle_info_placeholder2">%1$d activities and %2$d providers are disabled</string>
     <string name="adhell_not_supported">Adhell3 is not yet supported on your device.</string>
-    <string name="enable_adhell_title">Enable adhell3</string>
-    <string name="enable_adhell_info">
-        To enable adhell3, you must activate admin mode for this app.
-        \nAdhell3 uses Knox APIs which require device administrator permission.
-    </string>
-    <string name="turn_on_admin">Turn On Admin</string>
-    <string name="license_key_info">
-        Adhell3 utilizes Knox SDK which requires a KPE key.
-        \nKPE Development Limited cannot be used as it doesn\'t have needed permissions.
-    </string>
     <string name="license_key">KPE license key</string>
+    <string name="activate">Activate</string>
+    <string name="deactivate">Deactivate</string>
+    <string name="change_license">Change License</string>
     <string name="activate_license">Activate License</string>
     <string name="deactivate_license">Deactivate License</string>
     <string name="license_activated">License Activated</string>
@@ -315,5 +308,14 @@
         \nGo to \'Home\' tab and turn on Knox functionality.
         \nDue to lack of required permissions to restore local/cloud hosts files,
         \nthe user is required to readd the local/cloud hosts files manually after a restore.
+    </string>
+    <string name="dialog_device_admin_title">Device Administrator</string>
+    <string name="dialog_device_admin_info">
+        Adhell3 uses KNOX APIs which require device Administrator permission, to enable Adhell3 you must activate Admin mode for it.
+    </string>
+    <string name="turn_on_admin">Turn On Admin</string>
+    <string name="dialog_license_info">
+        Adhell3 utilizes Knox SDK which requires a KPE key.
+        \nKPE Development Limited cannot be used as it doesn\'t have needed permissions.
     </string>
 </resources>

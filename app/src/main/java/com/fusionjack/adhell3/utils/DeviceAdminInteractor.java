@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import static com.samsung.android.knox.EnterpriseDeviceManager.KNOX_VERSION_CODES.KNOX_2_6;
 
 public final class DeviceAdminInteractor {
-    private static final int RESULT_ENABLE = 42;
+    public static final int DEVICE_ADMIN_ADD_RESULT_ENABLE = 42;
 
     private static DeviceAdminInteractor instance;
 
@@ -77,22 +77,20 @@ public final class DeviceAdminInteractor {
     /**
      * Force user to enadle administrator
      */
-    public void forceEnableAdmin(Context context) {
+    public void forceEnableAdmin(Activity activity) {
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Policy provider");
-        ((Activity) context).startActivityForResult(intent, RESULT_ENABLE);
+        activity.startActivityForResult(intent, DEVICE_ADMIN_ADD_RESULT_ENABLE);
     }
 
-    public void activateKnoxKey(SharedPreferences sharedPreferences, Context context) {
-        String knoxKey = getKnoxKey(sharedPreferences);
+    public void activateKnoxKey(String knoxKey, Context context) {
         if (knoxKey != null) {
             activateKLMKey(context, knoxKey);
         }
     }
 
-    public void deactivateKnoxKey(SharedPreferences sharedPreferences, Context context) {
-        String knoxKey = getKnoxKey(sharedPreferences);
+    public void deactivateKnoxKey(String knoxKey, Context context) {
         if (knoxKey != null) {
             KnoxEnterpriseLicenseManager.getInstance(context).deActivateLicense(knoxKey);
         }

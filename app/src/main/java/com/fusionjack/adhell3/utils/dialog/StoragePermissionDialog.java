@@ -17,7 +17,7 @@ public final class StoragePermissionDialog {
         this.dialog = new QuestionDialogBuilder(view)
                 .setTitle(R.string.dialog_storage_permission_title)
                 .setQuestion(R.string.dialog_storage_permission_summary)
-                .create(onPositiveButton, onNegativeButton, () -> {});
+                .create(onPositiveButton, onNegativeButton, null);
     }
 
     public synchronized static StoragePermissionDialog getInstance(View view, Runnable onPositiveButton, Runnable onNegativeButton) {

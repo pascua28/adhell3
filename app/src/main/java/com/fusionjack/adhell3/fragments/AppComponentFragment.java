@@ -187,8 +187,7 @@ public class AppComponentFragment extends AppFragment {
                 .setQuestion(R.string.dialog_appcomponent_batch_summary)
                 .setPositiveButtonText(R.string.button_enable)
                 .setNegativeButtonText(R.string.button_disable)
-                .setNeutralButtonText(android.R.string.no)
-                .show(onPositiveButton, onNegativeButton);
+                .show(onPositiveButton, onNegativeButton, () -> {});
     }
 
     private void enableAllAppComponents() {

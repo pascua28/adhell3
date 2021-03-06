@@ -1,5 +1,6 @@
 package com.fusionjack.adhell3.utils;
 
+import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,7 +14,6 @@ import android.os.Handler;
 import android.util.Patterns;
 
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
@@ -266,19 +266,19 @@ public final class AdhellFactory {
         return false;
     }
 
-    public static void uninstall(Context context, Fragment fragment) {
-        if (DeviceAdminInteractor.getInstance().isKnoxEnabled(context)) {
+    public static void uninstall(Activity activity) {
+        if (DeviceAdminInteractor.getInstance().isKnoxEnabled(activity)) {
             ContentBlocker contentBlocker = ContentBlocker56.getInstance();
             contentBlocker.disableDomainRules();
             contentBlocker.disableFirewallRules();
         }
-        ComponentName devAdminReceiver = new ComponentName(context, CustomDeviceAdminReceiver.class);
-        DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName devAdminReceiver = new ComponentName(activity, CustomDeviceAdminReceiver.class);
+        DevicePolicyManager dpm = (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
         dpm.removeActiveAdmin(devAdminReceiver);
         Intent intent = new Intent(Intent.ACTION_DELETE);
         String packageName = "package:" + BuildConfig.APPLICATION_ID;
         intent.setData(Uri.parse(packageName));
-        fragment.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     public boolean getComponentState(String packageName, String name) {

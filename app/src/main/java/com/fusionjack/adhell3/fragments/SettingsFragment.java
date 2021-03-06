@@ -1,13 +1,13 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -15,13 +15,13 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.dialogfragment.ActivationDialogFragment;
 import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
 import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.dialog.AboutDialog;
+import com.fusionjack.adhell3.utils.dialog.LicenseDialog;
 import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.dialog.SetPasswordDialog;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -50,13 +50,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        LicenseDialog.destroy();
+    }
+
+    @Override
     public boolean onPreferenceTreeClick(Preference preference) {
         switch (preference.getKey()) {
             case DELETE_PREFERENCE: {
                 new QuestionDialogBuilder(getView())
                         .setTitle(R.string.delete_app_dialog_title)
                         .setQuestion(R.string.delete_app_dialog_text)
-                        .show(() -> AdhellFactory.uninstall(context, this));
+                        .show(() -> AdhellFactory.uninstall((Activity) context));
                 break;
             }
             case BACKUP_PREFERENCE: {
@@ -111,12 +117,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 break;
             }
             case CHANGE_KEY_PREFERENCE: {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                Fragment activationDialog = fragmentManager.findFragmentByTag(ActivationDialogFragment.DIALOG_TAG);
-                if (activationDialog == null) {
-                    ActivationDialogFragment fragment = new ActivationDialogFragment();
-                    fragment.show(fragmentManager, ActivationDialogFragment.DIALOG_TAG);
-                }
+                SharedPreferences sharedPreferences = ((Activity) context).getPreferences(Context.MODE_PRIVATE);
+                LicenseDialog.getChangeInstance(getView(), sharedPreferences).show();
                 break;
             }
 
