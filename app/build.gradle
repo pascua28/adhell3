@@ -122,8 +122,8 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
     implementation 'androidx.room:room-rxjava2:2.2.6'
 
-    implementation 'com.google.dagger:dagger:2.30.1'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.30.1'
+    implementation 'com.google.dagger:dagger:2.31'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.31'
 
     implementation 'com.google.guava:guava:30.1-jre'
 
