@@ -26,6 +26,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.CrashHandler;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.dialog.AppComponentDialog;
 import com.fusionjack.adhell3.utils.dialog.LicenseDialog;
 import com.fusionjack.adhell3.utils.dialog.DeviceAdminDialog;
 import com.fusionjack.adhell3.utils.dialog.EnterPasswordDialog;
@@ -133,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
         DeviceAdminDialog.destroy();
         HostsFileDialog.destroy();
         LicenseDialog.destroy();
+        AppComponentDialog.destroy();
     }
 
     @Override

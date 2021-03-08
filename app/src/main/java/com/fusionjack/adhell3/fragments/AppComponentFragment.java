@@ -9,30 +9,27 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
-import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.UiUtils;
+import com.fusionjack.adhell3.utils.dialog.AppComponentDialog;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +38,6 @@ import java.util.function.Consumer;
 
 public class AppComponentFragment extends AppFragment {
 
-    private boolean isWarningShown;
     private boolean isDisabledComponentMode;
 
     @Override
@@ -54,27 +50,13 @@ public class AppComponentFragment extends AppFragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        this.isWarningShown = false;
         this.isDisabledComponentMode = false;
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflateFragment(R.layout.fragment_app_component, inflater, container, AppFlag.createComponentFlag());
-
-        if (BuildConfig.SHOW_SYSTEM_APP_COMPONENT && !isWarningShown) {
-            View rootView = view.findViewById(R.id.appComponentCoordinatorLayout);
-            Snackbar snackbar = Snackbar.make(rootView, R.string.dialog_system_app_components_info, Snackbar.LENGTH_LONG);
-            View snackBarView = snackbar.getView();
-            snackBarView.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.round_corner, null));
-            TextView snackTextView = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
-            snackTextView.setMaxLines(3);
-            snackbar.setDuration(10000);
-            snackbar.setAction("Close", v -> snackbar.dismiss());
-            snackbar.show();
-            isWarningShown = true;
-        }
-
+        AppComponentDialog.getInstance(view).show();
         return view;
     }
 
