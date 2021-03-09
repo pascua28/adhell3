@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -22,16 +23,26 @@
         android:layout_marginBottom="10dp"
         android:text="@string/dialog_blacklist_domain_info" />
 
-    <EditText
-        android:id="@+id/domainEditText"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:inputType="textUri"
-        android:hint="graph.facebook.com"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/colorAccent"
+        app:placeholderText="graph.facebook.com"
+        app:placeholderTextColor="@color/colorPrimaryLight"
+        android:hint="Domain rule" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/domainEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
+            android:inputType="textUri"
+            android:textSize="16sp"
+            android:textColor="@color/colorText"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

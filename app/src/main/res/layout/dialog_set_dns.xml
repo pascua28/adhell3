@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -22,30 +23,50 @@
         android:layout_marginBottom="10dp"
         android:text="@string/dialog_set_dns_info" />
 
-    <EditText
-        android:id="@+id/primaryDnsEditText"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:inputType="number|numberDecimal"
-        android:digits="0123456789."
-        android:hint="8.8.8.8"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/colorAccent"
+        android:hint="DNS1"
+        app:placeholderText="8.8.8.8"
+        app:placeholderTextColor="@color/colorPrimaryLight">
 
-    <EditText
-        android:id="@+id/secondaryDnsEditText"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/primaryDnsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
+            android:inputType="number|numberDecimal"
+            android:digits="0123456789."
+            android:textSize="16sp"
+            android:textColor="@color/colorText"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:inputType="number|numberDecimal"
-        android:digits="0123456789."
-        android:hint="8.8.4.4"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/colorAccent"
+        android:hint="DNS2"
+        app:placeholderText="8.8.4.4"
+        app:placeholderTextColor="@color/colorPrimaryLight">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/secondaryDnsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
+            android:inputType="number|numberDecimal"
+            android:digits="0123456789."
+            android:textSize="16sp"
+            android:textColor="@color/colorText"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

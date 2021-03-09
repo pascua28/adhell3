@@ -22,14 +22,21 @@
         android:layout_marginBottom="10dp"
         android:text="@string/dialog_license_info" />
 
-    <EditText
-        android:id="@+id/licenseKeyEditText"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        android:hint="License">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/licenseKeyEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
+            android:textSize="16sp"
+            android:textColor="@color/colorText"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

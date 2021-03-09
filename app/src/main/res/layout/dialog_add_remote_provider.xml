@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -13,16 +14,26 @@
         android:textStyle="bold"
         android:textSize="20sp" />
 
-    <EditText
-        android:id="@+id/urlEditText"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="10dp"
-        android:inputType="textUri"
-        android:hint="https://adaway.org/hosts.txt"
-        android:textSize="16sp"
-        android:textColor="@color/colorText"/>
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/colorAccent"
+        app:placeholderText="https://adaway.org/hosts.txt"
+        app:placeholderTextColor="@color/colorPrimaryLight"
+        android:hint="Remote provider">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/urlEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="10dp"
+            android:inputType="textUri"
+            android:textSize="16sp"
+            android:textColor="@color/colorText"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>
