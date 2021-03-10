@@ -59,7 +59,6 @@ public final class DeviceAdminDialog {
     public void show() {
         if (dialog != null && !dialog.isShowing()) {
             dialog.show();
-            DialogBuilder.styleDialog(dialog);
         }
     }
 

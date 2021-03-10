@@ -61,7 +61,6 @@ public class RxSingleBuilder {
                     dialog.setMessage(dialogMessage);
                     dialog.setCancelable(false);
                     dialog.show();
-                    DialogBuilder.styleDialog(dialog);
                     onSubscribeCallback.run();
                 };
                 Consumer<T> onSuccess = t -> {

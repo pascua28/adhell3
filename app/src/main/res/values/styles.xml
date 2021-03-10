@@ -66,8 +66,20 @@
 
     <style name="DialogStyle" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="android:background">@drawable/border</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="buttonBarButtonStyle">@style/DialogButtonStyle</item>
         <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.75</item>
+    </style>
+
+    <style name="DialogButtonStyle">
+        <item name="android:minWidth">64dp</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
 
     <style name="MenuStyle" parent="@style/Widget.AppCompat.PopupMenu.Overflow">
         <item name="android:popupBackground">@drawable/border</item>

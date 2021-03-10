@@ -59,7 +59,6 @@ public class RestoreDatabaseRxTask implements Runnable {
                     public void onSubscribe(@NonNull Disposable d) {
                         dialog.setMessage("Restoring database, please wait ...");
                         dialog.show();
-                        DialogBuilder.styleDialog(dialog);
                     }
 
                     @Override

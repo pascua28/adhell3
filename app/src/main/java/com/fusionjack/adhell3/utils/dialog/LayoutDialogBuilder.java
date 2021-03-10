@@ -44,7 +44,6 @@ public final class LayoutDialogBuilder {
         AlertDialog dialog = create(onPositiveButton, onNegativeButton);
         if (dialog != null) {
             dialog.show();
-            DialogBuilder.styleDialog(dialog);
         }
     }
 

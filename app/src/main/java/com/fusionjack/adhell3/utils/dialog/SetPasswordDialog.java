@@ -62,7 +62,6 @@ public final class SetPasswordDialog {
         });
 
         dialog.show();
-        DialogBuilder.styleDialog(dialog);
     }
 
 }

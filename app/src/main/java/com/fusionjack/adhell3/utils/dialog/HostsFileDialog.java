@@ -38,7 +38,6 @@ public final class HostsFileDialog {
         } else {
             if (dialog != null && !dialog.isShowing()) {
                 dialog.show();
-                DialogBuilder.styleDialog(dialog);
                 isShown = true;
             }
         }

@@ -83,7 +83,6 @@ public final class QuestionDialogBuilder {
         AlertDialog dialog = create(onPositiveButton, onNegativeButton, onNeutralButton);
         if (dialog != null) {
             dialog.show();
-            DialogBuilder.styleDialog(dialog);
         }
     }
 
