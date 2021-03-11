@@ -260,6 +260,7 @@
     <string name="dialog_enter_password_summary">Enter the password to use this app</string>
     <string name="dialog_wrong_password">The password is wrong!</string>
     <string name="dialog_empty_password">The password cannot be empty!</string>
+    <string name="dialog_password_not_matched">The passwords do not matched!</string>
     <string name="set_password_title">Protect adhell3 with a password</string>
     <string name="set_password_summary">If you forget the password, you need to uninstall adhell3.</string>
     <string name="set_night_mode">Night Mode</string>

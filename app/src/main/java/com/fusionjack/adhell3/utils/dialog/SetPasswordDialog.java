@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -14,6 +13,10 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.PasswordStorage;
+import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public final class SetPasswordDialog {
 
@@ -40,15 +43,22 @@ public final class SetPasswordDialog {
 
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {
-                EditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
-                String password = passwordEditText.getText().toString();
+                TextInputEditText passwordEditText = dialogView.findViewById(R.id.passwordEditText);
+                String password = Optional.ofNullable(passwordEditText.getText()).map(Object::toString).orElse("");
                 if (!password.isEmpty()) {
-                    try {
-                        AppPreferences.getInstance().setPassword(password);
-                    } catch (PasswordStorage.CannotPerformOperationException e) {
-                        LogUtils.error(e.getMessage());
+                    TextInputEditText passwordConfirmEditText = dialogView.findViewById(R.id.confirmPasswordEditText);
+                    String passwordConfirm = Optional.ofNullable(passwordConfirmEditText.getText()).map(Objects::toString).orElse("");
+                    if (password.equals(passwordConfirm)) {
+                        try {
+                            AppPreferences.getInstance().setPassword(password);
+                            dialog.dismiss();
+                        } catch (PasswordStorage.CannotPerformOperationException e) {
+                            LogUtils.error(e.getMessage());
+                            DialogBuilder.showDialog(R.string.error, e.getMessage(), context);
+                        }
+                    } else {
+                        infoTextView.setText(R.string.dialog_password_not_matched);
                     }
-                    dialog.dismiss();
                 } else {
                     infoTextView.setText(R.string.dialog_empty_password);
                 }
