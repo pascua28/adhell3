@@ -31,6 +31,7 @@ import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
 import com.fusionjack.adhell3.utils.UiUtils;
+import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
@@ -48,6 +49,10 @@ import io.reactivex.Single;
 import io.reactivex.functions.Action;
 
 public abstract class AppFragment extends Fragment {
+
+    private static final int STOP_APP_CONTEXT_MENU = 1;
+    private static final int WIPE_APP_DATA_CONTEXT_MENU = 2;
+    private static final int COPY_PACKAGE_NAME_CONTEXT_MENU = 3;
 
     protected Context context;
     private String searchText;
@@ -147,9 +152,10 @@ public abstract class AppFragment extends Fragment {
         AppInfo appInfo = adapter.getItem(info.position);
         if (menu.size() == 0) {
             if (!appInfo.system) {
-                menu.add(0, R.id.action_stop_app, Menu.NONE, R.string.menu_stop_app);
+                menu.add(0, STOP_APP_CONTEXT_MENU, Menu.NONE, R.string.menu_stop_app);
             }
-            menu.add(0, R.id.action_copy_clipboard, Menu.NONE, R.string.menu_copy_package_name_to_clipboard);
+            menu.add(0, WIPE_APP_DATA_CONTEXT_MENU, Menu.NONE, R.string.menu_wipe_app_data);
+            menu.add(0, COPY_PACKAGE_NAME_CONTEXT_MENU, Menu.NONE, R.string.menu_copy_package_name_to_clipboard);
         }
     }
 
@@ -157,14 +163,15 @@ public abstract class AppFragment extends Fragment {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         AppInfo appInfo = adapter.getItem(info.position);
-        if (item.getItemId() == R.id.action_stop_app) {
+        int id = item.getItemId();
+        if (id == STOP_APP_CONTEXT_MENU) {
             stopApp(appInfo);
-            return true;
-        } else if (item.getItemId() == R.id.action_copy_clipboard) {
+        } else if (id == WIPE_APP_DATA_CONTEXT_MENU) {
+            wipeAppData(appInfo);
+        } else if (id == COPY_PACKAGE_NAME_CONTEXT_MENU) {
             copyToClipboard(appInfo.packageName);
-            return true;
         }
-        return super.onContextItemSelected(item);
+        return true;
     }
 
     private void stopApp(AppInfo appInfo) {
@@ -176,6 +183,23 @@ public abstract class AppFragment extends Fragment {
         };
         AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
         new RxSingleIoBuilder().async(viewModel.stopApp(appInfo), callback);
+    }
+
+    private void wipeAppData(AppInfo appInfo) {
+        Runnable onPositiveButton = () -> {
+            Consumer<Boolean> callback = success -> {
+                if (success) {
+                    Toast.makeText(getContext(), "App data has been successfully wiped", Toast.LENGTH_LONG).show();
+                    adapter.notifyDataSetChanged();
+                }
+            };
+            AppViewModel viewModel = new ViewModelProvider(this).get(AppViewModel.class);
+            new RxSingleIoBuilder().async(viewModel.wipeAppData(appInfo), callback);
+        };
+        new QuestionDialogBuilder(getView())
+                .setTitle(R.string.wipe_app_data_title)
+                .setQuestion(R.string.wipe_app_data_info)
+                .show(onPositiveButton);
     }
 
     private void copyToClipboard(String packageName) {

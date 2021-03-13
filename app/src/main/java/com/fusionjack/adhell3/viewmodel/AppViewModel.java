@@ -33,6 +33,11 @@ public class AppViewModel extends ViewModel {
         return Single.fromCallable(() -> appPolicy.stopApp(appInfo.packageName));
     }
 
+    public Single<Boolean> wipeAppData(AppInfo appInfo) {
+        ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+        return Single.fromCallable(() -> appPolicy.wipeApplicationData(appInfo.packageName));
+    }
+
     public void enableAllDisablerApps() {
         ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
         List<AppInfo> disabledAppList = appDatabase.applicationInfoDao().getDisabledApps();

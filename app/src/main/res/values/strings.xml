@@ -303,6 +303,7 @@
     <string name="menu_hide_system">Hide system apps</string>
     <string name="menu_show_system">Show system apps</string>
     <string name="menu_stop_app">Stop app</string>
+    <string name="menu_wipe_app_data">Wipe app data</string>
     <string name="menu_copy_package_name_to_clipboard">Copy package name to clipboard</string>
     <string name="error">Error</string>
     <string name="info">Info</string>
@@ -321,4 +322,6 @@
         Adhell3 utilizes Knox SDK which requires a KPE key.
         \nKPE Development Limited cannot be used as it doesn\'t have needed permissions.
     </string>
+    <string name="wipe_app_data_title">Wipe application data</string>
+    <string name="wipe_app_data_info">Do you really want to wipe the application data?</string>
 </resources>
