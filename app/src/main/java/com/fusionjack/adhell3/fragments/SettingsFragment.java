@@ -28,7 +28,7 @@ import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
 import java.util.function.Consumer;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private Context context;

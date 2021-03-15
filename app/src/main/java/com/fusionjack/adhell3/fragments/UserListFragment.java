@@ -5,8 +5,8 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.widget.Toast;
 
-import io.reactivex.SingleObserver;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public abstract class UserListFragment extends Fragment {
     protected Context context;

@@ -44,9 +44,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Action;
 
 public abstract class AppFragment extends Fragment {
 

@@ -10,7 +10,7 @@ import com.fusionjack.adhell3.utils.BlockUrlUtils;
 
 import java.util.List;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class BlockUrlProvidersViewModel extends ViewModel {
 

@@ -11,7 +11,7 @@ import com.fusionjack.adhell3.utils.FirewallUtils;
 
 import java.util.List;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class HomeViewModel extends ViewModel {
 

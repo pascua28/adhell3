@@ -12,7 +12,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class AppViewModel extends ViewModel {
 

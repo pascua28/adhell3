@@ -22,7 +22,7 @@ import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 import static com.fusionjack.adhell3.db.repository.AppRepository.Type.UNKNOWN;
 

@@ -9,7 +9,7 @@ import com.fusionjack.adhell3.utils.AdhellFactory;
 
 import java.util.List;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class AppRepository {
     private final AppDatabase appDatabase = AdhellFactory.getInstance().getAppDatabase();

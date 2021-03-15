@@ -21,7 +21,7 @@ import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.List;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;
 

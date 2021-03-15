@@ -5,14 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.adapter.OtherPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
-
-import io.reactivex.annotations.NonNull;
 
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.APP_COMPONENT_PAGE;
 import static com.fusionjack.adhell3.fragments.OtherTabPageFragment.SETTINGS_PAGE;

@@ -48,10 +48,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.functions.Action;
 
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_ACTIVITY;
 import static com.fusionjack.adhell3.db.entity.AppPermission.STATUS_PERMISSION;

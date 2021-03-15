@@ -6,8 +6,8 @@ import com.fusionjack.adhell3.model.AppFlag;
 import com.fusionjack.adhell3.utils.AppDatabaseFactory;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 
-import io.reactivex.Completable;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.functions.Action;
 
 public class ToggleAppInfoRxTask {
 

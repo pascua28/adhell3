@@ -1,6 +1,8 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -8,8 +10,6 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.AppTabPageFragment;
-
-import io.reactivex.annotations.NonNull;
 
 public class AppPagerAdapter extends FragmentPagerAdapter {
     private static final int PAGE_COUNT = 4;

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_NONE;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DENY;

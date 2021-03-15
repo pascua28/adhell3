@@ -30,13 +30,13 @@ import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import toan.android.floatingactionmenu.FloatingActionButton;
 import toan.android.floatingactionmenu.FloatingActionsMenu;
 import toan.android.floatingactionmenu.ScrollDirectionListener;
@@ -105,11 +105,11 @@ public class DnsFragment extends AppFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Integer>() {
                     @Override
-                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                    public void onSubscribe(@NonNull Disposable d) {
                     }
 
                     @Override
-                    public void onNext(@io.reactivex.annotations.NonNull Integer strId) {
+                    public void onNext(@NonNull Integer strId) {
                         Toast.makeText(context, getString(strId), Toast.LENGTH_LONG).show();
                     }
 
@@ -121,7 +121,7 @@ public class DnsFragment extends AppFragment {
                     }
 
                     @Override
-                    public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                    public void onError(@NonNull Throwable e) {
                         LogUtils.error(e.getMessage(), e);
                     }
                 });

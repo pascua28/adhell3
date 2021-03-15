@@ -2,17 +2,14 @@ package com.fusionjack.adhell3.utils.rx;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 
-import io.reactivex.Completable;
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Scheduler;
 
 public class RxCompletableBuilder {
 

@@ -4,14 +4,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 
 import com.fusionjack.adhell3.R;
-import com.fusionjack.adhell3.utils.dialog.DialogBuilder;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
 
 public class RxSingleBuilder {
 

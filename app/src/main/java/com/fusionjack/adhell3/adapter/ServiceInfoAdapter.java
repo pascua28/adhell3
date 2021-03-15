@@ -20,7 +20,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 public class ServiceInfoAdapter extends ComponentAdapter {
 

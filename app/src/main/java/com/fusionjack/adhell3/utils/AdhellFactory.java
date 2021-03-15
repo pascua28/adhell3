@@ -43,7 +43,7 @@ import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 
-import io.reactivex.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableEmitter;
 
 import static com.samsung.android.knox.application.ApplicationPolicy.ERROR_UNKNOWN;
 import static com.samsung.android.knox.application.ApplicationPolicy.PERMISSION_POLICY_STATE_DEFAULT;

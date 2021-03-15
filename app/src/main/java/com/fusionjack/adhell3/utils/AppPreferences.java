@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import com.fusionjack.adhell3.blocker.ContentBlocker;
 import com.fusionjack.adhell3.viewmodel.ProviderViewModel;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public final class AppPreferences {
     private static AppPreferences instance;
