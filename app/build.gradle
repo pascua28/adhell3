@@ -5,6 +5,17 @@ android {
 
     buildToolsVersion "30.0.3"
 
+    def signApk = false
+    Properties appProps = null
+    def appPropsFile = file('app.properties')
+    if (appPropsFile.exists()) {
+        appProps = new Properties()
+        appProps.load(new FileInputStream(appPropsFile))
+        if (appProps['release.store.file'] != null) {
+            signApk = true
+        }
+    }
+
     defaultConfig {
         def buildPropsFile = file('build.properties')
         def buildNumber
@@ -19,7 +30,6 @@ android {
             throw new FileNotFoundException("Could not read build.properties!")
         }
 
-        def appPropsFile = file('app.properties')
         def packageName = ""
         def domainLimit = "15000"
         def blockedDomainDurationUi = "24"
@@ -32,8 +42,6 @@ android {
         def defaultHost = "https://gitlab.com/fusionjack/adhell3-hosts/-/raw/master/hosts"
 
         if (appPropsFile.exists()) {
-            Properties appProps = new Properties()
-            appProps.load(new FileInputStream(appPropsFile))
             if (appProps['package.name'] != null) {
                 packageName = appProps['package.name']
             }
@@ -89,12 +97,33 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    signingConfigs {
+        release {
+            if (signApk) {
+                storeFile file(appProps['release.store.file'])
+                storePassword appProps['release.store.password']
+                keyAlias appProps['release.key.alias']
+                keyPassword appProps['release.key.password']
+            }
+        }
+    }
+
     buildTypes {
         debug {
             shrinkResources false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable true
+        }
+        release {
+            shrinkResources false
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            zipAlignEnabled true
+            if (signApk) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
