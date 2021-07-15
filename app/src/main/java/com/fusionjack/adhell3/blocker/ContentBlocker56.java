@@ -21,8 +21,10 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -388,20 +390,28 @@ public class ContentBlocker56 implements ContentBlocker {
         List<String> denyList = BlockUrlUtils.getAllBlockedUrls(appDatabase);
         List<String> userList = BlockUrlUtils.getUserBlockedUrls(appDatabase, false, null);
         denyList.addAll(userList);
+
+        // Combine allowed domains that belong to a specific package name
+        Map<String, List<String>> packageMap = new HashMap<>();
         for (String whiteUrl : whiteUrls) {
             if (whiteUrl.indexOf('|') != -1) {
                 StringTokenizer tokens = new StringTokenizer(whiteUrl, "|");
                 if (tokens.countTokens() == 2) {
                     final String packageName = tokens.nextToken();
-                    final String url = tokens.nextToken();
-                    LogUtils.info("PackageName: " + packageName + ", Domain: " + url, handler);
-
-                    final AppIdentity appIdentity = new AppIdentity(packageName, null);
-                    List<String> allowList = new ArrayList<>();
-                    allowList.add(url);
-                    processDomains(appIdentity, denyList, allowList);
+                    final String allowedDomain = tokens.nextToken();
+                    List<String> allowList = packageMap.computeIfAbsent(packageName, k -> new ArrayList<>());
+                    allowList.add(allowedDomain);
                 }
             }
+        }
+
+        // Add allowed domains for each package name to Knox
+        for (Map.Entry<String, List<String>> entry : packageMap.entrySet()) {
+            String packageName = entry.getKey();
+            List<String> allowList = entry.getValue();
+            LogUtils.info("\nPackageName: " + packageName + ", Domains: " + allowList, handler);
+            final AppIdentity appIdentity = new AppIdentity(packageName, null);
+            processDomains(appIdentity, denyList, allowList);
         }
 
         // Whitelist URL for all apps
