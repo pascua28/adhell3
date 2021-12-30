@@ -4,77 +4,35 @@ plugins {
 
 android {
     compileSdkVersion 30
-
     buildToolsVersion "30.0.3"
 
-    def signApk = false
-    Properties appProps = null
-    def appPropsFile = file('app.properties')
-    if (appPropsFile.exists()) {
-        appProps = new Properties()
-        appProps.load(new FileInputStream(appPropsFile))
-        if (appProps['release.store.file'] != null) {
-            signApk = true
-        }
+    file('app.properties').withReader {reader ->
+        Properties props = new Properties()
+        props.load(reader)
+        project.ext.appProps = props
     }
 
+    file('build.properties').withReader {reader ->
+        Properties props = new Properties()
+        props.load(reader)
+        project.ext.buildProps = props
+    }
+
+    def signApk = appProps['release.store.file'] ? true : false
+
     defaultConfig {
-        def buildPropsFile = file('build.properties')
-        def buildNumber
-        def buildDate
-
-        if (buildPropsFile.canRead()) {
-            Properties buildProps = new Properties()
-            buildProps.load(new FileInputStream(buildPropsFile))
-            buildNumber = buildProps['build.number']
-            buildDate = buildProps['build.date']
-        } else {
-            throw new FileNotFoundException("Could not read build.properties!")
-        }
-
-        def packageName = ""
-        def domainLimit = "15000"
-        def blockedDomainDurationUi = "24"
-        def blockedDomainDurationDb = "72"
-        def domainPrefix = "false"
-        def sklKey = ""
-        def disableApps = "false"
-        def appComponent = "false"
-        def showSystemAppComponent = "false"
-        def defaultHost = "https://gitlab.com/fusionjack/adhell3-hosts/-/raw/master/hosts"
-
-        if (appPropsFile.exists()) {
-            if (appProps['package.name'] != null) {
-                packageName = appProps['package.name']
-            }
-            if (appProps['domain.limit'] != null) {
-                domainLimit = appProps['domain.limit']
-            }
-            if (appProps['blockedDomain.duration.ui'] != null) {
-                blockedDomainDurationUi = appProps['blockedDomain.duration.ui']
-            }
-            if (appProps['blockedDomain.duration.db'] != null) {
-                blockedDomainDurationDb = appProps['blockedDomain.duration.db']
-            }
-            if (appProps['skl.key'] != null) {
-                sklKey = appProps['skl.key']
-            }
-            if (appProps['domain.prefix'] != null) {
-                domainPrefix = appProps['domain.prefix']
-            }
-            if (appProps['enable.disableApps'] != null) {
-                disableApps = appProps['enable.disableApps']
-            }
-            if (appProps['enable.appComponent'] != null) {
-                appComponent = appProps['enable.appComponent']
-            }
-            if (appProps['appComponent.showSystemApps'] != null) {
-                showSystemAppComponent = appProps['appComponent.showSystemApps']
-            }
-            if (appProps['default.host'] != null) {
-                defaultHost = appProps['default.host']
-            }
-        }
+        def buildNumber = buildProps['build.number'] ?: ""
+        def buildDate = buildProps['build.date'] ?: ""
+        def packageName = appProps['package.name'] ?: ""
+        def domainLimit = appProps['domain.limit'] ?: "15000"
+        def blockedDomainDurationUi = appProps['blockedDomain.duration.ui'] ?: "24"
+        def blockedDomainDurationDb = appProps['blockedDomain.duration.db'] ?: "72"
+        def domainPrefix = appProps['domain.prefix'] ?: "false"
+        def sklKey = appProps['skl.key'] ?: ""
+        def disableApps = appProps['enable.disableApps'] ?: "false"
+        def appComponent = appProps['enable.appComponent'] ?: "false"
+        def showSystemAppComponent = appProps['appComponent.showSystemApps'] ?: "false"
+        def defaultHost = appProps['default.host'] ?: "https://gitlab.com/fusionjack/adhell3-hosts/-/raw/master/hosts"
 
         applicationId packageName
         minSdkVersion 24
