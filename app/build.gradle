@@ -88,6 +88,19 @@ android {
     }
 }
 
+task buildNumber {
+    doLast {
+        def buildNumber = 'git rev-list --count HEAD'.execute().text.trim().toInteger() + 1
+        file('build.properties').withWriter { writer ->
+            writer.write("build.number=${buildNumber}")
+            writer.write("\n")
+            writer.write("build.date=${new Date().format('yyyyMMdd')}")
+        }
+        ['git', 'add', 'app/build.properties'].execute()
+        ['git', 'commit', "-m Build ${buildNumber}"].execute()
+    }
+}
+
 dependencies {
     compileOnly files('libs/knoxsdk.jar')
 
