@@ -18,7 +18,8 @@ android {
         project.ext.buildProps = props
     }
 
-    def signApk = appProps['release.store.file'] ? true : false
+    def signReleaseApk = appProps['release.store.file'] ? true : false
+    def signDebugApk = appProps['debug.store.file'] ? true : false
 
     defaultConfig {
         def buildNumber = buildProps['build.number'] ?: ""
@@ -59,11 +60,16 @@ android {
 
     signingConfigs {
         release {
-            if (signApk) {
+            if (signReleaseApk) {
                 storeFile file(appProps['release.store.file'])
                 storePassword appProps['release.store.password']
                 keyAlias appProps['release.key.alias']
                 keyPassword appProps['release.key.password']
+            }
+        }
+        debug {
+            if (signDebugApk) {
+                storeFile file(appProps['debug.store.file'])
             }
         }
     }
@@ -74,6 +80,9 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable true
+            if (signDebugApk) {
+                signingConfig signingConfigs.debug
+            }
         }
         release {
             shrinkResources false
@@ -81,7 +90,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
             zipAlignEnabled true
-            if (signApk) {
+            if (signReleaseApk) {
                 signingConfig signingConfigs.release
             }
         }
