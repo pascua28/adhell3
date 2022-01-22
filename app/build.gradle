@@ -113,6 +113,10 @@ task buildNumber {
 dependencies {
     compileOnly files('libs/knoxsdk.jar')
 
+    implementation files('libs/floatingactionmenu-0.8.9.aar')
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'com.nineoldandroids:library:2.4.0'
+
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation "androidx.preference:preference:1.1.1"
     implementation 'androidx.fragment:fragment:1.4.0'
@@ -128,8 +132,6 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.33'
 
     implementation 'com.google.guava:guava:30.1-android'
-
-    implementation 'com.github.toanvc:floatingactionmenu:0.8.9'
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
     testImplementation 'junit:junit:4.13.2'
