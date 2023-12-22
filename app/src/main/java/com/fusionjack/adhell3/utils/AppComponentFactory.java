@@ -334,7 +334,7 @@ public final class AppComponentFactory {
     // Only activities from 'adhell3_activities.txt' will be enabled/disabled
     private void setTxtActivitiesState(boolean state, String packageName, Set<String> activityNames) {
         AppComponent.getActivities(packageName).stream()
-                .filter(activityNames::contains)
+                .filter(activityName -> activityNames.stream().anyMatch(activityName::contains))
                 .forEach(activityName -> {
                     boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, activityName);
                     if (state != currentState) {
@@ -371,7 +371,7 @@ public final class AppComponentFactory {
     // Only services from 'adhell3_services.txt' will be enabled/disabled
     private void setTxtServicesState(boolean state, String packageName, Set<String> serviceNames) {
         AppComponent.getServices(packageName).stream()
-                .filter(serviceNames::contains)
+                .filter(serviceName -> serviceNames.stream().anyMatch(serviceName::contains))
                 .forEach(serviceName -> {
                     boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, serviceName);
                     if (state != currentState) {
@@ -436,7 +436,7 @@ public final class AppComponentFactory {
     // Only receivers from 'adhell3_services.txt' will be enabled/disabled
     private void setTxtReceiversState(boolean state, String packageName, Set<String> receiverNames) {
         AppComponent.getReceivers(packageName).stream()
-                .filter(info -> receiverNames.contains(info.getName()))
+                .filter(info -> receiverNames.stream().anyMatch(info.getName()::contains))
                 .forEach(info -> {
                     String receiverName = info.getName();
                     String receiverPermission = ((ReceiverInfo) info).getPermission();
@@ -519,7 +519,7 @@ public final class AppComponentFactory {
     // Only providers from 'adhell3_providers.txt' will be enabled/disabled
     private void setTxtProvidersState(boolean state, String packageName, Set<String> providerNames) {
         AppComponent.getProviders(packageName).stream()
-                .filter(providerNames::contains)
+                .filter(providerName -> providerNames.stream().anyMatch(providerName::contains))
                 .forEach(providerName -> {
                     boolean currentState = AdhellFactory.getInstance().getComponentState(packageName, providerName);
                     if (state != currentState) {
