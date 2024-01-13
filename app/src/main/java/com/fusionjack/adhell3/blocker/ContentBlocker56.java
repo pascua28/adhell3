@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -215,65 +216,191 @@ public class ContentBlocker56 implements ContentBlocker {
     private void processCustomRules() throws Exception {
         LogUtils.info("\nProcessing custom rules...", handler);
 
-        FirewallRule[] enabledRules = firewall.getRules(Firewall.FIREWALL_DENY_RULE, FirewallRule.Status.ENABLED);
+        FirewallRule[] enabledRules = firewall.getRules(Firewall.FIREWALL_ALL_RULES, FirewallRule.Status.ENABLED);
         int count = 0;
         List<String> urls = appDatabase.userBlockUrlDao().getAll3();
         for (String url : urls) {
             if (url.indexOf('|') != -1) {
                 StringTokenizer tokens = new StringTokenizer(url, "|");
-                if (tokens.countTokens() == 3) {
+                if (tokens.countTokens() == 3 || tokens.countTokens() == 4) {
                     String packageName = tokens.nextToken().trim();
-                    String ip = tokens.nextToken().trim();
-                    String port = tokens.nextToken().trim();
-
-                    boolean add = true;
-                    for (FirewallRule enabledRule : enabledRules) {
-                        String packageName1 = enabledRule.getApplication().getPackageName();
-                        String ip1 = enabledRule.getIpAddress();
-                        String port1 = enabledRule.getPortNumber();
-                        if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(ip) && port1.equalsIgnoreCase(port)) {
-                            add = false;
-                        }
+                    String arg2 = tokens.nextToken().trim(); // Can be either IP for ALLOW, DENY and REDIRECT_EXCEPTION or sourceIp:port for REDIRECT
+                    String arg3 = tokens.nextToken().trim(); // Can be either PORT for ALLOW, DENY and REDIRECT_EXCEPTION or targetIp:port for REDIRECT
+                    String ruleType;
+                    try {
+                        ruleType = tokens.nextToken().trim();
+                    } catch (NoSuchElementException e) {
+                        ruleType = "D";
                     }
 
-                    LogUtils.info("\nRule: " + packageName + "|" + ip + "|" + port, handler);
-                    if (add) {
-                        FirewallRule[] firewallRules;
-                        if (ip.equalsIgnoreCase("*")) {
-                            firewallRules = new FirewallRule[2];
-                            firewallRules[0] = new FirewallRule(FirewallRule.RuleType.DENY, Firewall.AddressType.IPV4);
-                            firewallRules[0].setIpAddress(ip);
-                            firewallRules[0].setPortNumber(port);
-                            firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                    if (ruleType.equalsIgnoreCase("A") || ruleType.equalsIgnoreCase("D")) {
 
-                            firewallRules[1] = new FirewallRule(FirewallRule.RuleType.DENY, Firewall.AddressType.IPV6);
-                            firewallRules[1].setIpAddress(ip);
-                            firewallRules[1].setPortNumber(port);
-                            firewallRules[1].setApplication(new AppIdentity(packageName, null));
-                        } else {
-                            Firewall.AddressType type;
-                            InetAddress address = InetAddress.getByName(ip);
-                            if (address instanceof Inet6Address) {
-                                type = Firewall.AddressType.IPV6;
-                            } else if (address instanceof Inet4Address) {
-                                type = Firewall.AddressType.IPV4;
+                        boolean add = true;
+                        for (FirewallRule enabledRule : enabledRules) {
+                            String packageName1 = enabledRule.getApplication().getPackageName();
+                            String ip1 = enabledRule.getIpAddress();
+                            String port1 = enabledRule.getPortNumber();
+                            String ruleType1 = enabledRule.getRuleType().toString().substring(0, 1);
+                            if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(arg2) && port1.equalsIgnoreCase(arg3) && ruleType1.equalsIgnoreCase(ruleType)) {
+                                add = false;
+                            }
+                        }
+
+                        LogUtils.info("\nRule: " + packageName + "|" + arg2 + "|" + arg3 + "|" + ruleType, handler);
+                        if (add) {
+                            FirewallRule[] firewallRules;
+                            FirewallRule.RuleType ruleTypeEnum;
+                            if (ruleType.equalsIgnoreCase("A")) {
+                                ruleTypeEnum = FirewallRule.RuleType.ALLOW;
                             } else {
-                                throw new Exception("Unknown ip address type");
+                                ruleTypeEnum = FirewallRule.RuleType.DENY;
                             }
 
-                            firewallRules = new FirewallRule[1];
-                            firewallRules[0] = new FirewallRule(FirewallRule.RuleType.DENY, type);
-                            firewallRules[0].setIpAddress(ip);
-                            firewallRules[0].setPortNumber(port);
-                            firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                            if (arg2.equalsIgnoreCase("*")) {
+                                firewallRules = new FirewallRule[2];
+                                firewallRules[0] = new FirewallRule(ruleTypeEnum, Firewall.AddressType.IPV4);
+                                firewallRules[0].setIpAddress(arg2);
+                                firewallRules[0].setPortNumber(arg3);
+                                firewallRules[0].setApplication(new AppIdentity(packageName, null));
+
+                                firewallRules[1] = new FirewallRule(ruleTypeEnum, Firewall.AddressType.IPV6);
+                                firewallRules[1].setIpAddress(arg2);
+                                firewallRules[1].setPortNumber(arg3);
+                                firewallRules[1].setApplication(new AppIdentity(packageName, null));
+                            } else {
+                                Firewall.AddressType type;
+                                InetAddress address = InetAddress.getByName(arg2);
+                                if (address instanceof Inet6Address) {
+                                    type = Firewall.AddressType.IPV6;
+                                } else if (address instanceof Inet4Address) {
+                                    type = Firewall.AddressType.IPV4;
+                                } else {
+                                    throw new Exception("Unknown ip address type");
+                                }
+
+                                firewallRules = new FirewallRule[1];
+                                firewallRules[0] = new FirewallRule(ruleTypeEnum, type);
+                                firewallRules[0].setIpAddress(arg2);
+                                firewallRules[0].setPortNumber(arg3);
+                                firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                            }
+
+                            firewallUtils.addFirewallRules(firewallRules, handler);
+                        } else {
+                            LogUtils.info("The firewall rule is already been enabled", handler);
                         }
 
-                        firewallUtils.addFirewallRules(firewallRules, handler);
-                    } else {
-                        LogUtils.info("The firewall rule is already been enabled", handler);
-                    }
+                        ++count;
+                    } else if (ruleType.equalsIgnoreCase("R")) {
+                        // For both of the elements at index 0 is ip and at 1 is port
+                        String[] source = arg2.split(":", 2);
+                        String[] target = arg3.split(":", 2);
 
-                    ++count;
+                        boolean add = true;
+                        for (FirewallRule enabledRule : enabledRules) {
+                            if (enabledRule.getRuleType() != FirewallRule.RuleType.REDIRECT) {
+                                continue;
+                            }
+                            String packageName1 = enabledRule.getApplication().getPackageName();
+                            String sourceIp = enabledRule.getIpAddress();
+                            String sourcePort = enabledRule.getPortNumber();
+                            String targetIp = enabledRule.getTargetIpAddress();
+                            String targetPort = enabledRule.getTargetPortNumber();
+                            String ruleType1 = enabledRule.getRuleType().toString().substring(0, 1);
+                            if (packageName1.equalsIgnoreCase(packageName) && sourceIp.equalsIgnoreCase(source[0]) && sourcePort.equalsIgnoreCase(source[1]) && targetIp.equalsIgnoreCase(target[0]) && targetPort.equalsIgnoreCase(target[1]) && ruleType1.equalsIgnoreCase(ruleType)) {
+                                add = false;
+                            }
+                        }
+
+                        LogUtils.info("\nRule: " + packageName + "|" + arg2 + "|" + arg3 + "|" + ruleType, handler);
+                        if (add) {
+                            FirewallRule[] firewallRules;
+
+                            firewallRules = new FirewallRule[1];
+                            firewallRules[0] = new FirewallRule(FirewallRule.RuleType.REDIRECT, Firewall.AddressType.IPV4);
+                            if (source[0].equalsIgnoreCase("*")) {
+                                firewallRules[0].setIpAddress(source[0]);
+                                firewallRules[0].setPortNumber(source[1]);
+                            } else {
+                                InetAddress sourceAddress = InetAddress.getByName(source[0]);
+                                if (sourceAddress instanceof Inet4Address) {
+                                    firewallRules[0].setIpAddress(source[0]);
+                                    firewallRules[0].setPortNumber(source[1]);
+                                } else if (sourceAddress instanceof Inet6Address) {
+                                    throw new Exception("IPv6 is not supported for REDIRECT and REDIRECT_EXCEPTION RULES");
+                                } else {
+                                    throw new Exception("Unknown ip address type");
+                                }
+                            }
+                            if (target[0].equalsIgnoreCase("*")) {
+                                firewallRules[0].setTargetIpAddress(target[0]);
+                                firewallRules[0].setTargetPortNumber(target[1]);
+                            } else {
+                                InetAddress targetAddress = InetAddress.getByName(target[0]);
+                                if (targetAddress instanceof Inet4Address) {
+                                    firewallRules[0].setTargetIpAddress(target[0]);
+                                    firewallRules[0].setTargetPortNumber(target[1]);
+                                } else if (targetAddress instanceof Inet6Address) {
+                                    throw new Exception("IPv6 is not supported for REDIRECT and REDIRECT_EXCEPTION RULES");
+                                } else {
+                                    throw new Exception("Unknown ip address type");
+                                }
+                            }
+
+                            firewallRules[0].setApplication(new AppIdentity(packageName, null));
+
+                            firewallUtils.addFirewallRules(firewallRules, handler);
+                        } else {
+                            LogUtils.info("The firewall rule is already been enabled", handler);
+                        }
+
+                        ++count;
+                        
+
+                    } else if (ruleType.equalsIgnoreCase("E")) {
+                        boolean add = true;
+                        for (FirewallRule enabledRule : enabledRules) {
+                            String packageName1 = enabledRule.getApplication().getPackageName();
+                            String ip1 = enabledRule.getIpAddress();
+                            String port1 = enabledRule.getPortNumber();
+                            String ruleType1 = enabledRule.getRuleType().toString().substring(0, 1);
+                            if (packageName1.equalsIgnoreCase(packageName) && ip1.equalsIgnoreCase(arg2) && port1.equalsIgnoreCase(arg3) && ruleType1.equalsIgnoreCase(ruleType)) {
+                                add = false;
+                            }
+                        }
+
+                        LogUtils.info("\nRule: " + packageName + "|" + arg2 + "|" + arg3 + "|" + ruleType, handler);
+                        if (add) {
+                            FirewallRule[] firewallRules;
+
+                            if (arg2.equalsIgnoreCase("*")) {
+                                firewallRules = new FirewallRule[2];
+                                firewallRules[0] = new FirewallRule(FirewallRule.RuleType.REDIRECT_EXCEPTION, Firewall.AddressType.IPV4);
+                                firewallRules[0].setIpAddress(arg2);
+                                firewallRules[0].setPortNumber(arg3);
+                                firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                            } else {
+                                InetAddress address = InetAddress.getByName(arg2);
+                                if (address instanceof Inet4Address) {
+                                    firewallRules = new FirewallRule[1];
+                                    firewallRules[0] = new FirewallRule(FirewallRule.RuleType.REDIRECT_EXCEPTION, Firewall.AddressType.IPV4);
+                                    firewallRules[0].setIpAddress(arg2);
+                                    firewallRules[0].setPortNumber(arg3);
+                                    firewallRules[0].setApplication(new AppIdentity(packageName, null));
+                                } else if (address instanceof Inet6Address) {
+                                    throw new Exception("IPv6 is not supported for REDIRECT and REDIRECT_EXCEPTION RULES");
+                                } else {
+                                    throw new Exception("Unknown ip address type");
+                                }
+                            }
+
+                            firewallUtils.addFirewallRules(firewallRules, handler);
+                        } else {
+                            LogUtils.info("The firewall rule is already been enabled", handler);
+                        }
+
+                        ++count;
+                    }
                 }
             }
         }

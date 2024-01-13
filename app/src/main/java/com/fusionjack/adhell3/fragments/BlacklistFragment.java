@@ -103,7 +103,7 @@ public class BlacklistFragment extends UserListFragment {
                 EditText ruleEditText = dialogView.findViewById(R.id.ruleEditText);
                 String ruleToAdd = ruleEditText.getText().toString().trim().toLowerCase();
                 StringTokenizer tokens = new StringTokenizer(ruleToAdd, "|");
-                if (tokens.countTokens() != 3) {
+                if (tokens.countTokens() != 3 && tokens.countTokens() != 4) {
                     Toast.makeText(context, "Rule not valid. Please check", Toast.LENGTH_SHORT).show();
                 } else {
                     viewModel.addItem(ruleToAdd, addObserver);

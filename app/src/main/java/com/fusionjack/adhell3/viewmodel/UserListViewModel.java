@@ -49,7 +49,7 @@ public class UserListViewModel extends ViewModel {
         } else {
             // packageName|url
             StringTokenizer tokens = new StringTokenizer(domainToAdd, "|");
-            if (tokens.countTokens() != 2) {
+            if (tokens.countTokens() != 2 && tokens.countTokens() != 3) {
                 throw new IllegalArgumentException("Rule not valid. Please check");
             }
         }
