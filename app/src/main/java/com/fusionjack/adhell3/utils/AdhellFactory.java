@@ -36,6 +36,10 @@ import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -179,14 +183,25 @@ public final class AdhellFactory {
             if (emitter != null) {
                 emitter.onNext(R.string.restored_dns);
             }
-        } else if (!Patterns.IP_ADDRESS.matcher(primaryDns).matches() || !Patterns.IP_ADDRESS.matcher(secondaryDns).matches()) {
-            if (emitter != null) {
-                emitter.onNext(R.string.check_input_dns);
-            }
         } else {
-            AppPreferences.getInstance().setDns(primaryDns, secondaryDns);
-            if (emitter != null) {
-                emitter.onNext(R.string.changed_dns);
+            try {
+                InetAddress primaryDnsAddress = InetAddress.getByName(primaryDns);
+                InetAddress secondaryDnsAddress = InetAddress.getByName(secondaryDns);
+
+                if ((primaryDnsAddress instanceof Inet4Address || primaryDnsAddress instanceof Inet4Address) || (primaryDnsAddress instanceof Inet6Address && secondaryDnsAddress instanceof Inet6Address)) {
+                    AppPreferences.getInstance().setDns(primaryDns, secondaryDns);
+                    if (emitter != null) {
+                        emitter.onNext(R.string.changed_dns);
+                    }
+                } else {
+                    if (emitter != null) {
+                        emitter.onNext(R.string.mixed_dns);
+                    }
+                }
+            } catch (UnknownHostException e) {
+                if (emitter != null) {
+                    emitter.onNext(R.string.check_input_dns);
+                }
             }
         }
     }
@@ -195,30 +210,37 @@ public final class AdhellFactory {
         if (AppPreferences.getInstance().isDnsNotEmpty()) {
             String dns1 = AppPreferences.getInstance().getDns1();
             String dns2 = AppPreferences.getInstance().getDns2();
-            if (Patterns.IP_ADDRESS.matcher(dns1).matches() && Patterns.IP_ADDRESS.matcher(dns2).matches()) {
-                LogUtils.info("\nProcessing DNS...", handler);
+            try {
+                InetAddress dns1Address = InetAddress.getByName(dns1);
+                InetAddress dns2Address = InetAddress.getByName(dns2);
 
-                LogUtils.info("DNS 1: " + dns1, handler);
-                LogUtils.info("DNS 2: " + dns2, handler);
-                List<AppInfo> dnsPackages = appDatabase.applicationInfoDao().getDnsApps();
-                if (dnsPackages.size() == 0) {
-                    LogUtils.info("No app is selected", handler);
-                } else {
-                    LogUtils.info("Size: " + dnsPackages.size(), handler);
-                    List<DomainFilterRule> rules = new ArrayList<>();
-                    for (AppInfo app : dnsPackages) {
-                        DomainFilterRule rule = new DomainFilterRule(new AppIdentity(app.packageName, null));
-                        rule.setDns1(dns1);
-                        rule.setDns2(dns2);
-                        rules.add(rule);
-                    }
+                if ((dns1Address instanceof Inet4Address && dns2Address instanceof Inet4Address) || (dns1Address instanceof Inet6Address && dns2Address instanceof Inet6Address)) {
+                    LogUtils.info("\nProcessing DNS...", handler);
 
-                    try {
-                        FirewallUtils.getInstance().addDomainFilterRules(rules, handler);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    LogUtils.info("DNS 1: " + dns1, handler);
+                    LogUtils.info("DNS 2: " + dns2, handler);
+                    List<AppInfo> dnsPackages = appDatabase.applicationInfoDao().getDnsApps();
+                    if (dnsPackages.size() == 0) {
+                        LogUtils.info("No app is selected", handler);
+                    } else {
+                        LogUtils.info("Size: " + dnsPackages.size(), handler);
+                        List<DomainFilterRule> rules = new ArrayList<>();
+                        for (AppInfo app : dnsPackages) {
+                            DomainFilterRule rule = new DomainFilterRule(new AppIdentity(app.packageName, null));
+                            rule.setDns1(dns1);
+                            rule.setDns2(dns2);
+                            rules.add(rule);
+                        }
+
+                        try {
+                            FirewallUtils.getInstance().addDomainFilterRules(rules, handler);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -127,6 +127,7 @@
     <string name="check_input_dns">Invalid DNS format.</string>
     <string name="changed_dns">DNS addresses have been set. Toggle Domain rules to apply changes.</string>
     <string name="restored_dns">DNS has been restored to defaults. Toggle Domain rules to apply changes.</string>
+    <string name="mixed_dns">Primary and Secondary DNS cannot be mixed IPv4 and IPv6.</string>
     <string name="delete_url">Delete URL</string>
     <string name="provider_info">
         In addition to adhell3\'s standard package, you can add links to remote and local hosts lists.
@@ -221,6 +222,9 @@
     <string name="dialog_set_dns_title">Set DNS</string>
     <string name="dialog_set_dns_info">
         Set primary and secondary DNS.
+        \nSupports both IPv4 and IPv6 but THEY CANNOT BE MIXED.
+        \nIPv6 DNS will simply fall back to default when network is only IPv4.
+        \n
         \nLeave it empty to restore to default.
     </string>
     <string name="dialog_local_hosts_title">Hosts files</string>

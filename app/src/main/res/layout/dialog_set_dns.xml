@@ -39,8 +39,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="10dp"
-            android:inputType="number|numberDecimal"
-            android:digits="0123456789."
+            android:inputType="textUri"
+            android:digits="0123456789abcdef:."
             android:textSize="16sp"
             android:textColor="@color/colorText"/>
 
@@ -62,8 +62,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="10dp"
-            android:inputType="number|numberDecimal"
-            android:digits="0123456789."
+            android:inputType="textUri"
+            android:digits="0123456789abcdef:."
             android:textSize="16sp"
             android:textColor="@color/colorText"/>
 
