@@ -18,9 +18,10 @@ You should have received a copy of the license along with this work. If not, see
 - Mobile and Wi-Fi access disabler<br/>
 Disable internet access when on mobile or/and Wi-Fi for specific apps. This can be useful to avoid watching videos accidentally by using mobile data.
 
-- Custom deny firewall rule<br/>
+- Custom firewall rule<br/>
 This can be used for example to define a custom firewall rule to block ads for Chrome-based apps on port 53 for all IP addresses:<br/>
-    `com.android.chrome|*|53` for Chrome, `com.sec.android.app.sbrowser|*|53` for Samsung Internet, etc.
+    `com.android.chrome|*|53` for Chrome, `com.sec.android.app.sbrowser|*|53` for Samsung Internet, etc.<br/>
+Outside of DENY, it also supports ALLOW, REDIRECT and REDIRECT EXCEPTION rules.
 
 - Whitelist a domain for a specific app<br/>
 For when you want to block a domain systemwide, but you still need this domain for a particular app that won't work without it.<br/>
@@ -39,7 +40,7 @@ This can be useful to check whether a particular domain is in the list.<br/>
 Backup the content of the database on internal storage so that later it can be used to restore the database if the database is somehow damaged.
 
 - DNS per application basis<br/>
-Set custom DNS for selected apps. Only user apps are supported.
+Set custom DNS for selected apps. Both IPv4 and IPv6 are supported. Only user apps are supported.
 
 - Manage apps' components<br/>
 Disable permissions, services, receivers, activities and content providers for for any app (System apps are not shown by default).
