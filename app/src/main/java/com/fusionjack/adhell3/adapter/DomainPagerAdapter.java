@@ -9,12 +9,13 @@ import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.fragments.DomainTabPageFragment;
 
 public class DomainPagerAdapter extends FragmentPagerAdapter {
-    private static final int PAGE_COUNT = 4;
+    private static final int PAGE_COUNT = 5;
     private String tabTitles[];
 
     public DomainPagerAdapter(FragmentManager fm, Context context) {
         super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         tabTitles = new String[] {
+                context.getString(R.string.firewall_url_fragment_titile),
                 context.getString(R.string.blacklist_url_fragment_title),
                 context.getString(R.string.whitelist_url_fragment_title),
                 context.getString(R.string.provider_url_fragment_title),

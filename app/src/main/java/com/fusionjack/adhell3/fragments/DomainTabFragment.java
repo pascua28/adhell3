@@ -16,6 +16,7 @@ import static com.fusionjack.adhell3.fragments.DomainTabPageFragment.PROVIDER_LI
 public class DomainTabFragment extends TabFragment {
 
     private final int[] imageResId = {
+            R.drawable.ic_add_firewall,
             R.drawable.ic_blacklist,
             R.drawable.ic_whitelist,
             R.drawable.ic_providerlist,

@@ -55,19 +55,36 @@
     <string name="dump_domains_title">Dump Domains In Database</string>
     <string name="export_domains_title">Export Unique Domains</string>
     <string name="blacklist_info">
-        Blacklist domains or define firewall denial rules.
+        Blacklist domains.
         \nToggle Domain rules to apply domain changes.
-        \nToggle Firewall rules to apply firewall changes.
     </string>
     <string name="dialog_blacklist_domain_title">Add Domain</string>
     <string name="dialog_blacklist_domain_info">Domain rule support wildcards: *facebook.com</string>
-    <string name="dialog_blacklist_rule_title">Add Firewall Rule</string>
-    <string name="dialog_blacklist_rule_info">
-        Firewall rule format:
-        \npackageName|ipAddress|port
+    <string name="firewall_info">
+        Firewall rules.
+        \nToggle Firewall rules to apply firewall changes.
+    </string>
+    <string name="dialog_firewall_rule_title">Add Firewall Rule</string>
+    <string name="dialog_firewall_rule_info">
+        Firewall rule format for allow, deny and redirect exception:
+        \npackageName|ipAddress|port|mode
+        \nMode is single letter from: (A)llow, (D)eny, redirect_(E)xception
         \n
         \nBlock port 53 for every IP in Chrome:
-        \ncom.android.chrome|*|53
+        \ncom.android.chrome|*|53|D
+        \nAllow port 53 for every IP for every app:
+        \n*|*|53|A
+        \nExclude Chrome HTTP redirect (from example below):
+        \ncom.android.chrome|*|80|E
+        \n
+        \nFor redirect format is:
+        \npackageName|sourceIpAddress:port|targetIpAddress:port|mode
+        \n
+        \nRedirect all HTTP traffic to localhost on port 8000:
+        \n*|*:80|127.0.0.1:8000|R
+        \n
+        \nRedirect and redirect_exception only accepts ipv4
+        \nAllow rule always has higher priority than deny
     </string>
     <string name="dialog_whitelist_domain_title">Add Domain</string>
     <string name="dialog_whitelist_domain_info">
@@ -170,6 +187,7 @@
     <string name="restore_database">Restore Database</string>
     <string name="restore_database_summary">Restore all settings from a backup file. A \'storage\' permission needs to be granted.</string>
     <string name="whitelist_fragment_title">App Whitelist</string>
+    <string name="firewall_url_fragment_titile">Firewall</string>
     <string name="blacklist_url_fragment_title">Blacklist</string>
     <string name="whitelist_url_fragment_title">Whitelist</string>
     <string name="provider_url_fragment_title">Providers</string>
@@ -186,8 +204,8 @@
     <string name="delete_provider_dialog_text">Do you really want to delete the provider?</string>
     <string name="delete_domain_dialog_title">Delete Domain</string>
     <string name="delete_domain_dialog_text">Do you really want to delete the domain?</string>
-    <string name="delete_domain_firewall_dialog_title">Delete Domain or Firewall Rule</string>
-    <string name="delete_domain_firewall_dialog_text">Do you really want to delete the domain or firewall rule?</string>
+    <string name="delete_firewall_dialog_title">Delete Firewall rule</string>
+    <string name="delete_firewall_dialog_text">Do you really want oto delete the firewall rule?</string>
     <string name="backup_database_dialog_title">Backup Database</string>
     <string name="backup_database_dialog_text">Do you really want to backup the database and replace any existing backup?</string>
     <string name="restore_database_dialog_title">Restore Database</string>
