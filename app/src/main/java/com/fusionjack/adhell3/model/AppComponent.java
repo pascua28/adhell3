@@ -111,7 +111,8 @@ public class AppComponent {
 
         try {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
+            int flags = PackageManager.GET_PERMISSIONS | PackageManager.MATCH_DISABLED_COMPONENTS;
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, flags);
             if (packageInfo != null) {
                 String[] permissions = packageInfo.requestedPermissions;
                 if (permissions != null) {
@@ -195,7 +196,8 @@ public class AppComponent {
         List<String> list = new ArrayList<>();
         try {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            int flags = PackageManager.GET_ACTIVITIES | PackageManager.MATCH_DISABLED_COMPONENTS;
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, flags);
             if (packageInfo != null) {
                 Optional.ofNullable(packageInfo.activities).ifPresent(activities -> {
                     Arrays.stream(activities).forEach(activityInfo -> list.add(activityInfo.name));
@@ -210,7 +212,8 @@ public class AppComponent {
         List<String> list = new ArrayList<>();
         try {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SERVICES);
+            int flags = PackageManager.GET_SERVICES | PackageManager.MATCH_DISABLED_COMPONENTS;
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, flags);
             if (packageInfo != null) {
                 Optional.ofNullable(packageInfo.services).ifPresent(services -> {
                     Arrays.stream(services).forEach(serviceInfo -> list.add(serviceInfo.name));
@@ -225,7 +228,8 @@ public class AppComponent {
         List<IComponentInfo> list = new ArrayList<>();
         try {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_RECEIVERS);
+            int flags = PackageManager.GET_RECEIVERS | PackageManager.MATCH_DISABLED_COMPONENTS;
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, flags);
             if (packageInfo != null) {
                 Optional.ofNullable(packageInfo.receivers).ifPresent(receivers -> {
                     Arrays.stream(receivers).forEach(receiverInfo -> {
@@ -242,7 +246,8 @@ public class AppComponent {
         List<String> list = new ArrayList<>();
         try {
             PackageManager packageManager = AdhellFactory.getInstance().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PROVIDERS);
+            int flags = PackageManager.GET_PROVIDERS | PackageManager.MATCH_DISABLED_COMPONENTS;
+            PackageInfo packageInfo = packageManager.getPackageInfo(packageName, flags);
             if (packageInfo != null) {
                 Optional.ofNullable(packageInfo.providers).ifPresent(providers -> {
                     Arrays.stream(providers).forEach(providerInfo -> list.add(providerInfo.name));
