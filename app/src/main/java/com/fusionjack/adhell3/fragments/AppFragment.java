@@ -27,6 +27,7 @@ import com.fusionjack.adhell3.adapter.AppInfoAdapter;
 import com.fusionjack.adhell3.db.entity.AppInfo;
 import com.fusionjack.adhell3.db.repository.AppRepository;
 import com.fusionjack.adhell3.model.AppFlag;
+import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.LogUtils;
 import com.fusionjack.adhell3.utils.SharedPreferenceBooleanLiveData;
@@ -36,6 +37,7 @@ import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppViewModel;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
@@ -79,6 +82,7 @@ public abstract class AppFragment extends Fragment {
 
         initAppList(type);
         initHideSystemApps();
+        initHideStoppedApps();
     }
 
     protected abstract AppRepository.Type getType();
@@ -104,7 +108,8 @@ public abstract class AppFragment extends Fragment {
                 liveData.observe(getViewLifecycleOwner(), appList -> {
                     this.initialAppList = appList;
                     this.restoredAppList = appList;
-                    showOrHideSystemApps();
+                    showOrHideApps();
+//                    showOrHideStoppedApps();
                 });
             });
         };
@@ -115,7 +120,7 @@ public abstract class AppFragment extends Fragment {
         Consumer<SharedPreferenceBooleanLiveData> callback = liveData -> {
             safeGuardLiveData(() -> {
                 liveData.observe(getViewLifecycleOwner(), hideSystem -> {
-                    showOrHideSystemApps();
+                    showOrHideApps();
                 });
             });
         };
@@ -123,10 +128,11 @@ public abstract class AppFragment extends Fragment {
         new RxSingleIoBuilder().async(liveData, callback);
     }
 
-    private void showOrHideSystemApps() {
+    private void showOrHideApps() {
         boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
-        if (hideSystem) {
-            this.currentAppList = filterList(restoredAppList);
+        boolean hideStopped = AppPreferences.getInstance().isHideStoppedApps();
+        if (hideSystem || hideStopped) {
+            this.currentAppList = filterList(initialAppList);
         } else {
             this.currentAppList = restoredAppList;
         }
@@ -135,6 +141,18 @@ public abstract class AppFragment extends Fragment {
         } else {
             searchView.setQuery(searchText, true);
         }
+    }
+
+    private void initHideStoppedApps() {
+        Consumer<SharedPreferenceBooleanLiveData> callback = liveData -> {
+            safeGuardLiveData(() -> {
+                liveData.observe(getViewLifecycleOwner(), hideSystem -> {
+                    showOrHideApps();
+                });
+            });
+        };
+        Single<SharedPreferenceBooleanLiveData> liveData = AppPreferences.getInstance().getHideStoppedAppsLiveData();
+        new RxSingleIoBuilder().async(liveData, callback);
     }
 
     private void safeGuardLiveData(Runnable action) {
@@ -218,6 +236,7 @@ public abstract class AppFragment extends Fragment {
             inflater.inflate(R.menu.app_menu, menu);
             UiUtils.setMenuIconColor(menu, getContext());
             Optional.ofNullable(menu.findItem(R.id.action_hide_system)).ifPresent(this::initHideSystemMenu);
+            Optional.ofNullable(menu.findItem(R.id.action_hide_stopped)).ifPresent(this::initHideStoppedMenu);
             initSearchView(menu);
         }
     }
@@ -227,6 +246,8 @@ public abstract class AppFragment extends Fragment {
         int itemId = item.getItemId();
         if (itemId == R.id.action_hide_system) {
             toggleHideSystem(item);
+        } else if (itemId == R.id.action_hide_stopped) {
+            toggleHideStopped(item);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -248,13 +269,41 @@ public abstract class AppFragment extends Fragment {
         AppPreferences.getInstance().setHideSystemApps(!hideSystem);
         initHideSystemMenu(item);
     }
+    private void initHideStoppedMenu(MenuItem item) {
+        boolean hideStopped = AppPreferences.getInstance().isHideStoppedApps();
+        if (hideStopped) {
+            item.setTitle(R.string.menu_show_stopped);
+            item.setIcon(R.drawable.ic_show_stopped);
+        } else {
+            item.setTitle(R.string.menu_hide_stopped);
+            item.setIcon(R.drawable.ic_hide_stopped);
+        }
+        UiUtils.tintMenuIcon(item, getContext());
+    }
+
+    private void toggleHideStopped(MenuItem item) {
+        boolean hideStopped = AppPreferences.getInstance().isHideStoppedApps();
+        AppPreferences.getInstance().setHideStoppedApps(!hideStopped);
+        initHideStoppedMenu(item);
+    }
 
     private List<AppInfo> filterList(List<AppInfo> list) {
         boolean hideSystem = AppPreferences.getInstance().isHideSystemApps();
-        if (hideSystem) {
+        boolean hideStopped = AppPreferences.getInstance().isHideStoppedApps();
+
+        if (hideSystem || hideStopped) {
+            ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
             return list.stream()
-                    .filter(appInfo -> !appInfo.system)
-                    .collect(Collectors.toList());
+                .filter(appInfo -> {
+                    if (hideSystem && appInfo.system) {
+                        return false;
+                    }
+                    if (hideStopped && !appPolicy.isApplicationRunning(appInfo.packageName)) {
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
         }
         return list;
     }

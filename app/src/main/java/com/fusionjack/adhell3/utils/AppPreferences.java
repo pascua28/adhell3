@@ -28,6 +28,8 @@ public final class AppPreferences {
     private static final String CURRENT_PROVIDER_ID = "currentProviderId";
     private static final String HIDE_SYSTEM_APPS = "hideSystemApps";
 
+    private static final String HIDE_STOPPED_APPS = "hideStoppedApps";
+
     private AppPreferences() {
         sharedPreferences = AdhellFactory.getInstance().getSharedPreferences();
     }
@@ -61,6 +63,21 @@ public final class AppPreferences {
     public void setHideSystemApps(boolean enabled) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(HIDE_SYSTEM_APPS, enabled);
+        editor.apply();
+    }
+
+    public Single<SharedPreferenceBooleanLiveData> getHideStoppedAppsLiveData() {
+        return Single.fromCallable(() ->
+                new SharedPreferenceBooleanLiveData(sharedPreferences, HIDE_STOPPED_APPS, false));
+    }
+
+    public boolean isHideStoppedApps() {
+        return sharedPreferences.getBoolean(HIDE_STOPPED_APPS, false);
+    }
+
+    public void setHideStoppedApps(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(HIDE_STOPPED_APPS, enabled);
         editor.apply();
     }
 

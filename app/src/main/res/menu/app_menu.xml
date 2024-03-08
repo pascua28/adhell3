@@ -26,6 +26,13 @@
                 android:title="Hide system"
                 app:showAsAction="ifRoom">
             </item>
+
+            <item
+                android:id="@+id/action_hide_stopped"
+                android:icon="@drawable/ic_hide_stopped"
+                android:title="Hide stopped"
+                app:showAsAction="ifRoom">
+            </item>
         </menu>
 
     </item>
