@@ -48,6 +48,9 @@ Disable permissions, services, receivers, activities and content providers for f
 - Restrictions<br/>
 Turn off google crash report, account sync or disallow camera and microphone! These are only few examples
 
+- Proxy<br/>
+Set global http proxy that will work for all apps (some might not work with it).
+
 ## Building APK
 - Download the script from https://gitlab.com/fusionjack/adhell3-scripts
 - Follow the instruction in the README
