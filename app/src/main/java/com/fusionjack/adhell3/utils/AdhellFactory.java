@@ -32,6 +32,7 @@ import com.samsung.android.knox.AppIdentity;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
+import com.samsung.android.knox.net.GlobalProxy;
 import com.samsung.android.knox.net.firewall.DomainFilterRule;
 import com.samsung.android.knox.net.firewall.Firewall;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
@@ -81,6 +82,10 @@ public final class AdhellFactory {
     @Inject
     KnoxEnterpriseLicenseManager knoxEnterpriseLicenseManager;
 
+    @Nullable
+    @Inject
+    GlobalProxy globalProxy;
+
     private AdhellFactory() {
         App.get().getAppComponent().inject(this);
     }
@@ -117,6 +122,11 @@ public final class AdhellFactory {
 
     public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
+    }
+
+    @Nullable
+    public GlobalProxy getGlobalProxy() {
+        return globalProxy;
     }
 
     public void createNotSupportedDialog(Context context) {

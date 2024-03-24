@@ -348,4 +348,16 @@
     </string>
     <string name="wipe_app_data_title">Wipe application data</string>
     <string name="wipe_app_data_info">Do you really want to wipe the application data?</string>
+    <string name="delete_proxy">Delete Proxy</string>
+    <string name="proxy_fragment_title">Proxy</string>
+    <string name="proxy_info">Set http proxy. Proxy may not be considered by some applications (e.g. applications that directly open a socket with the final server).
+        \nSome apps might throw SSL errors even if you trust proxy\'s certificate.
+        \nApps might retry connections without using the proxy whenever it\'s unreachable or the authentication fails.
+        \nProxy bypasses android\'s VPN.
+    </string>
+    <string name="dialog_static_proxy_title">Add Static Proxy</string>
+    <string name="delete_proxy_dialog_title">Delete Proxy?</string>
+    <string name="delete_proxy_dialog_text">Do you really want to delete the Proxy?</string>
+    <string name="dialog_proxy_info">Only some input is validated. Wrong values might fail to apply when enabling proxy or simply not work.</string>
+    <string name="edit_proxy_title">Edit Proxy</string>
 </resources>

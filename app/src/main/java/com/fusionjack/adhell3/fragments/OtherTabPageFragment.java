@@ -9,7 +9,8 @@ public class OtherTabPageFragment extends Fragment {
     public static final int APP_COMPONENT_PAGE = 0;
     public static final int RESTRICTION_PAGE = 1;
     public static final int DNS_PAGE = 2;
-    public static final int SETTINGS_PAGE = 3;
+    public static final int PROXY_PAGE = 3;
+    public static final int SETTINGS_PAGE = 4;
 
     public static Fragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -25,6 +26,9 @@ public class OtherTabPageFragment extends Fragment {
                 break;
             case DNS_PAGE:
                 fragment = new DnsFragment();
+                break;
+            case PROXY_PAGE:
+                fragment = new ProxyFragment();
                 break;
             case SETTINGS_PAGE:
                 default:

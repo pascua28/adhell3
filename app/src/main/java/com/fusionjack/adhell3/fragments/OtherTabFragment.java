@@ -22,6 +22,7 @@ public class OtherTabFragment extends TabFragment {
             R.drawable.ic_appcomponent,
             R.drawable.ic_restrictions,
             R.drawable.ic_dns,
+            R.drawable.ic_proxy,
             R.drawable.ic_settings
     };
     private String viewpagerPosition;

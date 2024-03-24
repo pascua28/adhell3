@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/noteTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="@string/proxy_info"
+        android:background="@drawable/border" />
+
+    <ListView
+        android:id="@+id/proxyListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_below="@+id/noteTextView" />
+
+    <toan.android.floatingactionmenu.FloatingActionsMenu
+        android:id="@+id/proxy_actions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        fab:fab_menuIcon="@drawable/ic_plus"
+        fab:fab_addButtonColorNormal="@color/colorFab"
+        fab:fab_addButtonColorPressed="@color/colorFab"
+        fab:fab_labelStyle="@style/menu_labels_style"
+        android:layout_marginBottom="5dp"
+        android:layout_marginEnd="5dp">
+
+        <toan.android.floatingactionmenu.FloatingActionButton
+            android:id="@+id/action_add_proxy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_icon="@drawable/ic_add_domain"
+            fab:fab_colorNormal="@color/colorFab"
+            fab:fab_title="@string/dialog_static_proxy_title"
+            fab:fab_colorPressed="@color/colorFab"/>
+
+    </toan.android.floatingactionmenu.FloatingActionsMenu>
+    >
+
+</RelativeLayout>
+

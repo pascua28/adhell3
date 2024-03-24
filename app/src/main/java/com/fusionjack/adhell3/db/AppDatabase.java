@@ -15,6 +15,7 @@ import com.fusionjack.adhell3.db.dao.DisabledPackageDao;
 import com.fusionjack.adhell3.db.dao.DnsPackageDao;
 import com.fusionjack.adhell3.db.dao.FirewallWhitelistedPackageDao;
 import com.fusionjack.adhell3.db.dao.PolicyPackageDao;
+import com.fusionjack.adhell3.db.dao.StaticProxyDao;
 import com.fusionjack.adhell3.db.dao.ReportBlockedUrlDao;
 import com.fusionjack.adhell3.db.dao.RestrictedPackageDao;
 import com.fusionjack.adhell3.db.dao.UserBlockUrlDao;
@@ -27,6 +28,7 @@ import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.PolicyPackage;
+import com.fusionjack.adhell3.db.entity.StaticProxy;
 import com.fusionjack.adhell3.db.entity.ReportBlockedUrl;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
 import com.fusionjack.adhell3.db.entity.UserBlockUrl;
@@ -42,6 +44,7 @@ import com.fusionjack.adhell3.db.migration.Migration_21_22;
 import com.fusionjack.adhell3.db.migration.Migration_22_23;
 import com.fusionjack.adhell3.db.migration.Migration_23_24;
 import com.fusionjack.adhell3.db.migration.Migration_24_25;
+import com.fusionjack.adhell3.db.migration.Migration_25_26;
 
 @Database(entities = {
         AppInfo.class,
@@ -55,8 +58,9 @@ import com.fusionjack.adhell3.db.migration.Migration_24_25;
         ReportBlockedUrl.class,
         UserBlockUrl.class,
         WhiteUrl.class,
-        DnsPackage.class
-}, version = 25, exportSchema = false)
+        DnsPackage.class,
+        StaticProxy.class
+}, version = 26, exportSchema = false)
 
 public abstract class AppDatabase extends RoomDatabase {
     private static final Migration MIGRATION_14_15 = new Migration_14_15(14, 15);
@@ -70,6 +74,7 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final Migration MIGRATION_22_23 = new Migration_22_23(22, 23);
     private static final Migration MIGRATION_23_24 = new Migration_23_24(23, 24);
     private static final Migration MIGRATION_24_25 = new Migration_24_25(24, 25);
+    private static final Migration MIGRATION_25_26 = new Migration_25_26(25, 26);
     private static AppDatabase INSTANCE;
 
     public static final String DATABASE_FILE = "adhell-database";
@@ -90,6 +95,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_22_23)
                             .addMigrations(MIGRATION_23_24)
                             .addMigrations(MIGRATION_24_25)
+                            .addMigrations(MIGRATION_25_26)
                             .build();
         }
         return INSTANCE;
@@ -122,5 +128,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract AppPermissionDao appPermissionDao();
 
     public abstract DnsPackageDao dnsPackageDao();
+
+    public abstract StaticProxyDao staticProxyDao();
 
 }

@@ -14,6 +14,7 @@ import com.fusionjack.adhell3.db.entity.DisabledPackage;
 import com.fusionjack.adhell3.db.entity.DnsPackage;
 import com.fusionjack.adhell3.db.entity.FirewallWhitelistedPackage;
 import com.fusionjack.adhell3.db.entity.RestrictedPackage;
+import com.fusionjack.adhell3.db.entity.StaticProxy;
 import com.fusionjack.adhell3.db.entity.UserBlockUrl;
 import com.fusionjack.adhell3.db.entity.WhiteUrl;
 import com.fusionjack.adhell3.utils.AdhellAppIntegrity;
@@ -81,6 +82,7 @@ public final class DatabaseFactory {
                     writeUserBlockUrls(writer, appDatabase);
                     writeWhiteUrls(writer, appDatabase);
                     writeCustomDNS(writer, appDatabase);
+                    writeStaticProxy(writer, appDatabase);
                     writer.endObject();
                 } catch (Exception e) {
                     LogUtils.error(e.getMessage(), e);
@@ -124,6 +126,8 @@ public final class DatabaseFactory {
                         readDnsPackages(reader);
                     } else if (name.equalsIgnoreCase("DnsAddresses")) {
                         readDnsAddresses(reader);
+                    } else if (name.equalsIgnoreCase("StaticProxy")) {
+                        readStaticProxy(reader);
                     }
                 }
                 reader.endObject();
@@ -255,6 +259,23 @@ public final class DatabaseFactory {
             writer.name("dns2").value(AppPreferences.getInstance().getDns2());
         }
         writer.endObject();
+    }
+
+    private void writeStaticProxy(JsonWriter writer, AppDatabase appDatabase) throws IOException {
+        writer.name("StaticProxy");
+        writer.beginArray();
+        List<StaticProxy> staticProxies = appDatabase.staticProxyDao().getAll2();
+        for (StaticProxy staticProxy : staticProxies) {
+            writer.beginObject();
+            writer.name("name").value(staticProxy.name);
+            writer.name("hostname").value(staticProxy.hostname);
+            writer.name("port").value(staticProxy.port);
+            writer.name("exclusionList").value(staticProxy.exclusionList);
+            writer.name("user").value(staticProxy.user);
+            writer.name("password").value(staticProxy.password);
+            writer.endObject();
+        }
+        writer.endArray();
     }
 
     private void readWhitelistedPackages(JsonReader reader) throws IOException {
@@ -434,6 +455,46 @@ public final class DatabaseFactory {
 
         appDatabase.appPermissionDao().deleteAll();
         appDatabase.appPermissionDao().insertAll(appPermissions);
+    }
+
+    private void readStaticProxy(JsonReader reader) throws IOException {
+        String name = "";
+        String hostname = "";
+        int port = 0;
+        String exclusionList = "";
+        String user = "";
+        String password = "";
+
+        List<StaticProxy> staticProxies = new ArrayList<>();
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                String JsonName = reader.nextName();
+                if (JsonName.equalsIgnoreCase("name")) {
+                    name = reader.nextString();
+                } else if (JsonName.equalsIgnoreCase("hostname")) {
+                    hostname = reader.nextString();
+                } else if (JsonName.equalsIgnoreCase("port")) {
+                    port = Integer.parseInt(reader.nextString());
+                } else if (JsonName.equalsIgnoreCase("exclusionList")) {
+                    exclusionList = reader.nextString();
+                } else if (JsonName.equalsIgnoreCase("user")) {
+                    user = reader.nextString();
+                } else if (JsonName.equalsIgnoreCase("password")) {
+                    password = reader.nextString();
+                }
+            }
+            reader.endObject();
+
+            StaticProxy staticProxy = new StaticProxy(name, hostname, port, exclusionList, user, password);
+            staticProxies.add(staticProxy);
+        }
+        reader.endArray();
+
+        appDatabase.staticProxyDao().deleteAll();
+        appDatabase.staticProxyDao().insertAll(staticProxies);
     }
 
     private static class AppPermissionInfo {

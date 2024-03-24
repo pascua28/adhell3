@@ -9,6 +9,8 @@ import com.fusionjack.adhell3.utils.LogUtils;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
+import com.samsung.android.knox.net.GlobalProxy;
+import com.samsung.android.knox.net.ProxyProperties;
 import com.samsung.android.knox.net.firewall.Firewall;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
 
@@ -81,4 +83,20 @@ public class EnterpriseModule {
         return null;
     }
 
+    @Nullable
+    @Provides
+    @AdhellApplicationScope
+    GlobalProxy providesGlobalProxy(@Nullable EnterpriseDeviceManager enterpriseDeviceManager) {
+        if (enterpriseDeviceManager == null) {
+            LogUtils.info( "enterpriseDeviceManager is null. Can't get firewall");
+            return null;
+        }
+        try {
+            LogUtils.info( "Trying to get GlobalProxy");
+            return enterpriseDeviceManager.getGlobalProxy();
+        } catch (Throwable throwable) {
+            LogUtils.error( "Failed to get GlobalProxy", throwable);
+        }
+        return null;
+    }
 }

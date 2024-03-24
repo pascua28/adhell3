@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/border"
+    android:padding="5dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <TextView
+        android:id="@+id/proxyNameTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/switchDisable"
+        android:text="Name"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/proxyConnectionTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/proxyNameTextView"
+        android:layout_toStartOf="@id/switchDisable"
+        android:text="0.0.0.0:0"
+        android:textSize="@dimen/text_mizerable_size"/>
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchDisable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="5dp"
+        />
+
+    <ImageView
+        android:id="@+id/deleteProxyImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_toStartOf="@+id/switchDisable"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/delete_proxy"
+        app:tint="@color/colorAccent"
+        android:src="@drawable/ic_delete" />
+
+    <ImageView
+        android:id="@+id/editProxyImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_toStartOf="@+id/deleteProxyImageView"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/edit_proxy_title"
+        app:tint="@color/colorAccent"
+        android:src="@drawable/ic_edit" />
+
+</RelativeLayout>
