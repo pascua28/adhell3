@@ -200,12 +200,19 @@ public class ComponentTabPageFragment extends Fragment {
             UiUtils.setMenuIconColor(menu, getContext());
             initSearchView(menu);
         }
+        // Disable batch op for permissions as it's not implemented
+        if (this.pageId == PERMISSIONS_PAGE) {
+            MenuItem item = menu.findItem(R.id.action_batch);
+            item.setEnabled(false);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_enable_all) {
             enableAllComponents();
+        } else if (item.getItemId() == R.id.action_batch) {
+            batchOperation();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -226,6 +233,41 @@ public class ComponentTabPageFragment extends Fragment {
                     .setTitle(title)
                     .setQuestion(question)
                     .show(onPositiveButton);
+        });
+    }
+
+    private void batchOperation() {
+        AppComponentPage.toAppComponentPage(pageId).ifPresent(page -> {
+            String pageName = page.getName();
+            if (pageName.equals("content providers")) {
+                pageName = "providers";
+            }
+            String questionPlaceholder = getResources().getString(R.string.dialog_appcomponent_batch_app_summary);
+            String question = String.format(questionPlaceholder, pageName, packageName);
+            String enablePlaceholder = getResources().getString(R.string.dialog_appcomponent_app_enable_summary);
+            String enable = String.format(enablePlaceholder, pageName);
+            String disablePlaceholder = getResources().getString(R.string.dialog_appcomponent_app_disable_summary);
+            String disable = String.format(disablePlaceholder, pageName);
+
+            Runnable callback = () -> Toast.makeText(getContext(), "Success", Toast.LENGTH_LONG).show();
+            Runnable onPositiveButton = () -> {
+                new RxCompletableIoBuilder()
+                        .setShowDialog(enable, getContext())
+                        .async(AppComponentFactory.getInstance().processAppComponentInBatchForApp(true, packageName, page.pageId), callback);
+            };
+            Runnable onNegativeButton = () -> {
+                new RxCompletableIoBuilder()
+                        .setShowDialog(disable, getContext())
+                        .async(AppComponentFactory.getInstance().processAppComponentInBatchForApp(false, packageName, page.pageId), callback);
+            };
+
+            new QuestionDialogBuilder(getView())
+                    .setTitle(R.string.dialog_appcomponent_batch_title)
+                    .setQuestion(question)
+                    .setPositiveButtonText(R.string.button_enable)
+                    .setNegativeButtonText(R.string.button_disable)
+                    .show(onPositiveButton, onNegativeButton, () -> {
+                    });
         });
     }
 

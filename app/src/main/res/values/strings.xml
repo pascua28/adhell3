@@ -316,6 +316,10 @@
         \nDo you want to enable or disable those apps\' components?</string>
     <string name="dialog_appcomponent_enable_summary">Enabling apps\' components, please wait …</string>
     <string name="dialog_appcomponent_disable_summary">Disabling apps\' components, please wait …</string>
+    <string name="dialog_appcomponent_batch_app_summary">The app\'s %1$s defined in adhell3_%1$s.txt will be used.
+        \nDo you want to enable or disable %1$s for %2$s?</string>
+    <string name="dialog_appcomponent_app_enable_summary">Enabling app\'s %1$s, please wait …</string>
+    <string name="dialog_appcomponent_app_disable_summary">Disabling app\'s %1$s, please wait …</string>
     <string name="button_enable">Enable</string>
     <string name="button_disable">Disable</string>
     <string name="menu_enable_all">Enable all</string>

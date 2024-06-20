@@ -6,6 +6,11 @@
         app:showAsAction="ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
+        android:id="@+id/action_batch"
+        android:icon="@drawable/ic_batch"
+        android:title="Batch operation"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_enable_all"
         android:icon="@drawable/ic_enable_all"
         android:title="Enable All"

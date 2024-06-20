@@ -277,6 +277,32 @@ public final class AppComponentFactory {
         });
     }
 
+    public Completable processAppComponentInBatchForApp(boolean enabled, String packageName, int component) {
+        return Completable.fromAction(() -> {
+            // component is pageId from ComponentTabPageFragment
+            switch (component) {
+                case 1:
+                    Set<String> activityNames = readTxtComponent(ACTIVITY_FILENAME);
+                    setTxtActivitiesState(enabled, packageName, activityNames);
+                    break;
+                case 2:
+                    Set<String> serviceNames = readTxtComponent(SERVICE_FILENAME);
+                    setTxtServicesState(enabled, packageName, serviceNames);
+                    break;
+                case 3:
+                    Set<String> receiverNames = readTxtComponent(RECEIVER_FILENAME);
+                    setTxtReceiversState(enabled, packageName, receiverNames);
+                    break;
+                case 4:
+                    Set<String> providerNames = readTxtComponent(PROVIDER_FILENAME);
+                    setTxtProvidersState(enabled, packageName, providerNames);
+                    break;
+                default:
+                    LogUtils.error("Invalid component page: " + component);
+            }
+        });
+    }
+
     private void setActivityState(boolean state, String packageName, String activityName) {
         ComponentName activityCompName = new ComponentName(packageName, activityName);
         boolean success = appPolicy.setApplicationComponentState(activityCompName, state);
