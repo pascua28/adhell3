@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/ManagementTabLayout"
-        app:tabMode="fixed"
+        app:tabMode="scrollable"
         app:tabGravity="fill"
         app:tabIconTint="@color/tab_color_selector"
         app:tabIndicatorColor="@color/colorAccent"
