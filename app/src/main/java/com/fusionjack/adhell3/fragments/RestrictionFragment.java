@@ -35,6 +35,7 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
     private static final String USB_HOST_PREFERENCE = "usb_host_preference";
 
     // Connections
+    private static  final String AIRPLANE_MODE_PREFERENCE = "airplane_mode_preference";
     private static final String MOBILE_DATA_PREFERENCE = "mobile_data_preference";
     private static final String WIFI_ACCESS_PREFERENCE = "wifi_access_preference";
     private static final String BLUETOOTH_PREFERENCE = "bluetooth_preference";
@@ -43,7 +44,12 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
     // Miscellaneous
     private static final String CLIPBOARD_PREFERENCE = "clipboard_preference";
     private static final String CLIPBOARD_SHARE_PREFERENCE = "clipboard_share_preference";
+    private static final String FAST_ENCRYPTION_PREFERENCE = "fast_encryption";
+    private static final String POWER_OFF_PREFERENCE = "poweroff_preference";
     private static final String SCREEN_CAPTURE_PREFERENCE = "screen_capture_preference";
+    private static final String SETTINGS_CHANGE_PREFERENCE = "settings_change_preference";
+    private static final String SYSTEM_UPDATES_PREFERENCE = "system_update_preference";
+    private static final String WALLPAPER_CHANGE_PREFERENCE = "wallpaper_change_preference";
 
     public RestrictionFragment() {
         this.policy = AdhellFactory.getInstance().getRestrictionPolicy();
@@ -68,6 +74,7 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
         init(USB_HOST_PREFERENCE, policy::isUsbHostStorageAllowed);
 
         // Connections
+        init(AIRPLANE_MODE_PREFERENCE, policy::isAirplaneModeAllowed);
         init(MOBILE_DATA_PREFERENCE, policy::isCellularDataAllowed);
         init2(WIFI_ACCESS_PREFERENCE, policy::isWiFiEnabled);
         init2(BLUETOOTH_PREFERENCE, policy::isBluetoothEnabled);
@@ -76,7 +83,12 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
         // Miscellaneous
         init2(CLIPBOARD_PREFERENCE, policy::isClipboardAllowed);
         init(CLIPBOARD_SHARE_PREFERENCE, policy::isClipboardShareAllowed);
+        init2(FAST_ENCRYPTION_PREFERENCE, policy::isFastEncryptionAllowed);
+        init(POWER_OFF_PREFERENCE, policy::isPowerOffAllowed);
         init2(SCREEN_CAPTURE_PREFERENCE, policy::isScreenCaptureEnabled);
+        init2(SETTINGS_CHANGE_PREFERENCE, policy::isSettingsChangesAllowed);
+        init(SYSTEM_UPDATES_PREFERENCE, policy::isOTAUpgradeAllowed);
+        init(WALLPAPER_CHANGE_PREFERENCE, policy::isWallpaperChangeAllowed);
 
     }
 
@@ -119,6 +131,10 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
                 execute(USB_HOST_PREFERENCE, policy::allowUsbHostStorage);
                 break;
 
+            case AIRPLANE_MODE_PREFERENCE:
+                execute(AIRPLANE_MODE_PREFERENCE, policy::allowAirplaneMode);
+                break;
+
             case MOBILE_DATA_PREFERENCE:
                 execute(MOBILE_DATA_PREFERENCE, policy::setCellularData);
                 break;
@@ -143,8 +159,27 @@ public class RestrictionFragment extends PreferenceFragmentCompat {
                 execute(CLIPBOARD_SHARE_PREFERENCE, policy::allowClipboardShare);
                 break;
 
+            case FAST_ENCRYPTION_PREFERENCE:
+                execute(FAST_ENCRYPTION_PREFERENCE, policy::allowFastEncryption);
+                break;
+
+            case POWER_OFF_PREFERENCE:
+                execute(POWER_OFF_PREFERENCE, policy::allowPowerOff);
+
             case SCREEN_CAPTURE_PREFERENCE:
                 execute(SCREEN_CAPTURE_PREFERENCE, policy::setScreenCapture);
+                break;
+
+            case SETTINGS_CHANGE_PREFERENCE:
+                execute(SETTINGS_CHANGE_PREFERENCE, policy::allowSettingsChanges);
+                break;
+
+            case SYSTEM_UPDATES_PREFERENCE:
+                execute(SYSTEM_UPDATES_PREFERENCE, policy::allowOTAUpgrade);
+                break;
+
+            case WALLPAPER_CHANGE_PREFERENCE:
+                execute(WALLPAPER_CHANGE_PREFERENCE, policy::allowWallpaperChange);
                 break;
         }
         return super.onPreferenceTreeClick(preference);

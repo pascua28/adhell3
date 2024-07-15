@@ -257,6 +257,8 @@
     <string name="allow_usb_host_summary">Allow or disallow the usage of USB host storage via USB OTG.</string>
 
     <string name="connections_category">Connections</string>
+    <string name="allow_airplane_mode">Allow Airplane Mode</string>
+    <string name="allow_airplane_mode_summary">Allow or disallow toggling airplane mode.</string>
     <string name="allow_mobile_data">Allow Mobile Data</string>
     <string name="allow_mobile_data_summary">Allow or disallow mobile data connections.</string>
     <string name="allow_wifi_access">Allow Wi-Fi Access</string>
@@ -271,8 +273,17 @@
     <string name="allow_clipboard_summary">Allow or disallow any editing functions that require access to the clipboard, including cut, copy, and paste operations.</string>
     <string name="allow_clipboard_share">Allow Clipboard Share</string>
     <string name="allow_clipboard_share_summary">Allow or disallow sharing the clipboard between applications.</string>
+    <string name="allow_fast_encryption">Allow Fast Encryption</string>
+    <string name="allow_fast_encryption_summary">Allow to force fast encryption.</string>
+    <string name="allow_power_off">Allow Device Poweroff</string>
+    <string name="allow_power_off_summary">Allow or disallow to power off the device by pressing the power button.</string>
     <string name="allow_screen_capture">Allow Screen Capture</string>
     <string name="allow_screen_capture_summary">Allow or disallow a user from taking screenshots of the device screen.</string>
+    <string name="allow_settings_change">Allow Settings Changes</string>
+    <string name="allow_settings_change_summary">Allow or disallow making changes to settings</string>
+    <string name="allow_system_updates">Allow System Updates</string>
+    <string name="allow_system_updates_summary">Allow or disallow upgrading operating system over-the-air</string>
+    <string name="allow_wallpaper_change">Allow Changing Wallpaper</string>
 
     <string name="update_provider_title">Update host providers</string>
     <string name="update_provider_summary">Update host providers when enabling domain rules</string>

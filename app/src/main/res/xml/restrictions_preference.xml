@@ -84,6 +84,13 @@
         android:layout="@layout/preference_category_connections">
 
         <SwitchPreference
+            android:key="airplane_mode_preference"
+            android:title="@string/allow_airplane_mode"
+            android:summary="@string/allow_airplane_mode_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
             android:key="mobile_data_preference"
             android:title="@string/allow_mobile_data"
             android:summary="@string/allow_mobile_data_summary"
@@ -132,9 +139,43 @@
             app:iconSpaceReserved="false"/>
 
         <SwitchPreference
+            android:key="fast_encryption"
+            android:title="@string/allow_fast_encryption"
+            android:summary="@string/allow_fast_encryption_summary"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="poweroff_preference"
+            android:title="@string/allow_power_off"
+            android:summary="@string/allow_power_off_summary"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
             android:key="screen_capture_preference"
             android:title="@string/allow_screen_capture"
             android:summary="@string/allow_screen_capture_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="settings_change_preference"
+            android:title="@string/allow_settings_change"
+            android:summary="@string/allow_settings_change_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="system_update_preference"
+            android:title="@string/allow_system_updates"
+            android:summary="@string/allow_system_updates_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreference
+            android:key="wallpaper_change_preference"
+            android:title="@string/allow_wallpaper_change"
             android:defaultValue="true"
             app:iconSpaceReserved="false"/>
 
