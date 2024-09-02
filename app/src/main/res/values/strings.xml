@@ -364,4 +364,9 @@
     <string name="delete_proxy_dialog_text">Do you really want to delete the Proxy?</string>
     <string name="dialog_proxy_info">Only some input is validated. Wrong values might fail to apply when enabling proxy or simply not work.</string>
     <string name="edit_proxy_title">Edit Proxy</string>
+    <string name="menu_copy_to_clipboard">Copy to clipboard</string>
+    <string name="menu_append_batch">Add to batch file</string>
+    <string name="menu_launch_activity">Launch activity</string>
+    <string name="dialog_launch_activity_title">Launch Activity</string>
+    <string name="dialog_launch_activity_text">Do you really want to launch activity %1$s?</string>
 </resources>

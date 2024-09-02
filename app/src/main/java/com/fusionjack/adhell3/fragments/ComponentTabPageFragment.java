@@ -1,7 +1,10 @@
 package com.fusionjack.adhell3.fragments;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -31,6 +35,7 @@ import com.fusionjack.adhell3.db.entity.AppPermission;
 import com.fusionjack.adhell3.model.AppComponent;
 import com.fusionjack.adhell3.model.IComponentInfo;
 import com.fusionjack.adhell3.model.ReceiverInfo;
+import com.fusionjack.adhell3.utils.AdhellFactory;
 import com.fusionjack.adhell3.utils.AppComponentFactory;
 import com.fusionjack.adhell3.utils.AppPreferences;
 import com.fusionjack.adhell3.utils.dialog.QuestionDialogBuilder;
@@ -40,6 +45,7 @@ import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleComputationBuilder;
 import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 import com.fusionjack.adhell3.viewmodel.AppComponentViewModel;
+import com.samsung.android.knox.application.ApplicationPolicy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +85,10 @@ public class ComponentTabPageFragment extends Fragment {
     private List<IComponentInfo> adapterAppComponentList;
     private List<IComponentInfo> initialAppComponentList;
     private ComponentAdapter adapter;
+
+    private static final int COPY_CLIPBOARD_CONTEXT_MENU = 1;
+    private static final int APPEND_BATCH_FILE_CONTEXT_MENU = 2;
+    private static final int LAUNCH_ACTIVITY_CONTEXT_MENU = 3;
 
     public static ComponentTabPageFragment newInstance(int page, String packageName, boolean isDisabledComponentMode) {
         Bundle args = new Bundle();
@@ -136,25 +146,13 @@ public class ComponentTabPageFragment extends Fragment {
                 page.getAdapter(getContext(), adapterAppComponentList).ifPresent(adapter -> {
                     this.adapter = adapter;
                     listView.setAdapter(adapter);
+                    registerForContextMenu(listView);
 
                     boolean toggleEnabled = AppPreferences.getInstance().isAppComponentToggleEnabled();
                     if (toggleEnabled) {
                         listView.setOnItemClickListener((AdapterView<?> adView, View view2, int position, long id) -> {
                             Action action = () -> page.toggleAppComponent(packageName, adapter.getItem(position));
                             new RxCompletableIoBuilder().async(Completable.fromAction(action));
-                        });
-                        listView.setOnItemLongClickListener((parent, view1, position, id) -> {
-                            if (page.pageId == PERMISSIONS_PAGE) {
-                                return true;
-                            }
-                            String componentName = adapter.getItem(position).getName();
-                            Action action = () -> page.appendComponentNameToFile(componentName);
-                            String message = "'" + adapter.getNamePart(componentName) + "' is inserted to file";
-                            Runnable callback = () -> Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                            new RxCompletableIoBuilder()
-                                    .showErrorAlert(getContext())
-                                    .async(Completable.fromAction(action), callback);
-                            return true;
                         });
                     }
 
@@ -215,6 +213,66 @@ public class ComponentTabPageFragment extends Fragment {
             batchOperation();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        if (menu.size() == 0) {
+            menu.add(pageId, COPY_CLIPBOARD_CONTEXT_MENU, Menu.NONE, R.string.menu_copy_to_clipboard);
+            if (this.pageId != PERMISSIONS_PAGE) {
+                menu.add(pageId, APPEND_BATCH_FILE_CONTEXT_MENU, Menu.NONE, R.string.menu_append_batch);
+            }
+            if (this.pageId == ACTIVITIES_PAGE) {
+                menu.add(pageId, LAUNCH_ACTIVITY_CONTEXT_MENU, Menu.NONE, R.string.menu_launch_activity);
+            }
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        //The first call is associated with the wrong page.
+        //This check and return is simple work around that passes selection to the next (proper) page as described here:
+        //https://stackoverflow.com/questions/9753213/wrong-fragment-in-viewpager-receives-oncontextitemselected-call
+        //groupId is page number as assigned in onCreateContextMenu
+        if (item.getGroupId() != pageId) {
+            return false;
+        }
+
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        IComponentInfo componentInfo = adapter.getItem(info.position);
+        String componentName = componentInfo.getName();
+        int id = item.getItemId();
+        switch (id) {
+            case LAUNCH_ACTIVITY_CONTEXT_MENU:
+                String dialogText = String.format(getResources().getString(R.string.dialog_launch_activity_text), componentName);
+                new QuestionDialogBuilder(getView())
+                    .setTitle(R.string.dialog_launch_activity_title)
+                    .setQuestion(dialogText)
+                    .show(() -> {
+                        ApplicationPolicy appPolicy = AdhellFactory.getInstance().getAppPolicy();
+                        boolean result = appPolicy.startApp(packageName, componentName);
+                        if (result) {
+                            Toast.makeText(getContext(), "Successfully launched activity", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to launch activity", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                break;
+            case APPEND_BATCH_FILE_CONTEXT_MENU:
+                Action action = () -> appendComponentNameToFile(componentName);
+                String message = "'" + adapter.getNamePart(componentName) + "' is inserted to file";
+                Runnable callback = () -> Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                new RxCompletableIoBuilder()
+                        .showErrorAlert(getContext())
+                        .async(Completable.fromAction(action), callback);
+                break;
+            case COPY_CLIPBOARD_CONTEXT_MENU:
+                copyToClipboard(componentName);
+                break;
+        }
+        return true;
     }
 
     private void enableAllComponents() {
@@ -308,6 +366,33 @@ public class ComponentTabPageFragment extends Fragment {
             adapterAppComponentList.addAll(list);
             adapter.notifyDataSetChanged();
         }
+    }
+
+    void appendComponentNameToFile(String componentName) throws Exception {
+        switch (pageId) {
+            case ACTIVITIES_PAGE:
+                AppComponentFactory.getInstance().appendActivityNameToFile(componentName);
+                break;
+            case SERVICES_PAGE:
+                AppComponentFactory.getInstance().appendServiceNameToFile(componentName);
+                break;
+            case RECEIVERS_PAGE:
+                AppComponentFactory.getInstance().appendReceiverNameToFile(componentName);
+                break;
+            case PROVIDERS_PAGE:
+                AppComponentFactory.getInstance().appendProviderNameToFile(componentName);
+                break;
+        }
+    }
+
+    private void copyToClipboard(String componentName) {
+        Runnable callback = () -> Toast.makeText(getContext(), "Component package is copied to clipboard", Toast.LENGTH_LONG).show();
+        Action action = () -> {
+            ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("adhell3_app_component_package", componentName);
+            clipboard.setPrimaryClip(clip);
+        };
+        new RxCompletableIoBuilder().async(Completable.fromAction(action), callback);
     }
 
     private static class AppComponentPage {
@@ -432,23 +517,6 @@ public class ComponentTabPageFragment extends Fragment {
                     observable = viewModel.getProviders(packageName);
             }
             return Optional.ofNullable(observable);
-        }
-
-        void appendComponentNameToFile(String componentName) throws Exception {
-            switch (pageId) {
-                case ACTIVITIES_PAGE:
-                    AppComponentFactory.getInstance().appendActivityNameToFile(componentName);
-                    break;
-                case SERVICES_PAGE:
-                    AppComponentFactory.getInstance().appendServiceNameToFile(componentName);
-                    break;
-                case RECEIVERS_PAGE:
-                    AppComponentFactory.getInstance().appendReceiverNameToFile(componentName);
-                    break;
-                case PROVIDERS_PAGE:
-                    AppComponentFactory.getInstance().appendProviderNameToFile(componentName);
-                    break;
-            }
         }
 
         void toggleAppComponent(String packageName, IComponentInfo info) {
