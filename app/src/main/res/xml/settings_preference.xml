@@ -13,6 +13,24 @@
         app:iconSpaceReserved="false" />
 
     <androidx.preference.Preference
+        android:key="grant_do_preference"
+        android:title="@string/grant_do"
+        android:summary="@string/grant_do_summary"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.Preference
+        android:key="clear_do_preference"
+        android:title="@string/clear_do"
+        android:summary="@string/clear_do_summary"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.Preference
+        android:key="do_fix_preference"
+        android:title="@string/do_fix"
+        android:summary="@string/do_fix_summary"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.Preference
         android:key="backup_preference"
         android:title="@string/backup_database"
         android:summary="@string/backup_database_summary"

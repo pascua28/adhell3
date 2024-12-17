@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import com.fusionjack.adhell3.App;
 import com.fusionjack.adhell3.BuildConfig;
+import com.fusionjack.adhell3.receiver.CustomDeviceAdminReceiver;
 import com.samsung.android.knox.EnterpriseDeviceManager;
 import com.samsung.android.knox.application.ApplicationPolicy;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
@@ -174,5 +175,43 @@ public final class DeviceAdminInteractor {
 
     private boolean isKnox26() {
         return EnterpriseDeviceManager.getAPILevel() == KNOX_2_6;
+    }
+
+    public boolean isDeviceOwner() {
+        return devicePolicyManager.isDeviceOwnerApp(BuildConfig.APPLICATION_ID);
+    }
+
+    public boolean disableDeviceOwner() {
+        if (isDeviceOwner()) {
+            try {
+                devicePolicyManager.clearDeviceOwnerApp(BuildConfig.APPLICATION_ID);
+                return true;
+            } catch (Exception e) {
+                LogUtils.error(e.toString());
+                return false;
+            }
+
+        } else {
+            return true;
+        }
+    }
+
+    public boolean isBackupServiceEnabled(Context context) throws Exception {
+        if (isDeviceOwner() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ComponentName devAdminReceiver = new ComponentName(context, CustomDeviceAdminReceiver.class);
+            return devicePolicyManager.isBackupServiceEnabled(devAdminReceiver);
+        } else {
+            throw new Exception("Requires Android 8 or up");
+        }
+    }
+
+    public boolean deviceOwnerFixes(Context context) {
+        if (isDeviceOwner() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ComponentName devAdminReceiver = new ComponentName(context, CustomDeviceAdminReceiver.class);
+            devicePolicyManager.setBackupServiceEnabled(devAdminReceiver, true);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.fusionjack.adhell3.BuildConfig;
 import com.fusionjack.adhell3.R;
 import com.samsung.android.knox.EnterpriseDeviceManager;
+import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 
 import java.util.function.Consumer;
 
@@ -29,10 +30,20 @@ public final class AboutDialog {
             infoTextView.setText(R.string.about_content);
             infoTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
+            DeviceAdminInteractor deviceAdminInteractor = DeviceAdminInteractor.getInstance();
+
+            String isDeviceOwner;
+            if (deviceAdminInteractor.isDeviceOwner()) {
+                isDeviceOwner = "Yes";
+            } else {
+                isDeviceOwner = "No";
+            }
+
             String subInfoPlaceholder = view.getContext().getResources().getString(R.string.about_sub_content);
             String subInfo = String.format(subInfoPlaceholder,
                     BuildConfig.VERSION_NAME, BuildConfig.BUILD_DATE,
-                    EnterpriseDeviceManager.getAPILevel(), Build.VERSION.SDK_INT);
+                    EnterpriseDeviceManager.getAPILevel(), Build.VERSION.SDK_INT,
+                    isDeviceOwner);
 
             TextView subInfoTextView = dialogView.findViewById(R.id.subInfoTextView);
             subInfoTextView.setText(subInfo);

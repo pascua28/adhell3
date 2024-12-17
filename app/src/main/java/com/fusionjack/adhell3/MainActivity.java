@@ -244,7 +244,13 @@ public class MainActivity extends AppCompatActivity {
         new QuestionDialogBuilder(findViewById(android.R.id.content))
                 .setTitle(R.string.delete_app_dialog_title)
                 .setQuestion(R.string.delete_app_dialog_text)
-                .show(() -> AdhellFactory.uninstall(this));
+                .show(() -> {
+                    DeviceAdminInteractor dai = DeviceAdminInteractor.getInstance();
+                    if (dai.isDeviceOwner()) {
+                        dai.disableDeviceOwner();
+                    }
+                    AdhellFactory.uninstall(this);
+                });
     }
 
     
