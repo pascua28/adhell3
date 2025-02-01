@@ -16,6 +16,7 @@ Due to [changes Samsung introduces in Android 15 and later](https://www.samsungk
 
 As the Device Owner is primarily designed for corporate use, certain limitations are imposed when it is active:
 - **Google Backup** is disabled by default (can be enabled in Adhell3->Other->Settings->Enable Google Backup)
+- **Lockscreen Message** about organization owned device is displayed
 - **Samsung Backup and Smart Switch** are not functional
 - **Secure Folder or work profile** apps (like [Shelter](https://gitea.angry.im/PeterCxy/Shelter)) does not work
 - **Adhell3 Uninstallation** is not allowed without clearing Device Owner first
