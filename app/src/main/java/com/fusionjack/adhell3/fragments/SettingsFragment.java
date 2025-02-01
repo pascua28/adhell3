@@ -19,6 +19,7 @@ import androidx.preference.SwitchPreference;
 
 import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
+import com.fusionjack.adhell3.utils.dialog.DeviceAdminDialog;
 import com.fusionjack.adhell3.utils.dialog.ShizukuDialog;
 import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.tasks.RestoreDatabaseRxTask;
@@ -114,7 +115,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     new QuestionDialogBuilder(getView())
                             .setTitle(R.string.delete_app_dialog_title)
                             .setQuestion(R.string.delete_app_dialog_text)
-                            .show(() -> AdhellFactory.uninstall((Activity) context));
+                            .show(() -> {
+                                AdhellFactory.uninstall((Activity) context);
+                            });
                 }
                 break;
             }
@@ -138,6 +141,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                                 if (success) {
                                     Toast.makeText(context, "Successfully cleared Device Owner", Toast.LENGTH_LONG).show();
                                     hidePreferences();
+                                    //After clearing DO admin is also revoked
+                                    //This check prevents unexpected errors (crash after trying to uninstall app from adhell
+                                    if (!dai.isAdminActive()) {
+                                        LogUtils.info( "Admin is not active, showing activation dialog");
+                                        Runnable requestDeviceAdminAction = () -> DeviceAdminInteractor.getInstance().forceEnableAdmin(new MainActivity());
+                                        DeviceAdminDialog.getInstance(getView(), requestDeviceAdminAction).show();
+                                    }
                                 } else {
                                     Toast.makeText(context, "Error clearing Device Owner", Toast.LENGTH_LONG).show();
                                 }

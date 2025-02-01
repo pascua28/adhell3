@@ -299,14 +299,16 @@ public final class AdhellFactory {
     }
 
     public static void uninstall(Activity activity) {
-        if (DeviceAdminInteractor.getInstance().isKnoxEnabled(activity)) {
-            ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-            contentBlocker.disableDomainRules();
-            contentBlocker.disableFirewallRules();
-        }
         ComponentName devAdminReceiver = new ComponentName(activity, CustomDeviceAdminReceiver.class);
         DevicePolicyManager dpm = (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
-        dpm.removeActiveAdmin(devAdminReceiver);
+        if (dpm.isAdminActive(devAdminReceiver)) {
+            if (DeviceAdminInteractor.getInstance().isKnoxEnabled(activity)) {
+                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
+                contentBlocker.disableDomainRules();
+                contentBlocker.disableFirewallRules();
+            }
+            dpm.removeActiveAdmin(devAdminReceiver);
+        }
         Intent intent = new Intent(Intent.ACTION_DELETE);
         String packageName = "package:" + BuildConfig.APPLICATION_ID;
         intent.setData(Uri.parse(packageName));
