@@ -1,26 +1,22 @@
 package com.fusionjack.adhell3.service;
 
 import com.fusionjack.adhell3.IShizukuService;
-import com.fusionjack.adhell3.utils.LogUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 //To debug attach to different process defined in Shizuku.UserServiceArgs (check usages)
+//Any logging here (logcat) does NOT work
 public class ShizukuService extends IShizukuService.Stub {
-    public ShizukuService() {
-        LogUtils.info("Started ShizukuService");
-    }
+    public ShizukuService() {}
 
     @Override
     public void destroy() {
-        LogUtils.info("Killed ShizukuService");
         System.exit(0);
     }
 
     @Override
     public String execute(String command) {
-        LogUtils.info("ShizukuService Executing command: " + command);
         Process process;
         StringBuilder result = new StringBuilder();
         try {
@@ -41,11 +37,8 @@ public class ShizukuService extends IShizukuService.Stub {
                 result.append(errorReader.readLine());
             }
         } catch (Exception e) {
-            LogUtils.error("ShizukuService execute exception", e);
             return e.toString();
         }
         return result.toString();
     }
-
-
 }

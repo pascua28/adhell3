@@ -152,6 +152,7 @@ public class ShizukuDialog {
             new ComponentName(BuildConfig.APPLICATION_ID, ShizukuService.class.getName()))
             .processNameSuffix("shizuku_service")
             .debuggable(BuildConfig.DEBUG)
+            .daemon(false)
             .version(1);
 
     private final ServiceConnection connection = new ServiceConnection() {
@@ -181,6 +182,12 @@ public class ShizukuDialog {
         } catch (Exception e) {
             LogUtils.error("ShizukuService Exception", e);
             output = e.toString();
+        }
+
+        if (output.startsWith("Error")) {
+            LogUtils.error("ShizukuService Error: " + output);
+        } else {
+            LogUtils.info("ShizukuService Output: " + output);
         }
 
         if (view != null & dialog != null) {
