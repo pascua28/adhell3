@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    compileSdkVersion 35
+    buildToolsVersion "35.0.0"
 
     file('app.properties').withReader {reader ->
         Properties props = new Properties()
@@ -37,7 +37,7 @@ android {
 
         applicationId packageName
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 35
         versionCode 1
         versionName "3.2." + buildNumber
 
@@ -54,8 +54,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     signingConfigs {
@@ -76,29 +76,32 @@ android {
 
     buildTypes {
         debug {
-            shrinkResources false
-            minifyEnabled true
+            shrinkResources = true
+            minifyEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable true
+            debuggable = true
+            zipAlignEnabled = true
             if (signDebugApk) {
-                signingConfig signingConfigs.debug
+                signingConfig = signingConfigs.debug
             }
         }
         release {
-            shrinkResources false
-            minifyEnabled true
+            shrinkResources = true
+            minifyEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable false
-            zipAlignEnabled true
+            debuggable = false
+            zipAlignEnabled = true
             if (signReleaseApk) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             }
         }
     }
 
     buildFeatures {
-        aidl true
+        aidl = true
+        buildConfig = true
     }
+    namespace = 'com.fusionjack.adhell3'
 }
 
 task buildNumber {
@@ -121,16 +124,16 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'com.nineoldandroids:library:2.4.0'
 
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation "androidx.preference:preference:1.2.0"
-    implementation 'androidx.fragment:fragment:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation "androidx.preference:preference:1.2.1"
+    implementation 'androidx.fragment:fragment:1.8.5'
+    implementation 'com.google.android.material:material:1.12.0'
 
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'io.reactivex.rxjava3:rxjava:3.0.11'
 
-    implementation 'androidx.room:room-runtime:2.4.1'
-    annotationProcessor 'androidx.room:room-compiler:2.4.1'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
 
     implementation 'com.google.dagger:dagger:2.33'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.33'
