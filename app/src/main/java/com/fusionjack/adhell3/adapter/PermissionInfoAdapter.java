@@ -1,6 +1,7 @@
 package com.fusionjack.adhell3.adapter;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,7 +76,14 @@ public class PermissionInfoAdapter extends ComponentAdapter {
                 new RxCompletableIoBuilder().async(action);
             }
             permissionSwitch.setChecked(checked);
-            permissionSwitch.setEnabled(toggleIsEnabled);
+
+            //Disable switch if Android 12 or higher as the API is deprecated
+            //https://docs.samsungknox.com/devref/knox-sdk/reference/com/samsung/android/knox/application/ApplicationPolicy.html#applyRuntimePermissions(com.samsung.android.knox.AppIdentity,%20java.util.List%3Cjava.lang.String%3E,%20int)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissionSwitch.setEnabled(false);
+            } else {
+                permissionSwitch.setEnabled(toggleIsEnabled);
+            }
         }
 
         return convertView;
