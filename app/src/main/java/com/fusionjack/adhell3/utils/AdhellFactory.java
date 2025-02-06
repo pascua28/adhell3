@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Patterns;
 
@@ -157,6 +158,10 @@ public final class AdhellFactory {
             String permissionName = appPermission.permissionName;
             switch (appPermission.permissionStatus) {
                 case AppPermission.STATUS_PERMISSION:
+                    //Don't apply permissions on Android 12 and up
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        break;
+                    }
                     List<String> permissions = new ArrayList<>();
                     permissions.add(permissionName);
                     setAppPermission(packageName, permissions, state);
