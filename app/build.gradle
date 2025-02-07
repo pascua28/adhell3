@@ -3,9 +3,6 @@ plugins {
 }
 
 android {
-    compileSdkVersion 35
-    buildToolsVersion "35.0.0"
-
     file('app.properties').withReader {reader ->
         Properties props = new Properties()
         props.load(reader)
@@ -37,7 +34,9 @@ android {
 
         applicationId packageName
         minSdkVersion 24
-        targetSdkVersion 35
+        targetSdkVersion 34
+        compileSdk = 34
+
         versionCode 1
         versionName "3.2." + buildNumber
 
