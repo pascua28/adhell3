@@ -2,10 +2,12 @@ package com.fusionjack.adhell3.utils.dialog;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,9 @@ import com.fusionjack.adhell3.service.ShizukuService;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LogUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import rikka.shizuku.Shizuku;
 
 
@@ -33,6 +38,10 @@ public class ShizukuDialog {
     protected View view;
 
     private AlertDialog dialog;
+    private Button neutralButton;
+    private boolean areRequirementsMet = false;
+
+    private Runnable ShizukuAction = null;
 
     private IShizukuService service = null;
 
@@ -55,6 +64,7 @@ public class ShizukuDialog {
         dialog = new AlertDialog.Builder(context, R.style.DialogStyle)
                 .setView(dialogView)
                 .setPositiveButton(R.string.grant, null)
+                .setNeutralButton(R.string.check_do_requirements, null)
                 .setCancelable(true)
                 .create();
 
@@ -92,10 +102,50 @@ public class ShizukuDialog {
             positiveButton.setEnabled(true);
 
             positiveButton.setOnClickListener(v -> {
+                Runnable onPositiveButton = () -> {
+                    setText("");
+                    setAccountButtonVisibility(false);
+                    positiveButton.setText(R.string.granting);
+                    positiveButton.setEnabled(false);
+                    positiveButton.setTextColor(Color.GRAY);
+                    boolean granted;
+                    try {
+                        granted = checkPermission();
+                    } catch (Exception e) {
+                        LogUtils.error("Shizuku checkPermission Exception", e);
+                        setText(e.toString());
+                        Toast.makeText(view.getContext(), "Error during Device Owner granting", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    ShizukuAction = ShizukuDialog.this::activate;
+                    if (!granted) {
+                        LogUtils.info("Requesting for Shizuku Permission...");
+                        Shizuku.addRequestPermissionResultListener(REQUEST_PERMISSION_RESULT_LISTENER);
+                        Shizuku.requestPermission(1);
+                    } else {
+                        LogUtils.info("Shizuku Permission already granted");
+                        onRequestPermissionsResult(1, PackageManager.PERMISSION_GRANTED);
+                    }
+                };
+
+                if (!areRequirementsMet) {
+                    new QuestionDialogBuilder(view)
+                            .setTitle(R.string.do_requirements_dialog_title)
+                            .setQuestion(R.string.do_requirements_dialog_summary)
+                            .show(onPositiveButton);
+                } else {
+                    onPositiveButton.run();
+                }
+            });
+
+            neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+            neutralButton.setEnabled(true);
+            neutralButton.setOnClickListener(v -> {
                 setText("");
-                positiveButton.setText(R.string.granting);
-                positiveButton.setEnabled(false);
-                positiveButton.setTextColor(Color.GRAY);
+                neutralButton.setText(R.string.checking_do_requirements);
+                neutralButton.setEnabled(false);
+                neutralButton.setTextColor(Color.GRAY);
 
                 boolean granted;
                 try {
@@ -107,6 +157,7 @@ public class ShizukuDialog {
                     return;
                 }
 
+                ShizukuAction = this::checkRequirements;
                 if (!granted) {
                     LogUtils.info("Requesting for Shizuku Permission...");
                     Shizuku.addRequestPermissionResultListener(REQUEST_PERMISSION_RESULT_LISTENER);
@@ -115,6 +166,12 @@ public class ShizukuDialog {
                     LogUtils.info("Shizuku Permission already granted");
                     onRequestPermissionsResult(1, PackageManager.PERMISSION_GRANTED);
                 }
+            });
+
+            Button accountButton = dialog.findViewById(R.id.openAccountsButton);
+            accountButton.setOnClickListener(v -> {
+                Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
+                view.getContext().startActivity(intent);
             });
         });
     }
@@ -135,14 +192,19 @@ public class ShizukuDialog {
                 LogUtils.info("Binding ShizukuService...");
                 Shizuku.bindUserService(serviceArgs, connection);
             } else {
-                LogUtils.info("ShizukuService already bound, activating...");
-                activate();
+                LogUtils.info("ShizukuService already bound");
+                if (ShizukuAction != null) {
+                    ShizukuAction.run();
+                    ShizukuAction = null;
+                } else {
+                    LogUtils.error("ShizukuAction is null");
+                }
             }
         } else {
             LogUtils.info("Shizuku Permission denied");
             setText("Shizuku Permission denied");
             if (view != null) {
-                Toast.makeText(view.getContext(), "Error during Device Owner granting", Toast.LENGTH_LONG).show();
+                Toast.makeText(view.getContext(), "Error: Shizuku Permission denied", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -161,7 +223,12 @@ public class ShizukuDialog {
             LogUtils.info("ShizukuService received ServiceConnection");
             if (binder != null && binder.pingBinder()) {
                 service = IShizukuService.Stub.asInterface(binder);
-                activate();
+                if (ShizukuAction != null) {
+                    ShizukuAction.run();
+                    ShizukuAction = null;
+                } else {
+                    LogUtils.error("ShizukuAction is null");
+                }
             } else {
                 LogUtils.error("ShizukuService received invalid binder for " + componentName);
             }
@@ -190,6 +257,13 @@ public class ShizukuDialog {
             LogUtils.info("ShizukuService Output: " + output);
         }
 
+        Pattern pattern = Pattern.compile("(Error \\(([0-9]{0,3})\\) \\n)((.+?(?=:):)?java\\.lang\\.IllegalStateException: )(.+?(?=\\t))(\\tat .*)*");
+        Matcher matcher = pattern.matcher(output);
+
+        if (matcher.matches()) {
+            output = matcher.group(5);
+        }
+
         if (view != null & dialog != null) {
             setText(output);
 
@@ -205,6 +279,91 @@ public class ShizukuDialog {
         }
     }
 
+    private void checkRequirements() {
+        LogUtils.info("Checking Device Owner requirements...");
+        areRequirementsMet = true;
+
+        String commandAccounts = "dumpsys account";
+        StringBuilder accounts = new StringBuilder();
+        try {
+            String accountsRaw = service.execute(commandAccounts);
+            Pattern pattern = Pattern.compile("(User UserInfo\\{(.+?(?=\\}))\\}: {2}Accounts: [0-9]+(( {4}Account \\{name=(.+?(?=,)), type=(.+?(?=\\}))\\})*)(.*)??)+");
+            Matcher matcher = pattern.matcher(accountsRaw);
+            int accountCount = 0;
+            while (matcher.find()) {
+                Pattern accountPattern = Pattern.compile("Account \\{name=(.+?(?=,)), type=(.+?(?=\\}))\\}");
+                Matcher accountMatcher = accountPattern.matcher(matcher.group());
+                while (accountMatcher.find()) {
+                    accountCount++;
+                    String accountName = accountMatcher.group(1);
+                    String accountType = accountMatcher.group(2);
+                    accounts.append("Name: ").append(accountName).append(" App: ").append(accountType).append("\n");
+                }
+            }
+
+            if (accountCount == 0) {
+                accounts.append("No accounts found. (Check passed)\n");
+            } else {
+                accounts.append("Accounts found! (Check failed)\n");
+                areRequirementsMet = false;
+            }
+        } catch (Exception e) {
+            LogUtils.error("ShizukuService Exception", e);
+            accounts = new StringBuilder(e.toString());
+            areRequirementsMet = false;
+        }
+
+        LogUtils.info( "Accounts:\n" + accounts);
+
+        String commandUsers = "pm list users";
+        StringBuilder users = new StringBuilder();
+        try {
+            String usersRaw = service.execute(commandUsers);
+
+            Pattern userPattern = Pattern.compile("UserInfo\\{(.+?(?=\\}))\\}");
+            Matcher userMatcher = userPattern.matcher(usersRaw);
+            int userCount = 0;
+            while (userMatcher.find()) {
+                userCount++;
+                users.append("User ").append(userCount).append(": ").append(userMatcher.group(1)).append("\n");
+            }
+
+            if (userCount == 1) {
+                users.append("Only main profile found. (Check passed)\n");
+            } else {
+                users.append("Multiple profiles found! (Check failed)\n");
+                areRequirementsMet = false;
+            }
+        } catch (Exception e) {
+            LogUtils.error("ShizukuService Exception", e);
+            users = new StringBuilder(e.toString());
+            areRequirementsMet = false;
+        }
+        LogUtils.info("Profiles:\n" + users);
+
+        String commandDeviceOwner = "dpm list-owners";
+        String deviceOwner;
+        try {
+            deviceOwner = service.execute(commandDeviceOwner);
+            if (deviceOwner.equals("no owners")) {
+                deviceOwner += " (Check passed)";
+            } else {
+                deviceOwner += "\nOwners found! (Check failed)";
+                areRequirementsMet = false;
+            }
+        } catch (Exception e) {
+            LogUtils.error("ShizukuService Exception", e);
+            deviceOwner = e.toString();
+            areRequirementsMet = false;
+        }
+        LogUtils.info("Owners:\n" + deviceOwner);
+
+        String output = "Accounts:\n" + accounts + "\nProfiles:\n" + users + "\nOwners:\n" + deviceOwner;
+
+        setText(output);
+        setAccountButtonVisibility(!areRequirementsMet);
+    }
+
     private void setText(String text) {
         if (dialog != null) {
             TextView summaryTextView = dialog.findViewById(R.id.infoTextView);
@@ -217,8 +376,25 @@ public class ShizukuDialog {
             positiveButton.setText(R.string.grant);
             positiveButton.setEnabled(true);
             positiveButton.setTextColor(ContextCompat.getColor(dialog.getContext(), R.color.colorAccent));
+            Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+            neutralButton.setText(R.string.check_do_requirements);
+            neutralButton.setEnabled(true);
+            neutralButton.setTextColor(ContextCompat.getColor(dialog.getContext(), R.color.colorAccent));
         } else {
             LogUtils.error("ShizukuDialog tried to set text when dialog is null");
+        }
+    }
+
+    private void setAccountButtonVisibility(boolean visibility) {
+        if (dialog != null) {
+            Button accountButton = dialog.findViewById(R.id.openAccountsButton);
+            if (accountButton != null) {
+                accountButton.setVisibility(visibility ? View.VISIBLE : View.GONE);
+            } else {
+                LogUtils.error("ShizukuDialog tried to set button visibility when accountButton is null");
+            }
+        } else {
+            LogUtils.error("ShizukuDialog tried to set button visibility when dialog is null");
         }
     }
 }

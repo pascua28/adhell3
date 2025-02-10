@@ -388,4 +388,9 @@
     </string>
     <string name="grant">Grant</string>
     <string name="granting">Granting…</string>
+    <string name="check_do_requirements">Check Requirements</string>
+    <string name="checking_do_requirements">Checking…</string>
+    <string name="do_requirements_dialog_title">Device Owner Requirements</string>
+    <string name="do_requirements_dialog_summary">Device Owner requirements are not met or not checked. Continue anyway?</string>
+    <string name="shizuku_dialog_open_accounts">Open Accounts Settings</string>
 </resources>

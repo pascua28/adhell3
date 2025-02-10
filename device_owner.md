@@ -46,10 +46,16 @@ Adhell3 can grant Device Owner to itself using [Shizuku](https://shizuku.rikka.a
 1. Download and install Shizuku using any method from here: https://shizuku.rikka.app/download
 2. Start Shizuku via wireless debugging as described here: https://shizuku.rikka.app/guide/setup/#start-via-wireless-debugging
 3. Open Adhell3 and navigate to Other->Settings->Grant Device Owner
-4. Click on the "Grant" button
-5. A popup should appear asking for Shizuku's permission. Click "Allow"
-6. After short time a toast message should appear indicating result
-7. If unsuccessful a detailed error will be shown on the dialog. Make sure you have [met requirements](#requirements-for-granting-device-owner) and followed the steps correctly.
+4. (Optional but recommended) Check Requirements
+    1. Click on the "Check Requirements" Button
+    2. A popup should appear asking for Shizuku's permission. Click "Allow"
+    3. After a short time, status and details of individual requirements will be shown
+    4. If requirements are not met, a button to open accounts setting will be shown. 
+    **It is not advised to continue the process if any of the check failed**
+5. Click on the "Grant" button
+6. A popup should appear asking for Shizuku's permission. Click "Allow" (Not needed if requirements were checked)
+7. After short time a toast message should appear indicating result
+8. If unsuccessful a detailed error will be shown on the dialog. Make sure you have [met requirements](#requirements-for-granting-device-owner) and followed the steps correctly.
 
 If successful you may uninstall Shizuku afterward or continue using it with other [awesome apps](https://github.com/timschneeb/awesome-shizuku).
 
@@ -65,3 +71,8 @@ Device Owner can be granted manually via ADB command.
     Replace `{package_name}` with Adhell3's package name configured in [app.properties](https://gitlab.com/fusionjack/adhell3-scripts#appproperties)
 
     The command output will indicate result. You can double-check if Adhell3 has Device Owner in Adhell3->Other->Settings->About (Is Device Owner)
+
+3. If granting failed you can use these commands to check requirements:
+    - `adb shell dumpsys account` - list accounts
+    - `adb shell pm list users` - list profiles. Only one (main) profile should be listed
+    - `adb shell dpm list-owners` - list owners
