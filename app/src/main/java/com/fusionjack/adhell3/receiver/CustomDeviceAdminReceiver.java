@@ -3,10 +3,9 @@ package com.fusionjack.adhell3.receiver;
 import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
+import android.os.PersistableBundle;
 
 import com.fusionjack.adhell3.utils.LogUtils;
-import com.fusionjack.adhell3.utils.dialog.DeviceAdminDialog;
 
 public class CustomDeviceAdminReceiver extends DeviceAdminReceiver {
 
@@ -20,4 +19,8 @@ public class CustomDeviceAdminReceiver extends DeviceAdminReceiver {
         LogUtils.info("Admin is not activated");
     }
 
+    @Override
+    public void onTransferOwnershipComplete (Context context, PersistableBundle bundle) {
+        LogUtils.info("Transfer ownership complete");
+    }
 }

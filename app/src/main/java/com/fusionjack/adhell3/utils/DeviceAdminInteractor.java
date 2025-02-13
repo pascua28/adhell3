@@ -214,4 +214,26 @@ public final class DeviceAdminInteractor {
             return false;
         }
     }
+
+    public boolean transferDeviceOwner(Context context, ComponentName target) {
+        if (isDeviceOwner()) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ComponentName devAdminReceiver = new ComponentName(context, CustomDeviceAdminReceiver.class);
+                    devicePolicyManager.transferOwnership(devAdminReceiver, target, null);
+                    LogUtils.info("Transfer ownership sent");
+                    return true;
+                } else {
+                    LogUtils.error("Transfer ownership requires Android 9 or up");
+                    return false;
+                }
+            } catch (Exception e) {
+                LogUtils.error(e.toString());
+                return false;
+            }
+        } else {
+            LogUtils.error("Device Owner is not granted");
+            return false;
+        }
+    }
 }

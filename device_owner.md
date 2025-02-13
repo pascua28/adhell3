@@ -76,3 +76,31 @@ Device Owner can be granted manually via ADB command.
     - `adb shell dumpsys account` - list accounts
     - `adb shell pm list users` - list profiles. Only one (main) profile should be listed
     - `adb shell dpm list-owners` - list owners
+
+# Transfer Device Owner to another app
+Device Owner permission can be transferred to another app.
+
+Adhell3 need to have Knox license deactivated.
+
+The target app must support this and have admin activated.
+
+If the app can transfer back, this feature can be used to uninstall Adhell3 without clearing Device Owner.
+
+An example app that support this is [OwnDroid](https://github.com/BinTianqi/OwnDroid). The steps below will apply to it, but can be adapted for others.
+
+1. Install OwnDroid from [its GitHub](https://github.com/BinTianqi/OwnDroid/releases)
+2. Open OwnDroid and activate admin for it in Click to activate->Device admin->Activate
+3. Open Adhell3, go to Other->Settings->Change license key
+4. Click on deactivate button. If it fails make sure to enter the same key that was used in activation
+5. License activation dialog will appear. Click on "Transfer Device Owner" button
+6. A new dialog will appear. In text box enter `com.bintianqi.owndroid/.Receiver` and click on "Transfer" button
+7. A toast message will appear indicating result. If successful OwnDroid will show active Device Owner
+8. You can now reinstall Adhell3. After it's activated you can continue to transfer Device Owner back
+9. In OwnDroid click on "Activated" then "Transfer Ownership"
+10. In text box enter:
+    
+    `{package_name}/com.fusionjack.adhell3.receiver.CustomDeviceAdminReceiver`
+
+    Replace `{package_name}` with Adhell3's package name configured in [app.properties](https://gitlab.com/fusionjack/adhell3-scripts#appproperties)
+11. Click on "Transfer" button
+12. A toast message will appear indicating result. You can double-check if Adhell3 has Device Owner in Adhell3->Other->Settings->About (Is Device Owner)

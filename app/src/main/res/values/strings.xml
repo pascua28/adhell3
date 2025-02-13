@@ -393,4 +393,12 @@
     <string name="do_requirements_dialog_title">Device Owner Requirements</string>
     <string name="do_requirements_dialog_summary">Device Owner requirements are not met or not checked. Continue anyway?</string>
     <string name="shizuku_dialog_open_accounts">Open Accounts Settings</string>
+    <string name="do_transfer">Transfer Device Owner</string>
+    <string name="do_transfer_dialog_title">Transfer Device Owner</string>
+    <string name="do_transfer_dialog_summary">Transfer Device Owner to another app.
+        \nThe target app must support this and have admin activated.
+        \nIf the app can transfer back, this feature can be used to uninstall Adhell3 without clearing Device Owner.
+    </string>
+    <string name="do_transfer_dialog_hint">Target component name</string>
+    <string name="transfer_do">Transfer</string>
 </resources>

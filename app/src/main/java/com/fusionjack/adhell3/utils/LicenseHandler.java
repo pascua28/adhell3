@@ -1,11 +1,14 @@
 package com.fusionjack.adhell3.utils;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 
 import com.fusionjack.adhell3.App;
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.utils.rx.RxCompletableIoBuilder;
 import com.samsung.android.knox.license.KnoxEnterpriseLicenseManager;
 
@@ -19,6 +22,9 @@ public class LicenseHandler {
     private static LicenseHandler instance;
 
     private final BroadcastReceiver receiver;
+
+    private SharedPreferences sharedPreferences;
+    private String key;
 
     private Runnable onSuccessActivation;
     private Runnable onSuccessDeactivation;
@@ -35,7 +41,9 @@ public class LicenseHandler {
         return instance;
     }
 
-    public void activeOrDeactivateLicense(String key, Runnable onSuccessActivation, Runnable onSuccessDeactivation, Consumer<String> onError) {
+    public void activeOrDeactivateLicense(SharedPreferences sharedPreferences, String key, Runnable onSuccessActivation, Runnable onSuccessDeactivation, Consumer<String> onError) {
+        this.sharedPreferences = sharedPreferences;
+        this.key = key;
         this.onSuccessActivation = onSuccessActivation;
         this.onSuccessDeactivation = onSuccessDeactivation;
         this.onError = onError;
@@ -91,11 +99,18 @@ public class LicenseHandler {
     private void handleResult(Intent intent) {
         int result_type = intent.getIntExtra(KnoxEnterpriseLicenseManager.EXTRA_LICENSE_RESULT_TYPE, -1);
         if (result_type != -1) {
+            DeviceAdminInteractor dai = DeviceAdminInteractor.getInstance();
             if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_ACTIVATION) {
                 LogUtils.info("License activated");
+                if (key != null && sharedPreferences != null) {
+                    dai.setKnoxKey(sharedPreferences, key);
+                }
                 onSuccessActivation.run();
             } else if (result_type == KnoxEnterpriseLicenseManager.LICENSE_RESULT_TYPE_DEACTIVATION) {
                 LogUtils.info("License deactivated");
+                if (sharedPreferences != null) {
+                    dai.setKnoxKey(sharedPreferences, null);
+                }
                 onSuccessDeactivation.run();
             }
         }

@@ -145,7 +145,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                                     //This check prevents unexpected errors (crash after trying to uninstall app from adhell
                                     if (!dai.isAdminActive()) {
                                         LogUtils.info( "Admin is not active, showing activation dialog");
-                                        Runnable requestDeviceAdminAction = () -> DeviceAdminInteractor.getInstance().forceEnableAdmin(new MainActivity());
+                                        Runnable requestDeviceAdminAction = () -> DeviceAdminInteractor.getInstance().forceEnableAdmin(MainActivity.getInstance());
                                         DeviceAdminDialog.getInstance(getView(), requestDeviceAdminAction).show();
                                     }
                                 } else {

@@ -2,4 +2,5 @@
 <device-admin>
     <uses-policies>
     </uses-policies>
+    <support-transfer-ownership />
 </device-admin>

@@ -89,7 +89,7 @@ public class ShizukuDialog {
             //This check prevents unexpected errors
             if (!dai.isAdminActive()) {
                 LogUtils.info( "Admin is not active, showing activation dialog");
-                Runnable requestDeviceAdminAction = () -> DeviceAdminInteractor.getInstance().forceEnableAdmin(new MainActivity());
+                Runnable requestDeviceAdminAction = () -> DeviceAdminInteractor.getInstance().forceEnableAdmin(MainActivity.getInstance());
                 DeviceAdminDialog.getInstance(view, requestDeviceAdminAction).show();
             }
         });
