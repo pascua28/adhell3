@@ -25,6 +25,7 @@ public final class AppPreferences {
     private static final String DNS1 = "dns1";
     private static final String DNS2 = "dns2";
     private static final String PASSWORD = "password";
+    private static final String BIOMETRIC = "biometric";
     private static final String CURRENT_PROVIDER_ID = "currentProviderId";
     private static final String HIDE_SYSTEM_APPS = "hideSystemApps";
 
@@ -240,6 +241,7 @@ public final class AppPreferences {
     public void resetPassword() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(PASSWORD, "");
+        setBiometric(false);
         editor.apply();
     }
 
@@ -251,5 +253,15 @@ public final class AppPreferences {
 
     public String getPasswordHash() {
         return sharedPreferences.getString(PASSWORD, "");
+    }
+
+    public void setBiometric(boolean enabled) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(BIOMETRIC, enabled);
+        editor.apply();
+    }
+
+    public boolean isBiometricEnabled() {
+        return sharedPreferences.getBoolean(BIOMETRIC, false);
     }
 }

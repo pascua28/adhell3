@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -38,6 +39,25 @@ public class EnterPasswordDialog {
         dialog.setOnShowListener(d -> {
             TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
             infoTextView.setText(R.string.dialog_enter_password_summary);
+            ImageButton biometricButton = dialogView.findViewById(R.id.biometricButton);
+
+            if (AppPreferences.getInstance().isBiometricEnabled()) {
+                biometricButton.setVisibility(View.VISIBLE);
+                Runnable biometricAuth = () -> {
+                    PasswordStorage.authBiometric(
+                        () -> { // onSuccess
+                            dialog.dismiss();
+                            callback.run();
+                        }, () -> { // onFailure
+                            infoTextView.setText(R.string.dialog_failed_biometric);
+                        }
+                    );
+                };
+                biometricButton.setOnClickListener(v -> biometricAuth.run());
+                biometricAuth.run();
+            } else {
+                biometricButton.setVisibility(View.GONE);
+            }
 
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {

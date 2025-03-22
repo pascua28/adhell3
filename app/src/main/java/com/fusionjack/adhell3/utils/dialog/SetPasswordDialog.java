@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
 
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.utils.AppPreferences;
@@ -40,6 +41,28 @@ public final class SetPasswordDialog {
         dialog.setOnShowListener(d -> {
             TextView infoTextView = dialogView.findViewById(R.id.infoTextView);
             infoTextView.setText(R.string.set_password_title);
+            SwitchCompat enableBiometricSwitch = dialogView.findViewById(R.id.switchBiometric);
+            TextView biometricTextView = dialogView.findViewById(R.id.infoBiometricTextView);
+
+            if (PasswordStorage.isBiometricSupported(context)) {
+                enableBiometricSwitch.setOnClickListener(v -> {
+                    if (enableBiometricSwitch.isChecked()) {
+                        PasswordStorage.authBiometric(
+                            () -> { // onSuccess
+                                enableBiometricSwitch.setChecked(true);
+                                LogUtils.info("Biometric authentication is enabled");
+                            }, () -> { // onFailure
+                                enableBiometricSwitch.setChecked(false);
+                                LogUtils.error("Biometric authentication is not enabled");
+                            }
+                        );
+                    }
+                });
+            } else {
+                enableBiometricSwitch.setVisibility(View.GONE);
+                biometricTextView.setVisibility(View.GONE);
+            }
+
 
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {
@@ -51,6 +74,9 @@ public final class SetPasswordDialog {
                     if (password.equals(passwordConfirm)) {
                         try {
                             AppPreferences.getInstance().setPassword(password);
+                            if (enableBiometricSwitch.isChecked()) {
+                                AppPreferences.getInstance().setBiometric(true);
+                            }
                             dialog.dismiss();
                         } catch (PasswordStorage.CannotPerformOperationException e) {
                             LogUtils.error(e.getMessage());

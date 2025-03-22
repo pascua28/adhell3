@@ -4,11 +4,25 @@
 
 package com.fusionjack.adhell3.utils;
 
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK;
+
+import android.content.Context;
 import android.util.Base64;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
+
+import com.fusionjack.adhell3.MainActivity;
+import com.fusionjack.adhell3.R;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.concurrent.Executor;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -160,6 +174,60 @@ public class PasswordStorage {
 
     private static String toBase64(byte[] array) {
         return Base64.encodeToString(array, Base64.DEFAULT);
+    }
+
+    public static boolean isBiometricSupported(Context context) {
+        BiometricManager biometricManager = BiometricManager.from(context);
+
+        int canAuthenticate = biometricManager.canAuthenticate(BIOMETRIC_STRONG | BIOMETRIC_WEAK);
+        if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
+            return true;
+        } else {
+            LogUtils.error("Biometric authentication is not available: " + canAuthenticate);
+            return false;
+        }
+    }
+
+    public static void authBiometric(Runnable onSuccessfulAuthentication, Runnable onFailedAuthentication) {
+        MainActivity mainActivity = MainActivity.getInstance();
+        Context context = mainActivity.getApplicationContext();
+        Executor executor = ContextCompat.getMainExecutor(mainActivity);
+        BiometricPrompt biometricPrompt = new BiometricPrompt(mainActivity, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+
+                LogUtils.error("Biometric Authentication error: " + errString + " " + errorCode);
+                Toast.makeText(context, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
+                onFailedAuthentication.run();
+            }
+
+            @Override
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+
+                LogUtils.info("Biometric Authentication succeeded!");
+                Toast.makeText(context, "Authentication succeeded!", Toast.LENGTH_SHORT).show();
+                onSuccessfulAuthentication.run();
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+
+                LogUtils.error("Biometric Authentication failed!");
+                Toast.makeText(context, "Authentication failed", Toast.LENGTH_SHORT).show();
+                onFailedAuthentication.run();
+            }
+        });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle(context.getString(R.string.biometric_prompt_title))
+                .setSubtitle(context.getString(R.string.biometric_prompt_summary))
+                .setNegativeButtonText(context.getString(android.R.string.cancel))
+                .setAllowedAuthenticators(BIOMETRIC_STRONG | BIOMETRIC_WEAK)
+                .build();
+        biometricPrompt.authenticate(promptInfo);
     }
 
 }

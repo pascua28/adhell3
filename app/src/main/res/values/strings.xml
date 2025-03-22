@@ -285,7 +285,11 @@
     <string name="dialog_empty_password">The password cannot be empty!</string>
     <string name="dialog_password_not_matched">The passwords do not matched!</string>
     <string name="set_password_title">Protect adhell3 with a password</string>
-    <string name="set_password_summary">If you forget the password, you need to uninstall adhell3.</string>
+    <string name="set_password_summary">Supports biometrics. If you forget the password, you need to uninstall adhell3.</string>
+    <string name="set_password_biometric">Enable Biometric</string>
+    <string name="dialog_failed_biometric">Biometric Authentication Failed!</string>
+    <string name="biometric_prompt_title">Adhell3 Biometric</string>
+    <string name="biometric_prompt_summary">Unlock Adhell3 using biometric</string>
     <string name="set_night_mode">Night Mode</string>
     <string name="set_night_mode_summary">Enable dark theme for adhell3</string>
     <string name="create_logcat_title">Create logcat</string>
