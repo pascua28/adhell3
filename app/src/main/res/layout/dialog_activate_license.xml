@@ -51,4 +51,16 @@
         android:background="@android:color/transparent"
         android:text="@string/do_transfer" />
 
+    <Button
+        android:id="@+id/createLogcatButton"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/colorAccent"
+        android:background="@android:color/transparent"
+        android:text="@string/create_logcat_title" />
+
 </LinearLayout>

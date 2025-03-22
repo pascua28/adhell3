@@ -19,8 +19,11 @@ import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LicenseHandler;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
 import java.util.function.Consumer;
+
+import io.reactivex.rxjava3.core.Single;
 
 public final class LicenseDialog {
 
@@ -84,6 +87,7 @@ public final class LicenseDialog {
             initBackupButton(view);
             initUninstallButton(uninstallAction);
             initTransferButton(dialogView, context);
+            initCreateLogcatButton(dialogView, context);
         });
 
         dialog.setOnDismissListener(d -> destroy());
@@ -161,6 +165,20 @@ public final class LicenseDialog {
                 }
             });
         }
+    }
+
+    private void initCreateLogcatButton(View dialogView, Context context) {
+        Button createLogcatButton = dialogView.findViewById(R.id.createLogcatButton);
+        createLogcatButton.setVisibility(View.VISIBLE);
+        createLogcatButton.setOnClickListener(v -> {
+            Consumer<String> callback = filename -> {
+                String message = context.getResources().getString(R.string.logcat_created);
+                Toast.makeText(context, String.format(message, filename), Toast.LENGTH_LONG).show();
+            };
+            new RxSingleIoBuilder()
+                    .setShowErrorAlert(context)
+                    .async(Single.fromCallable(LogUtils::createLogcat), callback);
+        });
     }
 
     private void init(View dialogView, SharedPreferences sharedPreferences, Context context) {
