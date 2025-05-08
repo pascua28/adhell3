@@ -17,3 +17,5 @@
 #}
 
 -dontobfuscate
+# When minifyEnabled = true and debuggable = true, the following rules are needed to keep the classes and methods of the Shizuku service
+-keepclassmembers class com.fusionjack.adhell3.service.ShizukuService { *; }

@@ -3,6 +3,7 @@ package com.fusionjack.adhell3.fragments;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -198,10 +199,16 @@ public class ComponentTabPageFragment extends Fragment {
             UiUtils.setMenuIconColor(menu, getContext());
             initSearchView(menu);
         }
-        // Disable batch op for permissions as it's not implemented
         if (this.pageId == PERMISSIONS_PAGE) {
+            // Disable batch op for permissions as it's not implemented
             MenuItem item = menu.findItem(R.id.action_batch);
             item.setEnabled(false);
+
+            //Disable enable all for permissions on Android 12 and up
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MenuItem enableAllItem = menu.findItem(R.id.action_enable_all);
+                enableAllItem.setEnabled(false);
+            }
         }
     }
 

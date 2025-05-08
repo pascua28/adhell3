@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Patterns;
 
@@ -157,6 +158,10 @@ public final class AdhellFactory {
             String permissionName = appPermission.permissionName;
             switch (appPermission.permissionStatus) {
                 case AppPermission.STATUS_PERMISSION:
+                    //Don't apply permissions on Android 12 and up
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        break;
+                    }
                     List<String> permissions = new ArrayList<>();
                     permissions.add(permissionName);
                     setAppPermission(packageName, permissions, state);
@@ -299,14 +304,16 @@ public final class AdhellFactory {
     }
 
     public static void uninstall(Activity activity) {
-        if (DeviceAdminInteractor.getInstance().isKnoxEnabled(activity)) {
-            ContentBlocker contentBlocker = ContentBlocker56.getInstance();
-            contentBlocker.disableDomainRules();
-            contentBlocker.disableFirewallRules();
-        }
         ComponentName devAdminReceiver = new ComponentName(activity, CustomDeviceAdminReceiver.class);
         DevicePolicyManager dpm = (DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE);
-        dpm.removeActiveAdmin(devAdminReceiver);
+        if (dpm.isAdminActive(devAdminReceiver)) {
+            if (DeviceAdminInteractor.getInstance().isKnoxEnabled(activity)) {
+                ContentBlocker contentBlocker = ContentBlocker56.getInstance();
+                contentBlocker.disableDomainRules();
+                contentBlocker.disableFirewallRules();
+            }
+            dpm.removeActiveAdmin(devAdminReceiver);
+        }
         Intent intent = new Intent(Intent.ACTION_DELETE);
         String packageName = "package:" + BuildConfig.APPLICATION_ID;
         intent.setData(Uri.parse(packageName));

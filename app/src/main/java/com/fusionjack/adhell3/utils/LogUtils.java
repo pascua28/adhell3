@@ -29,6 +29,7 @@ public final class LogUtils {
         info("Build version: " + BuildConfig.VERSION_NAME);
         info("Knox API: " + EnterpriseDeviceManager.getAPILevel());
         info("Android API: " + Build.VERSION.SDK_INT);
+        info("Is Device Owner: " + DeviceAdminInteractor.getInstance().isDeviceOwner());
         String filename = String.format("adhell_logcat_%s.txt", now());
         String ownPackageName = App.get().getApplicationContext().getPackageName();
         Process logcatProcess = Runtime.getRuntime().exec( "logcat -d | grep " + ownPackageName);

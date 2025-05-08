@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -38,31 +39,23 @@ import static com.fusionjack.adhell3.fragments.SettingsFragment.SET_NIGHT_MODE_P
 import static com.fusionjack.adhell3.utils.DeviceAdminInteractor.DEVICE_ADMIN_ADD_RESULT_ENABLE;
 
 public class MainActivity extends AppCompatActivity {
+    private static MainActivity instance;
     private static final String BACK_STACK_TAB_TAG = "tab_fragment";
 
     private FragmentManager fragmentManager;
     private int selectedTabId = -1;
     private boolean doubleBackToExitPressedOnce = false;
 
-    @Override
-    public void onBackPressed() {
-        int count = fragmentManager.getBackStackEntryCount();
-        if (count <= 1) {
-            if (doubleBackToExitPressedOnce) {
-                finish();
-            }
-
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Press once again to exit", Toast.LENGTH_SHORT).show();
-
-            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-        } else {
-            fragmentManager.popBackStackImmediate();
+    public static MainActivity getInstance() {
+        if (instance == null) {
+            instance = new MainActivity();
         }
+        return instance;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        instance = this;
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean isNightMode = sharedPreferences.getBoolean(SET_NIGHT_MODE_PREFERENCE, false);
         AppCompatDelegate.setDefaultNightMode(isNightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
@@ -82,6 +75,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fragmentManager = getSupportFragmentManager();
+
+        // Handle back press
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                int count = fragmentManager.getBackStackEntryCount();
+                if (count <= 1) {
+                    if (doubleBackToExitPressedOnce) {
+                        finish();
+                    }
+
+                    instance.doubleBackToExitPressedOnce = true;
+                    Toast.makeText(instance, "Press once again to exit", Toast.LENGTH_SHORT).show();
+
+                    new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+                } else {
+                    fragmentManager.popBackStackImmediate();
+                }
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(instance, onBackPressedCallback);
 
         // Early exit if the device doesn't support Knox
         if (!DeviceAdminInteractor.getInstance().isSupported()) {
@@ -222,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean isLicenseActivated() {
+    public boolean isLicenseActivated() {
         if (!DeviceAdminInteractor.getInstance().isKnoxEnabled(this)) {
             LogUtils.info( "Knox is disabled, showing activation dialog");
             boolean hasInternetAccess = AdhellFactory.getInstance().hasInternetAccess(this);
@@ -244,7 +258,13 @@ public class MainActivity extends AppCompatActivity {
         new QuestionDialogBuilder(findViewById(android.R.id.content))
                 .setTitle(R.string.delete_app_dialog_title)
                 .setQuestion(R.string.delete_app_dialog_text)
-                .show(() -> AdhellFactory.uninstall(this));
+                .show(() -> {
+                    DeviceAdminInteractor dai = DeviceAdminInteractor.getInstance();
+                    if (dai.isDeviceOwner()) {
+                        dai.disableDeviceOwner();
+                    }
+                    AdhellFactory.uninstall(this);
+                });
     }
 
     

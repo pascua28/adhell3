@@ -164,6 +164,7 @@
     <string name="app_permission_info">
         Only protection level of \'dangerous\' can be disabled.
         \nDisabling a permission will also disable other permissions from the same group.
+        \nDisabling permissions is NOT supported on Android 12 and up
     </string>
     <string name="app_activity_info">
         Disabling an activity may crash the app.
@@ -295,7 +296,11 @@
     <string name="dialog_empty_password">The password cannot be empty!</string>
     <string name="dialog_password_not_matched">The passwords do not matched!</string>
     <string name="set_password_title">Protect adhell3 with a password</string>
-    <string name="set_password_summary">If you forget the password, you need to uninstall adhell3.</string>
+    <string name="set_password_summary">Supports biometrics. If you forget the password, you need to uninstall adhell3.</string>
+    <string name="set_password_biometric">Enable Biometric</string>
+    <string name="dialog_failed_biometric">Biometric Authentication Failed!</string>
+    <string name="biometric_prompt_title">Adhell3 Biometric</string>
+    <string name="biometric_prompt_summary">Unlock Adhell3 using biometric</string>
     <string name="set_night_mode">Night Mode</string>
     <string name="set_night_mode_summary">Enable dark theme for adhell3</string>
     <string name="create_logcat_title">Create logcat</string>
@@ -321,6 +326,7 @@
         \nBuild date: %2$s
         \nKnox API: %3$d
         \nAndroid API: %4$d
+        \nIs Device Owner: %5$s
     </string>
     <string name="dialog_appcomponent_batch_title">Batch Operation</string>
     <string name="dialog_appcomponent_batch_summary">The apps\' components defined in adhell3_*.txt will be used.
@@ -380,4 +386,34 @@
     <string name="menu_launch_activity">Launch activity</string>
     <string name="dialog_launch_activity_title">Launch Activity</string>
     <string name="dialog_launch_activity_text">Do you really want to launch activity %1$s?</string>
+    <string name="clear_do">Clear Device Owner</string>
+    <string name="clear_do_summary">Clear device owner to allow deactivation of admin</string>
+    <string name="clear_do_dialog_title">Clear Device Owner</string>
+    <string name="clear_do_dialog_text">Do you really want to clear device owner?</string>
+    <string name="do_fix">Enable Google Backup</string>
+    <string name="do_fix_summary">Fix Google Backup when Device Owner is granted</string>
+    <string name="do_fix_dialog_title">Enable Google Backup</string>
+    <string name="do_fix_dialog_text">Do you really want to enable Google Backup?</string>
+    <string name="grant_do">Grant Device Owner</string>
+    <string name="grant_do_summary">Grant Device Owner using Shizuku</string>
+    <string name="shizuku_dialog_title">Grant Device Owner</string>
+    <string name="shizuku_dialog_summary">Grant Device Owner using Shizuku to allow usage of restricted features on Android 15 and later.
+        \n<b>Before proceeding read explanation under</b>
+        \n<a href="https://gitlab.com/fusionjack/adhell3/-/blob/master/device_owner.md">https://gitlab.com/fusionjack/adhell3/-/blob/master/device_owner.md</a>
+    </string>
+    <string name="grant">Grant</string>
+    <string name="granting">Granting…</string>
+    <string name="check_do_requirements">Check Requirements</string>
+    <string name="checking_do_requirements">Checking…</string>
+    <string name="do_requirements_dialog_title">Device Owner Requirements</string>
+    <string name="do_requirements_dialog_summary">Device Owner requirements are not met or not checked. Continue anyway?</string>
+    <string name="shizuku_dialog_open_accounts">Open Accounts Settings</string>
+    <string name="do_transfer">Transfer Device Owner</string>
+    <string name="do_transfer_dialog_title">Transfer Device Owner</string>
+    <string name="do_transfer_dialog_summary">Transfer Device Owner to another app.
+        \nThe target app must support this and have admin activated.
+        \nIf the app can transfer back, this feature can be used to uninstall Adhell3 without clearing Device Owner.
+    </string>
+    <string name="do_transfer_dialog_hint">Target component name</string>
+    <string name="transfer_do">Transfer</string>
 </resources>

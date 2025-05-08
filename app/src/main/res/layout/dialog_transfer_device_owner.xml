@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="20dp"
-        android:text="@string/dialog_enter_password_title"
+        android:text="@string/do_transfer_dialog_title"
         android:textStyle="bold"
         android:textSize="20sp" />
 
@@ -21,35 +21,28 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/dialog_enter_password_summary" />
+        android:text="@string/do_transfer_dialog_summary" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:endIconMode="password_toggle"
+        app:endIconMode="clear_text"
         app:endIconTint="@color/colorAccent"
-        android:hint="Password">
+        android:hint="@string/do_transfer_dialog_hint"
+        app:placeholderText="com.bintianqi.owndroid/.Receiver"
+        app:placeholderTextColor="@color/colorPrimaryLight">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/passwordEditText"
+            android:id="@+id/transferDeviceOwnerEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="10dp"
-            android:inputType="textPassword"
+            android:inputType="textUri"
             android:textSize="16sp"
             android:textColor="@color/colorText"/>
 
     </com.google.android.material.textfield.TextInputLayout>
-
-    <ImageButton
-        android:id="@+id/biometricButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center"
-        android:background="@drawable/ic_fingerprint"
-        android:backgroundTint="@color/colorAccent"
-        android:visibility="gone"/>
 
 </LinearLayout>

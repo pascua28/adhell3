@@ -2,6 +2,8 @@
 The generation of KPE license key is now limited only for KPP partner account. <br/>
 Therefore, if you don't already have a working license key you cannot activate Adhell3. <br/>
 
+Due to [changes Samsung introduces in Android 15 and later](https://www.samsungknox.com/en/blog/changes-to-knox-sdk) some Adhell3's features will not function without Device Owner permission. You can read more in [this document](device_owner.md).
+
 # Disclaimer
 Adhell3 is merely an app that is using the Samsung Knox SDK APIs. <br/>
 In order to use these APIs, the Knox SDK and a KPE license key are needed. <br/>

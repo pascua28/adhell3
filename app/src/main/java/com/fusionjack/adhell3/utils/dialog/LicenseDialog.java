@@ -12,15 +12,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 
+import com.fusionjack.adhell3.MainActivity;
 import com.fusionjack.adhell3.R;
 import com.fusionjack.adhell3.tasks.BackupDatabaseRxTask;
 import com.fusionjack.adhell3.utils.DeviceAdminInteractor;
 import com.fusionjack.adhell3.utils.LicenseHandler;
 import com.fusionjack.adhell3.utils.LogUtils;
+import com.fusionjack.adhell3.utils.rx.RxSingleIoBuilder;
 
 import java.util.function.Consumer;
+
+import io.reactivex.rxjava3.core.Single;
 
 public final class LicenseDialog {
 
@@ -48,7 +51,12 @@ public final class LicenseDialog {
             titleTextView.setText(R.string.change_license);
 
             init(dialogView, sharedPreferences, context);
-            initActivationButton(view, dialogView, () -> {});
+            initActivationButton(view, dialogView, sharedPreferences, () -> {});
+        });
+
+        dialog.setOnDismissListener(d -> {
+            destroy();
+            MainActivity.getInstance().isLicenseActivated(); // Respawn Activation Dialog
         });
     }
 
@@ -75,10 +83,14 @@ public final class LicenseDialog {
             titleTextView.setText(knoxEnabled ? R.string.deactivate_license : R.string.activate_license);
 
             init(dialogView, sharedPreferences, context);
-            initActivationButton(view, dialogView, onActivationCallback);
+            initActivationButton(view, dialogView, sharedPreferences, onActivationCallback);
             initBackupButton(view);
             initUninstallButton(uninstallAction);
+            initTransferButton(dialogView, context);
+            initCreateLogcatButton(dialogView, context);
         });
+
+        dialog.setOnDismissListener(d -> destroy());
     }
 
     public synchronized static LicenseDialog getChangeInstance(View view, SharedPreferences sharedPreferences) {
@@ -97,7 +109,7 @@ public final class LicenseDialog {
         return instance;
     }
 
-    private void initActivationButton(View view, View dialogView, Runnable callback) {
+    private void initActivationButton(View view, View dialogView, SharedPreferences sharedPreferences, Runnable callback) {
         Context context = view.getContext();
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.setOnClickListener(v -> {
@@ -112,8 +124,8 @@ public final class LicenseDialog {
                 callback.run();
             };
             Runnable onSuccessDeactivation = () -> {
+                dialog.dismiss();
                 Toast.makeText(context, "License deactivated", Toast.LENGTH_LONG).show();
-                reinit(dialogView);
             };
             Consumer<String> onError = message -> {
                 positiveButton.setEnabled(true);
@@ -125,7 +137,7 @@ public final class LicenseDialog {
             if (knoxKey.isEmpty()) {
                 Toast.makeText(context, "License key cannot be empty!", Toast.LENGTH_LONG).show();
             } else {
-                LicenseHandler.getInstance().activeOrDeactivateLicense(knoxKey, onSuccessActivation, onSuccessDeactivation, onError);
+                LicenseHandler.getInstance().activeOrDeactivateLicense(sharedPreferences, knoxKey, onSuccessActivation, onSuccessDeactivation, onError);
             }
         });
     }
@@ -140,6 +152,35 @@ public final class LicenseDialog {
         neutralButton.setOnClickListener(v -> uninstallAction.run());
     }
 
+    private void initTransferButton(View dialogView, Context context) {
+        Button transferButton = dialogView.findViewById(R.id.transferDeviceOwnerButton);
+        DeviceAdminInteractor dai = DeviceAdminInteractor.getInstance();
+        if (dai.isDeviceOwner()) {
+            transferButton.setVisibility(View.VISIBLE);
+            transferButton.setOnClickListener(v -> {
+                if (dai.isDeviceOwner()) {
+                    new TransferDeviceOwnerDialog(dialogView).show();
+                } else {
+                    Toast.makeText(context, "Device Owner is not granted", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void initCreateLogcatButton(View dialogView, Context context) {
+        Button createLogcatButton = dialogView.findViewById(R.id.createLogcatButton);
+        createLogcatButton.setVisibility(View.VISIBLE);
+        createLogcatButton.setOnClickListener(v -> {
+            Consumer<String> callback = filename -> {
+                String message = context.getResources().getString(R.string.logcat_created);
+                Toast.makeText(context, String.format(message, filename), Toast.LENGTH_LONG).show();
+            };
+            new RxSingleIoBuilder()
+                    .setShowErrorAlert(context)
+                    .async(Single.fromCallable(LogUtils::createLogcat), callback);
+        });
+    }
+
     private void init(View dialogView, SharedPreferences sharedPreferences, Context context) {
         boolean knoxEnabled = DeviceAdminInteractor.getInstance().isKnoxEnabled(context);
         LogUtils.info("Knox is " + (knoxEnabled ? "enabled" : "disabled"));
@@ -147,26 +188,10 @@ public final class LicenseDialog {
         String knoxKey = DeviceAdminInteractor.getInstance().getKnoxKey(sharedPreferences);
         EditText licenseKeyEditText = dialogView.findViewById(R.id.licenseKeyEditText);
         licenseKeyEditText.setText(knoxKey);
-        licenseKeyEditText.setTextColor(knoxEnabled ? Color.GRAY : ContextCompat.getColor(dialog.getContext(), R.color.colorText));
-        licenseKeyEditText.setEnabled(!knoxEnabled);
 
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.setText(knoxEnabled ? R.string.deactivate : R.string.activate);
         positiveButton.setEnabled(true);
-    }
-
-    private void reinit(View dialogView) {
-        TextView titleTextView = dialogView.findViewById(R.id.titleTextView);
-        titleTextView.setText(R.string.activate_license);
-
-        EditText licenseKeyEditText = dialogView.findViewById(R.id.licenseKeyEditText);
-        licenseKeyEditText.setTextColor(ContextCompat.getColor(dialog.getContext(), R.color.colorText));
-        licenseKeyEditText.setEnabled(true);
-
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        positiveButton.setText(R.string.activate_license);
-        positiveButton.setEnabled(true);
-        positiveButton.setTextColor(ContextCompat.getColor(dialog.getContext(), R.color.colorAccent));
     }
 
     private void backupDatabase(View view) {
